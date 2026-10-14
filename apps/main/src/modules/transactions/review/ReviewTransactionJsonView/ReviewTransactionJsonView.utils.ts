@@ -12,6 +12,7 @@ import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
 } from "@/modules/transactions/utils/xcm"
@@ -79,8 +80,21 @@ export const decodeTx = (
     return tx.commands
   }
 
+  // The sdk serializes the receiver and actions, bigints as strings
+  if (isNearCall(tx)) {
+    try {
+      return safeParse<object>(tx.data)
+    } catch {
+      return {}
+    }
+  }
+
   return {}
 }
 
 export const hasTxCallData = (tx: AnyTransaction): boolean =>
-  isPapiTransaction(tx) || isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)
+  isPapiTransaction(tx) ||
+  isEvmCall(tx) ||
+  isSolanaCall(tx) ||
+  isSuiCall(tx) ||
+  isNearCall(tx)

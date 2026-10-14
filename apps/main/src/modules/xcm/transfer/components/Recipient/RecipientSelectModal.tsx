@@ -1,26 +1,14 @@
-import {
-  Box,
-  CollapsibleContent,
-  CollapsibleRoot,
-  Modal,
-  ModalBody,
-  ModalContentDivider,
-  ModalHeader,
-  Stack,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 
 import { ConnectChainTile } from "@/modules/xcm/transfer/components/ConnectButton/ConnectChainTile"
 import {
   RecipientConnectModal,
   RecipientConnectTile,
-  RecipientCustomAddressForm,
+  RecipientModal,
 } from "@/modules/xcm/transfer/components/Recipient"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
@@ -35,8 +23,6 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
   onClose,
   onSelectAddress,
 }) => {
-  const { t } = useTranslation("xcm")
-  const [isUsingCustomAddress, setIsUsingCustomAddress] = useState(false)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)
   const { watch } = useFormContext<XcmFormValues>()
 
@@ -58,50 +44,35 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
 
   return (
     <>
-      <Modal
-        variant="popup"
+      <RecipientModal
         open={open}
-        onOpenChange={onClose}
-        disableInteractOutside
-      >
-        <ModalHeader title={t("recipient.modal.title")} align="center" />
-        <ModalBody sx={{ py: 0 }} scrollable={false}>
-          <CollapsibleRoot open={!isUsingCustomAddress}>
-            <CollapsibleContent>
-              <Stack gap="base" py="xl">
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t("recipient.modal.destinationWallet")}
-                </Text>
-                {destAccount ? (
-                  <RecipientConnectTile
-                    account={destAccount}
-                    walletLogoSrc={destWallet?.logo}
-                    onSelect={onClose}
-                    onConnect={() => setIsConnectModalOpen(true)}
-                  />
-                ) : (
-                  <ConnectChainTile
-                    chain={destChain}
-                    onConnect={() => setIsConnectModalOpen(true)}
-                  />
-                )}
-              </Stack>
-            </CollapsibleContent>
-          </CollapsibleRoot>
-          {destChain && (
-            <Box pb="var(--modal-content-padding)">
-              <ModalContentDivider />
-              <RecipientCustomAddressForm
-                destChain={destChain}
-                onSubmit={(address) => handleCustomAddressSubmit(address)}
-                onChange={(address) =>
-                  setIsUsingCustomAddress(!!address.trim())
-                }
-              />
-            </Box>
-          )}
-        </ModalBody>
-      </Modal>
+        onClose={onClose}
+        destinationWallet={
+          destAccount ? (
+            <RecipientConnectTile
+              account={destAccount}
+              walletLogoSrc={destWallet?.logo}
+              onSelect={onClose}
+              onConnect={() => setIsConnectModalOpen(true)}
+            />
+          ) : (
+            <ConnectChainTile
+              chain={destChain}
+              onConnect={() => setIsConnectModalOpen(true)}
+            />
+          )
+        }
+        customAddress={
+          destChain
+            ? {
+                chainName: destChain.name,
+                isValidAddress: (address) =>
+                  isAddressValidOnChain(address, destChain),
+              }
+            : undefined
+        }
+        onSubmitAddress={handleCustomAddressSubmit}
+      />
       <RecipientConnectModal
         open={isConnectModalOpen}
         destChain={destChain}

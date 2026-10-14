@@ -3,6 +3,7 @@ import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useBasejumpPoolAlerts } from "@/modules/xcm/transfer/hooks/useBasejumpPoolAlerts"
 import { useCBreakerInboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerInboundLimitAlerts"
 import { useCBreakerOutboundLimitAlerts } from "@/modules/xcm/transfer/hooks/useCBreakerOutboundLimitAlerts"
 import { useHydrationEvmBindingAlert } from "@/modules/xcm/transfer/hooks/useHydrationEvmBindingAlert"
@@ -34,6 +35,7 @@ export const useXcmTransferAlerts = (
   const cBreakerInboundLimitAlerts = useCBreakerInboundLimitAlerts(form)
   const cBreakerOutboundLimitAlerts = useCBreakerOutboundLimitAlerts(form)
   const wormholeNttLimitAlerts = useWormholeNttLimitAlerts(form)
+  const basejumpPoolAlerts = useBasejumpPoolAlerts(form)
   const { alerts: evmBindingAlerts, isLoading: isLoadingEvmBinding } =
     useHydrationEvmBindingAlert(form, requiresEvmBinding)
 
@@ -61,6 +63,7 @@ export const useXcmTransferAlerts = (
       ...cBreakerInboundLimitAlerts,
       ...cBreakerOutboundLimitAlerts,
       ...wormholeNttLimitAlerts,
+      ...basejumpPoolAlerts,
     ])
     return limitAlert ? [limitAlert] : []
   }, [
@@ -69,6 +72,7 @@ export const useXcmTransferAlerts = (
     cBreakerInboundLimitAlerts,
     cBreakerOutboundLimitAlerts,
     wormholeNttLimitAlerts,
+    basejumpPoolAlerts,
     evmBindingAlerts,
   ])
 

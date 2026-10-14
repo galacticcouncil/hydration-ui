@@ -29,6 +29,7 @@ export type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
   size?: TooltipSize
+  delayDuration?: number
   side?: TooltipContentProps["side"]
   align?: TooltipContentProps["align"]
   sideOffset?: TooltipContentProps["sideOffset"]
@@ -42,6 +43,7 @@ export const Tooltip = ({
   text,
   children,
   size = "medium",
+  delayDuration,
   side = "top",
   align = "center",
   sideOffset = 3,
@@ -120,7 +122,7 @@ export const Tooltip = ({
 
   return (
     <Root
-      delayDuration={size === "small" ? 700 : 0}
+      delayDuration={delayDuration ?? (size === "small" ? 700 : 0)}
       open={open}
       onOpenChange={setOpen}
     >

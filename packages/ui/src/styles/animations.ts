@@ -325,37 +325,37 @@ export const floatingScaleAnimation = (theme: Theme) => css`
 
   &[data-state$="open"] {
     &[data-side="top"] {
-      animation-name: ${theme.animations.scaleInTop};
-    }
-
-    &[data-side="bottom"] {
       animation-name: ${theme.animations.scaleInBottom};
     }
 
+    &[data-side="bottom"] {
+      animation-name: ${theme.animations.scaleInTop};
+    }
+
     &[data-side="left"] {
-      animation-name: ${theme.animations.scaleInLeft};
+      animation-name: ${theme.animations.scaleInRight};
     }
 
     &[data-side="right"] {
-      animation-name: ${theme.animations.scaleInRight};
+      animation-name: ${theme.animations.scaleInLeft};
     }
   }
 
   &[data-state="closed"] {
     &[data-side="top"] {
-      animation-name: ${theme.animations.scaleOutTop};
-    }
-
-    &[data-side="bottom"] {
       animation-name: ${theme.animations.scaleOutBottom};
     }
 
+    &[data-side="bottom"] {
+      animation-name: ${theme.animations.scaleOutTop};
+    }
+
     &[data-side="left"] {
-      animation-name: ${theme.animations.scaleOutLeft};
+      animation-name: ${theme.animations.scaleOutRight};
     }
 
     &[data-side="right"] {
-      animation-name: ${theme.animations.scaleOutRight};
+      animation-name: ${theme.animations.scaleOutLeft};
     }
   }
 `

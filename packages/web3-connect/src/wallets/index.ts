@@ -7,8 +7,13 @@ import { BraveWallet, BraveWalletSol } from "@/wallets/BraveWallet"
 import { Enkrypt } from "@/wallets/Enkrypt"
 import { ExternalWallet } from "@/wallets/ExternalWallet"
 import { FearlessWallet } from "@/wallets/FearlessWallet"
+import { HotWalletNear } from "@/wallets/HotWallet"
+import { IntearWallet } from "@/wallets/IntearWallet"
+import { LedgerNear } from "@/wallets/Ledger"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
+import { MeteorWallet } from "@/wallets/MeteorWallet"
+import { NoirWallet } from "@/wallets/NoirWallet"
 import { NovaWallet, NovaWalletEvm, NovaWalletH160 } from "@/wallets/NovaWallet"
 import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
@@ -28,8 +33,13 @@ export {
   Enkrypt,
   ExternalWallet,
   FearlessWallet,
+  HotWalletNear,
+  IntearWallet,
+  LedgerNear,
   MantaWallet,
   MetaMask,
+  MeteorWallet,
+  NoirWallet,
   NovaWallet,
   NovaWalletEvm,
   NovaWalletH160,
@@ -84,6 +94,15 @@ const wallets = [
   new Suiet(),
   new Slush(),
   new PhantomSui(),
+
+  // NEAR
+  new MeteorWallet(),
+  new HotWalletNear(),
+  new IntearWallet(),
+  new LedgerNear(),
+
+  // Zcash
+  new NoirWallet(),
 
   // Other
   new ReownWalletConnect(),

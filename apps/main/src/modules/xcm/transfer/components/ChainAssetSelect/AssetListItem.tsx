@@ -17,11 +17,9 @@ import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { isBigInt } from "remeda"
 
-import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
-import { useAssets } from "@/providers/assetsProvider"
 import { toDecimal } from "@/utils/formatting"
 
 import { SAssetListItem } from "./AssetListItem.styled"
@@ -29,6 +27,8 @@ import { SAssetListItem } from "./AssetListItem.styled"
 export type AssetListItemProps = {
   asset: Asset
   route: AssetRoute | null
+  symbol: string
+  name: string
   balance?: AssetAmount
   balanceDisplay?: string
   isLoading: boolean
@@ -40,6 +40,8 @@ export type AssetListItemProps = {
 export const AssetListItem: React.FC<AssetListItemProps> = ({
   asset,
   route,
+  symbol,
+  name,
   balance,
   balanceDisplay,
   chain,
@@ -48,16 +50,6 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   onClick,
 }) => {
   const { t } = useTranslation(["common"])
-  const { getAsset } = useAssets()
-  const getDisplayAssetId = useHydrationDisplayAssetId()
-
-  const registryId = getDisplayAssetId(asset)
-  const registryAsset = registryId ? getAsset(registryId) : undefined
-
-  const meta = {
-    symbol: asset.originSymbol,
-    name: registryAsset?.name ?? asset.originSymbol,
-  }
 
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
@@ -65,7 +57,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 
         <Text truncate as="div">
-          <AssetLabel symbol={meta.symbol} name={meta.name} />
+          <AssetLabel symbol={symbol} name={name} />
           {route && isBridgeAssetRoute(route) && (
             <AssetBridgeTags route={route} />
           )}

@@ -23,14 +23,15 @@ function normalize(str: string) {
  * Searches an array of objects for a given search string in specified keys.
  * Key order is important. Result will be ordered by keys order in the array.
  */
-export function arraySearch<T extends Record<string, unknown>>(
+export function arraySearch<T extends object>(
   array: Array<T>,
   search = "",
   keys?: Array<Extract<KeyOfType<T, string>, string>>,
 ) {
   if (!isArray(array)) return []
   return array
-    .reduce<Array<Array<T>>>((memo, item) => {
+    .reduce<Array<Array<T>>>((memo, row) => {
+      const item = row as T & Record<string, unknown>
       const searchableKeys =
         keys || Object.keys(item).filter((key) => typeof item[key] === "string")
 

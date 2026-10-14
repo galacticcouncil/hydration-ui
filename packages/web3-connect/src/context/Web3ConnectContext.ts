@@ -4,7 +4,11 @@ import { TypedApi } from "polkadot-api"
 import { createContext, useContext } from "react"
 
 import { Web3ConnectModalPage } from "@/config/modal"
-import { Account, WalletMode } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  WalletMode,
+  Web3ConnectModalMeta,
+} from "@/hooks/useWeb3Connect"
 
 export type Web3ConnectContextType = {
   isControlled: boolean
@@ -14,6 +18,7 @@ export type Web3ConnectContextType = {
   papi: TypedApi<typeof hydration>
   onAccountSelect: (account: Account) => void
   mode: WalletMode
+  meta?: Web3ConnectModalMeta | null
 }
 
 const Web3ConnectContext = createContext<Web3ConnectContextType | null>(null)

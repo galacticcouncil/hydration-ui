@@ -67,6 +67,8 @@ export function isAddressValidOnChain(address: string, chain: AnyChain) {
       return SolanaAddr.isValid(address)
     case chain.isSui():
       return SuiAddr.isValid(address)
+    case chain.isNear():
+      return NearAddr.isValid(address)
     default:
       return false
   }
