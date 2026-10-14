@@ -12,12 +12,14 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { arraySearch } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { map, pipe, zip } from "remeda"
 
+import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetList } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetList"
 import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
@@ -26,6 +28,7 @@ import {
   getWalletModeByChain,
   isAccountValidOnChain,
 } from "@/modules/xcm/transfer/utils/chain"
+import { useAssets } from "@/providers/assetsProvider"
 
 export type ChainAssetPair = {
   chain: AnyChain
@@ -92,6 +95,8 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   const { isMobile } = useBreakpoints()
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
+  const { getAsset } = useAssets()
+  const getDisplayAssetId = useHydrationDisplayAssetId()
   const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
   const [pendingChain, setPendingChain] = useState<AnyChain | null>(
@@ -126,10 +131,17 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
           }))
       : assets.map((asset) => ({ asset, route: null }))
 
-    return assetsWithRoutes.filter(({ asset }) =>
-      asset.originSymbol.toLowerCase().includes(assetSearch.toLowerCase()),
+    return arraySearch(
+      assetsWithRoutes.map((item) => {
+        const registryId = getDisplayAssetId(item.asset)
+        const symbol = item.asset.originSymbol
+        const name = (registryId && getAsset(registryId)?.name) || symbol
+        return { ...item, symbol, name }
+      }),
+      assetSearch,
+      ["symbol", "name"],
     )
-  }, [assetSearch, chainAssetPairs, pendingChain])
+  }, [assetSearch, chainAssetPairs, getAsset, getDisplayAssetId, pendingChain])
 
   const isCompatibleWalletMode =
     type === "source"
