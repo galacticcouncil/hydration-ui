@@ -190,10 +190,7 @@ export const NetApyValue: FC<{
   return t("percent", { value: Big(value).times(100).toNumber() })
 }
 
-export const AmountCell: FC<{ amount: string; usd: string }> = ({
-  amount,
-  usd,
-}) => {
+const AmountCell: FC<{ amount: string; usd: string }> = ({ amount, usd }) => {
   const { t } = useTranslation()
 
   return (

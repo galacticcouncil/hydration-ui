@@ -22,7 +22,7 @@ export const byUsdDesc =
 
 /**
  * The user's supplied and borrowed positions, largest first, with the account
- * figures both the dashboard and the position page summarize them by.
+ * figures the dashboard summarizes them by.
  */
 export const usePositions = (user: Address | undefined) => {
   const reserves = useReserveSummaries()
