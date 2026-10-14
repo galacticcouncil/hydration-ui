@@ -19,7 +19,6 @@ import { useTranslation } from "react-i18next"
 import { useMyAssetsColumns } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { useMyBondsColumns } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.columns"
 import { useMyLiquidityColumns } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidityTable.columns"
-import { useMyStrategiesColumns } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
 import { portfolioOverviewTabs } from "@/modules/portfolio/overview/PortfolioOverview"
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
@@ -30,7 +29,6 @@ export const PortfolioOverviewSkeleton = () => {
   const assetsColumns = useMyAssetsColumns(false)
   const liquidityColumns = useMyLiquidityColumns()
   const bondsColumns = useMyBondsColumns()
-  const strategiesColumns = useMyStrategiesColumns()
   const sections = [
     {
       category: "assets",
@@ -39,14 +37,9 @@ export const PortfolioOverviewSkeleton = () => {
       ),
     },
     {
-      category: "strategies",
+      category: "bonds",
       content: (
-        <DataTable
-          isLoading
-          data={[]}
-          columns={strategiesColumns}
-          size="small"
-        />
+        <DataTable isLoading data={[]} columns={bondsColumns} size="small" />
       ),
     },
     {
@@ -58,12 +51,6 @@ export const PortfolioOverviewSkeleton = () => {
           columns={liquidityColumns}
           size="small"
         />
-      ),
-    },
-    {
-      category: "bonds",
-      content: (
-        <DataTable isLoading data={[]} columns={bondsColumns} size="small" />
       ),
     },
   ] as const

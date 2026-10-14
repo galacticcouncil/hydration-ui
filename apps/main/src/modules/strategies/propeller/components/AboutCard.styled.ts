@@ -1,6 +1,5 @@
-import { css } from "@emotion/react"
-import styled from "@emotion/styled"
 import { Flex, Stack } from "@galacticcouncil/ui/components"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SJuicerExplainerFlow = styled(Stack)(
   ({ theme }) => css`
@@ -14,31 +13,22 @@ export const SJuicerExplainerFlow = styled(Stack)(
 export const SJuicerExplainerStep = styled(Flex)(
   ({ theme }) => css`
     position: relative;
-    gap: ${theme.space.m};
+    --juicer-illustration-width: 5rem;
+    gap: calc(${theme.space.m} / 2);
+
+    @media (max-width: 480px) {
+      --juicer-illustration-width: 3.25rem;
+      gap: calc(${theme.space.s} / 2);
+    }
 
     &:not(:last-child)::after {
       content: "";
       position: absolute;
-      left: calc(1rem - 0.5px);
-      top: 2rem;
-      bottom: calc(-1 * ${theme.space.xl});
+      left: calc(var(--juicer-illustration-width) / 2 - 0.5px);
+      top: calc(var(--juicer-illustration-width) * 5 / 7 + ${theme.space.s});
+      bottom: calc(-1 * ${theme.space.xl} + ${theme.space.s});
       width: 1px;
       background: ${theme.details.separators};
-    }
-  `,
-)
-
-export const SJuicerExplainerNumber = styled(Flex)(
-  ({ theme }) => css`
-    flex: 0 0 2rem;
-    height: 2rem;
-    border: 1px solid ${theme.text.tint.secondary};
-    border-radius: 50%;
-    color: ${theme.text.high};
-
-    /* Optically center the Gazpacho numerals within the circle. */
-    & > p {
-      transform: translateY(0.08em);
     }
   `,
 )
@@ -50,3 +40,15 @@ export const SJuicerExplainerPanel = styled(Stack)(
     gap: ${theme.space.s};
   `,
 )
+
+export const SJuicerExplainerIllustration = styled("img")(css`
+  display: block;
+  flex: 0 0 var(--juicer-illustration-width);
+  width: var(--juicer-illustration-width);
+  height: calc(var(--juicer-illustration-width) * 5 / 7);
+  align-self: flex-start;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+`)

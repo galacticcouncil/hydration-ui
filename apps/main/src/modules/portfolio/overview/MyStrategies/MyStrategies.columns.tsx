@@ -22,11 +22,11 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { LINKS } from "@/config/navigation"
+import { JuicerAssetCta } from "@/modules/portfolio/overview/MyAssets/JuicerAssetCta"
 import {
   StrategyPosition,
   useMyJuicerPositions,
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { SJuiceButton } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.styled"
 import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
@@ -243,6 +243,15 @@ export const StrategyManageAction = ({
   mobile?: boolean
 }) => {
   const { t } = useTranslation("common")
+  if (position.isPreview) {
+    return mobile ? (
+      <Button variant="primary" size="large" disabled>
+        {t("manage")}
+      </Button>
+    ) : (
+      <TableRowAction disabled>{t("manage")}</TableRowAction>
+    )
+  }
   const link =
     position.strategy === "juicer" ? (
       <Link to={LINKS.strategiesJuicer} search={{ asset: position.symbol }}>
@@ -285,11 +294,11 @@ export const StrategyPositionCta = ({
 
   if (position.action === "deposit") {
     return (
-      <SJuiceButton variant="transparent" size={size} asChild>
-        <Link {...link}>
-          {t("myAssets.actions.juicerDeposit", { symbol: position.symbol })}
-        </Link>
-      </SJuiceButton>
+      <JuicerAssetCta
+        assetId={position.assetId}
+        mobile={mobile}
+        isExistingPosition
+      />
     )
   }
 
@@ -322,20 +331,40 @@ export const StrategyShareAssetCta = ({ assetId }: { assetId: string }) => {
 export const StrategyPositionActions = ({
   position,
   mobile = false,
+  onTransfer,
 }: {
   position: StrategyPosition
   mobile?: boolean
-}) => (
-  <Flex
-    gap="base"
-    align={mobile ? undefined : "center"}
-    justify="flex-end"
-    direction={mobile ? "column" : "row"}
-  >
-    <StrategyPositionCta position={position} mobile={mobile} />
-    <StrategyManageAction position={position} mobile={mobile} />
-  </Flex>
-)
+  onTransfer?: (position: StrategyPosition) => void
+}) => {
+  const { t } = useTranslation("common")
+  const canSend = position.shareAmount !== "0"
+
+  return (
+    <Flex gap="base" justify="flex-end" direction={mobile ? "column" : "row"}>
+      <StrategyPositionCta position={position} mobile={mobile} />
+      {onTransfer &&
+        (mobile ? (
+          <Button
+            variant="secondary"
+            size="large"
+            disabled={!canSend}
+            onClick={() => onTransfer(position)}
+          >
+            {t("send")}
+          </Button>
+        ) : (
+          <TableRowAction
+            disabled={!canSend}
+            onClick={() => onTransfer(position)}
+          >
+            {t("send")}
+          </TableRowAction>
+        ))}
+      <StrategyManageAction position={position} mobile={mobile} />
+    </Flex>
+  )
+}
 
 const AssetSkeletonCell = () => (
   <Flex align="center" gap="base">

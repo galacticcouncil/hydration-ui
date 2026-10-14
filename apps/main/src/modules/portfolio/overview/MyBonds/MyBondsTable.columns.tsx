@@ -27,6 +27,7 @@ export enum MyBondsTableColumnId {
 export type MyBond = TBond & {
   readonly total: string
   readonly totalDisplay: string | undefined
+  readonly isPreview?: boolean
 }
 
 const columnHelper = createColumnHelper<MyBond>()
@@ -82,7 +83,10 @@ export const useMyBondsColumns = () => {
         compare: numerically,
       }),
       cell: function Cell({ row }) {
-        const { timeLeft } = useBondData(row.original.id)
+        const { timeLeft: liveTimeLeft } = useBondData(row.original.id)
+        const timeLeft = row.original.isPreview
+          ? Math.max(0, row.original.maturity - Date.now())
+          : liveTimeLeft
 
         return (
           <Amount
@@ -112,6 +116,15 @@ export const useMyBondsColumns = () => {
       },
       cell: function Cell({ row }) {
         const [isTransferOpen, setIsTransferOpen] = useState(false)
+
+        if (row.original.isPreview) {
+          return (
+            <Flex gap="base" justify="flex-end">
+              <TableRowAction disabled>{t("common:redeem")}</TableRowAction>
+              <TableRowAction disabled>{t("common:send")}</TableRowAction>
+            </Flex>
+          )
+        }
 
         return (
           <Flex gap="base" justify="flex-end">

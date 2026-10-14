@@ -113,5 +113,9 @@
     "Collateral awaiting deployment is pooled within each vault and includes deposits and harvested earnings.",
     "Keepers borrow and trade gradually when prices meet the vault’s limits. This is not a personal queue or a completion estimate.",
     "Withdrawals follow the usual withdrawal queue."
-  ]
+  ],
+  "transfer.title": "Send {{shareSymbol}}",
+  "transfer.description": "This sends position shares, not the underlying asset.",
+  "transfer.juicerDescription": "The recipient receives your Juicer position, not {{symbol}}. Amounts are shown as the current {{symbol}} equivalent.",
+  "transfer.previewOnly": "Preview only — transfers are not connected yet."
 }

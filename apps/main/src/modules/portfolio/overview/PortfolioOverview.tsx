@@ -29,8 +29,8 @@ import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { useWalletBalancesSectionData } from "@/modules/portfolio/overview/Balances/WalletBalances.data"
-import { MyAssets } from "@/modules/portfolio/overview/MyAssets/MyAssets"
 import { useMyAssetsTableData } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.data"
+import { PortfolioAssets } from "@/modules/portfolio/overview/MyAssets/PortfolioAssets"
 import { PortfolioChainHeader } from "@/modules/portfolio/overview/PortfolioChainHeader"
 import { PortfolioChainSection } from "@/modules/portfolio/overview/PortfolioChainSection"
 import {
@@ -38,12 +38,12 @@ import {
   SPortfolioSubsectionHeaderButton,
   SPortfolioTableWrapper,
 } from "@/modules/portfolio/overview/PortfolioOverview.styled"
+import { PortfolioPreviewControls } from "@/modules/portfolio/overview/PortfolioPreviewControls"
 import { PortfolioSummary } from "@/modules/portfolio/overview/PortfolioSummary"
 
 export const portfolioOverviewTabs = [
   "all",
   "assets",
-  "strategies",
   "liquidity",
   "bonds",
 ] as const
@@ -54,7 +54,6 @@ type Props = {
   readonly sortingProps: SortingProps
   readonly liquidityContent: ReactNode
   readonly bondsContent: ReactNode
-  readonly strategiesContent: ReactNode
 }
 
 export const PortfolioOverview: FC<Props> = ({
@@ -63,7 +62,6 @@ export const PortfolioOverview: FC<Props> = ({
   sortingProps,
   liquidityContent,
   bondsContent,
-  strategiesContent,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
 
@@ -105,7 +103,7 @@ export const PortfolioOverview: FC<Props> = ({
     {
       category: "assets",
       content: (
-        <MyAssets
+        <PortfolioAssets
           data={data}
           isEmpty={isEmpty}
           isLoading={isLoading}
@@ -114,7 +112,6 @@ export const PortfolioOverview: FC<Props> = ({
         />
       ),
     },
-    { category: "strategies", content: strategiesContent },
     { category: "liquidity", content: liquidityContent },
     { category: "bonds", content: bondsContent },
   ] as const
@@ -201,6 +198,7 @@ export const PortfolioOverview: FC<Props> = ({
                   )}
                 />
                 <Separator />
+                <PortfolioPreviewControls />
                 <SPortfolioTableWrapper
                   data-all={activeTab === "all" ? "" : undefined}
                 >

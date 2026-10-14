@@ -12,10 +12,12 @@ const JUICER_LOGO_PX: Record<LogoSize, number> = {
 
 type JuicerStrategyLogoProps = {
   size?: LogoSize
+  withBackground?: boolean
 }
 
 export const JuicerStrategyLogo = ({
   size = "medium",
+  withBackground = true,
 }: JuicerStrategyLogoProps) => {
   const px = JUICER_LOGO_PX[size]
 
@@ -29,6 +31,7 @@ export const JuicerStrategyLogo = ({
         flexShrink: 0,
         "& svg": { display: "block", width: "100%", height: "100%" },
         "& svg path": { fill: getToken("accents.alertAlt.primary") },
+        ...(!withBackground && { "& svg > rect": { display: "none" } }),
       }}
     >
       <JuicerLogo />

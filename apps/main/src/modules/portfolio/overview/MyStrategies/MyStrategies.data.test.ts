@@ -252,7 +252,7 @@ describe("Portfolio strategy position projection", () => {
     })
   })
 
-  it("promotes depositing more only when idle collateral can enter an open vault, and a ready claim first", () => {
+  it("keeps deposit navigation for an open active position with no idle balance, and prioritizes claims", () => {
     const openStats = {
       paused: false,
       depositsPaused: false,
@@ -296,8 +296,8 @@ describe("Portfolio strategy position projection", () => {
     }
 
     expect(useAction()).toBe("deposit")
-    expect(useAction({ collateralBalance: 0 })).toBeNull()
-    expect(useAction({ collateralBalance: 0.000001 })).toBeNull()
+    expect(useAction({ collateralBalance: 0 })).toBe("deposit")
+    expect(useAction({ collateralBalance: 0.000001 })).toBe("deposit")
     expect(useAction({ stats: { ...openStats, remaining: 0 } })).toBeNull()
     expect(
       useAction({ stats: { ...openStats, depositsPaused: true } }),
