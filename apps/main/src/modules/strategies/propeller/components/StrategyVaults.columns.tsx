@@ -73,7 +73,7 @@ export const useStrategyVaultColumns = (
         </Flex>
       ),
       cell: ({ row }) => {
-        const { apy } = row.original
+        const { apy, accrualPaused } = row.original
         return (
           <Text
             fs="p4"
@@ -84,7 +84,9 @@ export const useStrategyVaultColumns = (
                 : "accents.success.emphasis",
             )}
           >
-            {apy === null ? "—" : t("common:percent", { value: apy })}
+            {accrualPaused || apy === null
+              ? "—"
+              : t("common:percent", { value: apy })}
           </Text>
         )
       },

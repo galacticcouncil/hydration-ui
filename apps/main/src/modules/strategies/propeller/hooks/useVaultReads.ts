@@ -13,6 +13,7 @@ import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config
 import {
   HOLLAR_ADDRESS,
   POOL_ADDRESS,
+  PRIME_ADDRESS,
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
 import { readDepositCapacity } from "@/modules/strategies/propeller/utils/deposit"
@@ -93,6 +94,7 @@ export const vaultStatsQuery = (
         deficitStop,
         deferredDeployment,
         pendingDeployment,
+        mainAccount,
       ] = await Promise.all([
         contract.read.totalAssets(at),
         contract.read.totalSupply(at),
@@ -118,6 +120,9 @@ export const vaultStatsQuery = (
         ),
         safeRead("Vault.reinvestAssets", () =>
           contract.read.reinvestAssets(at),
+        ),
+        safeRead("Pool.getUserAccountData(vault)", () =>
+          pool.read.getUserAccountData([vault.vaultAddress], at),
         ),
       ])
       const [protocolFeeBps, mainDiscountBps] = await Promise.all([
@@ -161,6 +166,16 @@ export const vaultStatsQuery = (
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
         withdrawalDelay,
         deficitStop,
+        // Main leg in base currency (USD, 8 decimals); collateral includes the
+        // synthetic, consumers strip it via its known debt ratio
+        mainCollUsd:
+          mainAccount === null || mainAccount === undefined
+            ? null
+            : Number(mainAccount[0]) / 1e8,
+        mainDebtUsd:
+          mainAccount === null || mainAccount === undefined
+            ? null
+            : Number(mainAccount[1]) / 1e8,
         pendingDeployment:
           deferredDeployment === true && pendingDeployment !== null
             ? formatUnits(pendingDeployment, decimals)
@@ -191,20 +206,29 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
         abi: POOL_ABI,
         client: evm,
       })
-      const [healthFactor, negativeCarryBps, targetHf, account, hollarRes] =
-        await Promise.all([
-          safeRead("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
-          safeRead("SubLoop.negativeCarryBps", () =>
-            subLoop.read.negativeCarryBps(),
-          ),
-          safeRead("SubLoop.targetHf", () => subLoop.read.targetHf()),
-          safeRead("Pool.getUserAccountData(SubLoop)", () =>
-            pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
-          ),
-          safeRead("Pool.getReserveData(HOLLAR)", () =>
-            pool.read.getReserveData([HOLLAR_ADDRESS]),
-          ),
-        ])
+      const [
+        healthFactor,
+        negativeCarryBps,
+        targetHf,
+        account,
+        hollarRes,
+        primeConfig,
+      ] = await Promise.all([
+        safeRead("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
+        safeRead("SubLoop.negativeCarryBps", () =>
+          subLoop.read.negativeCarryBps(),
+        ),
+        safeRead("SubLoop.targetHf", () => subLoop.read.targetHf()),
+        safeRead("Pool.getUserAccountData(SubLoop)", () =>
+          pool.read.getUserAccountData([SUBLOOP_ADDRESS]),
+        ),
+        safeRead("Pool.getReserveData(HOLLAR)", () =>
+          pool.read.getReserveData([HOLLAR_ADDRESS]),
+        ),
+        safeRead("Pool.getConfiguration(PRIME)", () =>
+          pool.read.getConfiguration([PRIME_ADDRESS]),
+        ),
+      ])
 
       // loopLeverage is SubLoop-wide.
       let loopLeverage: number | null = null
@@ -228,6 +252,11 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
         borrowRate,
         negativeCarry:
           negativeCarryBps === null ? null : Number(negativeCarryBps) / 1e4,
+        // liquidation threshold sits in bits 16-31 of the reserve config bitmap
+        primeLtBps:
+          primeConfig === null || primeConfig === undefined
+            ? null
+            : Number((primeConfig >> 16n) & 0xffffn) || null,
       }
     },
     refetchInterval: 30_000,

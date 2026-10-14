@@ -97,7 +97,9 @@ beforeEach(() => {
   vi.mocked(usePropellerVaults).mockReturnValue({
     vaults: PROPELLER_VAULTS.map((vault) => ({
       vault,
+      accrualPaused: false,
       apy: 6.5,
+      runRateApy: 6.5,
       price: 2500,
     })),
     isLoading: false,
@@ -213,6 +215,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "1.800000000000000001",
           assetValue: 2,
           usdValue: 999,
+          accrualPaused: false,
           apy: 6.5,
           pendingYield: 0.03,
           collateralBalance: 0,
@@ -269,6 +272,7 @@ describe("Portfolio strategy position projection", () => {
             sharesExact: "1",
             assetValue: 1,
             usdValue: 2500,
+            accrualPaused: false,
             apy: 6.5,
             pendingYield: null,
             collateralBalance,
@@ -281,6 +285,7 @@ describe("Portfolio strategy position projection", () => {
       vi.mocked(usePropellerVaults).mockReturnValue({
         vaults: PROPELLER_VAULTS.map((vault) => ({
           vault,
+          accrualPaused: false,
           apy: 6.5,
           price: 2500,
           stats,
@@ -339,6 +344,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "0",
           assetValue: 0,
           usdValue: 0,
+          accrualPaused: false,
           apy: 6.5,
           pendingYield: 0.004,
           collateralBalance: 0,
@@ -405,6 +411,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "1",
           assetValue: 1,
           usdValue: 0,
+          accrualPaused: false,
           apy: null,
           pendingYield: null,
           collateralBalance: 0,

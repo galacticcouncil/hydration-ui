@@ -82,6 +82,10 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       onSuccess: () => {
         invalidateVault(vaultAddress)
         queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+        // the immediate refetch can re-read a gateway node still serving the
+        // pre-transaction state, and settlement logs land a scan behind — tap
+        // again once the lag has passed so rows reflect the chain in seconds
+        setTimeout(() => invalidateVault(vaultAddress), 4_000)
         onWriteSuccess?.()
       },
       resolveOn: "success",
@@ -316,6 +320,8 @@ export type RedeemVariables = {
   shareAmount: string
   /** redeem the whole balance, including earnings funded after it was read */
   isMax: boolean
+  /** user-facing amount in the underlying asset, for the toast only */
+  displayAmount?: string
 }
 
 export function useRequestRedeem(
@@ -326,10 +332,10 @@ export function useRequestRedeem(
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitTx } = useVaultEvmCall(options)
   const { vaultAddress, assetId, shareSymbol } = vault
-  const decimals = getAssetWithFallback(assetId).decimals
+  const { symbol, decimals } = getAssetWithFallback(assetId)
 
   return useMutation({
-    mutationFn: ({ shareAmount, isMax }: RedeemVariables) => {
+    mutationFn: ({ shareAmount, isMax, displayAmount }: RedeemVariables) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
@@ -340,8 +346,8 @@ export function useRequestRedeem(
       })
 
       const amount = t("currency", {
-        value: shareAmount,
-        symbol: shareSymbol,
+        value: displayAmount ?? shareAmount,
+        symbol: displayAmount === undefined ? shareSymbol : symbol,
         maximumFractionDigits: 4,
       })
       return submitTx(vaultAddress, data, [...VAULT_ABI], {

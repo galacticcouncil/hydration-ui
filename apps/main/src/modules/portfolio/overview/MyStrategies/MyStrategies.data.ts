@@ -136,7 +136,8 @@ export const useMyJuicerPositions = () => {
         underlyingAmount: amount,
         underlyingSymbol: asset.symbol,
         transferAssetId: null,
-        rate: market?.apy ?? null,
+        // the same current run-rate the Juicer page shows for this position
+        rate: market?.runRateApy ?? null,
         rateKind: "apr",
         shareAmount: position?.sharesExact ?? "0",
         shareSymbol: vault.shareSymbol,

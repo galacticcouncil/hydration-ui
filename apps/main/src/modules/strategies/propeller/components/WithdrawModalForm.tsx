@@ -33,6 +33,14 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { percentageOf } from "@/utils/formatting"
 
+/** test chains run minute-scale cooldowns; '0.01667-hour' is not a duration */
+const formatCooldown = (seconds: number) => {
+  if (seconds < 90) return `${Math.max(1, Math.round(seconds))}-second`
+  if (seconds < 5400) return `${Math.round(seconds / 60)}-minute`
+  if (seconds < 172800) return `${Math.round(seconds / 3600)}-hour`
+  return `${Math.round(seconds / 86400)}-day`
+}
+
 type Props = {
   vault: PropellerVaultConfig
   onSuccess: () => void
@@ -57,6 +65,12 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
 
   const exchangeRate = stats?.exchangeRate ?? 1
   const shareBalance = balances?.sharesExact ?? "0"
+  // The user thinks in the underlying (1 jETH ~ 1 ETH); the input takes the
+  // asset and the submit converts back to shares. Rounded DOWN both ways so a
+  // typed amount never exceeds what the shares cover.
+  const maxAssets = Big(shareBalance)
+    .times(exchangeRate)
+    .toFixed(decimals, Big.roundDown)
   const negativeCarry = subLoop?.negativeCarry ?? 0
   const carry = negativeCarry
 
@@ -68,28 +82,37 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
         : null
 
   const form = useWithdrawForm({
-    maxBalance: shareBalance,
+    maxBalance: maxAssets,
     minRedeem: stats?.minRedeem ?? 0,
-    shareSymbol,
+    symbol,
     decimals,
   })
   const { control, handleSubmit, watch, formState } = form
 
   const amount = watch("amount")
-  const assetOut = Big(amount || "0")
-    .times(exchangeRate)
-    .toString()
+  // fine print: the shares actually escrowed for a typed asset amount
+  const sharesIn = Big(amount || "0")
+    .div(exchangeRate)
+    .toFixed(decimals, Big.roundDown)
 
   const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
   const showCarryNotice = carry > 0 && !blockedReason
 
-  // the balance grows as earnings are funded; max redeems all of it
+  // the balance grows as earnings are funded; asking for everything shown
+  // submits the EXACT share balance, never a round-trip through the rate
   const onSubmit = handleSubmit(({ amount }) => {
-    if (canSubmit)
-      redeem.mutate({
-        shareAmount: amount,
-        isMax: Big(amount).eq(shareBalance),
-      })
+    if (!canSubmit) return
+    const isMax = Big(amount).gte(maxAssets)
+    redeem.mutate({
+      shareAmount: isMax
+        ? shareBalance
+        : (Big(sharesIn).lt(shareBalance)
+            ? Big(sharesIn)
+            : Big(shareBalance)
+          ).toFixed(decimals, Big.roundDown),
+      isMax,
+      displayAmount: amount,
+    })
   })
 
   return (
@@ -104,21 +127,24 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                 <AssetInput
                   label={t("common:amount")}
                   asset={{
-                    symbol: shareSymbol,
+                    symbol,
                     icon: <AssetLogo id={assetId} />,
                   }}
                   value={field.value}
                   onChange={field.onChange}
-                  displayValue={t("common:currency", { value: assetOut })}
+                  displayValue={t("withdraw.sharesFinePrint", {
+                    value: t("common:number", { value: sharesIn }),
+                    shareSymbol,
+                  })}
                   balance={{
                     label: t("common:withdrawableBalance"),
-                    value: t("common:number", { value: shareBalance }),
-                    onMax: () => field.onChange(shareBalance),
+                    value: t("common:number", { value: maxAssets }),
+                    onMax: () => field.onChange(maxAssets),
                     onPercentage: (percent) =>
                       field.onChange(
-                        percentageOf(shareBalance, percent, decimals),
+                        percentageOf(maxAssets, percent, decimals),
                       ),
-                    isMaxDisabled: Big(shareBalance).lte(0),
+                    isMaxDisabled: Big(maxAssets).lte(0),
                   }}
                   amountError={fieldState.error?.message}
                 />
@@ -162,7 +188,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                       {t("withdraw.ack", {
                         symbol,
                         shareSymbol,
-                        hours: (stats?.withdrawalDelay ?? 0) / 3600,
+                        duration: formatCooldown(stats?.withdrawalDelay ?? 0),
                       })}
                     </CheckboxLabel>
                   )}

@@ -76,7 +76,14 @@ export const DepositForm = ({
     getTransferableBalance(vault.assetId),
     asset.decimals,
   )
-  const maxButtonBalance = Big(balance).gt(maximum) ? maximum : balance
+  // Remaining capacity shrinks every block as totalAssets accrues interest, so
+  // filling it EXACTLY guarantees an over-max by the next refetch and an
+  // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
+  // to a 6-decimal floor the drift cannot overtake between signing and inclusion.
+  const capacityBound = Big(balance).gt(maximum)
+  const maxButtonBalance = capacityBound
+    ? Big(maximum).round(6, Big.roundDown).toString()
+    : balance
 
   const form = useDepositForm({
     maxBalance: balance,

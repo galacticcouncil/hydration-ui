@@ -11,6 +11,11 @@ import {
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { computeVaultApr } from "@/modules/strategies/propeller/utils/accounting"
+import {
+  borrowDeployedFraction,
+  targetLoopLeverage,
+  toApy,
+} from "@/modules/strategies/propeller/utils/yieldRate"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -45,6 +50,8 @@ export type PropellerVaultStats = {
   deficitStop: boolean | null
   exchangeRate: number
   maxLtv: number | null
+  mainCollUsd: number | null
+  mainDebtUsd: number | null
   pendingDeployment: string | null
 }
 
@@ -52,7 +59,12 @@ export type PropellerVaultMarket = {
   vault: PropellerVaultConfig
   asset: TAsset
   stats: PropellerVaultStats | undefined
+  /** steady-state estimate at target leverage, compounded — the advertised rate */
   apy: number | null
+  /** what a holder accrues right now: apy x deployed fraction, 0 while underfunded */
+  runRateApy: number | null
+  /** allocation gate closed — nothing accrues regardless of the estimate */
+  accrualPaused: boolean
   price: number
   tvlUsd: number
 }
@@ -90,21 +102,43 @@ export const usePropellerVaults = () => {
       deficitStop: data.deficitStop,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
+      mainCollUsd: data.mainCollUsd,
+      mainDebtUsd: data.mainDebtUsd,
       pendingDeployment: data.pendingDeployment,
     }
 
-    return {
-      vault,
-      asset: getAssetWithFallback(vault.assetId),
-      stats,
-      apy: computeVaultApr({
+    // Advertised rate: target leverage (deterministic steady state), compounded.
+    // Live loop gearing dips after every large deposit and would make the
+    // estimate a function of whoever deposited last.
+    const apy = toApy(
+      computeVaultApr({
         maxLtv: stats?.maxLtv,
-        leverage: subLoop?.leverage,
+        leverage:
+          targetLoopLeverage(subLoop?.targetHf, subLoop?.primeLtBps) ??
+          subLoop?.leverage,
         borrowRate: subLoop?.borrowRate,
         primeSupplyApy,
         protocolFeeBps: data?.protocolFeeBps,
         mainDiscountBps: data?.mainDiscountBps,
       }),
+    )
+    // deficitStop is the juicer generation's deficit signal (keeper-maintained;
+    // also blocks deposits). The prior generation's isUnderfunded() view does
+    // not exist on these vaults.
+    const accrualPaused = stats?.deficitStop === true
+    const deployed = borrowDeployedFraction({
+      mainCollUsd: stats?.mainCollUsd,
+      mainDebtUsd: stats?.mainDebtUsd,
+      maxLtv: stats?.maxLtv,
+    })
+    return {
+      vault,
+      asset: getAssetWithFallback(vault.assetId),
+      stats,
+      apy,
+      runRateApy:
+        apy === null ? null : accrualPaused ? 0 : apy * (deployed ?? 1),
+      accrualPaused,
       price,
       tvlUsd: (stats?.tvl ?? 0) * price,
     }
