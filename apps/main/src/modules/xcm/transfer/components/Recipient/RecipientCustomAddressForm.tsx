@@ -9,13 +9,12 @@ import {
   ModalContentDivider,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { arraySearch, preventDefault } from "@galacticcouncil/utils"
 import {
-  arraySearch,
-  isAddressValidOnChain,
-  preventDefault,
-} from "@galacticcouncil/utils"
-import { useAddresses, useAddressStore } from "@galacticcouncil/web3-connect"
-import { AnyChain } from "@galacticcouncil/xc-core"
+  sortByLastUsed,
+  useAddresses,
+  useAddressStore,
+} from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -25,37 +24,42 @@ import { z } from "zod/v4"
 
 import { EmptyState } from "@/components/EmptyState"
 import { RecipientAddressBook } from "@/modules/xcm/transfer/components/Recipient"
-import { validateAddressOnChain } from "@/utils/validators"
+import { validateChainAddress } from "@/utils/validators"
 
-export const createSchema = (destChain: AnyChain) => {
+export const createSchema = (
+  chainName: string,
+  isValidAddress: (address: string) => boolean,
+) => {
   return z.object({
-    customAddress: validateAddressOnChain(destChain),
+    customAddress: validateChainAddress(chainName, isValidAddress),
   })
 }
 
 export type CustomAddressFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export type RecipientCustomAddressFormProps = {
-  destChain: AnyChain
+  chainName: string
+  isValidAddress: (address: string) => boolean
   onSubmit: (address: string) => void
   onChange: (address: string) => void
 }
 
 export const RecipientCustomAddressForm: React.FC<
   RecipientCustomAddressFormProps
-> = ({ destChain, onSubmit, onChange }) => {
+> = ({ chainName, isValidAddress, onSubmit, onChange }) => {
   const { t } = useTranslation("xcm")
 
   useUnmount(() => onChange(""))
   const form = useForm<CustomAddressFormValues>({
-    resolver: standardSchemaResolver(createSchema(destChain)),
+    resolver: standardSchemaResolver(createSchema(chainName, isValidAddress)),
     mode: "onChange",
     defaultValues: {
       customAddress: "",
     },
   })
 
-  const { add: addAddressToAddressBook } = useAddressStore()
+  const { add: addAddressToAddressBook, touch: touchAddress } =
+    useAddressStore()
   const addresses = useAddresses({
     related: true,
   })
@@ -64,10 +68,10 @@ export const RecipientCustomAddressForm: React.FC<
 
   const customAddressesOnChain = useMemo(
     () =>
-      addresses.filter(
-        (a) => a.isCustom && isAddressValidOnChain(a.address, destChain),
+      sortByLastUsed(
+        addresses.filter((a) => a.isCustom && isValidAddress(a.address)),
       ),
-    [addresses, destChain],
+    [addresses, isValidAddress],
   )
 
   const addressBookAddresses = arraySearch(
@@ -78,6 +82,11 @@ export const RecipientCustomAddressForm: React.FC<
 
   const isSearchMode = !!customAddress.trim() && addressBookAddresses.length > 0
 
+  const selectAddress = (address: string) => {
+    touchAddress(address)
+    onSubmit(address)
+  }
+
   const onSubmitHandler = (values: CustomAddressFormValues) => {
     const address = values.customAddress.trim()
     addAddressToAddressBook({
@@ -85,7 +94,7 @@ export const RecipientCustomAddressForm: React.FC<
       name: "",
       isCustom: true,
     })
-    onSubmit(address)
+    selectAddress(address)
   }
 
   return (
@@ -125,7 +134,7 @@ export const RecipientCustomAddressForm: React.FC<
       {addressBookAddresses.length > 0 ? (
         <RecipientAddressBook
           addresses={addressBookAddresses}
-          onSelectAddress={onSubmit}
+          onSelectAddress={selectAddress}
         />
       ) : (
         <EmptyState

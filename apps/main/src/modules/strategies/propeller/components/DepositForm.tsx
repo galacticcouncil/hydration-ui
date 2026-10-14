@@ -99,13 +99,9 @@ export const DepositForm = ({
     return t("deposit.cta.deposit")
   })()
 
-  // Loading also counts as unavailable; only explain it once the read settled.
   const blockedDescription = (() => {
     if (capacityError) return t("deposit.alert.unavailable")
     if (capacity?.ready === false) return t("deposit.alert.notReady")
-    if (unavailable) return undefined
-    if (isPaused) return t("deposit.alert.paused")
-    if (atCapacity) return t("deposit.alert.full")
   })()
 
   const onSelectAsset = (selected: TAssetData) => {
@@ -170,17 +166,20 @@ export const DepositForm = ({
 
         <Separator mx="-xl" />
 
-        <Stack gap="l" pb="xl">
+        <Stack gap="xl" pb="xl">
           <Summary separator={<Separator mx="-xl" />} withTrailingSeparator>
-            {capacity && !unavailable && !atCapacity && (
-              <SummaryRow
-                label={t("strategy.remainingCapacity")}
-                content={t("common:currency", {
-                  value: maximum,
-                  symbol: asset.symbol,
-                })}
-              />
-            )}
+            <SummaryRow
+              label={t("strategy.remainingCapacity")}
+              loading={!capacity && !capacityError}
+              content={
+                capacity
+                  ? t("common:currency", {
+                      value: maximum,
+                      symbol: asset.symbol,
+                    })
+                  : "-"
+              }
+            />
             <SummaryRow
               label={t("deposit.deployment")}
               content={
@@ -209,20 +208,20 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          <Stack gap="base">
-            <Alert variant="info" description={t("strategy.testnet")} />
-            {blockedDescription && (
-              <Alert
-                variant="warning"
-                title={ctaLabel}
-                description={blockedDescription}
-              />
-            )}
-            {deposit.isError && (
-              <Alert variant="error" description={t("deposit.failed")} />
-            )}
-          </Stack>
-          <Separator mx="-xl" />
+          {(blockedDescription || deposit.isError) && (
+            <Stack gap="base">
+              {blockedDescription && (
+                <Alert
+                  variant="warning"
+                  title={ctaLabel}
+                  description={blockedDescription}
+                />
+              )}
+              {deposit.isError && (
+                <Alert variant="error" description={t("deposit.failed")} />
+              )}
+            </Stack>
+          )}
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
               type="submit"

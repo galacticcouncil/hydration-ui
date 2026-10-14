@@ -159,7 +159,16 @@ export const validateAssetSellOnly = z.refine<TAsset | null>(
 )
 
 export const validateAddressOnChain = (chain: AnyChain) => {
-  return required.refine((value) => isAddressValidOnChain(value, chain), {
-    error: i18n.t("error.validAddressOnChain", { chain: chain.name }),
+  return validateChainAddress(chain.name, (value) =>
+    isAddressValidOnChain(value, chain),
+  )
+}
+
+export const validateChainAddress = (
+  chainName: string,
+  isValidAddress: (address: string) => boolean,
+) => {
+  return required.refine(isValidAddress, {
+    error: i18n.t("error.validAddressOnChain", { chain: chainName }),
   })
 }

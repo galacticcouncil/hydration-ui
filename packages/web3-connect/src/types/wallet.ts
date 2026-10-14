@@ -36,6 +36,9 @@ type WalletExtension = {
 
 interface WalletConnector {
   enable: () => unknown
+  // Brings back a stored session without opening the wallet; wallets
+  // without one restore through `enable`
+  restore?: () => Promise<void>
   disconnect: () => void
   getAccounts: () => Promise<WalletAccount[]>
   subscribeAccounts: (callback: SubscriptionFn) => UnsubscribeFn

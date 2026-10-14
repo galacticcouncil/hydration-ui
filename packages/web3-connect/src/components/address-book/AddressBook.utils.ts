@@ -3,6 +3,7 @@ import {
   parseNearAccountName,
   stringEquals,
 } from "@galacticcouncil/utils"
+import { sortBy } from "remeda"
 
 import { getWalletModeName } from "@/utils/wallet"
 
@@ -178,4 +179,25 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
     added.length > 0 || updated.some((a, i) => a !== existing[i])
 
   return hasChanges ? dedupeAddresses([...updated, ...added]) : existing
+}
+
+export function touchAddress(
+  addresses: Address[],
+  publicKey: string,
+  now: number,
+): Address[] {
+  const key = publicKey.toLowerCase()
+
+  return addresses.map((a) =>
+    a.publicKey.toLowerCase() === key ? { ...a, lastUsedAt: now } : a,
+  )
+}
+
+export function sortByLastUsed<T extends Pick<Address, "lastUsedAt">>(
+  addresses: readonly T[],
+): T[] {
+  return sortBy([...addresses].reverse(), [
+    (address) => address.lastUsedAt ?? 0,
+    "desc",
+  ])
 }
