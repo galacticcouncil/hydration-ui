@@ -1,5 +1,6 @@
 import {
   formatSourceChainAddress,
+  getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
   QUERY_KEY_BLOCK_PREFIX,
@@ -27,10 +28,13 @@ import {
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { isString } from "remeda"
+import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
+import { BASEJUMP_LANDING_CONTRACT } from "@/modules/xcm/history/utils/basejump"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
+import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
@@ -175,6 +179,41 @@ export const useNttCustody = (chain: AnyChain | null, asset: Asset | null) => {
       if (!chain || !asset) throw new Error("chain and asset are required")
       const custody = await clients.nttClient(chain, asset).getCustody()
       return custody ?? null
+    },
+  })
+}
+
+/**
+ * What the basejump landing on hydration can pay out right now, for the
+ * asset a transfer lands as.
+ */
+export const useBasejumpPoolLiquidity = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+) => {
+  const { evm } = useRpcProvider()
+
+  return useQuery({
+    queryKey: ["xcm", "basejump", "poolLiquidity", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    refetchInterval: minutesToMilliseconds(1),
+    enabled: !!chain && !!asset && chain.key === HYDRATION_CHAIN_KEY,
+    queryFn: async (): Promise<BasejumpPoolLiquidity> => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+
+      const decimals = chain.getAssetDecimals(asset)
+      if (decimals === undefined) throw new Error("Unknown asset decimals")
+
+      const available = await evm.readContract({
+        abi: erc20Abi,
+        address: getAddressFromAssetId(
+          chain.getAssetId(asset).toString(),
+        ) as Hex,
+        functionName: "balanceOf",
+        args: [BASEJUMP_LANDING_CONTRACT],
+      })
+
+      return { available, decimals }
     },
   })
 }

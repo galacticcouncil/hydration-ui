@@ -82,7 +82,10 @@ export const XCM_CHAINS = pipe(
       (c.ecosystem === ChainEcosystem.Near && isRoutedChain(c.key))
     )
   }),
-  sortBy((c) => [getChainPriority(c.key), c.name]),
+  sortBy(
+    (c) => getChainPriority(c.key),
+    (c) => c.name,
+  ),
 )
 
 export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
