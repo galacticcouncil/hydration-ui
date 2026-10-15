@@ -1,5 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  isAnyEvmChain,
+  wsToHttp,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isObjectType } from "remeda"
 import {
@@ -13,6 +17,7 @@ import {
   ExecutionRevertedError,
   getContract,
   Hex,
+  http,
   parseSignature,
   PublicClient,
   TransactionReceipt,
@@ -135,12 +140,14 @@ export class EthereumSigner {
       priorityRpcUrl: options.priorityRpcUrl,
     })
 
-    const prevChainId = this.publicClient?.chain?.id
-    const newChainId = evmClient.chain.id
-
-    if (prevChainId !== newChainId) {
-      this.publicClient = evmClient.getProvider() as PublicClient
-    }
+    // A selected fork may share the mainnet chain ID. Rebuild the read client
+    // for the selected endpoint so gas, nonce and receipt reads stay on it.
+    this.publicClient = options.priorityRpcUrl
+      ? (createPublicClient({
+          chain: evmClient.chain,
+          transport: http(wsToHttp(options.priorityRpcUrl)),
+        }) as PublicClient)
+      : (evmClient.getProvider() as PublicClient)
 
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 

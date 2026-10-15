@@ -1,6 +1,9 @@
 import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
+  Card,
+  CardHeader,
+  CardTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -12,10 +15,7 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
   Pagination,
-  Paper,
-  Separator,
   Stack,
-  Text,
   Toggle,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -199,27 +199,30 @@ export const WithdrawalsCard = () => {
   )
 
   return (
-    <Paper>
-      <Flex justify="space-between" align="center" p="l" wrap gap="m">
-        <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("bil.withdrawals.title")}
-        </Text>
-        <Flex align="center" gap="base">
-          <Tooltip text={t("bil.withdrawals.autoClaim.tooltip")} asChild>
-            <Label fs="p5" color={getToken("text.medium")} htmlFor="auto-claim">
-              {t("bil.withdrawals.autoClaim")}
-            </Label>
-          </Tooltip>
-          <Toggle
-            size="medium"
-            checked={autoClaimOn ?? false}
-            onCheckedChange={(next) => setAutoClaimMutation.mutate(next)}
-            name="auto-claim"
-            disabled={setAutoClaimMutation.isPending}
-          />
+    <Card>
+      <CardHeader>
+        <Flex justify="space-between" align="center" wrap gap="m">
+          <CardTitle>{t("bil.withdrawals.title")}</CardTitle>
+          <Flex align="center" gap="base">
+            <Tooltip text={t("bil.withdrawals.autoClaim.tooltip")} asChild>
+              <Label
+                fs="p5"
+                color={getToken("text.medium")}
+                htmlFor="auto-claim"
+              >
+                {t("bil.withdrawals.autoClaim")}
+              </Label>
+            </Tooltip>
+            <Toggle
+              size="medium"
+              checked={autoClaimOn ?? false}
+              onCheckedChange={(next) => setAutoClaimMutation.mutate(next)}
+              name="auto-claim"
+              disabled={setAutoClaimMutation.isPending}
+            />
+          </Flex>
         </Flex>
-      </Flex>
-      <Separator />
+      </CardHeader>
       <Stack gap="m" p="l">
         {pagedRows.map((row) => (
           <WithdrawalPosition key={row.id} row={row} />
@@ -230,6 +233,6 @@ export const WithdrawalsCard = () => {
           onPageChange={setPage}
         />
       </Stack>
-    </Paper>
+    </Card>
   )
 }

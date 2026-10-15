@@ -1,0 +1,166 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/packages/web3-connect
+
+ ❯ src/utils/ethereum.test.ts (2 tests | 1 failed) 17ms
+   × Selected wallet RPC > does not offer mainnet fallbacks for a selected testnet fork 15ms
+     → expected "spy" to be called with arguments: [ { …(2) } ]
+
+Received:
+
+  1st spy call:
+
+  [
+    {
+      "method": "wallet_addEthereumChain",
+      "params": [
+-       ObjectContaining {
++       {
++         "blockExplorerUrls": [],
++         "chainId": "0x3640e",
++         "chainName": "Hydration",
++         "iconUrls": [],
++         "nativeCurrency": {
++           "decimals": 12,
++           "name": "HDX",
++           "symbol": "HDX",
++         },
+          "rpcUrls": [
+            "https://lark.invalid",
++           "https://mainnet.invalid",
+          ],
+        },
+      ],
+    },
+  ]
+
+  2nd spy call:
+
+  [
+    {
+-     "method": "wallet_addEthereumChain",
++     "method": "wallet_switchEthereumChain",
+      "params": [
+-       ObjectContaining {
+-         "rpcUrls": [
+-           "https://lark.invalid",
+-         ],
++       {
++         "chainId": "0x3640e",
+        },
+      ],
+    },
+  ]
+
+
+Number of calls: 2
+
+   ✓ Selected wallet RPC > retains the normal chain defaults without an override 1ms
+ ❯ src/signers/EthereumSigner.test.ts (4 tests | 2 failed) 12ms
+   × Ethereum signer selected provider > reads gas, nonces and receipts from the selected fork instead of the default provider 8ms
+     → expected 'https://mainnet.invalid' to be 'https://lark.invalid' // Object.is equality
+   × Ethereum signer selected provider > refreshes the read provider when forks share the same EVM chain ID 1ms
+     → expected 'https://mainnet.invalid' to be 'https://second.invalid' // Object.is equality
+   ✓ Ethereum signer selected provider > returns to the chain default when there is no selected override 1ms
+   ✓ Ethereum signer selected provider > stops when the user rejects the network selection 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/signers/EthereumSigner.test.ts > Ethereum signer selected provider > reads gas, nonces and receipts from the selected fork instead of the default provider
+AssertionError: expected 'https://mainnet.invalid' to be 'https://lark.invalid' // Object.is equality
+
+Expected: "https://lark.invalid"
+Received: "https://mainnet.invalid"
+
+ ❯ src/signers/EthereumSigner.test.ts:47:47
+     45|     const { signer, options } = setup()
+     46|     await signer.switchChain({ ...options, priorityRpcUrl: "wss://lark…
+     47|     expect(signer.publicClient.transport.url).toBe("https://lark.inval…
+       |                                               ^
+     48|     expect(fixtures.getProvider).not.toHaveBeenCalled()
+     49|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/signers/EthereumSigner.test.ts > Ethereum signer selected provider > refreshes the read provider when forks share the same EVM chain ID
+AssertionError: expected 'https://mainnet.invalid' to be 'https://second.invalid' // Object.is equality
+
+Expected: "https://second.invalid"
+Received: "https://mainnet.invalid"
+
+ ❯ src/signers/EthereumSigner.test.ts:55:47
+     53|     await signer.switchChain({ ...options, priorityRpcUrl: "wss://firs…
+     54|     await signer.switchChain({ ...options, priorityRpcUrl: "wss://seco…
+     55|     expect(signer.publicClient.transport.url).toBe("https://second.inv…
+       |                                               ^
+     56|   })
+     57|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/utils/ethereum.test.ts > Selected wallet RPC > does not offer mainnet fallbacks for a selected testnet fork
+AssertionError: expected "spy" to be called with arguments: [ { …(2) } ]
+
+Received:
+
+  1st spy call:
+
+  [
+    {
+      "method": "wallet_addEthereumChain",
+      "params": [
+-       ObjectContaining {
++       {
++         "blockExplorerUrls": [],
++         "chainId": "0x3640e",
++         "chainName": "Hydration",
++         "iconUrls": [],
++         "nativeCurrency": {
++           "decimals": 12,
++           "name": "HDX",
++           "symbol": "HDX",
++         },
+          "rpcUrls": [
+            "https://lark.invalid",
++           "https://mainnet.invalid",
+          ],
+        },
+      ],
+    },
+  ]
+
+  2nd spy call:
+
+  [
+    {
+-     "method": "wallet_addEthereumChain",
++     "method": "wallet_switchEthereumChain",
+      "params": [
+-       ObjectContaining {
+-         "rpcUrls": [
+-           "https://lark.invalid",
+-         ],
++       {
++         "chainId": "0x3640e",
+        },
+      ],
+    },
+  ]
+
+
+Number of calls: 2
+
+ ❯ src/utils/ethereum.test.ts:26:21
+     24|       chain: "hydration", priorityRpcUrl: "wss://lark.invalid",
+     25|     })
+     26|     expect(request).toHaveBeenCalledWith({
+       |                     ^
+     27|       method: "wallet_addEthereumChain",
+     28|       params: [expect.objectContaining({ rpcUrls: ["https://lark.inval…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 3 passed (6)
+   Start at  12:25:13
+   Duration  642ms (transform 167ms, setup 0ms, collect 476ms, tests 29ms, environment 0ms, prepare 157ms)

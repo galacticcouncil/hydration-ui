@@ -1,0 +1,23 @@
+PASS valid amount submits unchanged
+PASS amounts beyond token precision are rejected
+PASS minimum, maximum and MAX enforce shared trade bounds
+MAX
+Managed borrowing
+The vault manages borrowing and rebalancing for you.
+No impermanent loss
+Single-asset exposure, without pool rebalancing.
+Deposits use a fresh swap quote and share a trade limit with strategy reinvestment. If approval is needed, confirm it first, then review the deposit. Capacity and quotes can change before confirmation.
+Available now: 0.01–1.000000000000000001 ETH
+Deposit
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 5000ms exceeded.
+    at isDisabled (/tmp/propeller-ui-controls-20261003/apps/main/tests/propeller-browser/check.mjs:11:40)
+    at /tmp/propeller-ui-controls-20261003/apps/main/tests/propeller-browser/check.mjs:22:8 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v25.7.0

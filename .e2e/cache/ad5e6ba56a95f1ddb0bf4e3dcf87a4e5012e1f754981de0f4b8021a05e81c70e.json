@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-10-14T13:09:46.138Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"Got it\" in \"Intents are here!\"",
+        "target": {
+          "role": "button",
+          "name": "Got it",
+          "within": "Intents are here!"
+        }
+      },
+      {
+        "name": "tap",
+        "summary": "tap button \"Close\"",
+        "target": {
+          "role": "button",
+          "name": "Close"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "tests/xcm-chain-priority.e2e.ts::cross-chain%20selector%20lists%20chains%20in%20CHAINS_PRIORITY%20order",
+      "targetId": "web",
+      "instructionDigest": "750613f08e494c610b134dc34fd2a9f0ed6e628b8737f84b8fe29b415488875a",
+      "paramsDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "summary": "Dismissed the “Intents are here!” prompt with Got it and the Intents tutorial hint with Close. GIGA News remains untouched because it only opens content; no other dismissible popup is shown.",
+    "startPath": "/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+    "endPath": "/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+    "endAnchors": [
+      {
+        "text": "Trade"
+      },
+      {
+        "text": "Borrow"
+      },
+      {
+        "text": "Strategies"
+      },
+      {
+        "text": "Liquidity"
+      },
+      {
+        "text": "Portfolio"
+      },
+      {
+        "text": "Cross-Chain"
+      },
+      {
+        "text": "Stats"
+      },
+      {
+        "text": "Staking"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "text": "15 782 703"
+      },
+      {
+        "role": "heading",
+        "name": "Intents are here!"
+      },
+      {
+        "text": "A new way to place trades that includes limit orders."
+      },
+      {
+        "text": "You can disable intents anytime in Trade settings."
+      },
+      {
+        "role": "button",
+        "name": "Got it"
+      },
+      {
+        "role": "button",
+        "name": "15 782 703"
+      }
+    ],
+    "endWaitMs": 12575
+  }
+}

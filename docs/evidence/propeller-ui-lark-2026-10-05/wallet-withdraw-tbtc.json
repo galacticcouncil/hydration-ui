@@ -1,0 +1,251 @@
+{
+  "fixture": "Public sr25519 derivation injected as PJS; actual Lark signatures, no real extension approval",
+  "action": "withdraw",
+  "symbol": "tBTC",
+  "amount": "0.00001",
+  "vault": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+  "account": "7JhCD49j1XBtdh959n5vHHnXL1XzQzSEYnXwbH98bJR96gK4",
+  "evm": "0x3088c164994890ea0e444bf53623ccac3b307217",
+  "before": {
+    "blockNumber": "415791",
+    "shares": "99999999906026",
+    "totalAssets": "200000000148594",
+    "totalSupply": "199999999906026",
+    "pendingDeployment": "200000000000000",
+    "queueTail": "0",
+    "debt": "0",
+    "userCollateral": "900000000000000",
+    "nativeCollateral": "900000000000000",
+    "allowance": "0"
+  },
+  "steps": [
+    {
+      "step": "connected",
+      "at": "2026-10-05T11:17:43.167Z"
+    },
+    {
+      "step": "withdrawal-requested",
+      "at": "2026-10-05T11:17:45.263Z"
+    },
+    {
+      "step": "review-confirmed",
+      "at": "2026-10-05T11:17:46.615Z"
+    }
+  ],
+  "after": {
+    "blockNumber": "415793",
+    "shares": "89999999906026",
+    "totalAssets": "200000000151807",
+    "totalSupply": "199999999906026",
+    "pendingDeployment": "200000000000000",
+    "queueTail": "1",
+    "debt": "0",
+    "userCollateral": "900000000000000",
+    "nativeCollateral": "900000000000000",
+    "allowance": "0"
+  },
+  "transactions": [
+    {
+      "block": 415793,
+      "blockHash": "0x031756a505dfdd3728e5e7a345dcb5510c593a1588297795706f88d43f3ee3c5",
+      "hash": "0x2b40f6b44c70daf796b8c66c12b6bea7385894735778698f66785afbf123fdf2",
+      "index": 3,
+      "method": {
+        "args": {
+          "source": "0x3088c164994890ea0e444bf53623ccac3b307217",
+          "target": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+          "input": "0x107703ab000000000000000000000000000000000000000000000000000009184e72a0000000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+          "value": "0",
+          "gas_limit": "2,000,000",
+          "max_fee_per_gas": "1,575,000",
+          "max_priority_fee_per_gas": "1,575,000",
+          "nonce": null,
+          "access_list": [],
+          "authorization_list": []
+        },
+        "method": "call",
+        "section": "evm"
+      },
+      "events": [
+        {
+          "name": "balances.Withdraw",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Rescinded",
+          "data": {
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "currencies.Withdrawn",
+          "data": {
+            "currencyId": "0",
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Burned",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "857,431,198,863"
+          }
+        },
+        {
+          "name": "balances.Minted",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "699,042,220,653"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "158,388,978,210"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "158,388,978,210"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
+            "amount": "158,388,978,210"
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+              "topics": [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "0x0000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+                "0x0000000000000000000000005b153c8e24ca62436ef836a1f179dd8ade2d5acd"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000009184e72a000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+              "topics": [
+                "0x1d3135f7e52d949fd35b86ab673aeb906bdee851ec045f9539dc9a33fbfbe482",
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "0x0000000000000000000000003088c164994890ea0e444bf53623ccac3b307217"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000009184e72a000"
+            }
+          }
+        },
+        {
+          "name": "evm.Log",
+          "data": {
+            "log": {
+              "address": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+              "topics": [
+                "0x6dc83b2b4249c95db32c0425ee1720f24b33553482a672c27cfae3f9cd26b5df",
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "data": "0x000000000000000000000000000000000000000000000000000000006ac38792"
+            }
+          }
+        },
+        {
+          "name": "evm.Executed",
+          "data": {
+            "address": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd"
+          }
+        },
+        {
+          "name": "balances.Deposit",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "balances.Issued",
+          "data": {
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "currencies.Deposited",
+          "data": {
+            "currencyId": "0",
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "amount": "823,512,323,378"
+          }
+        },
+        {
+          "name": "transactionPayment.TransactionFeePaid",
+          "data": {
+            "who": "126dvZ3KoC66nzer6EfRVX2kcSXTxSmSfXdfqDdARRxRNRUd",
+            "actualFee": "0",
+            "tip": "0"
+          }
+        },
+        {
+          "name": "system.ExtrinsicSuccess",
+          "data": {
+            "dispatchInfo": {
+              "weight": {
+                "refTime": "10,907,216,000",
+                "proofSize": "103,684"
+              },
+              "class": "Normal",
+              "paysFee": "No"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "vaultEvents": [
+    {
+      "block": 415793,
+      "hash": "0x2b40f6b44c70daf796b8c66c12b6bea7385894735778698f66785afbf123fdf2",
+      "eventName": "RedeemRequested",
+      "args": {
+        "requestId": "0",
+        "owner": "0x3088c164994890EA0E444Bf53623cCAC3B307217",
+        "shares": "10000000000000"
+      }
+    }
+  ],
+  "finalizedBlock": 415793,
+  "requestId": "0",
+  "body": "New Farms for DOT, vDOT, 2-Pool, CFG, ASTR and more\n\n|\n\nMore Info\nTrade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\nPUBLIC TEST — Propeller Lark\n\n126dvZ…xRNRUd\n\nSTRATEGIES\n\n/\n\nJUICER\n\nJuicer\n\nLeverage\nNo Liquidation\n\nLark-4 test deployment. Deposits and withdrawals use test tokens.\n\nMy positions\n\nETH\n\nAmount\n\n0.009 pETH\n\n0.009 ETH\nValue\n\n$22.45\n\nEst. APR before swaps\n\n—\n\nWithdraw\n\ntBTC\n\nAmount\n\n0.00009 ptBTC\n\n0.00009 tBTC\nValue\n\n$7.13\n\nEst. APR before swaps\n\n—\n\nWithdraw\n\nConverted earnings remain invested as funded collateral shares. Claiming adds those shares to your position; further strategy deployment happens gradually. Earnings awaiting conversion are an estimate, not a funded collateral balance.\n\nStrategy overview\nTotal TVL\n$65.74\nLeverage\n—\nRisk profile\nLow\n\nIndicative annual carry assuming all collateral is deployed at current rates and source leverage, after source and Main borrowing costs and harvest fees. Returns differ while collateral awaits deployment. Swap fees, slippage and conversion delays are excluded. This is not realized crypto APY; unconverted yield is not funded crypto.\n\nCollateral awaiting deployment is pooled within each vault and includes deposits and harvested earnings. Keepers borrow and trade gradually when prices meet the vault’s limits. This is not a personal queue or a completion estimate. Withdrawals follow the usual withdrawal queue.\n\nAsset\tTVL\tEst. APR before swaps\tCollateral awaiting deployment\tRemaining capacity\t\n\n\nETH\n\nEthereum\n\n\t\n\n0.02 ETH\n\n$49.9\n\n\t\n\n—\n\n\t\n\n0.02 ETH\n\n\t\n\n9.98 ETH\n\n99.8%\n\n\t\nDeposit\n\n\n\ntBTC\n\nThreshold BTC\n\n\t\n\n0.0002 tBTC\n\n$15.84\n\n\t\n\n—\n\n\t\n\n0.0002 tBTC\n\n\t\n\n0.4998 tBTC\n\n99.96%\n\n\t\nDeposit\nAbout Juicer\n\nA confirmed deposit supplies your collateral asset to the money market and mints funded vault shares. It does not borrow or swap during your deposit transaction. Keepers then borrow HOLLAR and build the shared leveraged PRIME position gradually through trades that respect the vault’s price limits.\n\nCollateral awaiting deployment is pooled across the vault, including deposits and harvested earnings. It is not a separate personal queue or a promise of when your position will be fully deployed. Trading limits and market conditions determine the pace; the vault manages borrowing and rebalancing for you.\n\nHarvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder becomes funded collateral rewards. Keepers can then deploy that new collateral gradually; some earned yield stays invested in PRIME awaiting conversion. Returns vary with yield, borrowing rates and trading costs.\n\nKey features\nThe vault manages the leveraged position\nAvailable rewards compound into your deposited asset\nYou can request a full or partial withdrawal when withdrawals are enabled\nWithdrawals and risk\n\nExits go through an async withdrawal queue. Your shares remain invested during the configured cooldown. When unwinding starts after that delay, the vault fixes your collateral claim. The cooldown is the earliest unwind start, not a payout deadline.\n\nYour collateral becomes claimable as the withdrawal settles, possibly in parts. Later source recoveries may also become claimable in HOLLAR, even after you have claimed the collateral.\n\nPropeller aims to preserve principal in the deposited asset. The leveraged PRIME position can lose value or be liquidated, and protection depends on functioning oracles, keepers and governance. A shortfall preserves your unpaid collateral claim but may require recovery funding before payment. This is not a guarantee of immediate withdrawal or full recovery.\n\nAsset\nBalance: 0.09\nMAX\nETH\n$0.00\n\nManaged borrowing\n\nThe vault manages borrowing and rebalancing for you.\n\nNo impermanent loss\n\nSingle-asset exposure, without pool rebalancing.\n\nOnce confirmed, your deposit supplies collateral and mints funded vault shares. Keepers then deploy the position gradually; your deposit transaction makes no swap. If approval is needed, confirm it first, then review the deposit.\n\nAvailable vault capacity: 9.979999999560255515 ETH\n\nDeposit\nWithdrawals\n\n0.001 ETH\n\n$2.49\n\nPending\n\n0.00001 tBTC\n\n$0.79\n\nCooldown\n\nEligible to start: \n\nIn 25s\n\nEarn 14.73% APR with fixed-term HOLLAR bonds.\n\nGet HOLLARb\nCLOSE\n\n415 797",
+  "passed": true,
+  "errors": [],
+  "signatures": [
+    {
+      "id": 1,
+      "nonce": "0x0000000a",
+      "calls": [
+        {
+          "name": "evm.call",
+          "source": "0x3088c164994890ea0e444bf53623ccac3b307217",
+          "target": "0x5b153c8e24ca62436ef836a1f179dd8ade2d5acd",
+          "input": "0x107703ab000000000000000000000000000000000000000000000000000009184e72a0000000000000000000000000003088c164994890ea0e444bf53623ccac3b307217",
+          "function": "requestRedeem"
+        }
+      ],
+      "rejected": false
+    }
+  ]
+}

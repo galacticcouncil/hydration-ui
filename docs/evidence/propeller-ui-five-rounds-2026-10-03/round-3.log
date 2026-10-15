@@ -1,0 +1,38 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-controls-20261003/apps/main
+
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > charges the harvest fee before paying Main interest 2ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > discounts only the Main borrowing leg 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > retains the previous two-leg result at zero fee and zero discount 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > does not invent fee or discount data when the read is missing 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > rejects invalid inputs and does not display positive return at a full fee 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller return estimate > reports negative carry rather than hiding it and rejects impossible APY 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > does not round an unpaid wei to a fully settled withdrawal 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > keeps a request in cooldown before it can start 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > does not promise settlement when the cooldown expires 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > keeps an unfunded started claim pending instead of writing it off 0ms
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts > Propeller withdrawal lifecycle > distinguishes settled collateral from a completed claim 0ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts > Exact deposit and withdrawal amounts > round-trips MAX including shares beyond Number precision 2ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts > Exact deposit and withdrawal amounts > never rounds excess decimals or accepts a zero/negative amount 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > maps min/max HOLLAR trades to collateral-native amounts 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > never borrows beyond shared credit across collateral scales and prices 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > treats exhausted, below-minimum, zero-cap and overfilled vaults as unavailable 0ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > uses the remaining vault capacity when it is below the trade ceiling 0ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Shared deposit admission > fails closed on missing price or invalid LTV/size data 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > discovers bindings and policy at one block 2ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > rejects disabled actions, absent bindings and wrong collateral 1ms
+ ✓ src/modules/strategies/propeller/utils/admission.test.ts > Admission reads > reports an expired policy and propagates RPC failure 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > bounds input and output without widening the oracle tolerance 2ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects empty, duplicate, zero-output and invalid-slippage quotes 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > quotes as the payer at one identified block and encodes controller execution 10ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > waits for confirmed approval before running a transfer-based preview 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > never falls back to a direct deposit when the controller is absent 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects an expired quote before proposing a transaction 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > propagates preview failures without weakening price or size guards 1ms
+ ✓ src/modules/strategies/propeller/utils/execution.test.ts > Controlled Propeller deposits > rejects routes above the native transaction gas ceiling 1ms
+
+ Test Files  4 passed (4)
+      Tests  29 passed (29)
+   Start at  02:34:07
+   Duration  550ms (transform 211ms, setup 0ms, collect 797ms, tests 36ms, environment 1ms, prepare 367ms)
+

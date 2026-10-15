@@ -1,0 +1,111 @@
+src/App.tsx(25,27): error TS2307: Cannot find module './routeTree.gen' or its corresponding type declarations.
+src/config/navigation.ts(22,32): error TS2307: Cannot find module '@/routeTree.gen' or its corresponding type declarations.
+src/hooks/useDataTableUrlPagination.ts(49,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/hooks/useDataTableUrlSearch.ts(50,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/hooks/useDataTableUrlSorting.ts(60,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/borrow/history/BorrowHistoryFilter.utils.ts(32,16): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/liquidity/components/PositionsTable/PositionsTable.tsx(272,16): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/modules/portfolio/overview/Rewards/WalletRewardsSectionEmpty.tsx(7,32): error TS2307: Cannot find module '@/routeTree.gen' or its corresponding type declarations.
+src/modules/trade/orders/TradeOrders/TradeOrdersHeader.tsx(145,26): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/orders/TradeOrdersHistory.tsx(50,16): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/DCA/DcaFields.tsx(68,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/DCA/DcaFields.tsx(89,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/DCA/DcaFields.tsx(113,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/DCA/useSwitchAssets.ts(26,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/Limit/LimitFields.tsx(61,24): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/Limit/LimitFields.tsx(91,24): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/Limit/useSwitchAssets.ts(39,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/XcSwap/XcSwapFields.tsx(99,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/XcSwap/XcSwapFields.tsx(141,18): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets.ts(52,16): error TS7006: Parameter 'search' implicitly has an 'any' type.
+src/routes/$referralCode.tsx(9,38): error TS2345: Argument of type '"/$referralCode"' is not assignable to parameter of type 'undefined'.
+src/routes/$referralCode/index.tsx(9,38): error TS2345: Argument of type '"/$referralCode/"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/dashboard.tsx(19,38): error TS2345: Argument of type '"/borrow/dashboard"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/dashboard.tsx(28,38): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/borrow/history.tsx(21,38): error TS2345: Argument of type '"/borrow/history"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/history.tsx(29,45): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/borrow/index.tsx(5,38): error TS2345: Argument of type '"/borrow/"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/markets.$address.tsx(13,38): error TS2345: Argument of type '"/borrow/markets/$address"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/markets.index.tsx(13,38): error TS2345: Argument of type '"/borrow/markets/"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/markets.index.tsx(21,45): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/borrow/route.tsx(21,38): error TS2345: Argument of type '"/borrow"' is not assignable to parameter of type 'undefined'.
+src/routes/borrow/route.tsx(29,38): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/cross-chain/history.tsx(14,38): error TS2345: Argument of type '"/cross-chain/history"' is not assignable to parameter of type 'undefined'.
+src/routes/cross-chain/history.tsx(22,49): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/cross-chain/index.tsx(9,38): error TS2345: Argument of type '"/cross-chain/"' is not assignable to parameter of type 'undefined'.
+src/routes/cross-chain/route.tsx(6,38): error TS2345: Argument of type '"/cross-chain"' is not assignable to parameter of type 'undefined'.
+src/routes/cross-chain/route.tsx(13,42): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/deposit/index.tsx(7,38): error TS2345: Argument of type '"/deposit/"' is not assignable to parameter of type 'undefined'.
+src/routes/deposit/index.tsx(19,39): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/deposit/route.tsx(5,38): error TS2345: Argument of type '"/deposit"' is not assignable to parameter of type 'undefined'.
+src/routes/index.tsx(5,38): error TS2345: Argument of type '"/"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/$id.add.tsx(26,38): error TS2345: Argument of type '"/liquidity/$id/add"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/$id.join.tsx(12,38): error TS2345: Argument of type '"/liquidity/$id/join"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/$id.remove.tsx(19,38): error TS2345: Argument of type '"/liquidity/$id/remove"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/$id.tsx(27,38): error TS2345: Argument of type '"/liquidity/$id"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/create.tsx(7,38): error TS2345: Argument of type '"/liquidity/create"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/index.tsx(18,38): error TS2345: Argument of type '"/liquidity/"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/route.tsx(32,38): error TS2345: Argument of type '"/liquidity"' is not assignable to parameter of type 'undefined'.
+src/routes/liquidity/route.tsx(40,41): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/liquidity/vault.$address.tsx(12,38): error TS2345: Argument of type '"/liquidity/vault/$address"' is not assignable to parameter of type 'undefined'.
+src/routes/portfolio/index.tsx(30,38): error TS2345: Argument of type '"/portfolio/"' is not assignable to parameter of type 'undefined'.
+src/routes/portfolio/index.tsx(39,41): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/portfolio/route.tsx(31,38): error TS2345: Argument of type '"/portfolio"' is not assignable to parameter of type 'undefined'.
+src/routes/portfolio/route.tsx(39,41): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/portfolio/tracked.tsx(13,38): error TS2345: Argument of type '"/portfolio/tracked"' is not assignable to parameter of type 'undefined'.
+src/routes/portfolio/tracked.tsx(21,48): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/staking-old/index.tsx(6,38): error TS2345: Argument of type '"/staking-old/"' is not assignable to parameter of type 'undefined'.
+src/routes/staking-old/index.tsx(13,42): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/staking-old/route.tsx(6,38): error TS2345: Argument of type '"/staking-old"' is not assignable to parameter of type 'undefined'.
+src/routes/staking-old/route.tsx(13,39): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/staking/index.tsx(6,38): error TS2345: Argument of type '"/staking/"' is not assignable to parameter of type 'undefined'.
+src/routes/staking/index.tsx(13,39): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/staking/route.tsx(6,38): error TS2345: Argument of type '"/staking"' is not assignable to parameter of type 'undefined'.
+src/routes/staking/route.tsx(13,39): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/stats/amm.tsx(7,38): error TS2345: Argument of type '"/stats/amm"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/asset/$asset.tsx(3,38): error TS2345: Argument of type '"/stats/asset/$asset"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/asset/route.tsx(6,38): error TS2345: Argument of type '"/stats/asset"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/fees.tsx(18,38): error TS2345: Argument of type '"/stats/fees"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/hollar.tsx(7,38): error TS2345: Argument of type '"/stats/hollar"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/index.tsx(3,38): error TS2345: Argument of type '"/stats/"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/money-market.tsx(7,38): error TS2345: Argument of type '"/stats/money-market"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/overview.tsx(7,38): error TS2345: Argument of type '"/stats/overview"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/route.tsx(26,38): error TS2345: Argument of type '"/stats"' is not assignable to parameter of type 'undefined'.
+src/routes/stats/route.tsx(33,37): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/stats/treasury.tsx(7,38): error TS2345: Argument of type '"/stats/treasury"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/bil-vault/index.tsx(7,38): error TS2345: Argument of type '"/strategies/bil-vault/"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/bil-vault/index.tsx(16,45): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/strategies/hollar-bonds/$bondId.tsx(13,38): error TS2345: Argument of type '"/strategies/hollar-bonds/$bondId"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/hollar-bonds/$bondId.tsx(28,53): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/strategies/hollar-bonds/index.tsx(16,38): error TS2345: Argument of type '"/strategies/hollar-bonds/"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/hollar-bonds/index.tsx(24,53): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/strategies/hollar-bonds/route.tsx(3,38): error TS2345: Argument of type '"/strategies/hollar-bonds"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/index.tsx(5,38): error TS2345: Argument of type '"/strategies/"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/propeller/index.tsx(12,38): error TS2345: Argument of type '"/strategies/propeller/"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/propeller/index.tsx(22,51): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/strategies/route.tsx(6,38): error TS2345: Argument of type '"/strategies"' is not assignable to parameter of type 'undefined'.
+src/routes/strategies/route.tsx(14,42): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/submit-transaction/index.tsx(5,38): error TS2345: Argument of type '"/submit-transaction/"' is not assignable to parameter of type 'undefined'.
+src/routes/submit-transaction/route.tsx(6,38): error TS2345: Argument of type '"/submit-transaction"' is not assignable to parameter of type 'undefined'.
+src/routes/submit-transaction/route.tsx(13,49): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/trade/_history/route.tsx(108,38): error TS2345: Argument of type '"/trade/_history"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/_history/swap.$tab.tsx(12,38): error TS2345: Argument of type '"/trade/_history/swap/$tab"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/_history/swap.$tab.tsx(14,40): error TS2339: Property 'tab' does not exist on type 'never'.
+src/routes/trade/_history/swap.$tab.tsx(21,37): error TS2339: Property 'assetIn' does not exist on type 'never'.
+src/routes/trade/_history/swap.$tab.tsx(22,38): error TS2339: Property 'assetOut' does not exist on type 'never'.
+src/routes/trade/_history/swap.$tab.tsx(23,42): error TS2339: Property 'destPlatform' does not exist on type 'never'.
+src/routes/trade/_history/swap.index.tsx(6,38): error TS2345: Argument of type '"/trade/_history/swap/"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/_history/swap.tsx(7,38): error TS2345: Argument of type '"/trade/_history/swap"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/_history/swap.tsx(15,36): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/trade/_history/swap.xc.tsx(6,38): error TS2345: Argument of type '"/trade/_history/swap/xc"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/_history/yield-dca.tsx(4,38): error TS2345: Argument of type '"/trade/_history/yield-dca"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/index.tsx(6,38): error TS2345: Argument of type '"/trade/"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/otc.tsx(21,38): error TS2345: Argument of type '"/trade/otc"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/otc.tsx(29,35): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/trade/route.tsx(6,38): error TS2345: Argument of type '"/trade"' is not assignable to parameter of type 'undefined'.
+src/routes/trade/route.tsx(13,37): error TS2339: Property 't' does not exist on type 'never'.
+src/routes/wallet/assets.tsx(31,38): error TS2345: Argument of type '"/wallet/assets"' is not assignable to parameter of type 'undefined'.
+src/routes/wallet/index.tsx(5,38): error TS2345: Argument of type '"/wallet/"' is not assignable to parameter of type 'undefined'.
+src/routes/wallet/route.tsx(6,38): error TS2345: Argument of type '"/wallet"' is not assignable to parameter of type 'undefined'.
+src/routes/withdraw/index.tsx(5,38): error TS2345: Argument of type '"/withdraw/"' is not assignable to parameter of type 'undefined'.
+src/routes/withdraw/route.tsx(5,38): error TS2345: Argument of type '"/withdraw"' is not assignable to parameter of type 'undefined'.

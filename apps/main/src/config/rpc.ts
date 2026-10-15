@@ -19,10 +19,11 @@ export const createProvider = (
 })
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
+  createProvider("node0.lark (JUICER)", "wss://node0.lark.hydration.cloud"),
+  // createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
-  createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
+  // createProvider("Rotko (SEA)", "wss://hydration.rotko.net"),
   // createProvider("zipp", "wss://rpc.zipp.hydration.cloud"),
   // createProvider("roach", "wss://rpc.roach.hydration.cloud"),
   // createProvider("lait", "wss://rpc.lait.hydration.cloud"),

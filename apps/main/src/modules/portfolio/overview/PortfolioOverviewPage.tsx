@@ -37,7 +37,6 @@ export const PortfolioOverviewPage = () => {
   )
 
   const assetsSorting = useDataTableUrlSorting("/portfolio/", "assetsSort")
-
   const liquiditySorting = useDataTableUrlSorting(
     "/portfolio/",
     "liquiditySort",
@@ -65,20 +64,20 @@ export const PortfolioOverviewPage = () => {
         searchPhrase={searchPhrase}
         onSearchPhraseChange={changeSearch}
         sortingProps={assetsSorting}
-        liquidityContent={
-          <MyLiquidity
-            key={account.address + "_liquidity"}
-            searchPhrase={searchPhrase}
-            paginationProps={liquidityPagination}
-            sortingProps={liquiditySorting}
-          />
-        }
         bondsContent={
           <MyBonds
             key={account.address + "_bonds"}
             searchPhrase={searchPhrase}
             paginationProps={bondsPagination}
             sortingProps={bondsSorting}
+          />
+        }
+        liquidityContent={
+          <MyLiquidity
+            key={account.address + "_liquidity"}
+            searchPhrase={searchPhrase}
+            paginationProps={liquidityPagination}
+            sortingProps={liquiditySorting}
           />
         }
       />

@@ -28,6 +28,7 @@ import { PercentageButton } from "./PercentageButton"
 export type AssetInputAsset = {
   symbol: string
   icon: ReactNode
+  badge?: ReactNode
 }
 
 export type AssetInputBalance = {
@@ -257,6 +258,7 @@ export const AssetButton = ({
         <>
           {asset.icon}
           {asset.symbol}
+          {asset.badge}
         </>
       ) : (
         selectAssetLabel
