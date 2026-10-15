@@ -18,7 +18,7 @@ export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
   const { symbol } = getAssetWithFallback(poolId)
 
   return (
-    <Flex direction="column">
+    <Flex direction="column" data-testid="pool-liquidity-limit">
       <Text
         font="primary"
         fw={500}

@@ -1,0 +1,43 @@
+name: E2E
+on:
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: yarn
+          node-version-file: ".nvmrc"
+      - run: yarn install --frozen-lockfile
+      - run: npx e2e-web install chromium --with-deps
+      - run: yarn test:e2e --reporter list,markdown
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            .e2e/artifacts/
+            .e2e/report.json
+            .e2e/failures/
+            .e2e/logs/
+          retention-days: 14
+      - if: always() && github.event_name == 'pull_request' && hashFiles('.e2e/summary.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          { head -c 60000 .e2e/summary.md; echo; echo; echo "[Run and artifacts]($RUN_URL)"; } > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md --edit-last --create-if-none

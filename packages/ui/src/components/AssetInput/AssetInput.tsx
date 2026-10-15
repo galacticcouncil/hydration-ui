@@ -169,7 +169,10 @@ export const AssetInput = ({
         </SAmount>
       )}
 
-      <SSubline isError={!!error}>
+      <SSubline
+        isError={!!error}
+        data-testid={error ? "asset-input-error" : undefined}
+      >
         {error ??
           (!isAmountHidden &&
             (isLoading || isDisplayValueLoading ? (

@@ -47,18 +47,7 @@ module.exports = {
         ],
       },
     ],
-    "prettier/prettier": [
-      "error",
-      {
-        semi: false,
-        trailingComma: "all",
-        arrowParens: "always",
-        printWidth: 80,
-        tabWidth: 2,
-        useTabs: false,
-        jsxSingleQuote: false,
-        endOfLine: "auto",
-      },
-    ],
+    // Options inline, not only in .prettierrc.json: prettier-eslint (IDE format on save) reads them from here.
+    "prettier/prettier": ["error", require("../../.prettierrc.json")],
   },
 }

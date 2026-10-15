@@ -18,7 +18,14 @@ export const TrackedWalletEntry: FC<Props> = ({ address, onRemove }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   return (
-    <Flex align="center" justify="space-between" gap="base" px="m" py="m">
+    <Flex
+      data-testid="tracked-wallet-entry"
+      align="center"
+      justify="space-between"
+      gap="base"
+      px="m"
+      py="m"
+    >
       <TrackedWalletIdentity
         address={address}
         glyphSize={24}

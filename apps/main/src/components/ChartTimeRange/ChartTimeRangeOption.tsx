@@ -22,6 +22,7 @@ export const ChartTimeRangeOption: FC<Props> = ({
         },
       }}
       role="button"
+      aria-pressed={isSelected}
       py="xs"
       px="base"
       onClick={onClick}

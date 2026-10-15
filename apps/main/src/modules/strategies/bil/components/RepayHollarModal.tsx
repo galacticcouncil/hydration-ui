@@ -125,6 +125,7 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
             >
               <SummaryRow
                 label={t("common:healthFactor")}
+                data-testid="health-factor"
                 content={<HealthFactorChange {...healthFactor} />}
               />
             </Summary>

@@ -186,6 +186,7 @@ export const Dca: FC = () => {
           submit={
             <TradeFormSubmit
               isEnabled={isSubmitEnabled}
+              isSubmitting={submitDcaOrder.isPending}
               isLoading={
                 submitDcaOrder.isPending ||
                 isLoading ||

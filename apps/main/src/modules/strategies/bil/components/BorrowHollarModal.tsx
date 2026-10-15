@@ -132,6 +132,7 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
               {healthFactor && (
                 <SummaryRow
                   label={t("common:healthFactor")}
+                  data-testid="health-factor"
                   content={<HealthFactorChange {...healthFactor} />}
                 />
               )}

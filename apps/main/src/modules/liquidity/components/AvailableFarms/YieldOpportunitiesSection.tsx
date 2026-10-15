@@ -29,6 +29,7 @@ export const YieldOpportunitiesSection = ({
         title={t("details.section.yieldOpportunities")}
       />
       <Flex
+        data-testid="yield-opportunities"
         width="100%"
         gap={["secondary", "primary"]}
         sx={{ flexWrap: "wrap" }}

@@ -204,6 +204,7 @@ export const WithdrawModalForm = ({
             <Summary withLeadingSeparator separator={<ModalContentDivider />}>
               <SummaryRow
                 label={t("common:healthFactor")}
+                data-testid="health-factor"
                 content={<HealthFactorChange {...healthFactor} />}
               />
             </Summary>

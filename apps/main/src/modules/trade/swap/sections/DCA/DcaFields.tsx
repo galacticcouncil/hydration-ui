@@ -166,7 +166,7 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
           </Box>
         )}
       />
-      <Box py="l" width="100%">
+      <Box data-testid="trade-sell" py="l" width="100%">
         <AssetSelectFormField<DcaFormValues>
           assetFieldName="sellAsset"
           amountFieldName="sellAmount"

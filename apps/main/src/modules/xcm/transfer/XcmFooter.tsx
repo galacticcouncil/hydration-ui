@@ -87,6 +87,7 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
           />
         )}
         <SubmitButton
+          data-testid="xcm-submit"
           status={status}
           disabled={
             isLoading ||

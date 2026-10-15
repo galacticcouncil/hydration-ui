@@ -204,7 +204,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
 
   return (
     <Stack>
-      <Box py="l" width="100%">
+      <Box data-testid="trade-sell" py="l" width="100%">
         <XcSrcAssetSelectField
           label={isCrossChain ? t("from") : t("sell")}
           labelAdornment={
@@ -232,7 +232,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
 
       <XcSwapSwitcher />
 
-      <Box py="l" width="100%">
+      <Box data-testid="trade-buy" py="l" width="100%">
         <XcChainAssetSelectFormField<XcSwapFormValues>
           chainFieldName="destChain"
           assetFieldName="buyAsset"

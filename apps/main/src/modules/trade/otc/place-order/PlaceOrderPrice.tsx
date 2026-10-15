@@ -56,7 +56,13 @@ export const PlaceOrderPrice: FC<Props> = ({
   return (
     <Flex py="base" direction="column" gap="s">
       <Flex justify="space-between" height={18} align="center">
-        <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
+        <Text
+          fw={500}
+          fs="p5"
+          lh="s"
+          color={getToken("text.medium")}
+          data-testid="otc-price-for"
+        >
           {t("otc.placeOrder.priceFor1", {
             symbol: isOfferView ? offerAsset.symbol : buyAsset.symbol,
           })}
@@ -90,6 +96,7 @@ export const PlaceOrderPrice: FC<Props> = ({
           </Text>
         </Flex>
         <NumberInput
+          data-testid="otc-price"
           variant="embedded"
           value={price}
           allowNegative={false}

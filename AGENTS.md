@@ -6,7 +6,7 @@ Web app for the Hydration parachain. `apps/main` is the one deployable (a React 
 
 - **Branch.** Create a branch off `master` (`feat/`, `fix/`, `chore/`, `refactor/`) before starting a feature or fix.
 - **Stale build.** `apps/main` type-checks the packages through `packages/<name>/build/`, so after editing a package run `npx tsc --build` in it, then type-check the app. "has no exported member" or implicit-`any` errors in files you left untouched mean a stale build: rebuild the package they point at.
-- **Checks.** `yarn lint` runs ESLint and `tsc` in every workspace; `yarn lint:fix` sorts imports and formats. `yarn test` runs Vitest, which covers pure logic in `*.test.ts` files under `apps/main/src`, `packages/web3-connect/src` and `packages/ui/src`.
+- **Checks.** `yarn lint` runs ESLint and `tsc` in every workspace; `yarn lint:fix` sorts imports and formats. `yarn test` runs Vitest, which covers pure logic in `apps/main/src/**/*.test.ts`. End-to-end tests run against mainnet as a watch-only account and stop at the review dialog: `yarn test:e2e:deterministic` (`tests/deterministic`, no model). `E2E_APP_URL=http://127.0.0.1:<port>` reuses a dev server that is already running. `npx e2e guide [topic]` prints the guide for writing these tests.
 - **UI changes are verified by eye.** Open the affected page in the running app, or the story in Storybook, and report which of the two you looked at.
   - App: `yarn workspace @galacticcouncil/main dev` runs against the test network; `dev:production` runs against mainnet. By default, run the mainnet dev server, unless told otherwise.
   - Storybook: `yarn workspace @galacticcouncil/ui dev`, port 6006.

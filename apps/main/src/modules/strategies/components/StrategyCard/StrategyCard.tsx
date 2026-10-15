@@ -34,7 +34,13 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   badges = [],
 }) => {
   return (
-    <Paper p="xl" hoverable position="relative">
+    <Paper
+      data-testid="strategy-card"
+      aria-busy={stats.some((stat) => stat.isLoading)}
+      p="xl"
+      hoverable
+      position="relative"
+    >
       <Stack gap="l">
         <Flex
           justify="space-between"
@@ -80,6 +86,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </Stack>
       <Link
         to={link}
+        aria-label={title}
         sx={{ "&::before": { content: "''", position: "absolute", inset: 0 } }}
       />
     </Paper>

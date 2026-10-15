@@ -167,6 +167,7 @@ export const AddLiquiditySummary = ({
       rows={[
         {
           label: t("liquidity.add.modal.sharesToGet.label"),
+          "data-testid": "pool-share",
           content: poolShare
             ? t("liquidity.add.modal.sharesToGet", {
                 percentage: poolShare,
