@@ -7,11 +7,11 @@ import {
   Separator,
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 import { FC, useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { CancelOtcOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOtcOrderModalContent"
@@ -19,6 +19,7 @@ import { AvailableAmount } from "@/modules/trade/otc/fill-order/AvailableAmount"
 import {
   getOtcBuyAmountFromSellAmount,
   getOtcFeeAmount,
+  getOtcMaxFillAmount,
   getOtcSellAmountFromBuyAmount,
 } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { useFillOrderForm } from "@/modules/trade/otc/fill-order/FillOrderModalContent.form"
@@ -46,6 +47,9 @@ export const FillOrderModalContent: FC<Props> = ({
   const [isSubmitCancelOpen, setIsSubmitCancelOpen] = useState(false)
 
   const { data: feePct = "0" } = useQuery(otcTradeFeeQuery(rpc))
+  const { data: edMultiplier = 0 } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
+  )
 
   const { form, getMaxBalance } = useFillOrderForm(
     otcOffer,
@@ -53,10 +57,12 @@ export const FillOrderModalContent: FC<Props> = ({
     feePct,
   )
   const maxAccountBalance = getMaxBalance(otcOffer.assetIn)
-  const assetInMax = Big.min(
-    otcOffer.assetAmountIn,
+  const assetInMax = getOtcMaxFillAmount(
+    otcOffer,
     maxAccountBalance,
-  ).toString()
+    edMultiplier,
+    feePct,
+  )
   const submit = useSubmitFillOrder({
     otcOffer,
     onSubmitted: onClose,
