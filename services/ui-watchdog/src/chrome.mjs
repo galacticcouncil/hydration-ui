@@ -82,6 +82,7 @@ export async function continueChrome(route) {
 }
 
 export async function launchChrome(c, executablePath) {
+  if (c.browserPool) return c.browserPool.acquire()
   return chromium.launch({
     channel: "chromium", // Full Chromium/new headless, not headless-shell.
     headless: true,

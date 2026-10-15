@@ -8,6 +8,8 @@ RUN curl -fsSL --retry 3 'https://github.com/windtf/wireproxy/releases/download/
 
 FROM mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 DATA_DIR=/data PORT=8080
 COPY --from=cli /gh/bin/gh /usr/local/bin/gh
 COPY --from=cli /wireproxy/wireproxy /usr/local/bin/wireproxy
@@ -20,4 +22,5 @@ USER 1000:1000
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD node -e 'fetch("http://127.0.0.1:"+(process.env.PORT||8080)+"/healthz",{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "src/main.mjs"]

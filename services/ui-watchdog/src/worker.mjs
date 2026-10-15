@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto"
-import { chromeTransport } from "./chrome.mjs"
+import { chromeTransport, launchChrome } from "./chrome.mjs"
+import { BrowserPool, processCounts } from "./browser-pool.mjs"
 import { publicNetworkPolicy } from "./network.mjs"
 import { createServer } from "node:http"
 import { probeBrowser } from "./browser.mjs"
@@ -17,9 +18,15 @@ export function serveObserver(
   } = {},
 ) {
   c = { ...c, siteRequest: siteTransport(c) }
+  const browserConfig = c
+  const pool = new BrowserPool(() =>
+    launchChrome(browserConfig, executablePath),
+  )
+  c = { ...c, browserPool: pool }
   const busy = new Set()
   let lastSuccess = Date.now(),
     failures = 0
+  let stopping = false
   let network = null,
     networkJob = null
   async function egress() {
@@ -47,6 +54,7 @@ export function serveObserver(
     return networkJob
   }
   const server = createServer(async (req, res) => {
+    if (stopping) return res.writeHead(503).end()
     if (req.method === "GET" && req.url === "/healthz")
       return res
         .writeHead(
@@ -134,6 +142,20 @@ export function serveObserver(
         failures = 0
         lastSuccess = Date.now()
       }
+      result.processes = await processCounts()
+      if (result.processes.zombies > 100)
+        result.issues.push({
+          kind: "browser-error",
+          path: "/proc",
+          message: `Observer zombie count ${result.processes.zombies} exceeds ${result.processes.zombies > 1000 ? "critical" : "warning"} threshold`,
+        })
+      console.log(
+        JSON.stringify({
+          at: timestamp(),
+          component: c.observerId,
+          processes: result.processes,
+        }),
+      )
       res.setHeader("content-type", "application/json")
       res.end(
         JSON.stringify({
@@ -161,6 +183,25 @@ export function serveObserver(
   server.requestTimeout = 300000
   server.headersTimeout = 10000
   server.listen(c.port, "0.0.0.0")
-  process.on("SIGTERM", () => server.close(() => process.exit(0)))
+  const shutdown = async () => {
+    if (stopping) return
+    stopping = true
+    server.close()
+    const timer = setTimeout(() => process.exit(1), 20000)
+    timer.unref()
+    try {
+      await pool.close()
+      server.closeAllConnections()
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+  process.once("SIGTERM", shutdown)
+  process.once("SIGINT", shutdown)
+  server.once("close", () => {
+    process.removeListener("SIGTERM", shutdown)
+    process.removeListener("SIGINT", shutdown)
+    pool.close().catch(console.error)
+  })
   return server
 }
