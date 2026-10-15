@@ -31,10 +31,7 @@ import { FindingsList } from "@/modules/money-market-v2/actions/FindingsList"
 import { HealthFactorChange } from "@/modules/money-market-v2/actions/HealthFactorChange"
 import { useActionPlanMutation } from "@/modules/money-market-v2/actions/useActionPlanMutation"
 import { useUserAddress } from "@/modules/money-market-v2/hooks"
-import {
-  ACTION_ICONS,
-  ReserveApyCell,
-} from "@/modules/money-market-v2/MoneyMarketV2Tables"
+import { ReserveApyCell } from "@/modules/money-market-v2/MoneyMarketV2Tables"
 import { useReserveDisplay } from "@/modules/money-market-v2/useReserveDisplay"
 
 type Props = {
@@ -221,7 +218,6 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
           )}
         />
         <LoadingButton
-          iconStart={ACTION_ICONS.borrow}
           type="submit"
           size="large"
           width="100%"

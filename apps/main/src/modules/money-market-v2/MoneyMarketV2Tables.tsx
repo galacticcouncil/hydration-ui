@@ -2,15 +2,7 @@ import type {
   PositionSummary,
   ReserveSummary,
 } from "@galacticcouncil/money-market-v2/types"
-import {
-  Check,
-  ChevronDown,
-  CircleArrowDown,
-  CircleArrowLeft,
-  CircleArrowRight,
-  CircleArrowUp,
-  Ellipsis,
-} from "@galacticcouncil/ui/assets/icons"
+import { Check, ChevronDown, Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Amount,
@@ -26,7 +18,6 @@ import {
   Flex,
   Icon,
   LogoSize,
-  MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   Separator,
@@ -244,29 +235,20 @@ export const CollateralSwitch: FC<{
   </Flex>
 )
 
-type IconAction = Exclude<RowAction, "collateral">
-
-export const ACTION_ICONS = {
-  supply: CircleArrowDown,
-  withdraw: CircleArrowLeft,
-  borrow: CircleArrowUp,
-  repay: CircleArrowRight,
-} as const satisfies Record<IconAction, unknown>
+type ButtonAction = Exclude<RowAction, "collateral">
 
 /**
  * A `tooltip` says why the row is disabled. It hangs off a wrapper, as a
- * disabled button fires no pointer events of its own. `iconOnly` swaps the
- * label for the action's icon, and the label moves to the tooltip. `more`
- * actions sit behind a "..." menu.
+ * disabled button fires no pointer events of its own. `more` actions sit
+ * behind a "..." menu.
  */
 export const ActionsCell: FC<{
   asset: Address
-  actions: IconAction[]
+  actions: ButtonAction[]
   onAction: OnRowAction
   disabled?: boolean
   tooltip?: string
-  iconOnly?: boolean
-  more?: readonly IconAction[]
+  more?: readonly ButtonAction[]
   size?: "small" | "medium"
 }> = ({
   asset,
@@ -274,7 +256,6 @@ export const ActionsCell: FC<{
   onAction,
   disabled,
   tooltip,
-  iconOnly,
   more,
   size = "small",
 }) => {
@@ -282,38 +263,31 @@ export const ActionsCell: FC<{
 
   return (
     <Flex justify="flex-end" gap="s">
-      {actions.map((action) => {
-        const icon = ACTION_ICONS[action]
-
-        return (
-          <Tooltip
-            key={action}
-            text={tooltip ?? (iconOnly && t(action))}
-            size="small"
-            side="top"
-            asChild
-            preventDefault
-          >
-            <Flex inline>
-              <Button
-                icon={iconOnly ? icon : undefined}
-                iconStart={icon}
-                variant={iconOnly ? "ghost" : "muted"}
-                outline={!iconOnly}
-                size="small"
-                aria-label={t(action)}
-                disabled={disabled || !onAction}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onAction?.(action, asset)
-                }}
-              >
-                {!iconOnly && t(action)}
-              </Button>
-            </Flex>
-          </Tooltip>
-        )
-      })}
+      {actions.map((action) => (
+        <Tooltip
+          key={action}
+          text={tooltip}
+          size="small"
+          side="top"
+          asChild
+          preventDefault
+        >
+          <Flex inline>
+            <Button
+              variant="muted"
+              outline
+              size="small"
+              disabled={disabled || !onAction}
+              onClick={(e) => {
+                e.stopPropagation()
+                onAction?.(action, asset)
+              }}
+            >
+              {t(action)}
+            </Button>
+          </Flex>
+        </Tooltip>
+      ))}
       {more && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -338,7 +312,6 @@ export const ActionsCell: FC<{
                     onAction?.(action, asset)
                   }}
                 >
-                  <MenuItemIcon component={ACTION_ICONS[action]} />
                   <MenuItemLabel>{t(action)}</MenuItemLabel>
                 </MenuSelectionItem>
               </DropdownMenuItem>

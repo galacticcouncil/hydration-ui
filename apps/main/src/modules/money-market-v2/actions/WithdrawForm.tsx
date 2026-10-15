@@ -33,7 +33,6 @@ import { useActionPlanMutation } from "@/modules/money-market-v2/actions/useActi
 import { useSpendable } from "@/modules/money-market-v2/actions/useSpendable"
 import { useWithdrawForm } from "@/modules/money-market-v2/actions/WithdrawForm.form"
 import { useUserAddress } from "@/modules/money-market-v2/hooks"
-import { ACTION_ICONS } from "@/modules/money-market-v2/MoneyMarketV2Tables"
 import { reserveAssetId } from "@/modules/money-market-v2/reserves"
 import { useReserveDisplay } from "@/modules/money-market-v2/useReserveDisplay"
 import { useAssets } from "@/providers/assetsProvider"
@@ -225,7 +224,6 @@ export const WithdrawForm: FC<Props> = ({ asset, onSubmitted }) => {
           )}
         />
         <LoadingButton
-          iconStart={ACTION_ICONS.withdraw}
           type="submit"
           size="large"
           width="100%"

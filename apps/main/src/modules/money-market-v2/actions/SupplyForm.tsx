@@ -32,10 +32,7 @@ import { useSupplyForm } from "@/modules/money-market-v2/actions/SupplyForm.form
 import { useActionPlanMutation } from "@/modules/money-market-v2/actions/useActionPlanMutation"
 import { useSpendable } from "@/modules/money-market-v2/actions/useSpendable"
 import { useUserAddress } from "@/modules/money-market-v2/hooks"
-import {
-  ACTION_ICONS,
-  ReserveApyCell,
-} from "@/modules/money-market-v2/MoneyMarketV2Tables"
+import { ReserveApyCell } from "@/modules/money-market-v2/MoneyMarketV2Tables"
 import { reserveAssetId } from "@/modules/money-market-v2/reserves"
 import { useReserveDisplay } from "@/modules/money-market-v2/useReserveDisplay"
 
@@ -234,7 +231,6 @@ export const SupplyForm: FC<Props> = ({ asset, onSubmitted }) => {
           )}
         />
         <LoadingButton
-          iconStart={ACTION_ICONS.supply}
           type="submit"
           size="large"
           width="100%"

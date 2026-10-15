@@ -53,7 +53,6 @@ import { ApySide } from "@/modules/money-market-v2/ApyTooltip"
 import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market-v2/hooks"
 import { InterestRateModelChart } from "@/modules/money-market-v2/InterestRateModelChart"
 import {
-  ACTION_ICONS,
   ActionsCell,
   OnRowAction,
   ReadError,
@@ -773,7 +772,6 @@ const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
     <Flex align="center" gap="base">
       {!hollar && (
         <Button
-          iconStart={ACTION_ICONS.supply}
           size="medium"
           onClick={() => setOpen({ action: "supply", asset })}
         >
@@ -796,8 +794,8 @@ const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
 
 const columnHelper = createColumnHelper<Row>()
 
-// fits one icon button, so the column before it ends right beside it
-const ACTION_COLUMN_WIDTH = 45
+// fits one small text button, so the column before it ends right beside it
+const ACTION_COLUMN_WIDTH = 110
 
 const collateralColumns = (onAction: OnRowAction) => [
   columnHelper.display({
@@ -819,7 +817,6 @@ const collateralColumns = (onAction: OnRowAction) => [
         asset={row.original.reserve.underlyingAsset}
         actions={["supply"]}
         onAction={onAction}
-        iconOnly
       />
     ),
   }),
@@ -854,7 +851,6 @@ const borrowableColumns = (
           onAction={onAction}
           disabled={!!reason}
           tooltip={reason}
-          iconOnly
         />
       )
     },

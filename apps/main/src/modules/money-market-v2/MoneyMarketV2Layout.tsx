@@ -2,7 +2,12 @@ import { markets } from "@galacticcouncil/money-market-v2/core"
 import { MoneyMarketProvider } from "@galacticcouncil/money-market-v2/react"
 import type { CustomMarket } from "@galacticcouncil/money-market-v2/types"
 import { Flex, Select, Spinner } from "@galacticcouncil/ui/components"
-import { Outlet, useNavigate, useSearch } from "@tanstack/react-router"
+import {
+  Outlet,
+  useMatch,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 
 import { BreadcrumbBar } from "@/modules/layout/components/BreadcrumbBar"
@@ -32,6 +37,11 @@ export const MoneyMarketV2Layout: FC = () => {
   const { papiClient, isReady } = useRpcProvider()
   const { market = DEFAULT_MARKET } = useSearch({ from: "/money-market" })
   const descriptor = markets[market]
+  // the reserve detail swaps the sub nav for a breadcrumb back to the markets
+  const isReserve = !!useMatch({
+    from: "/money-market/markets/$address",
+    shouldThrow: false,
+  })
 
   const config = useMemo(
     () => (isReady ? createMoneyMarketConfig(papiClient) : null),
@@ -43,8 +53,11 @@ export const MoneyMarketV2Layout: FC = () => {
       {config ? (
         <MoneyMarketProvider config={config} market={descriptor}>
           <ReserveApyProvider>
-            <BreadcrumbBar />
-            <SubNavBar actions={<MarketSelect />} />
+            {isReserve ? (
+              <BreadcrumbBar />
+            ) : (
+              <SubNavBar actions={<MarketSelect />} />
+            )}
             <MainContent>
               <Outlet />
             </MainContent>

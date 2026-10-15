@@ -156,7 +156,7 @@ export const MarketsPage: FC = () => {
     value ? t("currency.compact", { value }) : "—"
 
   return (
-    <Stack gap="xxl">
+    <>
       <Stack
         direction={["column", null, "row"]}
         justify="flex-start"
@@ -220,6 +220,6 @@ export const MarketsPage: FC = () => {
           </TableContainer>
         )}
       </Box>
-    </Stack>
+    </>
   )
 }

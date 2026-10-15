@@ -32,7 +32,6 @@ import { useRepayForm } from "@/modules/money-market-v2/actions/RepayForm.form"
 import { useActionPlanMutation } from "@/modules/money-market-v2/actions/useActionPlanMutation"
 import { useSpendable } from "@/modules/money-market-v2/actions/useSpendable"
 import { useUserAddress } from "@/modules/money-market-v2/hooks"
-import { ACTION_ICONS } from "@/modules/money-market-v2/MoneyMarketV2Tables"
 import { reserveAssetId } from "@/modules/money-market-v2/reserves"
 import { useReserveDisplay } from "@/modules/money-market-v2/useReserveDisplay"
 
@@ -197,7 +196,6 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
       <Stack gap="base" pt="base">
         <FindingsList findings={findings} />
         <LoadingButton
-          iconStart={ACTION_ICONS.repay}
           type="submit"
           size="large"
           width="100%"

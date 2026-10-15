@@ -29,7 +29,6 @@ import {
 import { ApyRate } from "@/modules/money-market-v2/effectiveApy"
 import { useUserAddress } from "@/modules/money-market-v2/hooks"
 import {
-  ACTION_ICONS,
   ApyCell,
   CollateralSwitch,
   NoData,
@@ -153,7 +152,6 @@ export const MyPosition: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 
   const actionButton = (action: "withdraw" | "repay") => (
     <Button
-      iconStart={ACTION_ICONS[action]}
       variant="tertiary"
       size="small"
       onClick={() => setOpen({ action, asset })}
