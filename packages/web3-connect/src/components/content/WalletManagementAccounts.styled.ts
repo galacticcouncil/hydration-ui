@@ -1,6 +1,8 @@
 import { Box, Button, Flex, Image } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
+import { optionTile } from "@/components/content/WalletManagementSource.styled"
+
 const roundMark = (size: number) =>
   styled(Image)(
     ({ theme }) => css`
@@ -18,6 +20,8 @@ export const SAccountModeIcon = roundMark(12)
 
 export const SAccountTile = styled(Box)(
   ({ theme }) => css`
+    ${optionTile(theme)}
+
     width: 100%;
     min-width: 0;
 
@@ -26,29 +30,11 @@ export const SAccountTile = styled(Box)(
     gap: ${theme.space.base};
 
     padding: ${theme.space.base};
-
-    border: 1px solid transparent;
-    border-radius: ${theme.radii.m};
-    background: ${theme.surfaces.containers.dim.dimOnBg};
-    color: ${theme.text.high};
-
-    cursor: pointer;
     overflow: hidden;
-    transition: ${theme.transitions.colors};
-
-    &:hover {
-      background: ${theme.buttons.secondary.outline.fill};
-      border-color: ${theme.buttons.secondary.outline.outline};
-    }
 
     &:focus-visible {
       outline: 2px solid ${theme.buttons.secondary.accent.outline};
       outline-offset: 2px;
-    }
-
-    &[data-active="true"] {
-      background: ${theme.buttons.secondary.outline.fill};
-      border-color: ${theme.buttons.secondary.outline.outline};
     }
 
     &[data-has-change-account="true"] {

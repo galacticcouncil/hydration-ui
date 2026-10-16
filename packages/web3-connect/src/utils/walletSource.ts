@@ -5,7 +5,12 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
-import { getWalletChainModes, WALLET_MODES, WalletMode } from "@/config/wallet"
+import {
+  COMPATIBLE_WALLET_PROVIDERS,
+  getWalletChainModes,
+  WALLET_MODES,
+  WalletMode,
+} from "@/config/wallet"
 
 export type WalletSourceLike = {
   provider: WalletProviderType
@@ -142,7 +147,18 @@ export const selectWalletSources = <T extends WalletSourceLike>(
           connectedProviderTypes.includes(wallet.provider)),
   )
 
-  const groups = groupWalletsBySource(available)
+  const groups = groupWalletsBySource(
+    available.filter(
+      (wallet) => wallet.provider !== WalletProviderType.WalletConnect,
+    ),
+  )
+
+  // WalletConnect has no extension, so it sits in the Other section instead
+  const walletConnectGroups = groupWalletsBySource(
+    available.filter(
+      (wallet) => wallet.provider === WalletProviderType.WalletConnect,
+    ),
+  )
 
   const isGroupReachable = (group: WalletSourceGroup<T>) =>
     group.wallets.some((wallet) => isReachable(wallet, connectedProviderTypes))
@@ -169,11 +185,39 @@ export const selectWalletSources = <T extends WalletSourceLike>(
     .filter((group) => !recentGroups.includes(group))
     .sort(byTitle)
 
-  const otherGroups = groups
+  const moreGroups = groups
     .filter((group) => !isGroupReachable(group))
     .sort((a, b) => a.title.localeCompare(b.title))
 
-  return { available, recentGroups, installedGroups, otherGroups }
+  return {
+    available,
+    recentGroups,
+    installedGroups,
+    moreGroups,
+    walletConnectGroups,
+  }
+}
+
+/**
+ * What "Connect all" enables: installed wallets that can sign Hydration
+ * transactions, minus WalletConnect, whose QR flow can't run in a batch. A
+ * brand keeps every compatible provider, so Talisman brings its substrate and
+ * EVM accounts but not Solana. With a single wallet its own row does the same
+ * job, so nothing is offered.
+ */
+export const getConnectAllGroups = <T extends WalletSourceLike>(
+  wallets: T[],
+) => {
+  const groups = groupWalletsBySource(
+    wallets.filter(
+      ({ installed, provider }) =>
+        installed &&
+        provider !== WalletProviderType.WalletConnect &&
+        COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+    ),
+  )
+
+  return groups.length > 1 ? groups : []
 }
 
 /**

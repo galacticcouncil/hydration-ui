@@ -52,7 +52,7 @@
     "identican": "0.4.0",
     "jdenticon": "^3.3.0",
     "lightweight-charts": "^5.0.8",
-    "lucide-react": "^0.459.0",
+    "lucide-react": "1.54.0",
     "md5": "^2.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

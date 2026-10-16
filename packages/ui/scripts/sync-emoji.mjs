@@ -22,7 +22,7 @@ const IMAGE_DIR = join(OUT_DIR, "images")
 
 const DISCORD_EMOJI = /^<(a?):([^:>]+):(\d+)>$/
 
-// ponytail: the source is a hand-maintained JS file with two object/array
+// the source is a hand-maintained JS file with two object/array
 // literals in it — a regex plus JSON.parse beats pulling in a JS parser.
 const parseLiteral = (source, pattern) => {
   const match = source.match(pattern)
