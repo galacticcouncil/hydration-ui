@@ -7,6 +7,7 @@ import {
   SolanaCall,
   SubstrateCall,
   SuiCall,
+  ZecCall,
 } from "@galacticcouncil/xc-sdk"
 import { isObjectType } from "remeda"
 import { decodeFunctionData } from "viem"
@@ -51,4 +52,8 @@ export function isSuiCall(x: AnyTransaction): x is SuiCall {
 
 export function isNearCall(x: AnyTransaction): x is NearCall {
   return isCall(x) && x.type === CallType.Near
+}
+
+export function isZecCall(x: AnyTransaction): x is ZecCall {
+  return isCall(x) && x.type === CallType.Zec
 }

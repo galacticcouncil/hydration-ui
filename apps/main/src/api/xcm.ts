@@ -3,10 +3,12 @@ import {
   getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
+  isZecChain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
   resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
+import { readNoirBalance } from "@galacticcouncil/web3-connect/src/utils/zec"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import {
@@ -17,6 +19,7 @@ import {
   Ntt,
 } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
+import { createZcashTransfers } from "@galacticcouncil/xc-swap"
 import {
   keepPreviousData,
   queryOptions,
@@ -35,6 +38,12 @@ import { BASEJUMP_LANDING_CONTRACT } from "@/modules/xcm/history/utils/basejump"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
+import {
+  findZcashRoute,
+  getZcashRoutes,
+  ONE_CLICK_REFUND_ACCOUNT,
+  ZcashRoute,
+} from "@/modules/xcm/transfer/utils/zcash"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
@@ -53,6 +62,13 @@ export const useCrossChainConfig = () => {
       const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
       if (hydration && isEvmParachain(hydration)) {
         withPermissiveEvmResolver(hydration)
+      }
+
+      // Zcash is utxo with no public balance api, so balances come from the
+      // connected Noir wallet
+      const zcash = ctx.config.chains.get("zec")
+      if (zcash && isZecChain(zcash)) {
+        zcash.registerBalanceReader(readNoirBalance)
       }
 
       // Wormhole carries basejump with it — basejump routes hop through the
@@ -78,7 +94,17 @@ export const useCrossChainConfig = () => {
         })
       }
 
-      return ctx
+      // Zcash is served outside the route config, over the ntt routes to NEAR
+      // left above
+      const zcashRoutes = getZcashRoutes(
+        ctx.config,
+        createZcashTransfers({
+          wallet: ctx.wallet,
+          refundTo: ONE_CLICK_REFUND_ACCOUNT,
+        }),
+      )
+
+      return { ...ctx, zcashRoutes }
     },
   })
 }
@@ -125,6 +151,11 @@ export const useHydrationDisplayAssetId = () => {
 export const useCrossChainWallet = () => {
   const { data } = useCrossChainConfig()
   return data.wallet
+}
+
+export const useZcashRoutes = () => {
+  const { data } = useCrossChainConfig()
+  return data.zcashRoutes
 }
 
 export const useNttOutboundLimit = (
@@ -385,6 +416,7 @@ const hasAssetOnChain = (assetKey: string, chainKey: string) =>
 export const xcmTransferQuery = (
   wallet: Wallet,
   transferArgs: XcmTransferArgs | null,
+  zcashRoutes: ZcashRoute[] = [],
   options?: Partial<UseQueryOptions<Transfer>>,
 ) => {
   const {
@@ -416,23 +448,34 @@ export const xcmTransferQuery = (
     queryFn: async () => {
       if (!transferArgs) throw new Error("Invalid transfer args")
 
-      const builder = TransferBuilder(wallet)
-        .withAsset(transferArgs.srcAsset)
-        .withSource(transferArgs.srcChain)
-        .withDestination(transferArgs.destChain)
+      const transfer = await (async () => {
+        // Built by xc-swap: the route config has no Zcash routes
+        const zcashRoute = findZcashRoute(zcashRoutes, transferArgs)
+        if (zcashRoute) {
+          return zcashRoute.build({
+            srcAddress: transferArgs.srcAddress,
+            dstAddress: transferArgs.destAddress,
+          })
+        }
 
-      const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
-        builder.routes,
-        transferArgs.destAsset,
-        transferArgs.bridgeTag,
-      )
+        const builder = TransferBuilder(wallet)
+          .withAsset(transferArgs.srcAsset)
+          .withSource(transferArgs.srcChain)
+          .withDestination(transferArgs.destChain)
 
-      const transfer = await builder.build({
-        srcAddress: transferArgs.srcAddress,
-        dstAddress: transferArgs.destAddress,
-        dstAsset,
-        tag,
-      })
+        const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
+          builder.routes,
+          transferArgs.destAsset,
+          transferArgs.bridgeTag,
+        )
+
+        return builder.build({
+          srcAddress: transferArgs.srcAddress,
+          dstAddress: transferArgs.destAddress,
+          dstAsset,
+          tag,
+        })
+      })()
 
       const { balance, fee, max } = transfer.source
       if (balance.isSame(fee) && max.amount > 0n) {

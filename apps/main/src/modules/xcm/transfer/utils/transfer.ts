@@ -52,6 +52,9 @@ export const getTransferStatus = (
   transfer: Transfer | null,
   call: Call | null,
   alerts: XcmAlert[],
+  // Building a Zcash transfer's call opens a deposit address, so it's built
+  // at submit only
+  isCallDeferred = false,
 ) => {
   switch (true) {
     case !values.destAddress:
@@ -66,7 +69,7 @@ export const getTransferStatus = (
       return XcmTransferStatus.TransferInvalid
     case !!call && isEvmApproveCall(call):
       return XcmTransferStatus.ApproveAndTransferValid
-    case !!transfer && !!call:
+    case !!transfer && (!!call || isCallDeferred):
       return XcmTransferStatus.TransferValid
     default:
       return XcmTransferStatus.Default
@@ -97,34 +100,48 @@ export const calculateTransferDestAmount = (
   return amount
 }
 
-export const resolveBestDestRoute = (
+export type XcmDestination = {
+  chain: AnyChain
+  asset: Asset
+}
+
+/**
+ * The selected destination if a pair serves it, the top priority one
+ * otherwise. A pair without routes (Zcash) serves each of its assets.
+ */
+export const resolveBestDestination = (
   destChainAssetPairs: ChainAssetPair[],
   destChain: AnyChain | null,
   destAsset: Asset | null,
-): AssetRoute | null => {
-  const validRoutes = pipe(
+): XcmDestination | null => {
+  const destinations = pipe(
     destChainAssetPairs,
-    flatMap((c) => c.routes),
-    sortBy((r) => getChainPriority(r.destination.chain.key)),
+    flatMap(({ chain, assets, routes }) =>
+      routes.length
+        ? routes.map(({ destination }) => ({
+            chain: destination.chain,
+            asset: destination.asset,
+          }))
+        : assets.map((asset) => ({ chain, asset })),
+    ),
+    sortBy((d) => getChainPriority(d.chain.key)),
   )
 
-  const foundRoute = validRoutes.find(
-    (r) =>
-      r.destination.chain.key === destChain?.key &&
-      r.destination.asset.key === destAsset?.key,
+  const found = destinations.find(
+    (d) => d.chain.key === destChain?.key && d.asset.key === destAsset?.key,
   )
 
-  return foundRoute ?? first(validRoutes) ?? null
+  return found ?? first(destinations) ?? null
 }
 
-export const isDestRouteSynced = (
-  bestRoute: AssetRoute | null,
+export const isDestinationSynced = (
+  bestDest: XcmDestination | null,
   destChain: AnyChain | null,
   destAsset: Asset | null,
 ): boolean =>
-  !!bestRoute &&
-  bestRoute.destination.chain.key === destChain?.key &&
-  bestRoute.destination.asset.key === destAsset?.key
+  !!bestDest &&
+  bestDest.chain.key === destChain?.key &&
+  bestDest.asset.key === destAsset?.key
 
 export const resolveSelectedRoute = (
   destPair: ChainAssetPair | null | undefined,

@@ -3,6 +3,7 @@ import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { ZecTxStatus } from "@galacticcouncil/web3-connect/src/signers/ZecSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
 import { Asset } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
@@ -175,6 +176,7 @@ export type TSuccessResult =
   | SolanaTxStatus
   | SuiTxStatus
   | NearTxStatus
+  | ZecTxStatus
 
 export type TFinalizedResult =
   | TxFinalizedResult
@@ -182,6 +184,7 @@ export type TFinalizedResult =
   | SolanaTxStatus
   | SuiTxStatus
   | NearTxStatus
+  | ZecTxStatus
 
 export interface TransactionActions {
   onSuccess?: (event: TSuccessResult) => void
