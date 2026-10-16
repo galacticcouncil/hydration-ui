@@ -15,7 +15,6 @@ import { LedgerNear } from "@/wallets/Ledger"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask, MetaMaskSol } from "@/wallets/MetaMask"
 import { MeteorWallet } from "@/wallets/MeteorWallet"
-import { NightlySol, NightlySui } from "@/wallets/Nightly"
 import { NoirWallet } from "@/wallets/NoirWallet"
 import { NovaWallet, NovaWalletEvm, NovaWalletH160 } from "@/wallets/NovaWallet"
 import { OKXWallet, OKXWalletSol, OKXWalletSui } from "@/wallets/OKXWallet"
@@ -53,8 +52,6 @@ export {
   MetaMask,
   MetaMaskSol,
   MeteorWallet,
-  NightlySol,
-  NightlySui,
   NoirWallet,
   NovaWallet,
   NovaWalletEvm,
@@ -116,7 +113,6 @@ const wallets = [
   new OKXWalletSol(),
   new MetaMaskSol(),
   new BackpackSol(),
-  new NightlySol(),
 
   // Sui
   new Suiet(),
@@ -124,7 +120,6 @@ const wallets = [
   new PhantomSui(),
   new OKXWalletSui(),
   new BackpackSui(),
-  new NightlySui(),
 
   // NEAR
   new MeteorWallet(),
