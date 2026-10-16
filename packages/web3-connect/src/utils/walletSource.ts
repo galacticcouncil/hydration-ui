@@ -147,7 +147,18 @@ export const selectWalletSources = <T extends WalletSourceLike>(
           connectedProviderTypes.includes(wallet.provider)),
   )
 
-  const groups = groupWalletsBySource(available)
+  const groups = groupWalletsBySource(
+    available.filter(
+      (wallet) => wallet.provider !== WalletProviderType.WalletConnect,
+    ),
+  )
+
+  // WalletConnect has no extension, so it sits in the Other section instead
+  const walletConnectGroups = groupWalletsBySource(
+    available.filter(
+      (wallet) => wallet.provider === WalletProviderType.WalletConnect,
+    ),
+  )
 
   const isGroupReachable = (group: WalletSourceGroup<T>) =>
     group.wallets.some((wallet) => isReachable(wallet, connectedProviderTypes))
@@ -174,11 +185,17 @@ export const selectWalletSources = <T extends WalletSourceLike>(
     .filter((group) => !recentGroups.includes(group))
     .sort(byTitle)
 
-  const otherGroups = groups
+  const moreGroups = groups
     .filter((group) => !isGroupReachable(group))
     .sort((a, b) => a.title.localeCompare(b.title))
 
-  return { available, recentGroups, installedGroups, otherGroups }
+  return {
+    available,
+    recentGroups,
+    installedGroups,
+    moreGroups,
+    walletConnectGroups,
+  }
 }
 
 /**

@@ -21,7 +21,7 @@ export const SScrollAreaContent = styled(Flex)(
   ({ theme }) => css`
     min-width: 0;
     padding-right: ${theme.space.base};
-    padding-bottom: var(--source-footer-height, 0px);
+    padding-bottom: calc(var(--source-footer-height, 0px) + ${theme.space.xs});
   `,
 )
 
@@ -190,7 +190,8 @@ export const SRightPanelFrame = styled(Box, {
       display: flex;
       flex-direction: column;
       height: 100%;
-      max-height: 100%;
+      /* hidden panel must not size the grid row */
+      max-height: ${showAccountPanel ? "100%" : 0};
     }
   `,
 )

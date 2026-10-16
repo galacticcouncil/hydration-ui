@@ -451,7 +451,7 @@
   "userMenu.connectedWallets": "Connected wallets",
   "userMenu.goToWallet": "Go to portfolio",
   "userMenu.disconnect": "Disconnect {{provider}}",
-  "userMenu.logOutAll": "Log out all",
+  "userMenu.logOutAll": "Disconnect all",
   "userMenu.walletAccounts_one": "{{wallet}}",
   "userMenu.walletAccounts_other": "{{wallet}} • {{count}} accounts",
   "userMenu.active": "ACTIVE",

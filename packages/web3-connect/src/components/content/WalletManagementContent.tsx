@@ -16,6 +16,7 @@ import {
   ChevronUp,
   CircleAlert,
   Download,
+  HatGlasses,
   LogOut,
   LucideWallet,
   Users,
@@ -25,6 +26,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { FormProvider } from "react-hook-form"
@@ -117,6 +119,7 @@ export const WalletManagementContent = () => {
   const { gte } = useBreakpoints()
   const isDesktop = gte("md")
   const { enable, disconnect } = useWeb3Enable()
+  const sourceViewportRef = useRef<HTMLDivElement>(null)
   const { enable: enableWithDisconnectOnError } = useWeb3Enable({
     disconnectOnError: true,
   })
@@ -242,7 +245,8 @@ export const WalletManagementContent = () => {
   const {
     recentGroups: recentWalletGroups,
     installedGroups: installedWalletGroups,
-    otherGroups: otherWalletGroups,
+    moreGroups: moreWalletGroups,
+    walletConnectGroups,
   } = useMemo(
     () =>
       selectWalletSources(
@@ -264,7 +268,8 @@ export const WalletManagementContent = () => {
     ? [
         ...recentWalletGroups,
         ...installedWalletGroups,
-        ...otherWalletGroups,
+        ...moreWalletGroups,
+        ...walletConnectGroups,
       ].find((group) => group.id === selectedSource)
     : undefined
   const selectedWalletStatus = selectedWallet
@@ -321,9 +326,14 @@ export const WalletManagementContent = () => {
     [installedWalletGroups, walletSearch],
   )
 
-  const visibleOtherWalletGroups = useMemo(
-    () => filterWalletGroups(otherWalletGroups, walletSearch),
-    [otherWalletGroups, walletSearch],
+  const visibleMoreWalletGroups = useMemo(
+    () => filterWalletGroups(moreWalletGroups, walletSearch),
+    [moreWalletGroups, walletSearch],
+  )
+
+  const visibleWalletConnectGroups = useMemo(
+    () => filterWalletGroups(walletConnectGroups, walletSearch),
+    [walletConnectGroups, walletSearch],
   )
 
   const visibleReachableWalletCount =
@@ -480,7 +490,10 @@ export const WalletManagementContent = () => {
     selectSource(group.id)
   }
 
-  const renderWalletGroup = (group: WalletSourceGroup) => {
+  const renderWalletGroup = (
+    group: WalletSourceGroup,
+    connectLabel?: string,
+  ) => {
     const variant = showAccountPanel ? "management" : "firstConnection"
 
     if (group.wallets.length === 1) {
@@ -494,6 +507,7 @@ export const WalletManagementContent = () => {
           status={getStatus(wallet.provider)}
           pending={pendingProviderTypes.includes(wallet.provider)}
           variant={variant}
+          connectLabel={connectLabel}
           onClick={() => handleWalletClick(wallet)}
           onDisconnect={() => disconnect(wallet.provider)}
         />
@@ -527,13 +541,13 @@ export const WalletManagementContent = () => {
     )
   }
 
-  const otherWalletsPreviewCount = 2
-  const hasMoreOtherWallets =
-    visibleOtherWalletGroups.length > otherWalletsPreviewCount
-  const visibleOtherWallets =
-    !hasMoreOtherWallets || isMoreWalletsListOpen
-      ? visibleOtherWalletGroups
-      : visibleOtherWalletGroups.slice(0, otherWalletsPreviewCount)
+  const moreWalletsPreviewCount = 2
+  const hasCollapsedMoreWallets =
+    visibleMoreWalletGroups.length > moreWalletsPreviewCount
+  const visibleMoreWallets =
+    !hasCollapsedMoreWallets || isMoreWalletsListOpen
+      ? visibleMoreWalletGroups
+      : visibleMoreWalletGroups.slice(0, moreWalletsPreviewCount)
 
   const selectedSourceTitle = isMultisigSelected
     ? t("multisig.title")
@@ -574,21 +588,8 @@ export const WalletManagementContent = () => {
             )}
 
             <SSourceScrollFrame hasFooter={showLogOutAll}>
-              <ScrollArea>
+              <ScrollArea viewportRef={sourceViewportRef}>
                 <SScrollAreaContent direction="column" gap="base">
-                  {showConnectAll && (
-                    <WalletSourceButton
-                      title={t("provider.connectAll")}
-                      subtitle={connectAllGroups.map(prop("title")).join(", ")}
-                      icon={LucideWallet}
-                      pending={isConnectingAll}
-                      variant={
-                        showAccountPanel ? "management" : "firstConnection"
-                      }
-                      onClick={handleConnectAll}
-                    />
-                  )}
-
                   {showAccountPanel && connectedAccountsCount > 0 && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton
@@ -613,13 +614,14 @@ export const WalletManagementContent = () => {
                       >
                         {t("provider.recentlyUsed")}
                       </SSourceCategoryLabel>
-                      {visibleRecentWalletGroups.map(renderWalletGroup)}
+                      {visibleRecentWalletGroups.map((group) =>
+                        renderWalletGroup(group),
+                      )}
                     </Flex>
                   )}
 
                   {(visibleInstalledWalletGroups.length > 0 ||
-                    showExternalWallet ||
-                    showMultisig) && (
+                    showConnectAll) && (
                     <Flex direction="column" gap="s">
                       {visibleInstalledWalletGroups.length > 0 && (
                         <SSourceCategoryLabel
@@ -635,8 +637,42 @@ export const WalletManagementContent = () => {
                           )}
                         </SSourceCategoryLabel>
                       )}
+                      {visibleInstalledWalletGroups.map((group) =>
+                        renderWalletGroup(group),
+                      )}
+                      {showConnectAll && (
+                        <WalletSourceButton
+                          title={t("provider.connectAll")}
+                          subtitle={connectAllGroups
+                            .map(prop("title"))
+                            .join(", ")}
+                          icon={LucideWallet}
+                          iconColor="neutral"
+                          pending={isConnectingAll}
+                          variant={
+                            showAccountPanel ? "management" : "firstConnection"
+                          }
+                          onClick={handleConnectAll}
+                        />
+                      )}
+                    </Flex>
+                  )}
 
-                      {visibleInstalledWalletGroups.map(renderWalletGroup)}
+                  {(visibleWalletConnectGroups.length > 0 ||
+                    showExternalWallet ||
+                    showMultisig) && (
+                    <Flex direction="column" gap="s">
+                      <SSourceCategoryLabel
+                        fs="p5"
+                        fw={500}
+                        lh={1.25}
+                        color={getToken("text.low")}
+                      >
+                        {t("provider.other")}
+                      </SSourceCategoryLabel>
+                      {visibleWalletConnectGroups.map((group) =>
+                        renderWalletGroup(group, t("provider.open")),
+                      )}
 
                       {showExternalWallet && (
                         <WalletProviderSourceButton
@@ -651,6 +687,9 @@ export const WalletManagementContent = () => {
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
+                          connectLabel={t("provider.open")}
+                          icon={HatGlasses}
+                          iconColor="dark"
                           onClick={() =>
                             selectSource(WalletProviderType.ExternalWallet)
                           }
@@ -663,8 +702,9 @@ export const WalletManagementContent = () => {
                       {showMultisig && (
                         <WalletSourceButton
                           title={t("multisig.title")}
-                          subtitle={t("multisig.setup.short")}
+                          subtitle={t("provider.open")}
                           icon={Users}
+                          iconColor="pink"
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
@@ -680,7 +720,7 @@ export const WalletManagementContent = () => {
                     </Flex>
                   )}
 
-                  {visibleOtherWalletGroups.length > 0 && (
+                  {visibleMoreWalletGroups.length > 0 && (
                     <Flex direction="column" gap="s">
                       <SSourceCategoryLabel
                         fs="p5"
@@ -688,10 +728,12 @@ export const WalletManagementContent = () => {
                         lh={1.25}
                         color={getToken("text.low")}
                       >
-                        {t("provider.otherWallets")}
+                        {t("provider.moreWallets")}
                       </SSourceCategoryLabel>
-                      {visibleOtherWallets.map(renderWalletGroup)}
-                      {hasMoreOtherWallets && (
+                      {visibleMoreWallets.map((group) =>
+                        renderWalletGroup(group),
+                      )}
+                      {hasCollapsedMoreWallets && (
                         <WalletSourceButton
                           title={
                             isMoreWalletsListOpen
@@ -699,6 +741,7 @@ export const WalletManagementContent = () => {
                               : t("provider.showMore")
                           }
                           icon={isMoreWalletsListOpen ? ChevronUp : ChevronDown}
+                          iconColor="neutral"
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
@@ -727,10 +770,14 @@ export const WalletManagementContent = () => {
                     <WalletSourceButton
                       title={t("provider.logOutAll")}
                       icon={LogOut}
+                      iconColor="red"
                       variant={
                         showAccountPanel ? "management" : "firstConnection"
                       }
-                      onClick={() => disconnect()}
+                      onClick={() => {
+                        disconnect()
+                        sourceViewportRef.current?.scrollTo({ top: 0 })
+                      }}
                     />
                   </SSourceFooterAction>
                 </SSourceFooter>

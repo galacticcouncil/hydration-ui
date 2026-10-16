@@ -137,26 +137,44 @@ describe("selectWalletSources", () => {
     expect(available).toEqual([TALISMAN])
   })
 
+  it("keeps WalletConnect out of recent and installed", () => {
+    const walletConnect = wallet(
+      WalletProviderType.WalletConnect,
+      "WalletConnect",
+    )
+    const { recentGroups, installedGroups, walletConnectGroups } =
+      selectWalletSources(
+        [TALISMAN, walletConnect],
+        null,
+        [WalletProviderType.WalletConnect],
+        [WalletProviderType.WalletConnect],
+      )
+
+    expect(titles(recentGroups)).toEqual([])
+    expect(titles(installedGroups)).toEqual(["Talisman"])
+    expect(titles(walletConnectGroups)).toEqual(["WalletConnect"])
+  })
+
   it("holds back sources that are neither installed nor connected", () => {
-    const { installedGroups, otherGroups } = selectWalletSources(
+    const { installedGroups, moreGroups } = selectWalletSources(
       [TALISMAN, NOT_INSTALLED],
       null,
       [],
     )
 
     expect(titles(installedGroups)).toEqual(["Talisman"])
-    expect(titles(otherGroups)).toEqual(["Enkrypt"])
+    expect(titles(moreGroups)).toEqual(["Enkrypt"])
   })
 
   it("promotes an uninstalled source once it is connected", () => {
-    const { recentGroups, otherGroups } = selectWalletSources(
+    const { recentGroups, moreGroups } = selectWalletSources(
       [NOT_INSTALLED],
       null,
       [WalletProviderType.Enkrypt],
     )
 
     expect(titles(recentGroups)).toEqual(["Enkrypt"])
-    expect(otherGroups).toEqual([])
+    expect(moreGroups).toEqual([])
   })
 
   it("sorts recents by last use, installed by title", () => {
@@ -218,8 +236,8 @@ describe("selectWalletSources", () => {
     expect(titles(installedGroups)).toEqual(["Talisman"])
   })
 
-  it("moves uninstalled remembered wallets to other", () => {
-    const { recentGroups, otherGroups } = selectWalletSources(
+  it("moves uninstalled remembered wallets to more", () => {
+    const { recentGroups, moreGroups } = selectWalletSources(
       [TALISMAN, NOT_INSTALLED],
       null,
       [],
@@ -227,7 +245,7 @@ describe("selectWalletSources", () => {
     )
 
     expect(titles(recentGroups)).toEqual(["Talisman"])
-    expect(titles(otherGroups)).toEqual(["Enkrypt"])
+    expect(titles(moreGroups)).toEqual(["Enkrypt"])
   })
 })
 

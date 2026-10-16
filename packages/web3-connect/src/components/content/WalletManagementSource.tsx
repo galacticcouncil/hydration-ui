@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import {
   SChainBadgeImage,
   SConnectedDot,
+  SourceIconColor,
   SSourceAction,
   SSourceButton,
   SSourceChainBadge,
@@ -62,6 +63,7 @@ export const WalletSourceButton: React.FC<{
   readonly logo?: string
   readonly logos?: WalletProviderType[]
   readonly icon?: ComponentType
+  readonly iconColor?: SourceIconColor
   readonly pending?: boolean
   readonly connected?: boolean
   readonly variant?: WalletSourceButtonVariant
@@ -75,6 +77,7 @@ export const WalletSourceButton: React.FC<{
   logo,
   logos,
   icon,
+  iconColor,
   pending,
   connected,
   variant = "management",
@@ -94,7 +97,7 @@ export const WalletSourceButton: React.FC<{
           {logo ? (
             <SSourceLogo src={logo} alt="" lazy={false} />
           ) : icon ? (
-            <SSourceIcon>
+            <SSourceIcon iconColor={iconColor}>
               <Icon size="xs" component={icon} />
             </SSourceIcon>
           ) : (
@@ -176,6 +179,9 @@ export const WalletProviderSourceButton: React.FC<{
   readonly status: WalletProviderStatus
   readonly pending: boolean
   readonly variant?: WalletSourceButtonVariant
+  readonly connectLabel?: string
+  readonly icon?: ComponentType
+  readonly iconColor?: SourceIconColor
   readonly onClick: () => void
   readonly onDisconnect: () => void
 }> = ({
@@ -184,6 +190,9 @@ export const WalletProviderSourceButton: React.FC<{
   status,
   pending,
   variant = "management",
+  connectLabel,
+  icon,
+  iconColor,
   onClick,
   onDisconnect,
 }) => {
@@ -196,7 +205,7 @@ export const WalletProviderSourceButton: React.FC<{
   const subtitle = isConnected
     ? t("provider.connected")
     : wallet.installed
-      ? t("provider.connect")
+      ? (connectLabel ?? t("provider.connect"))
       : t("provider.notInstalled")
 
   return (
@@ -205,7 +214,9 @@ export const WalletProviderSourceButton: React.FC<{
       title={wallet.title}
       subtitle={subtitle}
       connected={isConnected}
-      logo={wallet.logo}
+      logo={icon ? undefined : wallet.logo}
+      icon={icon}
+      iconColor={iconColor}
       pending={pending}
       variant={variant}
       chainModes={chainModes}

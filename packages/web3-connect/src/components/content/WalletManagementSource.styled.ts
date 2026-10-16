@@ -26,8 +26,35 @@ export const SConnectedDot = styled(Box)(
   `,
 )
 
+/** Shared look of the modal's clickable rows: wallet sources, accounts, external wallet recents/contacts. */
+export const optionTile = (theme: Theme) => css`
+  border: 1px solid transparent;
+  border-radius: ${theme.radii.m};
+  background: ${theme.surfaces.containers.dim.dimOnBg};
+  color: ${theme.text.high};
+
+  cursor: pointer;
+  transition: ${theme.transitions.colors};
+
+  &:hover {
+    background-color: ${theme.controls.dim.active};
+    border-color: ${theme.buttons.secondary.outline.outline};
+  }
+
+  &[data-active="true"] {
+    background: ${theme.buttons.secondary.accent.rest};
+    border-color: ${theme.buttons.secondary.accent.outline};
+
+    &:hover {
+      background: ${theme.controls.dim.active};
+    }
+  }
+`
+
 export const SSourceButton = styled.button(
   ({ theme }) => css`
+    ${optionTile(theme)}
+
     width: 100%;
     min-height: ${pxToRem(40)};
 
@@ -39,23 +66,6 @@ export const SSourceButton = styled.button(
     padding: ${theme.space.base};
     padding-right: ${theme.space.s};
 
-    border: 1px solid transparent;
-    border-radius: ${theme.radii.m};
-    background: transparent;
-    color: ${theme.text.high};
-
-    cursor: pointer;
-    transition: ${theme.transitions.colors};
-
-    &:not([data-variant="firstConnectionPlain"]) {
-      background: ${theme.surfaces.containers.dim.dimOnBg};
-
-      &:hover {
-        background-color: ${theme.buttons.secondary.outline.fill};
-        border-color: ${theme.buttons.secondary.outline.outline};
-      }
-    }
-
     &[data-variant="firstConnectionPlain"] {
       width: auto;
       min-height: ${pxToRem(36)};
@@ -66,28 +76,34 @@ export const SSourceButton = styled.button(
 
       &:hover {
         background: ${theme.buttons.secondary.accent.restSubtle};
-      }
-    }
-
-    &[data-active="true"] {
-      background: ${theme.buttons.secondary.accent.rest};
-      border-color: ${theme.buttons.secondary.accent.outline};
-
-      &:hover {
-        background: ${theme.buttons.secondary.accent.hover};
+        border-color: transparent;
       }
     }
   `,
 )
 
-export const SSourceIcon = styled(Box)(
-  ({ theme }) => css`
-    width: ${theme.sizes.l};
-    height: ${theme.sizes.l};
+export type SourceIconColor = keyof Theme["tags"]["soft"] | "neutral" | "dark"
+
+export const SSourceIcon = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "iconColor",
+})<{ iconColor?: SourceIconColor }>(
+  ({ theme, iconColor }) => css`
+    width: ${theme.sizes.xl};
+    height: ${theme.sizes.xl};
     border-radius: ${theme.radii.full};
 
-    background: ${theme.buttons.secondary.outline.fill};
-    color: ${theme.text.high};
+    background: ${iconColor === "neutral"
+      ? theme.controls.dim.accent
+      : iconColor === "dark"
+        ? theme.colors.greys[900]
+        : iconColor
+          ? theme.tags.soft[iconColor].background
+          : theme.buttons.secondary.outline.fill};
+    color: ${iconColor === "dark"
+      ? theme.colors.greys[100]
+      : iconColor && iconColor !== "neutral"
+        ? theme.tags.soft[iconColor].foreground
+        : theme.text.high};
 
     flex-shrink: 0;
     display: flex;
@@ -98,8 +114,8 @@ export const SSourceIcon = styled(Box)(
 
 export const SSourceLogo = styled(Image)(
   ({ theme }) => css`
-    width: ${theme.sizes.l};
-    height: ${theme.sizes.l};
+    width: ${theme.sizes.xl};
+    height: ${theme.sizes.xl};
     flex-shrink: 0;
     object-fit: contain;
   `,
