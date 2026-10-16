@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   WalletProviderType,
@@ -35,6 +36,7 @@ const SUBWALLET = wallet(WalletProviderType.Subwallet, "SubWallet")
 const NOVA = wallet(WalletProviderType.NovaWallet, "Nova Wallet")
 const RABBY = wallet(WalletProviderType.RabbyWallet, "Rabby")
 const NOT_INSTALLED = wallet(WalletProviderType.Enkrypt, "Enkrypt", false)
+const METEOR = wallet(WalletProviderType.MeteorWallet, "Meteor Wallet")
 
 const titles = (groups: { title: string }[]) => groups.map((g) => g.title)
 
@@ -95,6 +97,36 @@ describe("selectWalletSources", () => {
     ])
 
     expect(available).toHaveLength(2)
+  })
+
+  it("never advertises a NEAR web wallet when no mode is forced", () => {
+    const { available } = selectWalletSources([TALISMAN, METEOR], null, [])
+
+    expect(available).toEqual([TALISMAN])
+  })
+
+  it("keeps a connected NEAR web wallet reachable", () => {
+    const { recentGroups } = selectWalletSources([METEOR], null, [
+      WalletProviderType.MeteorWallet,
+    ])
+
+    expect(titles(recentGroups)).toEqual(["Meteor Wallet"])
+  })
+
+  it("lists a NEAR wallet whose extension is installed", () => {
+    const { installedGroups } = selectWalletSources(
+      [{ ...METEOR, hasExtension: true }],
+      null,
+      [],
+    )
+
+    expect(titles(installedGroups)).toEqual(["Meteor Wallet"])
+  })
+
+  it("offers NEAR web wallets once NEAR is forced", () => {
+    const { available } = selectWalletSources([METEOR], NEAR_PROVIDERS, [])
+
+    expect(available).toEqual([METEOR])
   })
 
   it("drops ExternalWallet, which renders in its own slot", () => {
