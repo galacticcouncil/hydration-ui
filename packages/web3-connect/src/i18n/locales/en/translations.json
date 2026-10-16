@@ -54,6 +54,8 @@
   "external.description": "Paste account address you would like to monitor.",
   "external.addressLabel": "Account address",
   "external.addressPlaceholder": "Paste account address here...",
+  "external.section.recent": "Recent addresses",
+  "external.section.contacts": "Addresses in my contacts",
   "external.empty": "No recent accounts or contacts",
   "external.confirm": "Confirm",
 

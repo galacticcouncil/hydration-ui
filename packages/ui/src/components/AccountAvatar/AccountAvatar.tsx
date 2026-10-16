@@ -31,6 +31,7 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
           size={scaledSize}
           borderRadius="full"
           bg={getToken("surfaces.containers.dim.dimOnHigh")}
+          flexShrink={0}
         />
       }
     >

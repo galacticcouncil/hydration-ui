@@ -2,6 +2,7 @@ import {
   AccountInput,
   Box,
   Button,
+  Flex,
   FormError,
   ScrollArea,
   Stack,
@@ -25,9 +26,10 @@ import {
   Address,
   useAddresses,
 } from "@/components/address-book/AddressBook.store"
-import { AddressBookEntry } from "@/components/address-book/AddressBookEntry"
 import { SScrollAreaContent } from "@/components/content/WalletManagementContent.styled"
+import { SSourceCategoryLabel } from "@/components/content/WalletManagementSource.styled"
 import { ExternalWalletFormValues } from "@/components/external/ExternalWalletForm.form"
+import { ExternalWalletOption } from "@/components/external/ExternalWalletOption"
 import { useRecentExternalWallets } from "@/components/external/RecentExternalWallets.store"
 import { WalletProviderType } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
@@ -109,21 +111,10 @@ export const ExternalWalletForm = () => {
     [recentAddresses, addresses],
   )
 
-  // Recent first (most recently used on top), then custom contacts not
-  // already listed as recent.
-  const list = useMemo(() => {
-    const recentKeys = new Set(recents.map((a) => a.publicKey.toLowerCase()))
-    const contacts = addresses.filter(
-      (address) =>
-        address.isCustom &&
-        isWatchableMode(address.mode) &&
-        !recentKeys.has(address.publicKey.toLowerCase()),
-    )
-    return [
-      ...recents.map((address) => ({ address, isRecent: true })),
-      ...contacts.map((address) => ({ address, isRecent: false })),
-    ]
-  }, [recents, addresses])
+  const contacts = useMemo(
+    () => addresses.filter((address) => isWatchableMode(address.mode)),
+    [addresses],
+  )
 
   const value = form.watch("address")
   const isValid = !!value.trim() && !form.formState.errors.address
@@ -132,12 +123,15 @@ export const ExternalWalletForm = () => {
   // Typing a partial address or name filters the list; a full valid address
   // doesn't, so the list doesn't collapse right before submitting.
   const query = isValid ? "" : value.trim().toLowerCase()
-  const entries = list.filter(
-    ({ address }) =>
-      !query ||
-      address.address.toLowerCase().includes(query) ||
-      address.name.toLowerCase().includes(query),
-  )
+  const matches = (address: Address) =>
+    !query ||
+    address.address.toLowerCase().includes(query) ||
+    address.name.toLowerCase().includes(query)
+
+  const sections = [
+    { key: "recent", entries: recents.filter(matches) },
+    { key: "contacts", entries: contacts.filter(matches) },
+  ].filter(({ entries }) => entries.length)
 
   const submit = form.handleSubmit(({ address }) =>
     connectExternalWallet(address),
@@ -151,7 +145,7 @@ export const ExternalWalletForm = () => {
 
   return (
     <form onSubmit={submit} sx={{ height: "100%" }}>
-      <Stack gap="var(--modal-content-padding)" height="100%">
+      <Stack gap="base" height="100%">
         <Controller
           name="address"
           control={form.control}
@@ -185,22 +179,34 @@ export const ExternalWalletForm = () => {
         />
         <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
           <ScrollArea>
-            <SScrollAreaContent direction="column">
-              {entries.length ? (
-                <Stack separated>
-                  {entries.map(({ address, isRecent }) => (
-                    <AddressBookEntry
-                      key={address.publicKey}
-                      {...address}
-                      onSelect={() => onSelect(address)}
-                      onDelete={
-                        isRecent
-                          ? () => removeRecent(address.address)
-                          : undefined
-                      }
-                    />
-                  ))}
-                </Stack>
+            <SScrollAreaContent direction="column" gap="base">
+              {sections.length ? (
+                sections.map(({ key, entries }) => (
+                  <Flex key={key} direction="column" gap="s">
+                    <SSourceCategoryLabel
+                      fs="p5"
+                      fw={500}
+                      lh={1.25}
+                      color={getToken("text.low")}
+                    >
+                      {t(`external.section.${key}`)}
+                    </SSourceCategoryLabel>
+                    <Flex direction="column" gap="base">
+                      {entries.map((address) => (
+                        <ExternalWalletOption
+                          key={address.publicKey}
+                          {...address}
+                          onSelect={() => onSelect(address)}
+                          onDelete={
+                            key === "recent"
+                              ? () => removeRecent(address.address)
+                              : undefined
+                          }
+                        />
+                      ))}
+                    </Flex>
+                  </Flex>
+                ))
               ) : (
                 <Text
                   fs="p5"

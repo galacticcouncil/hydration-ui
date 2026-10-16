@@ -25,6 +25,7 @@ export const AccountEmoji: React.FC<AccountEmojiProps> = ({
       justify="center"
       bg={getToken("controls.dim.base")}
       overflow="hidden"
+      flexShrink={0}
       {...props}
     >
       {icon && "image" in icon ? (
