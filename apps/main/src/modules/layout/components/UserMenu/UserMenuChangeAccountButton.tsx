@@ -1,4 +1,4 @@
-import { ButtonIcon, Icon } from "@galacticcouncil/ui/components"
+import { ButtonIcon, Icon, Tooltip } from "@galacticcouncil/ui/components"
 import {
   useWeb3ConnectModal,
   Web3ConnectModalPage,
@@ -54,15 +54,16 @@ export const UserMenuChangeAccountButton: FC<Props> = ({
   if (!changeAccount) return null
 
   return (
-    <ButtonIcon
-      title={label}
-      aria-label={label}
-      onClick={(e) => {
-        e.stopPropagation()
-        changeAccount()
-      }}
-    >
-      <Icon size="s" component={RefreshCw} />
-    </ButtonIcon>
+    <Tooltip text={label} size="small" asChild>
+      <ButtonIcon
+        aria-label={label}
+        onClick={(e) => {
+          e.stopPropagation()
+          changeAccount()
+        }}
+      >
+        <Icon size="s" component={RefreshCw} />
+      </ButtonIcon>
+    </Tooltip>
   )
 }

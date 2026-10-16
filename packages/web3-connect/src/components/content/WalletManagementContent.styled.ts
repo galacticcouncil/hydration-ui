@@ -50,11 +50,9 @@ export const SWalletManagementShell = styled(Box, {
   `,
 )
 
-export const SModalHeader = styled(ModalHeader, {
-  shouldForwardProp,
-})<PanelProps>(
-  ({ theme, showAccountPanel }) => css`
-    padding-bottom: ${showAccountPanel ? theme.space.base : theme.space.l};
+export const SModalHeader = styled(ModalHeader)(
+  ({ theme }) => css`
+    padding-bottom: ${theme.space.l};
     flex-shrink: 0;
   `,
 )
