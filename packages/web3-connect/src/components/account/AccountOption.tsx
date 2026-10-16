@@ -5,13 +5,10 @@ import {
   Flex,
   Skeleton,
   Text,
+  TextMiddleTruncate,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  formatCurrency,
-  formatNumber,
-  shortenAccountAddress,
-} from "@galacticcouncil/utils"
+import { formatCurrency, formatNumber } from "@galacticcouncil/utils"
 
 import { SAccountActionCopyButton } from "@/components/account/AccountActionButton.styled"
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
@@ -112,14 +109,9 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
             )}
           </Flex>
           <Flex align="center" justify="space-between" gap="s">
-            <Text fs="p4" color={getToken("text.medium")} sx={{ minWidth: 0 }}>
-              <Text as="span" truncate display={["none", "block"]}>
-                {account.displayAddress}
-              </Text>
-              <Text as="span" display={["block", "none"]}>
-                {shortenAccountAddress(account.displayAddress, 12)}
-              </Text>
-            </Text>
+            <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
+              {account.displayAddress}
+            </TextMiddleTruncate>
             <Flex pl="m" ml="auto" gap="base">
               <SAccountActionCopyButton text={account.displayAddress} />
               {onDelete && <AccountDeleteButton onClick={onDelete} />}
