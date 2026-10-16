@@ -37,6 +37,12 @@ const Web3ConnectModal = lazy(async () => ({
   ),
 }))
 
+const Web3ConnectSession = lazy(async () => ({
+  default: await import("@galacticcouncil/web3-connect").then(
+    (m) => m.Web3ConnectSession,
+  ),
+}))
+
 const Devtools = import.meta.env.DEV
   ? lazy(async () => ({
       default: await import("@/components/Devtools").then((m) => m.Devtools),
@@ -124,6 +130,7 @@ function Services() {
     <>
       <Suspense fallback={null}>
         <TransactionManager />
+        <Web3ConnectSession />
         <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
       </Suspense>
       {isReady && <ApiSubscriptions />}

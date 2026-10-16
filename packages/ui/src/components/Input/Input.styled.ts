@@ -71,7 +71,7 @@ export const SInputContainer = styled.div<
   variants(variant),
   css`
     display: flex;
-    gap: ${theme.space.s};
+    gap: ${theme.space.base};
     align-items: center;
 
     transition: ${theme.transitions.colors};

@@ -19,6 +19,7 @@ import {
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap, routesMap } from "@galacticcouncil/xc-cfg"
 import {
@@ -43,6 +44,7 @@ const CHAINS_PRIORITY = [
   "hyperevm",
   "sui",
   "near",
+  "zec",
   "assethub",
   "moonbeam",
   "assethub_kusama",
@@ -79,7 +81,9 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Sui ||
       c.ecosystem === ChainEcosystem.Ethereum ||
       // NEAR is listed once the sdk routes it, so it comes with that release
-      (c.ecosystem === ChainEcosystem.Near && isRoutedChain(c.key))
+      (c.ecosystem === ChainEcosystem.Near && isRoutedChain(c.key)) ||
+      // Zcash has no routes: xc-swap's Zcash transfers serve it
+      c.ecosystem === ChainEcosystem.Zcash
     )
   }),
   sortBy(
@@ -108,6 +112,8 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
         return chainsMap.get("sui") || null
       case NEAR_PROVIDERS.includes(provider):
         return chainsMap.get("near") || null
+      case ZCASH_PROVIDERS.includes(provider):
+        return chainsMap.get("zec") || null
       default:
         return chainsMap.get("assethub") || null
     }
@@ -169,6 +175,10 @@ export const getWalletModeByChain = (chain: AnyChain) => {
 
   if (chain.isNear()) {
     return WalletMode.Near
+  }
+
+  if (chain.isZec()) {
+    return WalletMode.Zcash
   }
 
   return WalletMode.Default

@@ -4,6 +4,7 @@ import { useIntentsStore } from "@/states/intents"
 
 export type TutorialStep = {
   i18nKey: string
+  badgeKey?: string
   side?: "top" | "right" | "bottom" | "left"
   align?: "start" | "center" | "end"
   badgeVariant?: ChipVariant
@@ -24,6 +25,15 @@ export const tutorials = {
       },
     ],
     when: () => useIntentsStore.getState().hasSeenModal,
+  },
+  "settings-avatar": {
+    steps: [
+      {
+        i18nKey: "hints.avatar",
+        badgeKey: "new",
+        side: "bottom",
+      },
+    ],
   },
 } satisfies Record<string, Tutorial>
 

@@ -9,4 +9,8 @@ export class MeteorWallet extends BaseNearWallet {
   title = "Meteor Wallet"
   installUrl = "https://meteorwallet.app"
   logo = logo
+
+  get hasExtension() {
+    return "meteorCom" in window || "meteorComV2" in window
+  }
 }

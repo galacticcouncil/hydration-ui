@@ -6,6 +6,7 @@ import { createContext, useContext } from "react"
 import { XcmTransferArgs } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
+import { ZcashRoute } from "@/modules/xcm/transfer/utils/zcash"
 
 export type XcmAlertSeverity = "error" | "warning" | "info"
 
@@ -34,6 +35,8 @@ type XcmContextValue = {
   readonly destChainAssetPairs: ChainAssetPair[]
   readonly availableBridgeRoutes: AssetRoute[]
   readonly selectedRoute: AssetRoute | null
+  /** The selected pair is Zcash, which has no route to select */
+  readonly zcashRoute: ZcashRoute | null
   readonly registryChain: EvmParachain
   readonly status: XcmTransferStatus
 }
@@ -55,6 +58,7 @@ export const XcmContext = createContext<XcmContextValue>({
   destChainAssetPairs: [],
   availableBridgeRoutes: [],
   selectedRoute: null,
+  zcashRoute: null,
   registryChain: {} as EvmParachain,
   status: XcmTransferStatus.Default,
 })

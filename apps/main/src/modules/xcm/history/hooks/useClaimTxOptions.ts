@@ -12,6 +12,8 @@ type Callbacks = {
   onError?: (error: string) => void
   onFinalized?: () => void
   createLink?: (txHash: string) => string
+  /** Toast titles of a transaction other than the claim itself. */
+  titles?: { submitted: string; success: string; error: string }
 }
 
 export function useClaimTxOptions(toastParams: ToastParams) {
@@ -26,7 +28,9 @@ export function useClaimTxOptions(toastParams: ToastParams) {
         callbacks?.onSubmitted?.(txHash)
         toastId = pending({
           ...(callbacks?.createLink && { link: callbacks.createLink(txHash) }),
-          title: t("claim.toast.submitted", toastParams),
+          title:
+            callbacks?.titles?.submitted ??
+            t("claim.toast.submitted", toastParams),
           meta: {
             type: TransactionType.Onchain,
             srcChainKey: chain.key,
@@ -40,7 +44,9 @@ export function useClaimTxOptions(toastParams: ToastParams) {
         if (toastId) {
           edit(toastId, {
             variant: "success",
-            title: t("claim.toast.success", toastParams),
+            title:
+              callbacks?.titles?.success ??
+              t("claim.toast.success", toastParams),
           })
         }
       },
@@ -49,7 +55,8 @@ export function useClaimTxOptions(toastParams: ToastParams) {
         if (toastId) {
           edit(toastId, {
             variant: "error",
-            title: t("claim.toast.error", toastParams),
+            title:
+              callbacks?.titles?.error ?? t("claim.toast.error", toastParams),
             hint: error,
           })
         }

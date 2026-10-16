@@ -19,6 +19,7 @@ export const ZcashIdenticon: React.FC<ZcashIdenticonProps> = ({
     align="center"
     justify="center"
     sx={{ overflow: "hidden" }}
+    flexShrink={0}
     {...props}
   >
     <Image src={ICON_URL} alt="Zcash" width={size} height={size} />

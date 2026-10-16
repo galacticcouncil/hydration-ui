@@ -22,6 +22,7 @@ import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 type UseWeb3EnableOptions = {
   disconnectOnError?: boolean
   restore?: boolean
+  eager?: boolean
 }
 
 const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
@@ -59,6 +60,7 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     setAccounts,
     setRestoreState,
     clearRestoreState,
+    markRecent,
   } = useWeb3Connect(
     useShallow(
       pick([
@@ -69,6 +71,7 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
         "setAccounts",
         "setRestoreState",
         "clearRestoreState",
+        "markRecent",
       ]),
     ),
   )
@@ -116,6 +119,7 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
 
       setAccounts(data.map(toStoredAccount), type)
       setStatus(type, WalletProviderStatus.Connected)
+      if (!options.eager) markRecent(type)
 
       if (options.restore) {
         clearRestoreState(type)
@@ -164,11 +168,13 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
       }
 
       setStatus(type, WalletProviderStatus.Error)
-      if (error instanceof BaseWalletError) {
-        setError(error.message)
-      } else {
-        setError("Unexpected error, please try again.")
-      }
+      const errorMessage =
+        error instanceof BaseWalletError
+          ? error.message
+          : error instanceof Error && error.message
+            ? error.message
+            : "Unexpected error, please try again."
+      setError(errorMessage)
     },
   })
 
