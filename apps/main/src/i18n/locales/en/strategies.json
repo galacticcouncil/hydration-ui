@@ -22,6 +22,7 @@
   "bonds.deposit.yourDeposit": "Deposit",
   "bonds.deposit.receiveAtMaturity": "Receive at maturity",
   "bonds.deposit.maturityPeriod": "Maturity period",
+  "bonds.deposit.validation.max": "You can deposit up to {{ amount, currency(roundingMode: 'trunc'; roundingPriority: 'morePrecision'; minimumFractionDigits: 2) }}.",
   "bonds.deposit.toast.submitted": "Depositing {{ amount, currency }} into {{ bond }}...",
   "bonds.deposit.toast.success": "Deposited {{ amount, currency }} into {{ bond }}",
   "bonds.deposit.soldOut.header": "Out of bonds",

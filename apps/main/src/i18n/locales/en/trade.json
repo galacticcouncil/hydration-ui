@@ -292,6 +292,7 @@
   "otc.fillOrder.success": "OTC order filled for {{ amount }}.",
   "otc.fillOrder.error": "Failed to fill OTC order for {{ amount }}.",
   "otc.fillOrder.validation.orderTooBig": "The amount exceeds the size of the order.",
+  "otc.fillOrder.validation.leftoverTooSmall": "Fill the whole order or enter at most {{ amount, currency(roundingMode: 'trunc'; roundingPriority: 'morePrecision'; minimumFractionDigits: 2) }}.",
   "otc.fillOrder.partiallyFillable.title": "Partially fillable",
   "otc.fillOrder.partiallyFillable.description": "Allow users to fill smaller parts of this offer",
   "otc.cancelOrder.loading": "Cancelling an OTC order for {{ amount }}.",
