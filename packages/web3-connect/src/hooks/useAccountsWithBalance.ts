@@ -1,5 +1,6 @@
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AssetAmount } from "@galacticcouncil/xc-core"
-import { QueriesResults, useQueries } from "@tanstack/react-query"
+import { QueriesResults, queryOptions, useQueries } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo } from "react"
 import { partition, pick, sortBy } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -13,19 +14,60 @@ import {
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks"
 import { useAccountBalancesMap } from "@/hooks/useAccountBalancesMap"
-import { solanaNativeBalanceQueryOptions } from "@/hooks/useSolanaNativeBalance"
-import { suiNativeBalanceQueryOptions } from "@/hooks/useSuiNativeBalance"
 import { Account, useWeb3Connect } from "@/hooks/useWeb3Connect"
+import { readNoirBalance } from "@/utils/zec"
 
-// Neckwork prices Hydration accounts by hex public key and rejects the whole
-// batch on any other id, so NEAR and Zcash accounts are left without a balance.
-const hasNeckworkBalance = (account: Account) =>
-  !NEAR_PROVIDERS.includes(account.provider) &&
-  !ZCASH_PROVIDERS.includes(account.provider)
+/**
+ * Chains whose accounts cannot use Hydration, so their balance is the chain's
+ * native token instead of the indexer's. Neckwork also rejects a whole batch
+ * on a non-hex id, so NEAR and Zcash accounts must never reach it.
+ */
+const NATIVE_CHAINS = [
+  { providers: SOLANA_PROVIDERS, chainKey: "solana", assetKey: "sol" },
+  { providers: SUI_PROVIDERS, chainKey: "sui", assetKey: "sui" },
+  { providers: NEAR_PROVIDERS, chainKey: "near", assetKey: "near" },
+  { providers: ZCASH_PROVIDERS, chainKey: "zec", assetKey: "zec" },
+]
 
-type NativeBalanceQueryOptions =
-  | ReturnType<typeof solanaNativeBalanceQueryOptions>
-  | ReturnType<typeof suiNativeBalanceQueryOptions>
+const getNativeChain = (account: Account) =>
+  NATIVE_CHAINS.find(({ providers }) => providers.includes(account.provider))
+
+const hasNativeBalance = (account: Account) => !!getNativeChain(account)
+
+const fetchNativeBalance = async (
+  chainKey: string,
+  assetKey: string,
+  address: string,
+): Promise<AssetAmount> => {
+  const chain = chainsMap.get(chainKey)
+  const assetData = chain?.assetsData.get(assetKey)
+
+  if (!chain || !assetData?.decimals) {
+    throw new Error(`Invalid native asset ${assetKey} on ${chainKey}`)
+  }
+
+  // Zcash reads its balance from Noir, a reader the xcm context registers only
+  // once it loads, so it is called directly
+  if (chainKey === "zec") {
+    return AssetAmount.fromAsset(assetData.asset, {
+      amount: await readNoirBalance(address),
+      decimals: assetData.decimals,
+    })
+  }
+
+  return chain.getBalance(assetData.asset, address)
+}
+
+const nativeBalanceQueryOptions = (
+  chainKey: string,
+  assetKey: string,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: ["native", "balance", chainKey, address],
+    queryFn: () => fetchNativeBalance(chainKey, assetKey, address),
+    enabled: !!address,
+  })
 
 /**
  * A public key can appear under several providers, so native balances are
@@ -34,27 +76,6 @@ type NativeBalanceQueryOptions =
 const getNativeBalanceKey = (
   account: Pick<Account, "provider" | "rawAddress">,
 ) => `${account.provider}-${account.rawAddress}`
-
-/**
- * Solana and Sui accounts have no Hydration balance to look up, so their
- * balance comes from the chain's native token instead of the indexer.
- */
-const getNativeBalanceQueryOptions = (
-  account: Account,
-): NativeBalanceQueryOptions | null => {
-  switch (true) {
-    case SOLANA_PROVIDERS.includes(account.provider):
-      return solanaNativeBalanceQueryOptions(account.rawAddress)
-    case SUI_PROVIDERS.includes(account.provider):
-      return suiNativeBalanceQueryOptions(account.rawAddress)
-    default:
-      return null
-  }
-}
-
-const hasNativeBalance = (account: Account) =>
-  SOLANA_PROVIDERS.includes(account.provider) ||
-  SUI_PROVIDERS.includes(account.provider)
 
 /**
  * Token amounts and fiat values are not comparable, so accounts are bucketed
@@ -81,7 +102,7 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
   )
 
   const [nativeAccounts, fiatAccounts] = useMemo(
-    () => partition(accounts.filter(hasNeckworkBalance), hasNativeBalance),
+    () => partition(accounts, hasNativeBalance),
     [accounts],
   )
 
@@ -93,11 +114,16 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
 
   const { nativeBalancesMap, isLoading: areNativeBalancesLoading } = useQueries(
     {
-      queries: nativeAccounts.flatMap(
-        (account) => getNativeBalanceQueryOptions(account) ?? [],
-      ),
+      queries: nativeAccounts.map((account) => {
+        const { chainKey, assetKey } = getNativeChain(account)!
+        return nativeBalanceQueryOptions(chainKey, assetKey, account.rawAddress)
+      }),
       combine: useCallback(
-        (queries: QueriesResults<Array<NativeBalanceQueryOptions>>) => {
+        (
+          queries: QueriesResults<
+            Array<ReturnType<typeof nativeBalanceQueryOptions>>
+          >,
+        ) => {
           const nativeBalancesMap = new Map<string, AssetAmount>()
 
           nativeAccounts.forEach((account, index) => {
@@ -133,7 +159,7 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
       const nativeBalance = nativeBalancesMap.get(getNativeBalanceKey(account))
 
       const balance = hasNativeBalance(account)
-        ? nativeBalance?.toBig().toNumber()
+        ? nativeBalance?.toBigDecimal().toNumber()
         : account.balance
 
       return {

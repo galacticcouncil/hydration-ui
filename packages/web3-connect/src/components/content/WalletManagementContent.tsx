@@ -5,6 +5,7 @@ import {
   Flex,
   Icon,
   Input,
+  ModalContentDivider,
   ScrollArea,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -157,7 +158,9 @@ export const WalletManagementContent = () => {
   const [accountSearch, setAccountSearch] = useState("")
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const externalWalletForm = useExternalWalletForm()
-  const showExternalWallet = !meta?.hideExternalWallet
+  const isChainMode = mode !== WalletMode.Default
+  // View-only accounts don't belong to a chain-specific connect
+  const showExternalWallet = !isChainMode && !meta?.hideExternalWallet
   const showMultisig =
     mode === WalletMode.Default ||
     mode === WalletMode.Substrate ||
@@ -225,6 +228,7 @@ export const WalletManagementContent = () => {
   const errorWallet = recentProvider ? getWallet(recentProvider) : undefined
   const hasConnectedWalletState =
     connectedProviderTypes.length > 0 || accounts.length > 0
+  const showLogOutAll = !isChainMode && hasConnectedWalletState
   const connectedAccountsCount = useMemo(
     () => filterAccounts(mode)(accounts.map(toAccount)).length,
     [accounts, mode],
@@ -277,8 +281,10 @@ export const WalletManagementContent = () => {
   const showWalletGroupChainSelectState =
     !!selectedWalletGroup &&
     getSelectableWallets(selectedWalletGroup, connectedProviderTypes).length > 1
+
   const showAccountPanel =
-    hasConnectedWalletState ||
+    connectedProviderTypes.length > 0 ||
+    connectedAccountsCount > 0 ||
     isExternalWalletSelected ||
     isMultisigSelected ||
     isProvidersConnecting ||
@@ -510,29 +516,25 @@ export const WalletManagementContent = () => {
             ? () => setShowAccounts(false)
             : undefined
         }
-        description={
-          meta?.description ??
-          (showAccountPanel
-            ? undefined
-            : t("provider.selectSourceWalletDescription"))
-        }
+        description={meta?.description}
         align="center"
-        showAccountPanel={showAccountPanel}
       />
       <SModalBody noPadding scrollable={false}>
         <SLayoutGrid showAccountPanel={showAccountPanel}>
           <SSourceColumn mobileHidden={isAccountsView}>
-            <Input
-              value={walletSearchValue}
-              onChange={(event) => setWalletSearchValue(event.target.value)}
-              customSize="large"
-              iconStart={Search}
-              placeholder={t("provider.searchWallets")}
-              width="100%"
-              sx={{ flexShrink: 0 }}
-            />
+            {!isChainMode && (
+              <Input
+                value={walletSearchValue}
+                onChange={(event) => setWalletSearchValue(event.target.value)}
+                customSize="large"
+                iconStart={Search}
+                placeholder={t("provider.searchWallets")}
+                width="100%"
+                sx={{ flexShrink: 0 }}
+              />
+            )}
 
-            <SSourceScrollFrame hasFooter={hasConnectedWalletState}>
+            <SSourceScrollFrame hasFooter={showLogOutAll}>
               <ScrollArea>
                 <SScrollAreaContent direction="column" gap="base">
                   {showAccountPanel && connectedAccountsCount > 0 && (
@@ -574,7 +576,11 @@ export const WalletManagementContent = () => {
                           lh={1.25}
                           color={getToken("text.low")}
                         >
-                          {t("provider.installed")}
+                          {t(
+                            isChainMode
+                              ? "provider.available"
+                              : "provider.installed",
+                          )}
                         </SSourceCategoryLabel>
                       )}
 
@@ -663,7 +669,7 @@ export const WalletManagementContent = () => {
                   )}
                 </SScrollAreaContent>
               </ScrollArea>
-              {hasConnectedWalletState && (
+              {showLogOutAll && (
                 <SSourceFooter>
                   <SSourceFooterAction>
                     <WalletSourceButton

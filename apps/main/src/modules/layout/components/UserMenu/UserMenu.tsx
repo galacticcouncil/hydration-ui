@@ -14,8 +14,10 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
   MicroButton,
+  ScrollArea,
   Separator,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
@@ -41,7 +43,9 @@ import {
   useRecentProviderAccountsStore,
 } from "@/states/recentProviderAccounts"
 
-const UserMenuSeparator = () => <Separator my="base" mx="-base" />
+const UserMenuSeparator = () => (
+  <Separator my="base" mx="-base" flexShrink={0} />
+)
 
 type Props = {
   readonly open: boolean
@@ -95,7 +99,8 @@ export const UserMenu: FC<Props> = ({
         sx={{
           minWidth: pxToRem(360),
           maxHeight: "var(--radix-hover-card-content-available-height)",
-          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Flex align="center" justify="space-between" gap="s" py="base" px="m">
@@ -118,110 +123,124 @@ export const UserMenu: FC<Props> = ({
 
         <UserMenuSeparator />
 
-        {connectedTypes.map((type) => {
-          const wallet = getWallet(type)
-          const providerAccounts = accounts.filter((a) => a.provider === type)
-          const recentAccount = getRecentProviderAccount(
-            type,
-            providerAccounts,
-            recentByProvider,
-          )
-          if (!wallet || !recentAccount) return null
+        <ScrollArea
+          sx={{
+            flex: 1,
+            height: "auto",
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {connectedTypes.map((type) => {
+            const wallet = getWallet(type)
+            const providerAccounts = accounts.filter((a) => a.provider === type)
+            const recentAccount = getRecentProviderAccount(
+              type,
+              providerAccounts,
+              recentByProvider,
+            )
+            if (!wallet || !recentAccount) return null
 
-          const isActiveProvider = type === account.provider
-          const address = isActiveProvider
-            ? account.displayAddress
-            : recentAccount.displayAddress
+            const isActiveProvider = type === account.provider
+            const address = isActiveProvider
+              ? account.displayAddress
+              : recentAccount.displayAddress
 
-          const storedRecentAccount = storedAccounts.find(
-            (a) =>
-              a.provider === type && a.publicKey === recentAccount.publicKey,
-          )
+            const storedRecentAccount = storedAccounts.find(
+              (a) =>
+                a.provider === type && a.publicKey === recentAccount.publicKey,
+            )
 
-          const accountName = isActiveProvider
-            ? account.name
-            : recentAccount.name
-          const shortAddress = shortenAccountAddress(address)
-          const isExternalWallet = type === WalletProviderType.ExternalWallet
-          const hasDistinctName =
-            accountName && !stringEquals(accountName, shortAddress)
-          const copyLabel = t("userMenu.copyAddress")
-          const disconnectLabel = t("userMenu.disconnect", {
-            provider: wallet.title,
-          })
-          const walletSummary = t("userMenu.walletAccounts", {
-            wallet: wallet.title,
-            count: providerAccounts.length,
-          })
+            const accountName = isActiveProvider
+              ? account.name
+              : recentAccount.name
+            const shortAddress = shortenAccountAddress(address)
+            const isExternalWallet = type === WalletProviderType.ExternalWallet
+            const hasDistinctName =
+              accountName && !stringEquals(accountName, shortAddress)
+            const copyLabel = t("userMenu.copyAddress")
+            const disconnectLabel = t("userMenu.disconnect", {
+              provider: wallet.title,
+            })
+            const walletSummary = t("userMenu.walletAccounts", {
+              wallet: wallet.title,
+              count: providerAccounts.length,
+            })
 
-          return (
-            <MenuSelectionItem
-              key={type}
-              onClick={
-                isActiveProvider
-                  ? () => openManageWallets(type)
-                  : storedRecentAccount
-                    ? () => setAccount(storedRecentAccount)
-                    : undefined
-              }
-            >
-              <Box gridRow="1 / -1" sx={{ flexShrink: 0 }}>
-                <AccountWalletAvatar
-                  address={address}
-                  provider={type}
-                  size={36}
-                  badgeSize={16}
-                />
-              </Box>
-              <MenuItemLabel>
-                <Flex align="center" gap="s" minWidth={0}>
-                  {hasDistinctName ? (
-                    <Text truncate={pxToRem(140)}>{accountName}</Text>
-                  ) : (
-                    shortAddress
-                  )}
-                  {isActiveProvider && (
-                    <Chip size="small" rounded variant="green">
-                      {t("userMenu.active")}
-                    </Chip>
-                  )}
-                </Flex>
-              </MenuItemLabel>
-              <MenuItemDescription>
-                {isExternalWallet ? shortAddress : walletSummary}
-              </MenuItemDescription>
-              <MenuItemAction>
-                <Flex align="center" gap="s">
-                  <SHoverActions align="center">
-                    <UserMenuChangeAccountButton
-                      wallet={wallet}
-                      provider={type}
-                      accountCount={providerAccounts.length}
-                      onCloseMenu={() => onOpenChange(false)}
-                    />
-                    <ButtonIcon asChild>
-                      <CopyButton
-                        text={address}
-                        title={copyLabel}
-                        aria-label={copyLabel}
+            return (
+              <MenuSelectionItem
+                key={type}
+                onClick={
+                  isActiveProvider
+                    ? () => openManageWallets(type)
+                    : storedRecentAccount
+                      ? () => setAccount(storedRecentAccount)
+                      : undefined
+                }
+              >
+                <Box gridRow="1 / -1" sx={{ flexShrink: 0 }}>
+                  <AccountWalletAvatar
+                    address={address}
+                    provider={type}
+                    size={36}
+                    badgeSize={16}
+                  />
+                </Box>
+                <MenuItemLabel>
+                  <Flex align="center" gap="s" minWidth={0}>
+                    {hasDistinctName ? (
+                      <Text truncate={pxToRem(140)}>{accountName}</Text>
+                    ) : (
+                      shortAddress
+                    )}
+                    {isActiveProvider && (
+                      <Chip size="small" rounded variant="green">
+                        {t("userMenu.active")}
+                      </Chip>
+                    )}
+                  </Flex>
+                </MenuItemLabel>
+                <MenuItemDescription>
+                  {isExternalWallet ? shortAddress : walletSummary}
+                </MenuItemDescription>
+                <MenuItemAction>
+                  <Flex align="center" gap="s">
+                    <SHoverActions align="center">
+                      <UserMenuChangeAccountButton
+                        wallet={wallet}
+                        provider={type}
+                        accountCount={providerAccounts.length}
+                        onCloseMenu={() => onOpenChange(false)}
                       />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      title={disconnectLabel}
-                      aria-label={disconnectLabel}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        disconnect(type)
-                      }}
-                    >
-                      <Icon size="s" component={LogOut} />
-                    </ButtonIcon>
-                  </SHoverActions>
-                </Flex>
-              </MenuItemAction>
-            </MenuSelectionItem>
-          )
-        })}
+                      <Tooltip text={copyLabel} size="small" asChild>
+                        <ButtonIcon asChild>
+                          <CopyButton
+                            text={address}
+                            // suppress CopyButton's default native title
+                            title=""
+                            aria-label={copyLabel}
+                          />
+                        </ButtonIcon>
+                      </Tooltip>
+                      <Tooltip text={disconnectLabel} size="small" asChild>
+                        <ButtonIcon
+                          aria-label={disconnectLabel}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            disconnect(type)
+                          }}
+                        >
+                          <Icon size="s" component={LogOut} />
+                        </ButtonIcon>
+                      </Tooltip>
+                    </SHoverActions>
+                  </Flex>
+                </MenuItemAction>
+              </MenuSelectionItem>
+            )
+          })}
+        </ScrollArea>
 
         <UserMenuSeparator />
 

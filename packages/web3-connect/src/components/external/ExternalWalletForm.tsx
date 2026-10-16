@@ -6,8 +6,6 @@ import {
   ScrollArea,
   Stack,
   Text,
-  ToggleGroup,
-  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -17,7 +15,7 @@ import {
   safeConvertSS58toH160,
   stringEquals,
 } from "@galacticcouncil/utils"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { first, pick } from "remeda"
@@ -38,8 +36,6 @@ import { toStoredAccount } from "@/utils"
 import { addressToPublicKey } from "@/utils/publicKey"
 import { getWalletModeByAddress } from "@/utils/wallet"
 import { ExternalWallet, getWallet } from "@/wallets"
-
-type ExternalWalletTab = "recent" | "contacts"
 
 type WatchableMode = WalletMode.Substrate | WalletMode.EVM
 
@@ -105,10 +101,6 @@ export const ExternalWalletForm = () => {
   const removeRecent = useRecentExternalWallets((state) => state.remove)
   const addresses = useAddresses()
 
-  const contacts = useMemo(
-    () => addresses.filter((address) => isWatchableMode(address.mode)),
-    [addresses],
-  )
   const recents = useMemo(
     () =>
       recentAddresses
@@ -117,10 +109,21 @@ export const ExternalWalletForm = () => {
     [recentAddresses, addresses],
   )
 
-  // Unset until the user picks a tab, so the default follows the recent list
-  // once the persisted store has hydrated.
-  const [selectedTab, setSelectedTab] = useState<ExternalWalletTab | null>(null)
-  const tab = selectedTab ?? (recents.length ? "recent" : "contacts")
+  // Recent first (most recently used on top), then custom contacts not
+  // already listed as recent.
+  const list = useMemo(() => {
+    const recentKeys = new Set(recents.map((a) => a.publicKey.toLowerCase()))
+    const contacts = addresses.filter(
+      (address) =>
+        address.isCustom &&
+        isWatchableMode(address.mode) &&
+        !recentKeys.has(address.publicKey.toLowerCase()),
+    )
+    return [
+      ...recents.map((address) => ({ address, isRecent: true })),
+      ...contacts.map((address) => ({ address, isRecent: false })),
+    ]
+  }, [recents, addresses])
 
   const value = form.watch("address")
   const isValid = !!value.trim() && !form.formState.errors.address
@@ -129,8 +132,8 @@ export const ExternalWalletForm = () => {
   // Typing a partial address or name filters the list; a full valid address
   // doesn't, so the list doesn't collapse right before submitting.
   const query = isValid ? "" : value.trim().toLowerCase()
-  const entries = (tab === "recent" ? recents : contacts).filter(
-    (address) =>
+  const entries = list.filter(
+    ({ address }) =>
       !query ||
       address.address.toLowerCase().includes(query) ||
       address.name.toLowerCase().includes(query),
@@ -180,52 +183,37 @@ export const ExternalWalletForm = () => {
             </Stack>
           )}
         />
-        <Stack gap="base" flex={1} sx={{ minHeight: 0 }}>
-          <ToggleGroup
-            type="single"
-            value={tab}
-            fullWidth
-            onValueChange={(tab) => tab && setSelectedTab(tab)}
-          >
-            <ToggleGroupItem value="recent">
-              {t("external.tab.recent", { count: recents.length })}
-            </ToggleGroupItem>
-            <ToggleGroupItem value="contacts">
-              {t("external.tab.contacts", { count: contacts.length })}
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
-            <ScrollArea>
-              <SScrollAreaContent direction="column">
-                {entries.length ? (
-                  <Stack separated>
-                    {entries.map((address) => (
-                      <AddressBookEntry
-                        key={address.publicKey}
-                        {...address}
-                        onSelect={() => onSelect(address)}
-                        onDelete={
-                          tab === "recent"
-                            ? () => removeRecent(address.address)
-                            : undefined
-                        }
-                      />
-                    ))}
-                  </Stack>
-                ) : (
-                  <Text
-                    fs="p5"
-                    color={getToken("text.low")}
-                    py="l"
-                    align="center"
-                  >
-                    {t(`external.empty.${tab}`)}
-                  </Text>
-                )}
-              </SScrollAreaContent>
-            </ScrollArea>
-          </Box>
-        </Stack>
+        <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
+          <ScrollArea>
+            <SScrollAreaContent direction="column">
+              {entries.length ? (
+                <Stack separated>
+                  {entries.map(({ address, isRecent }) => (
+                    <AddressBookEntry
+                      key={address.publicKey}
+                      {...address}
+                      onSelect={() => onSelect(address)}
+                      onDelete={
+                        isRecent
+                          ? () => removeRecent(address.address)
+                          : undefined
+                      }
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Text
+                  fs="p5"
+                  color={getToken("text.low")}
+                  py="l"
+                  align="center"
+                >
+                  {t("external.empty")}
+                </Text>
+              )}
+            </SScrollAreaContent>
+          </ScrollArea>
+        </Box>
       </Stack>
     </form>
   )
