@@ -47,14 +47,6 @@ export const WALLET_DEEPLINKS: Partial<
   [WalletProviderType.BackpackSol]: {
     universal: `https://backpack.app/ul/v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
   },
-  [WalletProviderType.NightlySol]: {
-    android: `nightly://v1?network=solana&cluster=mainnet&url=${ENCODED_SOLANA_TARGET_URL}`,
-    universal: `https://nightly.app/v1?network=solana&cluster=mainnet&url=${ENCODED_SOLANA_TARGET_URL}`,
-  },
-  [WalletProviderType.NightlySui]: {
-    android: `nightly://v1?network=sui&cluster=mainnet&url=${ENCODED_SUI_TARGET_URL}`,
-    universal: `https://nightly.app/v1?network=sui&cluster=mainnet&url=${ENCODED_SUI_TARGET_URL}`,
-  },
   // OKX nests its own `okx://` deeplink inside the `?deeplink=` param, per
   // their docs. The nesting can't be type-checked; verify on a device.
   [WalletProviderType.OKXWallet]: {

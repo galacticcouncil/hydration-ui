@@ -14,8 +14,6 @@ export enum WalletProviderType {
   MetaMask = "metamask",
   MetaMaskSol = "metamask-sol",
   MeteorWallet = "meteor-wallet",
-  NightlySol = "nightly-sol",
-  NightlySui = "nightly-sui",
   NoirWallet = "noir-wallet",
   NovaWallet = "nova-wallet",
   NovaWalletEvm = "nova-wallet-evm",
@@ -88,7 +86,6 @@ export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.OKXWalletSol,
   WalletProviderType.MetaMaskSol,
   WalletProviderType.BackpackSol,
-  WalletProviderType.NightlySol,
   WalletProviderType.TalismanSol,
   WalletProviderType.BraveWalletSol,
 ]
@@ -97,7 +94,6 @@ export const SUI_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Suiet,
   WalletProviderType.OKXWalletSui,
   WalletProviderType.BackpackSui,
-  WalletProviderType.NightlySui,
   WalletProviderType.Slush,
   WalletProviderType.PhantomSui,
 ]
