@@ -3,6 +3,7 @@ import {
   intentscan,
   nearblocks,
   neckwork,
+  zcashexplorer,
 } from "@galacticcouncil/utils"
 import {
   useAccount,
@@ -141,6 +142,10 @@ function getTransactionLink(
   // Ahead of the approve check, as NEAR prerequisites carry its meta too
   if (ecosystem === CallType.Near) {
     return nearblocks.tx(meta.srcChainKey, txHash)
+  }
+
+  if (ecosystem === CallType.Zec) {
+    return zcashexplorer.tx(meta.srcChainKey, txHash)
   }
 
   if (

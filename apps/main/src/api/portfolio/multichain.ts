@@ -30,6 +30,10 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
+// The NEAR chain now carries wNEAR and ZEC too; only the native token and its
+// wrap take the NEAR spot price when the registry has none.
+const NEAR_SPOT_PRICED_ASSET_KEYS = ["near", "wnear"]
+
 export type MultichainValuedBalance = {
   balance: AssetAmount
   assetId: string | null
@@ -222,7 +226,9 @@ export const useMultichainPortfolio = (
             const registryPrice = assetId ? getAssetPrice(assetId) : null
             const spotPrice = registryPrice?.isValid
               ? registryPrice.price
-              : chainKey === "near" && nearSpotPrice !== undefined
+              : chainKey === "near" &&
+                  NEAR_SPOT_PRICED_ASSET_KEYS.includes(balance.key) &&
+                  nearSpotPrice !== undefined
                 ? nearSpotPrice.toString()
                 : null
 

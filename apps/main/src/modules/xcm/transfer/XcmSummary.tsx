@@ -17,11 +17,13 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
 import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
+import { ZcashTransferKind } from "@/modules/xcm/transfer/utils/zcash"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
   const { t } = useTranslation(["common", "xcm"])
-  const { transfer, call, alerts, isLoading, transferArgs } = useXcmProvider()
+  const { transfer, call, alerts, isLoading, transferArgs, zcashRoute } =
+    useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
 
@@ -70,6 +72,9 @@ export const XcmSummary = () => {
   })()
 
   const destFeeLabel = (() => {
+    // 1Click's cut of the withdrawal it delivers
+    if (zcashRoute?.kind === ZcashTransferKind.Withdrawal)
+      return t("xcm:summary.withdrawalFee")
     if (!origin?.route) return t("xcm:summary.destinationFee")
     if (isSnowbridge) return t("xcm:summary.bridgeFee")
     return t("xcm:summary.destinationFee")
