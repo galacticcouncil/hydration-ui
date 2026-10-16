@@ -65,7 +65,7 @@ export const TalismanIdenticon: FC<TalismanIdenticonProps> = ({
   }, [address])
 
   return (
-    <Flex {...props}>
+    <Flex flexShrink={0} {...props}>
       <svg
         width={size}
         height={size}

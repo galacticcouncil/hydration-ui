@@ -23,7 +23,7 @@ export const PolkadotIdenticon: React.FC<PolkadotIdenticonProps> = ({
   }, [address, size])
 
   return (
-    <Flex {...props}>
+    <Flex flexShrink={0} {...props}>
       <svg
         width={size}
         height={size}

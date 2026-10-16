@@ -18,6 +18,7 @@ export const EmptyIdenticon: React.FC<EmptyIdenticonProps> = ({
     borderRadius="full"
     align="center"
     justify="center"
+    flexShrink={0}
     {...props}
   >
     <Icon

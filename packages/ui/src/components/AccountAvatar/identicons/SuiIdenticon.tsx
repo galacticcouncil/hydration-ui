@@ -18,6 +18,7 @@ export const SuiIdenticon: React.FC<SuiIdenticonProps> = ({
     borderRadius="full"
     align="center"
     justify="center"
+    flexShrink={0}
     {...props}
   >
     <Image src={ICON_URL} alt="Sui" width={size} height={size} />
