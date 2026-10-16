@@ -1,18 +1,23 @@
 import {
   decodeFunctionData,
   erc20Abi,
+  maxUint128,
   type PublicClient,
   zeroAddress,
 } from "viem"
 import { describe, expect, it, vi } from "vitest"
 
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
+import { DEPOSIT_MIN_GAS } from "@/modules/strategies/propeller/constants"
 
 import {
   assertDepositCapacity,
+  encodeDeposit,
   prepareApproval,
   prepareFundedDeposit,
+  prepareSwapDeposit,
   readDepositCapacity,
+  readSellLimit,
 } from "./deposit"
 
 const vault = "0x0000000000000000000000000000000000000001"
@@ -185,6 +190,20 @@ describe("Deposit approval", () => {
       mock.readContract.mock.calls.map(([request]) => request.functionName),
     ).not.toContain("allowance")
   })
+
+  it("never asks the asset precompile for an allowance above u128", async () => {
+    const mock = mockClient({ tvlCap: maxUint128 * 2n, totalAssets: 0n })
+    const call = await prepareApproval(mock.client, {
+      ...args,
+      amount: maxUint128,
+    })
+    expect(
+      call && decodeFunctionData({ abi: erc20Abi, data: call.data }).args,
+    ).toEqual([vault, maxUint128])
+    await expect(
+      prepareApproval(mock.client, { ...args, amount: maxUint128 + 1n }),
+    ).rejects.toThrow("allowance limit")
+  })
 })
 
 describe("Funded deposit transaction", () => {
@@ -192,7 +211,7 @@ describe("Funded deposit transaction", () => {
     const mock = mockClient()
     const tx = await prepareFundedDeposit(mock.client, args)
     expect(tx.to).toBe(vault)
-    expect(tx.gas).toBe(1_200_000n)
+    expect(tx.gas).toBe(DEPOSIT_MIN_GAS)
     expect(tx.shares).toBe(2n * unit)
     expect(decodeFunctionData({ abi: VAULT_ABI, data: tx.data })).toEqual({
       functionName: "deposit",
@@ -234,6 +253,14 @@ describe("Funded deposit transaction", () => {
     expect(mock.simulateContract).not.toHaveBeenCalled()
   })
 
+  it("adds 20% to the estimate and never goes below the deposit gas floor", async () => {
+    const mock = mockClient()
+    mock.estimateContractGas.mockResolvedValue(1_550_000n)
+    expect((await prepareFundedDeposit(mock.client, args)).gas).toBe(1_860_000n)
+    mock.estimateContractGas.mockResolvedValue(500_000n)
+    expect((await prepareFundedDeposit(mock.client, args)).gas).toBe(1_700_000n)
+  })
+
   it("rejects excess gas and a missing owner", async () => {
     const mock = mockClient()
     mock.estimateContractGas.mockResolvedValue(16_000_000n)
@@ -243,5 +270,138 @@ describe("Funded deposit transaction", () => {
     await expect(
       prepareFundedDeposit(mock.client, { ...args, owner: zeroAddress }),
     ).rejects.toThrow("Connect")
+  })
+})
+
+const routerSell = (args: Record<string, unknown> = {}) => ({
+  type: "Router",
+  value: {
+    type: "sell",
+    value: {
+      asset_in: 34,
+      asset_out: 4200,
+      amount_in: 3n * unit,
+      min_amount_out: 2n * unit,
+      route: [],
+      ...args,
+    },
+  },
+})
+const withExtraGas = (call: unknown) => ({
+  type: "Dispatcher",
+  value: { type: "dispatch_with_extra_gas", value: { call, extra_gas: 1n } },
+})
+
+describe("Sell limit of a trade call", () => {
+  it("reads the guaranteed output of a router sell", () => {
+    expect(readSellLimit(routerSell())).toEqual({
+      assetIn: 34,
+      assetOut: 4200,
+      minAmountOut: 2n * unit,
+    })
+  })
+
+  it("unwraps the extra gas dispatch added for Aave legs", () => {
+    expect(readSellLimit(withExtraGas(routerSell()))?.minAmountOut).toBe(
+      2n * unit,
+    )
+  })
+
+  it("reads sell-all and direct Omnipool sells", () => {
+    const sellAll = routerSell()
+    sellAll.value.type = "sell_all"
+    expect(readSellLimit(sellAll)?.minAmountOut).toBe(2n * unit)
+    expect(
+      readSellLimit({
+        type: "Omnipool",
+        value: {
+          type: "sell",
+          value: {
+            asset_in: 34,
+            asset_out: 4200,
+            amount: 1n,
+            min_buy_amount: 5n,
+          },
+        },
+      }),
+    ).toEqual({ assetIn: 34, assetOut: 4200, minAmountOut: 5n })
+  })
+
+  it("does not read a limit from buys, other calls or malformed sells", () => {
+    for (const call of [
+      {
+        type: "Router",
+        value: {
+          type: "buy",
+          value: { asset_in: 34, asset_out: 4200, max_amount_in: 1n },
+        },
+      },
+      { type: "EVM", value: { type: "call", value: {} } },
+      routerSell({ min_amount_out: 2 }),
+      routerSell({ asset_out: "4200" }),
+      withExtraGas(undefined),
+      undefined,
+    ])
+      expect(readSellLimit(call)).toBeNull()
+  })
+})
+
+describe("Swap deposit", () => {
+  const swapArgs = {
+    vault,
+    asset,
+    owner,
+    collateralId: "4200",
+    assetIn: "34",
+    tradeCall: routerSell(),
+  } as const
+
+  it("deposits the sell's guaranteed output and approves exactly that", async () => {
+    const mock = mockClient()
+    const { amount, approval } = await prepareSwapDeposit(mock.client, swapArgs)
+    expect(amount).toBe(2n * unit)
+    expect(
+      approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
+    ).toEqual({ functionName: "approve", args: [vault, 2n * unit] })
+    expect(mock.simulateContract).not.toHaveBeenCalled()
+  })
+
+  it("skips the approval when the allowance already covers the output", async () => {
+    const mock = mockClient({ allowance: 2n * unit })
+    expect((await prepareSwapDeposit(mock.client, swapArgs)).approval).toBe(
+      null,
+    )
+  })
+
+  it("rejects a trade that does not buy this vault's collateral before reading the vault", async () => {
+    const mock = mockClient()
+    for (const tradeCall of [
+      routerSell({ asset_out: 1000765 }),
+      routerSell({ asset_in: 5 }),
+      { type: "Router", value: { type: "buy", value: {} } },
+    ])
+      await expect(
+        prepareSwapDeposit(mock.client, { ...swapArgs, tradeCall }),
+      ).rejects.toThrow("does not buy")
+    expect(mock.readContract).not.toHaveBeenCalled()
+  })
+
+  it("checks the guaranteed output against the remaining capacity", async () => {
+    await expect(
+      prepareSwapDeposit(mockClient().client, {
+        ...swapArgs,
+        tradeCall: routerSell({ min_amount_out: 8n * unit }),
+      }),
+    ).rejects.toThrow("availability changed")
+  })
+
+  it("encodes the batched deposit for the swapped amount with a gas limit above the floor", () => {
+    const call = encodeDeposit({ ...args, amount: 2n * unit })
+    expect(call.to).toBe(vault)
+    expect(call.gas).toBeGreaterThanOrEqual(DEPOSIT_MIN_GAS)
+    expect(decodeFunctionData({ abi: VAULT_ABI, data: call.data })).toEqual({
+      functionName: "deposit",
+      args: [2n * unit, owner],
+    })
   })
 })

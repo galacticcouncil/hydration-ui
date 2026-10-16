@@ -48,10 +48,10 @@ assert.ok(
 const vault = PROPELLER_VAULTS[symbol === "ETH" ? 0 : 1].vaultAddress
 const asset =
   symbol === "ETH"
-    ? "0x0000000000000000000000000000000100000022"
+    ? "0x0000000000000000000000000000000100001068"
     : "0x00000000000000000000000000000001000f453d"
 const client = createPublicClient({
-  transport: http("https://node0.lark.hydration.cloud"),
+  transport: http("https://node4.lark.hydration.cloud"),
 })
 const serialize = (value) =>
   JSON.stringify(value, (_, v) => (typeof v === "bigint" ? v.toString() : v), 2)
@@ -239,7 +239,7 @@ try {
   await page.waitForTimeout(2000)
   if (["deposit", "cancel-approval", "cancel-deposit"].includes(action)) {
     const row = page.getByRole("row").filter({
-      has: page.getByText(symbol === "ETH" ? "Ethereum" : "Threshold BTC", {
+      has: page.getByText(symbol === "ETH" ? "Juicer ETH" : "Juicer BTC", {
         exact: true,
       }),
     })
@@ -273,7 +273,10 @@ try {
         : report.before.shares >= amountRaw,
     )
     await page
-      .getByRole("button", { name: `Withdraw ${symbol}`, exact: true })
+      .getByRole("button", {
+        name: `Withdraw ${symbol === "ETH" ? "jETH" : "jBTC"}`,
+        exact: true,
+      })
       .click({ force: true })
     if (withdrawMax)
       await page

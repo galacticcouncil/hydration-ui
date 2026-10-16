@@ -33,16 +33,16 @@ const accountIndex = Number(process.env.EVM_ACCOUNT_INDEX || 0)
 const rejectApprovalOnce = process.argv.includes("--reject-approval-once")
 assert.ok([0, 1].includes(accountIndex))
 const GENESIS =
-    "0x0be0149961bbb0a547d7cda66e0d973e9ef37a7dd4744041b52739d738778878",
+    "0x80ea4af2c95303367983bb02a88d0a14992b26308e87edcd6eb97ff6db2e229e",
   origin = "http://127.0.0.1:4178",
-  rpc = "https://0.lark.hydration.cloud",
+  rpc = "https://4.lark.hydration.cloud",
   account = mnemonicToAccount(
     "test test test test test test test test test test test junk",
     { addressIndex: accountIndex },
   ),
   owner = account.address.toLowerCase(),
   vault = "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
-  asset = "0x0000000000000000000000000000000100000022",
+  asset = "0x0000000000000000000000000000000100001068",
   dispatch = "0x0000000000000000000000000000000000000401"
 assert.equal(
   owner,
@@ -53,17 +53,17 @@ assert.equal(
 )
 const chain = defineChain({
     id: 222222,
-    name: "Public Lark 0 fixture",
+    name: "Public Lark 4 fixture",
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
     rpcUrls: { default: { http: [rpc] } },
   }),
   client = createPublicClient({ transport: http(rpc) }),
   directClient = createPublicClient({
-    transport: http("https://node0.lark.hydration.cloud"),
+    transport: http("https://node4.lark.hydration.cloud"),
   }),
   walletClient = createWalletClient({ account, chain, transport: http(rpc) }),
   api = await ApiPromise.create({
-    provider: new WsProvider("wss://node0.lark.hydration.cloud"),
+    provider: new WsProvider("wss://node4.lark.hydration.cloud"),
   })
 assert.equal(api.genesisHash.toHex(), GENESIS)
 assert.equal(
@@ -292,8 +292,8 @@ try {
         assert.ok(
           params[0].rpcUrls.every((url) =>
             [
-              "https://0.lark.hydration.cloud",
-              "https://node0.lark.hydration.cloud",
+              "https://4.lark.hydration.cloud",
+              "https://node4.lark.hydration.cloud",
             ].includes(url.replace(/\/$/, "")),
           ),
         )
@@ -506,7 +506,7 @@ try {
   report.checks.push("real EVM approval and deposit")
   console.log("PASS EVM deposit")
   await page
-    .getByRole("button", { name: "Withdraw ETH", exact: true })
+    .getByRole("button", { name: "Withdraw jETH", exact: true })
     .waitFor({ timeout: 45000 })
   if (rejectApprovalOnce) {
     assert.equal(report.rejectedApproval, true)
@@ -517,7 +517,7 @@ try {
     report.checks.push("successful retry clears the rejected-approval error")
     console.log("PASS successful retry clears the deposit error")
   }
-  await page.getByRole("button", { name: "Withdraw ETH", exact: true }).click()
+  await page.getByRole("button", { name: "Withdraw jETH", exact: true }).click()
   await page.getByRole("dialog").getByRole("button", { name: /^max$/i }).click()
   await page.getByRole("dialog").getByRole("checkbox").check()
   await page

@@ -34,10 +34,23 @@ function Harness() {
         <ReviewTransactionSubmitButton />
       ) : window.fixture.mode === "withdrawals" ? (
         <WithdrawalsCard rows={window.fixture.rows} />
+      ) : window.fixture.mode === "swapDeposit" ? (
+        <DepositForm
+          key="swap"
+          initialDeposit={{
+            vault: PROPELLER_VAULTS[0],
+            assetId: PROPELLER_VAULTS[0].baseAssetId ?? "",
+          }}
+        />
       ) : window.fixture.mode === "withdraw" ? (
         <WithdrawModalForm vault={PROPELLER_VAULTS[0]} onSuccess={() => {}} />
       ) : (
-        <DepositForm initialVault={PROPELLER_VAULTS[0]} />
+        <DepositForm
+          initialDeposit={{
+            vault: PROPELLER_VAULTS[0],
+            assetId: PROPELLER_VAULTS[0].assetId,
+          }}
+        />
       )}
     </div>
   )

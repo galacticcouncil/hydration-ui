@@ -1,26 +1,29 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
+import { unique } from "remeda"
 
 import { useAccountBalances } from "@/api/balances"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { selectDefaultDeposit } from "@/modules/strategies/propeller/utils/defaultVault"
 import {
-  PROPELLER_VAULTS,
-  type PropellerVaultConfig,
-} from "@/modules/strategies/propeller/config/vaults"
-import { selectDefaultVault } from "@/modules/strategies/propeller/utils/defaultVault"
+  getDepositOptions,
+  type PropellerDepositOption,
+} from "@/modules/strategies/propeller/utils/depositOptions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
-const VAULT_ASSET_IDS = PROPELLER_VAULTS.map((vault) => vault.assetId)
+const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
+const DEPOSIT_ASSET_IDS = unique(DEPOSIT_OPTIONS.map((o) => o.assetId))
 
 type ResolvedDefault = {
-  vault: PropellerVaultConfig | null
+  deposit: PropellerDepositOption | null
   address: string | undefined
 }
 
 /**
- * Deposit vault to start the form on. Resolved once per connected account
+ * Deposit option to start the form on. Resolved once per connected account
  * (waiting for balances and prices when a wallet is connected) and never
  * moved by later balance changes; after `markUserPick` it is fixed for good.
  */
@@ -31,7 +34,7 @@ export const useDefaultDepositVault = () => {
   const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const { getAssetPrice, isLoading: isPriceLoading } =
-    useAssetsPrice(VAULT_ASSET_IDS)
+    useAssetsPrice(DEPOSIT_ASSET_IDS)
 
   const [resolved, setResolved] = useState<ResolvedDefault | null>(null)
   const [userPicked, setUserPicked] = useState(false)
@@ -43,7 +46,7 @@ export const useDefaultDepositVault = () => {
   if (shouldResolve && !isInputLoading) {
     const symbols: Record<string, string> = {}
     const balancesUsd: Record<string, number> = {}
-    for (const { assetId } of PROPELLER_VAULTS) {
+    for (const assetId of DEPOSIT_ASSET_IDS) {
       const { symbol, decimals } = getAssetWithFallback(assetId)
       symbols[assetId] = symbol
       balancesUsd[assetId] = address
@@ -53,7 +56,7 @@ export const useDefaultDepositVault = () => {
     }
 
     setResolved({
-      vault: selectDefaultVault(PROPELLER_VAULTS, {
+      deposit: selectDefaultDeposit(DEPOSIT_OPTIONS, {
         assetParam,
         symbols,
         balancesUsd,
@@ -65,7 +68,7 @@ export const useDefaultDepositVault = () => {
   const markUserPick = useCallback(() => setUserPicked(true), [])
 
   return {
-    vault: resolved?.vault ?? null,
+    deposit: resolved?.deposit ?? null,
     isLoading: shouldResolve,
     markUserPick,
   }

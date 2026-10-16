@@ -18,6 +18,8 @@ const imports = [
   "@/modules/strategies/propeller/hooks/useVaultReads",
   "@/modules/strategies/propeller/hooks/useVaultWrites",
   "@/modules/strategies/propeller/hooks/usePropellerVaults",
+  "@/modules/strategies/propeller/hooks/useDepositQuote",
+  "@/modules/strategies/propeller/hooks/useCollateralEquivalent",
   "@tanstack/react-query",
 ]
 export default defineConfig({
@@ -34,6 +36,7 @@ export default defineConfig({
         "@/components/PendingPosition",
         "@/components/RelativeDateText",
         "@/components/AuthorizedAction/AuthorizedAction",
+        "@/modules/strategies/propeller/components/DepositSwapSummary",
       ].map((find) => ({ find, replacement: ui })),
       { find: "react-i18next", replacement: local("./i18n.ts") },
       { find: /^@\/i18n$/, replacement: local("./i18n.ts") },

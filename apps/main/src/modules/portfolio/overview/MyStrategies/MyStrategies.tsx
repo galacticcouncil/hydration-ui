@@ -265,7 +265,12 @@ const MyStrategiesTable = ({
         isLoading={isLoading}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
-          [row.original.symbol, row.original.name, row.original.strategy]
+          [
+            row.original.symbol,
+            row.original.name,
+            row.original.underlyingSymbol,
+            row.original.strategy,
+          ]
             .join(" ")
             .toLowerCase()
             .includes(searchPhrase.toLowerCase())

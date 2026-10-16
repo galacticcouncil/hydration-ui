@@ -74,7 +74,7 @@ try {
   await page.getByText("Polkadot.js", { exact: true }).click()
   await page.getByText(PUBLIC_TEST_NAME, { exact: true }).click()
   await page
-    .getByRole("button", { name: "Withdraw ETH", exact: true })
+    .getByRole("button", { name: "Withdraw jETH", exact: true })
     .waitFor({ timeout: 45000 })
   await page.evaluate(() => document.fonts.ready)
   await input().fill("0.001")
@@ -141,27 +141,27 @@ try {
     .filter({ hasText: /^tBTC$/ })
     .waitFor()
   log("asset selection clears the previous amount")
-  for (const symbol of ["ETH", "tBTC"]) {
-    const name = symbol === "ETH" ? "Ethereum" : "Threshold BTC"
+  for (const [shareSymbol, name, assets] of [
+    ["jETH", "Juicer ETH", /^(GIGAETH|ETH)$/],
+    ["jBTC", "Juicer BTC", /^tBTC$/],
+  ]) {
     const card = page
       .getByText(name, { exact: true })
       .locator("xpath=ancestor::*[.//button[normalize-space(.)='Deposit']][1]")
     await card.getByRole("button", { name: "Deposit", exact: true }).click()
     await dialog().waitFor()
-    assert.match(await dialog().innerText(), new RegExp(`Deposit ${symbol}`))
-    assert.ok(
-      await dialog()
-        .locator("button")
-        .filter({ hasText: new RegExp(`^${symbol}$`) })
-        .isDisabled(),
+    assert.match(await dialog().innerText(), new RegExp(`Deposit to ${name}`))
+    assert.equal(
+      await dialog().locator("button").filter({ hasText: assets }).isDisabled(),
+      shareSymbol === "jBTC",
     )
     await close()
     await page
-      .getByRole("button", { name: `Withdraw ${symbol}`, exact: true })
+      .getByRole("button", { name: `Withdraw ${shareSymbol}`, exact: true })
       .click()
     await dialog()
       .locator("input[inputmode=decimal]")
-      .fill(symbol === "ETH" ? ".0001" : ".000001")
+      .fill(shareSymbol === "jETH" ? ".0001" : ".000001")
     await enabled(
       dialog().getByRole("button", { name: "Request withdrawal", exact: true }),
       false,
@@ -183,7 +183,7 @@ try {
     await close()
   }
   log(
-    "both deposit dialogs lock the asset; both withdrawal forms require acknowledgement",
+    "deposit dialogs keep to their vault's assets; both withdrawal forms require acknowledgement",
   )
   await page.screenshot({
     path: `${outputDir}/actions-juicer-${width}.png`,
@@ -194,7 +194,7 @@ try {
   })
   await page
     .getByRole("row")
-    .filter({ has: page.getByText("tBTC", { exact: true }) })
+    .filter({ has: page.getByText("jBTC", { exact: true }) })
     .waitFor({ timeout: 45000 })
   const search = page.getByPlaceholder("Search assets...")
   await search.fill("no-match-4127")
@@ -207,17 +207,17 @@ try {
   assert.equal(
     await page
       .getByRole("row")
-      .filter({ has: page.getByText("ETH", { exact: true }) })
+      .filter({ has: page.getByText("jETH", { exact: true }) })
       .count(),
     0,
   )
   await search.fill("")
   await page
     .getByRole("row")
-    .filter({ has: page.getByText("ETH", { exact: true }) })
+    .filter({ has: page.getByText("jETH", { exact: true }) })
     .waitFor()
   log("portfolio search by symbol and no-results recovery")
-  for (const symbol of ["ETH", "tBTC"]) {
+  for (const symbol of ["jETH", "jBTC"]) {
     const row = page
       .getByRole("row")
       .filter({ has: page.getByText(symbol, { exact: true }) })
@@ -257,15 +257,15 @@ try {
     path: `${outputDir}/actions-portfolio-${width}.png`,
     fullPage: true,
   })
-  const tbtc = page
+  const jbtc = page
     .getByRole("row")
-    .filter({ has: page.getByText("tBTC", { exact: true }) })
+    .filter({ has: page.getByText("jBTC", { exact: true }) })
   if (width < 768) {
-    await tbtc.getByRole("button", { name: "Details", exact: true }).click()
+    await jbtc.getByRole("button", { name: "Details", exact: true }).click()
     await dialog().getByRole("link", { name: "Manage", exact: true }).click()
-  } else await tbtc.getByRole("link", { name: "Manage", exact: true }).click()
+  } else await jbtc.getByRole("link", { name: "Manage", exact: true }).click()
   await ready()
-  assert.ok(page.url().includes("asset=tBTC"))
+  assert.ok(page.url().includes("asset=jBTC"))
   await form()
     .locator("button")
     .filter({ hasText: /^tBTC$/ })
@@ -288,7 +288,7 @@ try {
     .waitFor()
   assert.equal(
     await page
-      .getByRole("button", { name: "Withdraw ETH", exact: true })
+      .getByRole("button", { name: "Withdraw jETH", exact: true })
       .count(),
     0,
   )

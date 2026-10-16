@@ -40,7 +40,7 @@ describe("combined portfolio assets", () => {
       result.find((row) => row.id === "34")?.strategyPosition,
     ).toBeUndefined()
     expect(
-      result.find((row) => row.strategyPosition?.symbol === "ETH")?.total,
+      result.find((row) => row.strategyPosition?.symbol === "GIGAETH")?.total,
     ).toBe("0.2")
   })
 

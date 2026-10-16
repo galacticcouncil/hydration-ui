@@ -8,7 +8,8 @@ const t = (key, opts = {}) => {
       : `$${Number(opts.value).toFixed(2)}`
   if (key === "common:number") return String(opts.value)
   return Object.entries(opts).reduce(
-    (text, [name, value]) => text.replaceAll(`{{${name}}}`, String(value)),
+    (text, [name, value]) =>
+      text.replace(new RegExp(`{{\\s*${name}\\s*}}`, "g"), String(value)),
     value,
   )
 }

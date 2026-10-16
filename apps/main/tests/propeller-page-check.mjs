@@ -48,12 +48,11 @@ try {
     )
     let text = await page.locator("body").innerText()
     assert.ok(text.includes("Est. APR"))
-    assert.ok(text.includes("Lark 0 test deployment"))
     assert.ok(
       !/<0\s+tBTC\./.test(text),
       "Small tBTC amounts must retain token precision and symbol order",
     )
-    assert.ok(text.includes("Depositing does not make a swap"))
+    assert.ok(text.includes("Your deposit makes no strategy trade"))
     assert.ok(
       text.includes(
         "Funded earnings stay invested and are included in your balance",
@@ -122,7 +121,7 @@ try {
       )
       assert.ok(
         [...rpcEndpoints].some(
-          (url) => new URL(url).hostname === "0.lark.hydration.cloud",
+          (url) => new URL(url).hostname === "4.lark.hydration.cloud",
         ),
         "Browser must connect to selected Lark RPC",
       )

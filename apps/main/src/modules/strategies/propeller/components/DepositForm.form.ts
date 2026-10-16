@@ -18,7 +18,8 @@ const defaultValues: DepositFormValues = {
 
 type UseDepositFormParams = {
   maxBalance: string
-  maxCapacity: string
+  /** in the asset paid with; undefined when a swap converts it */
+  maxCapacity?: string
   decimals: number
 }
 
@@ -39,9 +40,11 @@ export const useDepositForm = ({
       )
       .check(validateFieldMaxBalance(maxBalance))
       .check(
-        refine<string>((value) => Big(value || "0").lte(maxCapacity), {
-          error: t("deposit.validation.maximum", { amount: maxCapacity }),
-        }),
+        refine<string>(
+          (value) =>
+            maxCapacity === undefined || Big(value || "0").lte(maxCapacity),
+          { error: t("deposit.validation.maximum", { amount: maxCapacity }) },
+        ),
       ),
   })
 

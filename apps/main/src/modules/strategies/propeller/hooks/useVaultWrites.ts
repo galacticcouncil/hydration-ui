@@ -4,7 +4,11 @@ import {
   safeConvertSS58toH160,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  isEthereumSigner,
+  useAccount,
+  useWallet,
+} from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
   useMutation,
@@ -18,24 +22,33 @@ import { useTranslation } from "react-i18next"
 import {
   type Abi,
   encodeFunctionData,
+  erc20Abi,
   formatUnits,
   type Hex,
   maxUint256,
 } from "viem"
 
+import { getDryRunError } from "@/api/dryRun"
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
 import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
+import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
 import {
+  encodeDeposit,
   prepareApproval,
   prepareFundedDeposit,
+  prepareSwapDeposit,
 } from "@/modules/strategies/propeller/utils/deposit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/withdrawalClaim"
+import { type AnyPapiTx } from "@/modules/transactions/types"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -54,6 +67,11 @@ interface BatchEvmCall {
   data: Hex
   abi: Abi
   gas?: bigint
+}
+
+type BatchOptions = {
+  leading?: AnyPapiTx["decodedCall"][]
+  atomic?: boolean
 }
 
 function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
@@ -152,11 +170,11 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   /**
-   * Build EVM calls as one substrate Utility.batch_all.
+   * Build EVM calls as one substrate Utility.batch_all, after any leading calls.
    * Prepends bind_evm_address when the account is not yet mapped.
    */
   const buildBatch = useCallback(
-    async (calls: BatchEvmCall[]) => {
+    async (calls: BatchEvmCall[], { leading, atomic }: BatchOptions = {}) => {
       if (calls.length === 0) {
         throw new Error("buildBatch called with no calls")
       }
@@ -186,15 +204,14 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
         (c) => transformEvmCallToPapiTx(rpc.papi, c).decodedCall,
       )
 
-      const batchInner =
-        isBound === false
-          ? [
-              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-              ...papiCalls,
-            ]
-          : papiCalls
-
-      return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
+      return rpc.papi.tx.Utility.batch_all({
+        calls: composeVaultBatch(rpc.papi, {
+          bind: isBound === false,
+          leading,
+          evmCalls: papiCalls,
+          atomic,
+        }),
+      })
     },
     [address, evmAddress, queryClient, rpc],
   )
@@ -223,12 +240,22 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   }
 }
 
+export type DepositVariables = {
+  /** in units of the asset paid with */
+  amount: string
+  /** sell of the asset paid with for the collateral */
+  trade?: { assetIn: string; tx: AnyPapiTx }
+}
+
 export function useDeposit(
   vault: PropellerVaultConfig,
   options: VaultWriteOptions = {},
 ) {
   const { t } = useTranslation(["common", "propeller"])
-  const { evm } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { evm } = rpc
+  const { account } = useAccount()
+  const wallet = useWallet()
   const { getAssetWithFallback } = useAssets()
   const getErc20Allowance = useErc20Allowance()
   const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
@@ -237,78 +264,168 @@ export function useDeposit(
   const assetAddress = getAddressFromAssetId(assetId) as Hex
   const { decimals, symbol } = getAssetWithFallback(assetId)
 
+  const formatAmount = (value: string, assetSymbol = symbol) =>
+    t("currency", { value, symbol: assetSymbol, maximumFractionDigits: 4 })
+  const depositInput = (amount: bigint) => ({
+    vault: vaultAddress,
+    asset: assetAddress,
+    owner: evmAddress,
+    amount,
+  })
+  const waitForChain = async (
+    isVisible: () => Promise<boolean>,
+    message: string,
+  ) => {
+    await waitFor(isVisible, {
+      interval: 1000,
+      timeout: { milliseconds: minutesToMilliseconds(3), message },
+    })
+  }
+
+  // Built only once the approval is visible on chain, so the simulation
+  // and gas estimate run against the real allowance.
+  const buildDeposit = async (amount: bigint) => {
+    const value = formatAmount(formatUnits(amount, decimals))
+    return {
+      tx: await buildBatch([
+        await prepareFundedDeposit(evm, depositInput(amount)),
+      ]),
+      toasts: {
+        submitted: t("propeller:deposit.toast.submitted", { amount: value }),
+        success: t("propeller:deposit.toast.success", { amount: value }),
+      },
+    }
+  }
+
+  const approvalStep = async (approval: BatchEvmCall, amount: bigint) => ({
+    tx: await buildBatch([approval]),
+    stepTitle: t("propeller:deposit.step.approve"),
+    toasts: {
+      submitted: t("propeller:deposit.approve.toast.submitted", { symbol }),
+      success: t("propeller:deposit.approve.toast.success", { symbol }),
+    },
+    pendingComponent: PendingApproval,
+    beforeNext: () =>
+      waitForChain(
+        async () =>
+          (await getErc20Allowance(assetAddress, evmAddress, vaultAddress)) >=
+          amount,
+        t("propeller:deposit.approve.timeout"),
+      ),
+  })
+
+  const depositStep = (amount: bigint) => ({
+    tx: () => buildDeposit(amount),
+    stepTitle: t("deposit"),
+    pendingComponent: PendingApproval,
+  })
+
   return useMutation({
-    mutationFn: async (assetAmount: string) => {
-      const assetBig = parseExactAmount(assetAmount, decimals)
-      const amount = t("currency", {
-        value: assetAmount,
-        symbol,
-        maximumFractionDigits: 4,
-      })
-      const input = {
-        vault: vaultAddress,
-        asset: assetAddress,
-        owner: evmAddress,
-        amount: assetBig,
-      }
+    mutationFn: async ({ amount, trade }: DepositVariables) => {
+      if (!trade) {
+        const assetBig = parseExactAmount(amount, decimals)
+        const approval = await prepareApproval(evm, depositInput(assetBig))
+        if (!approval) {
+          return createTransaction(
+            await buildDeposit(assetBig),
+            txOptionsForVault(vaultAddress),
+          )
+        }
 
-      // Built only once the approval is visible on chain, so the simulation
-      // and gas estimate run against the real allowance.
-      const buildDeposit = async () => ({
-        tx: await buildBatch([await prepareFundedDeposit(evm, input)]),
-        toasts: {
-          submitted: t("propeller:deposit.toast.submitted", { amount }),
-          success: t("propeller:deposit.toast.success", { amount }),
-        },
-      })
-
-      const approval = await prepareApproval(evm, input)
-      if (!approval) {
         return createTransaction(
-          await buildDeposit(),
+          {
+            tx: [await approvalStep(approval, assetBig), depositStep(assetBig)],
+          },
           txOptionsForVault(vaultAddress),
         )
       }
 
+      const { amount: depositAmount, approval } = await prepareSwapDeposit(
+        evm,
+        {
+          vault: vaultAddress,
+          asset: assetAddress,
+          owner: evmAddress,
+          collateralId: assetId,
+          assetIn: trade.assetIn,
+          tradeCall: trade.tx.decodedCall,
+        },
+      )
+      const amountIn = formatAmount(
+        amount,
+        getAssetWithFallback(trade.assetIn).symbol,
+      )
+      const deposited = formatAmount(formatUnits(depositAmount, decimals))
+
+      if (isEthereumSigner(wallet?.signer)) {
+        return createTransaction(
+          {
+            tx: [
+              {
+                tx: trade.tx,
+                stepTitle: t("propeller:deposit.step.swap"),
+                toasts: {
+                  submitted: t("propeller:deposit.swapStep.toast.submitted", {
+                    amountIn,
+                    symbol,
+                  }),
+                  success: t("propeller:deposit.swapStep.toast.success", {
+                    amountIn,
+                    symbol,
+                  }),
+                },
+                beforeNext: () =>
+                  waitForChain(
+                    async () =>
+                      (await evm.readContract({
+                        address: assetAddress,
+                        abi: erc20Abi,
+                        functionName: "balanceOf",
+                        args: [evmAddress],
+                      })) >= depositAmount,
+                    t("propeller:deposit.swapStep.timeout"),
+                  ),
+              },
+              ...(approval
+                ? [await approvalStep(approval, depositAmount)]
+                : []),
+              depositStep(depositAmount),
+            ],
+          },
+          txOptionsForVault(vaultAddress),
+        )
+      }
+
+      const tx = await buildBatch(
+        [
+          ...(approval ? [approval] : []),
+          encodeDeposit(depositInput(depositAmount)),
+        ],
+        { leading: [trade.tx.decodedCall], atomic: true },
+      )
+      // the deposit cannot be simulated before the swap, so dry-run the batch
+      const dryRunError = await getDryRunError(rpc, account?.address ?? "", tx)
+      if (dryRunError)
+        throw new Error(`Deposit dry run failed: ${dryRunError.name}`)
+
       return createTransaction(
         {
-          tx: [
-            {
-              tx: await buildBatch([approval]),
-              stepTitle: t("propeller:deposit.step.approve"),
-              toasts: {
-                submitted: t("propeller:deposit.approve.toast.submitted", {
-                  symbol,
-                }),
-                success: t("propeller:deposit.approve.toast.success", {
-                  symbol,
-                }),
-              },
-              pendingComponent: PendingApproval,
-              beforeNext: async () => {
-                await waitFor(
-                  async () =>
-                    (await getErc20Allowance(
-                      assetAddress,
-                      evmAddress,
-                      vaultAddress,
-                    )) >= assetBig,
-                  {
-                    interval: 1000,
-                    timeout: {
-                      milliseconds: minutesToMilliseconds(3),
-                      message: t("propeller:deposit.approve.timeout"),
-                    },
-                  },
-                )
-              },
-            },
-            {
-              tx: buildDeposit,
-              stepTitle: t("deposit"),
-              pendingComponent: PendingApproval,
-            },
-          ],
+          tx,
+          title: t("propeller:deposit.swap.title"),
+          description: t("propeller:deposit.swap.description", {
+            amountIn,
+            amount: deposited,
+            symbol,
+          }),
+          toasts: {
+            submitted: t("propeller:deposit.swap.toast.submitted", {
+              amountIn,
+              amount: deposited,
+            }),
+            success: t("propeller:deposit.toast.success", {
+              amount: deposited,
+            }),
+          },
         },
         txOptionsForVault(vaultAddress),
       )
@@ -379,7 +496,10 @@ export function useClaim(options: VaultWriteOptions = {}) {
         evmAddress,
       )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      const { symbol, decimals } = getAssetWithFallback(vault.assetId)
+      const { symbol, decimals } = vaultCollateral(
+        vault,
+        getAssetWithFallback(vault.assetId),
+      )
       const payouts = [
         ...(collateral > 0n
           ? [

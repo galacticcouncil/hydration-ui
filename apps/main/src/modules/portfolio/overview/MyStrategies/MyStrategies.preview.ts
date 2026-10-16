@@ -45,8 +45,8 @@ export const STRATEGY_PREVIEW_POSITIONS: StrategyPosition[] = [
   },
   ...[
     {
-      assetId: "34",
-      symbol: "ETH",
+      assetId: "4200",
+      symbol: "GIGAETH",
       amount: "0.2",
       value: "560",
       rate: 1.81,

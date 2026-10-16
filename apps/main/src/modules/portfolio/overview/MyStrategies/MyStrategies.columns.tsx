@@ -143,7 +143,9 @@ export const StrategyPositionValue = ({
               "common:currency",
               {
                 value: amount,
-                symbol: isJuicer ? position.symbol : position.shareSymbol,
+                symbol: isJuicer
+                  ? position.underlyingSymbol
+                  : position.shareSymbol,
               },
             )}`
       }
@@ -213,7 +215,7 @@ export const StrategyPositionEarnings = ({
       ? "—"
       : t("common:currency", {
           value: position.pendingEarnings,
-          symbol: position.symbol,
+          symbol: position.underlyingSymbol,
           maximumFractionDigits: 6,
         })
 

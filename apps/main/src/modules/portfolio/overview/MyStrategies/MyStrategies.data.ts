@@ -8,7 +8,10 @@ import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import {
+  PROPELLER_VAULTS,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
 import {
   type PropellerWithdrawalRow,
   usePropellerAccount,
@@ -87,7 +90,7 @@ export const useMyJuicerPositions = () => {
     )
     if (!position && withdrawals.length === 0) return []
 
-    const asset = getAssetWithFallback(vault.assetId)
+    const asset = vaultCollateral(vault, getAssetWithFallback(vault.assetId))
     const amount = Big(position?.assetValue ?? 0).toString()
     const pendingWithdrawal = withdrawals.reduce(
       (sum, row) => sum.plus(getJuicerRemainingCollateral(row)),
@@ -122,8 +125,8 @@ export const useMyJuicerPositions = () => {
         id: `juicer:${vault.vaultAddress}`,
         strategy: "juicer",
         assetId: vault.assetId,
-        symbol: asset.symbol,
-        name: vault.shareSymbol,
+        symbol: vault.shareSymbol,
+        name: vault.shareName,
         amount,
         value,
         netValue: value,

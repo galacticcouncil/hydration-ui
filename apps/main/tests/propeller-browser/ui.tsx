@@ -20,7 +20,8 @@ export const Icon = () => null,
   Separator = () => null,
   ModalContentDivider = () => null,
   TooltipIcon = () => null,
-  AssetLogo = () => null
+  AssetLogo = () => null,
+  DepositSwapSummary = () => null
 export const Alert = ({ title, description }) => (
   <div role="alert">
     {title} {description}

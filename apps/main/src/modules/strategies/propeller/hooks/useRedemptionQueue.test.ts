@@ -8,6 +8,7 @@ const vault = {
   assetId: "34",
   shareAssetId: "5552",
   shareSymbol: "jETH",
+  shareName: "Juicer ETH",
   vaultAddress: "0x0000000000000000000000000000000000000001",
 } as const
 const owner = "0x0000000000000000000000000000000000000002"

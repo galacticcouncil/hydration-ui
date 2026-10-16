@@ -17,7 +17,11 @@ import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
+import { useCollateralEquivalent } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerPosition } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -29,6 +33,7 @@ interface Props {
 export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
+  const getEquivalent = useCollateralEquivalent()
 
   if (!positions.length) return null
 
@@ -50,7 +55,10 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               pendingYield,
               harvestStatus,
             }) => {
-              const { symbol } = getAssetWithFallback(vault.assetId)
+              const { symbol } = vaultCollateral(
+                vault,
+                getAssetWithFallback(vault.assetId),
+              )
               // demoted: a six-decimal dust figure as a headline stat reads as
               // broken; the accruing amount lives in the tooltip, the sublabel
               // just says the position is earning (dust-floored)
@@ -70,6 +78,11 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   ),
                 },
               )
+              const usd = t("common:currency", { value: usdValue })
+              const equivalent = getEquivalent(vault, assetValue)
+              const value = equivalent
+                ? t("amount.equivalent", { ...equivalent, displayValue: usd })
+                : usd
 
               return (
                 <PositionCard
@@ -78,7 +91,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   logo={
                     <AssetLogo id={vault.assetId} size="medium" hideChain />
                   }
-                  symbol={symbol}
+                  symbol={vault.shareSymbol}
                   stats={
                     <>
                       <ValueStats
@@ -112,12 +125,12 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                         }
                         bottomLabel={
                           accrualPaused
-                            ? `${t("common:currency", { value: usdValue })} · ${t("positions.accrualPaused")}`
+                            ? `${value} · ${t("positions.accrualPaused")}`
                             : accruing !== null && harvestBlocked
-                              ? `${t("common:currency", { value: usdValue })} · ${t(`positions.harvest.${harvestState}.label`)}`
+                              ? `${value} · ${t(`positions.harvest.${harvestState}.label`)}`
                               : apy !== null && apy > 0
-                                ? `${t("common:currency", { value: usdValue })} · ${t("positions.earning")}`
-                                : t("common:currency", { value: usdValue })
+                                ? `${value} · ${t("positions.earning")}`
+                                : value
                         }
                       />
                       <ValueStats
@@ -143,7 +156,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   cta={
                     <Flex gap="s" wrap justify="flex-end">
                       <Button
-                        aria-label={`${t("positions.action.withdraw")} ${symbol}`}
+                        aria-label={`${t("positions.action.withdraw")} ${vault.shareSymbol}`}
                         disabled={shares <= 0}
                         variant="tertiary"
                         size="small"

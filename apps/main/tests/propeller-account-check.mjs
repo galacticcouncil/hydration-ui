@@ -71,7 +71,7 @@ try {
   await page.getByText("Polkadot.js", { exact: true }).click()
   await page.getByText(PUBLIC_TEST_NAME, { exact: true }).click()
   await page
-    .getByRole("button", { name: "Withdraw ETH", exact: true })
+    .getByRole("button", { name: "Withdraw jETH", exact: true })
     .waitFor({ timeout: 45000 })
   const form = page.locator("form").first()
   await form.locator("input[inputmode=decimal]").fill("0.001")
@@ -97,13 +97,13 @@ try {
   await page.waitForTimeout(2500)
   assert.equal(
     await page
-      .getByRole("button", { name: "Withdraw ETH", exact: true })
+      .getByRole("button", { name: "Withdraw jETH", exact: true })
       .count(),
     0,
   )
   assert.equal(
     await page
-      .getByRole("button", { name: "Withdraw tBTC", exact: true })
+      .getByRole("button", { name: "Withdraw jBTC", exact: true })
       .count(),
     0,
   )

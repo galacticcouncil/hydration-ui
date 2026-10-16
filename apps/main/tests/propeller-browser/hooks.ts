@@ -19,12 +19,23 @@ export const useQuery = ({ kind }) => ({
 export const useDeposit = (_, options) => {
   window.fixture.depositSucceeded = options.onSuccess
   return {
-    mutate: (amount) => window.fixture.submitted.push(amount),
+    mutate: ({ amount, trade }) =>
+      window.fixture.submitted.push(
+        trade ? { amount, assetIn: trade.assetIn, tx: trade.tx } : amount,
+      ),
     isPending: !!window.fixture.pending,
     isError: !!window.fixture.depositError,
     reset: () => window.updateFixture({ depositError: false }),
   }
 }
+export const useDepositQuote = () =>
+  window.fixture.quote ?? {
+    isSwap: false,
+    isLoading: false,
+    isError: false,
+    tx: null,
+  }
+export const useCollateralEquivalent = () => () => null
 export const useRequestRedeem = () => ({
   mutate: (request) => window.fixture.withdrawals.push(request),
   isPending: !!window.fixture.pending,
@@ -40,6 +51,8 @@ export const useClaim = () => ({
 export const usePendingClaimIds = () => window.fixture.pendingClaims ?? []
 
 export const HYDRATION_CHAIN_KEY = "hydration"
+export const ETH_ASSET_ID = "34"
+export const GETH_ASSET_ID = "4200"
 export const WalletProviderType = { ExternalWallet: "external" }
 export const TransactionType = { Onchain: "onchain" }
 export const useAccount = () => ({ account: { provider: "polkadot-js" } })

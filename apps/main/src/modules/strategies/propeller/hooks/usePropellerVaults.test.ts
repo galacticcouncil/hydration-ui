@@ -5,7 +5,12 @@ import {
   vaultDepositState,
 } from "./usePropellerVaults"
 
-vi.mock("@galacticcouncil/utils", () => ({ PRIME_ASSET_ID: "43" }))
+vi.mock("@galacticcouncil/utils", () => ({
+  PRIME_ASSET_ID: "43",
+  GETH_ASSET_ID: "4200",
+  GETH_ERC20_ID: "420",
+  ETH_ASSET_ID: "34",
+}))
 vi.mock("@/api/borrow", () => ({}))
 vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
 vi.mock("@/providers/assetsProvider", () => ({}))

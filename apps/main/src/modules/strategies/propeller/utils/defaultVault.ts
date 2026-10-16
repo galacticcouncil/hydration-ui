@@ -1,34 +1,43 @@
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { type PropellerDepositOption } from "@/modules/strategies/propeller/utils/depositOptions"
 
 /**
- * Deposit vault to preselect: the vault matching `assetParam` (registry
- * symbol, case-insensitive), else the one with the highest wallet USD value
- * (ties in config order), else the first configured vault.
+ * Deposit option to preselect: the option paying with `assetParam` (registry
+ * symbol, case-insensitive); else, among the options of the vault whose share
+ * symbol is `assetParam` (or all options), the one with the highest wallet USD
+ * value (ties in config order); else the first of those options.
  */
-export const selectDefaultVault = (
-  vaults: ReadonlyArray<PropellerVaultConfig>,
+export const selectDefaultDeposit = (
+  options: ReadonlyArray<PropellerDepositOption>,
   {
     assetParam,
     symbols,
     balancesUsd,
   }: {
     assetParam?: string
-    /** Registry symbol per vault assetId. */
+    /** Registry symbol per option assetId. */
     symbols: Record<string, string>
-    /** Wallet transferable balance × spot price per vault assetId. */
+    /** Wallet transferable balance × spot price per option assetId. */
     balancesUsd: Record<string, number>
   },
-): PropellerVaultConfig | null => {
+): PropellerDepositOption | null => {
   const param = assetParam?.toLowerCase()
-  const byParam =
-    param && vaults.find((v) => symbols[v.assetId]?.toLowerCase() === param)
-  if (byParam) return byParam
+  const byAsset =
+    param && options.find((o) => symbols[o.assetId]?.toLowerCase() === param)
+  if (byAsset) return byAsset
 
-  const richest = vaults.reduce<PropellerVaultConfig | null>((best, v) => {
-    const usd = balancesUsd[v.assetId] ?? 0
-    const bestUsd = best ? (balancesUsd[best.assetId] ?? 0) : 0
-    return usd > bestUsd ? v : best
-  }, null)
+  const byVault = param
+    ? options.filter((o) => o.vault.shareSymbol.toLowerCase() === param)
+    : []
+  const candidates = byVault.length ? byVault : options
 
-  return richest ?? vaults[0] ?? null
+  const richest = candidates.reduce<PropellerDepositOption | null>(
+    (best, o) => {
+      const usd = balancesUsd[o.assetId] ?? 0
+      const bestUsd = best ? (balancesUsd[best.assetId] ?? 0) : 0
+      return usd > bestUsd ? o : best
+    },
+    null,
+  )
+
+  return richest ?? candidates[0] ?? null
 }

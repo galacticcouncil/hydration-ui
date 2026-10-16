@@ -93,7 +93,8 @@ try {
   await isDisabled(false)
   console.log("PASS wallet balance changes revalidate the amount and limit MAX")
   const body = await page.locator("body").innerText()
-  assert.ok(body.includes("your deposit transaction makes no swap"))
+  assert.ok(body.includes("your deposit makes no strategy trade"))
+  assert.ok(body.includes("Vault: Juicer ETH, backed by ETH"))
   assert.ok(body.includes("supplies collateral"))
   assert.ok(!body.includes("fresh swap quote"))
   console.log(
@@ -110,7 +111,54 @@ try {
   )
   await update({ pending: true })
   await isDisabled(true)
-  await update({ pending: false, mode: "withdraw" })
+  const quote = {
+    isSwap: true,
+    isLoading: false,
+    isError: false,
+    tx: "trade-tx",
+    minAmountOut: 983n * 10n ** 15n,
+  }
+  await update({
+    pending: false,
+    mode: "swapDeposit",
+    submitted: [],
+    balance: 8n * 10n ** 18n,
+    quote: { ...quote, isLoading: true, tx: null, minAmountOut: undefined },
+  })
+  await input.fill("1")
+  await isDisabled(true)
+  await update({ quote })
+  await isDisabled(false)
+  assert.equal(await submit.innerText(), "Swap and deposit")
+  await submit.click()
+  assert.deepEqual(await page.evaluate(() => window.fixture.submitted), [
+    { amount: "1", assetIn: "34", tx: "trade-tx" },
+  ])
+  console.log(
+    "PASS paying with the base asset waits for a quote and hands its trade to the deposit",
+  )
+  await update({ quote: { ...quote, minAmountOut: 8n * 10n ** 18n } })
+  await isDisabled(true)
+  assert.match(
+    await page.locator("body").innerText(),
+    /Current maximum is 1\.000000000000000001 ETH/,
+  )
+  await update({ quote: { ...quote, tx: null } })
+  await isDisabled(true)
+  await update({
+    quote: { ...quote, isError: true, tx: null, minAmountOut: undefined },
+  })
+  await page.getByText(/quote is available right now/).waitFor()
+  await isDisabled(true)
+  await update({ quote })
+  await page.getByRole("button", { name: "MAX", exact: true }).click()
+  assert.equal(await input.inputValue(), "8")
+  await isDisabled(false)
+  console.log(
+    "PASS a swap's guaranteed output, not its input, is held to the vault capacity",
+  )
+  await update({ mode: "withdraw" })
+  await page.getByRole("checkbox").waitFor()
   await input.fill("0.5")
   await isDisabled(true)
   await page.getByRole("checkbox").check()
@@ -186,6 +234,7 @@ try {
     const vault = {
       assetId: "34",
       shareSymbol: "jETH",
+      shareName: "Juicer ETH",
       vaultAddress: "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
     }
     const rows = Array.from({ length: 6 }, (_, index) => {
@@ -215,7 +264,7 @@ try {
     window.updateFixture({ mode: "withdrawals", rows })
   })
   const claims = page.getByRole("button", {
-    name: "Claim available payouts for ETH withdrawal",
+    name: "Claim available payouts for jETH withdrawal",
     exact: true,
   })
   await claims.first().waitFor()
@@ -236,7 +285,7 @@ try {
   await page.waitForFunction(
     () =>
       document.querySelector(
-        'button[aria-label="Claim available payouts for ETH withdrawal"]',
+        'button[aria-label="Claim available payouts for jETH withdrawal"]',
       ).disabled,
   )
   assert.ok(await claims.first().isDisabled())

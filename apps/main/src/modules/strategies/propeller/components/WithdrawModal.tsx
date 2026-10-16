@@ -2,7 +2,10 @@ import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { WithdrawModalForm } from "@/modules/strategies/propeller/components/WithdrawModalForm"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -24,7 +27,8 @@ export const WithdrawModal = ({ vault, open, onClose }: Props) => {
     >
       <ModalHeader
         title={t("withdraw.title", {
-          symbol: getAssetWithFallback(vault.assetId).symbol,
+          symbol: vaultCollateral(vault, getAssetWithFallback(vault.assetId))
+            .symbol,
         })}
       />
       <WithdrawModalForm vault={vault} onSuccess={onClose} />
