@@ -5,7 +5,6 @@ import {
   Flex,
   Icon,
   Input,
-  ModalContentDivider,
   ScrollArea,
   Text,
 } from "@galacticcouncil/ui/components"
