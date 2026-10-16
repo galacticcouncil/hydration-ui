@@ -8,7 +8,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
+import {
+  parseNearAccountName,
+  shortenAccountAddress,
+  stringEquals,
+} from "@galacticcouncil/utils"
 import { FC, Ref } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -123,9 +127,11 @@ const ConnectedAccountButton: React.FC<ConnectedMultisigAccountButtonProps> = ({
       ? `(${activeMultisigConfig.threshold}/${activeMultisigConfig.signers.length})`
       : ""
 
-  const shortDisplayAddr = !account.isMultisig
-    ? shortenAccountAddress(account.displayAddress)
-    : ""
+  const shortDisplayAddr = account.isMultisig
+    ? ""
+    : parseNearAccountName(account.displayAddress)
+      ? account.displayAddress
+      : shortenAccountAddress(account.displayAddress)
 
   return (
     <SConnectedButton ref={ref} onClick={onClick} {...props} variant="tertiary">

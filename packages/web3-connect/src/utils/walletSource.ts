@@ -1,6 +1,7 @@
 import { uniqueBy } from "remeda"
 
 import {
+  NEAR_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
@@ -11,6 +12,7 @@ export type WalletSourceLike = {
   title: string
   logo: string
   installed: boolean
+  hasExtension?: boolean
 }
 
 export type WalletSourceGroupId = `walletGroup:${string}`
@@ -106,6 +108,10 @@ const isReachable = <T extends WalletSourceLike>(
   connectedProviderTypes: WalletProviderType[],
 ) => wallet.installed || connectedProviderTypes.includes(wallet.provider)
 
+const isHiddenByDefault = (wallet: WalletSourceLike) =>
+  SUBSTRATE_H160_PROVIDERS.includes(wallet.provider) ||
+  (NEAR_PROVIDERS.includes(wallet.provider) && !wallet.hasExtension)
+
 const RECENT_GROUPS_LIMIT = 5
 
 const NOT_RECENT = Number.MAX_SAFE_INTEGER
@@ -132,7 +138,7 @@ export const selectWalletSources = <T extends WalletSourceLike>(
       wallet.provider !== WalletProviderType.ExternalWallet &&
       (modeProviders
         ? modeProviders.includes(wallet.provider)
-        : !SUBSTRATE_H160_PROVIDERS.includes(wallet.provider) ||
+        : !isHiddenByDefault(wallet) ||
           connectedProviderTypes.includes(wallet.provider)),
   )
 
