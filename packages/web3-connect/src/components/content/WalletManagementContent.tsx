@@ -24,6 +24,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import { FormProvider } from "react-hook-form"
@@ -90,6 +91,7 @@ import {
   isAccountSelected,
 } from "@/utils/accountFilter"
 import {
+  getConnectAllGroups,
   getSelectableWallets,
   getWalletSourceAction,
   getWalletSourceGroupAction,
@@ -156,6 +158,9 @@ export const WalletManagementContent = () => {
   const [walletSearch, setWalletSearch] = useState("")
   const [accountSearch, setAccountSearch] = useState("")
   const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const [isConnectingAll, setIsConnectingAll] = useState(false)
+  // Closing the modal unmounts this, which is what stops a running "Connect all".
+  const isMountedRef = useRef(false)
   const externalWalletForm = useExternalWalletForm()
   const isChainMode = mode !== WalletMode.Default
   // View-only accounts don't belong to a chain-specific connect
@@ -166,6 +171,13 @@ export const WalletManagementContent = () => {
     mode === WalletMode.SubstrateEVM
   const multisigConfigs = useMultisigConfigs()
   const [multisigStep, setMultisigStep] = useState<MultisigStep>("list")
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!meta?.initialProvider) return
@@ -330,6 +342,18 @@ export const WalletManagementContent = () => {
     !showAccountPanel && visibleReachableWalletCount === 0
   const isMoreWalletsListOpen = isMoreOpen || shouldAutoOpenMoreWallets
 
+  const connectAllGroups = getConnectAllGroups(allWallets)
+  /**
+   * Offered only before anything is connected. Once it starts it stays up as
+   * a spinner until the queue ends, even though the first wallet to connect
+   * flips `hasConnectedWalletState`.
+   */
+  const showConnectAll =
+    !isChainMode &&
+    !walletSearch &&
+    (isConnectingAll ||
+      (!hasConnectedWalletState && connectAllGroups.length > 0))
+
   /**
    * Accounts the forced mode allows, narrowed by the selected wallet source.
    * `mode` is a hard bound applied unconditionally - the chips below can only
@@ -427,6 +451,30 @@ export const WalletManagementContent = () => {
     ) {
       void enable(wallet.provider).catch(() => undefined)
     }
+  }
+
+  /**
+   * One wallet at a time, so only one extension popup is open at once. A
+   * rejection disconnects that wallet and the queue moves on.
+   */
+  const handleConnectAll = async () => {
+    if (isConnectingAll) return
+    setIsConnectingAll(true)
+    selectSource("all")
+
+    for (const provider of connectAllGroups.flatMap(prop("providers"))) {
+      if (!isMountedRef.current) break
+      const status = getStatus(provider)
+      if (
+        status === WalletProviderStatus.Connected ||
+        status === WalletProviderStatus.Pending
+      ) {
+        continue
+      }
+      await enableWithDisconnectOnError(provider).catch(() => undefined)
+    }
+
+    setIsConnectingAll(false)
   }
 
   const handleWalletGroupSelect = (group: WalletSourceGroup) => {
@@ -536,6 +584,23 @@ export const WalletManagementContent = () => {
             <SSourceScrollFrame hasFooter={showLogOutAll}>
               <ScrollArea>
                 <SScrollAreaContent direction="column" gap="base">
+                  {showConnectAll && (
+                    <WalletSourceButton
+                      title={t("provider.connectAll")}
+                      subtitle={t("provider.connectAllCount", {
+                        count: connectAllGroups.length,
+                      })}
+                      logos={connectAllGroups.map(
+                        (group) => group.providers[0],
+                      )}
+                      pending={isConnectingAll}
+                      variant={
+                        showAccountPanel ? "management" : "firstConnection"
+                      }
+                      onClick={handleConnectAll}
+                    />
+                  )}
+
                   {showAccountPanel && connectedAccountsCount > 0 && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton

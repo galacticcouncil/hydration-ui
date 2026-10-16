@@ -8,6 +8,7 @@ import {
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import {
+  getConnectAllGroups,
   getSelectableWallets,
   getWalletGroupSourceModes,
   getWalletSourceAction,
@@ -351,5 +352,42 @@ describe("getWalletSourceGroupAction", () => {
       [WalletProviderType.TalismanEvm],
     )
     expect(action.kind).toBe("modes")
+  })
+})
+
+describe("getConnectAllGroups", () => {
+  const providers = (groups: { providers: WalletProviderType[] }[]) =>
+    groups.flatMap((group) => group.providers)
+
+  it("connects only providers that can sign on Hydration", () => {
+    const groups = getConnectAllGroups([
+      TALISMAN,
+      TALISMAN_EVM,
+      TALISMAN_SOL,
+      TALISMAN_H160,
+      POLKADOT_JS,
+      PHANTOM,
+      METEOR,
+      RABBY,
+      wallet(WalletProviderType.Suiet, "Suiet"),
+      wallet(WalletProviderType.NoirWallet, "Noir"),
+      wallet(WalletProviderType.WalletConnect, "WalletConnect"),
+    ])
+
+    expect(providers(groups)).toEqual([
+      WalletProviderType.Talisman,
+      WalletProviderType.TalismanEvm,
+      WalletProviderType.PolkadotJS,
+      WalletProviderType.RabbyWallet,
+    ])
+  })
+
+  it("skips wallets that are not installed", () => {
+    const groups = getConnectAllGroups([TALISMAN, POLKADOT_JS, NOT_INSTALLED])
+    expect(titles(groups)).toEqual(["Talisman", "Polkadot.js"])
+  })
+
+  it("offers nothing for a single wallet, however many providers it has", () => {
+    expect(getConnectAllGroups([TALISMAN, TALISMAN_EVM, PHANTOM])).toEqual([])
   })
 })
