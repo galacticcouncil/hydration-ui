@@ -19,8 +19,6 @@
   "provider.connect": "Connect",
   "provider.connected": "Connected",
   "provider.connectAll": "Connect all",
-  "provider.connectAllCount_one": "{{count}} wallet",
-  "provider.connectAllCount_other": "{{count}} wallets",
   "provider.notInstalled": "Not installed",
   "provider.logOutAll": "Log out all",
   "provider.selectSourceWallet": "Your wallets & accounts",
