@@ -19,6 +19,7 @@ import {
   type WithdrawalState,
   withdrawalState,
 } from "@/modules/strategies/propeller/utils/accounting"
+import { type HarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -36,6 +37,7 @@ export type PropellerPosition = {
   pendingYield: number | null
   /** the vault's collateral asset still sitting in the wallet */
   collateralBalance: number
+  harvestStatus: HarvestStatus | null
 }
 
 export type WithdrawalRowState = WithdrawalState
@@ -198,6 +200,10 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
         pendingYield,
         collateralBalance: balanceQueries[i]?.data?.eth ?? 0,
+        harvestStatus:
+          rpc.isReady && !balanceQueries[i]?.isError
+            ? (balanceQueries[i]?.data?.harvestStatus ?? null)
+            : null,
         assetValue,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.runRateApy ?? null,

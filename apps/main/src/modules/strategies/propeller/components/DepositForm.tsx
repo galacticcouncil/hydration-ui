@@ -65,7 +65,12 @@ export const DepositForm = ({
   const { data: capacity, isError: capacityError } = useQuery(
     depositCapacityQuery(rpc, vault),
   )
-  const deposit = useDeposit(vault, { onSuccess })
+  const deposit = useDeposit(vault, {
+    onSuccess: () => {
+      deposit.reset()
+      onSuccess?.()
+    },
+  })
   const unavailable =
     !rpc.isReady || !capacity || capacityError || !capacity.ready
   const maximum = formatUnits(capacity?.maximum ?? 0n, asset.decimals)

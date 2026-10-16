@@ -104,6 +104,9 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
     (state) => state.connectedRpcUrl,
   )
   const rpcUrlList = useProviderRpcUrlStore((state) => state.rpcUrlList)
+  const isRpcConnecting = useProviderRpcUrlStore(
+    (state) => state.isRpcConnecting,
+  )
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
@@ -121,7 +124,12 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
             setConnectedRpcUrl,
             setIsRpcConnecting,
           } = useProviderRpcUrlStore.getState()
-          if (status.type === WsEvent.CONNECTING) setIsRpcConnecting(true)
+          if (
+            status.type === WsEvent.CONNECTING ||
+            status.type === WsEvent.CLOSE ||
+            status.type === WsEvent.ERROR
+          )
+            setIsRpcConnecting(true)
           if (status.type === WsEvent.CONNECTED) {
             if (status.uri !== connectedRpcUrl) {
               setConnectedRpcUrl(status.uri)
@@ -144,7 +152,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   const isEndpointSettled = rpcUrl === connectedRpcUrl
   const isRegistryReady = hasAssets && registryGenesisHash === data.genesisHash
-  const isReady = isEndpointSettled && isRegistryReady
+  const isReady = !isRpcConnecting && isEndpointSettled && isRegistryReady
 
   const dataEnv = getProviderDataEnv(rpcUrl)
 

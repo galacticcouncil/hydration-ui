@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { type TProviderContext } from "@/providers/rpcProvider"
 
-import { vaultStatsQuery } from "./useVaultReads"
+import { vaultBalancesQuery, vaultStatsQuery } from "./useVaultReads"
 
 vi.mock("@galacticcouncil/utils", () => ({
   getAddressFromAssetId: () => "0x0000000000000000000000000000000000000003",
@@ -111,4 +111,30 @@ describe("Keeper deficit stop", () => {
     expect(result.deficitStop).toBeNull()
     expect(result.totalAssets).toBe(10)
   })
+})
+
+it("retains a pending yield estimate when its harvest conditions are unavailable", async () => {
+  vi.spyOn(console, "warn").mockImplementation(() => {})
+  const readContract = vi.fn(
+    async ({ functionName }: { functionName: string }) => {
+      if (functionName === "yieldSource") throw new Error("RPC timeout")
+      if (functionName === "mainDebt" || functionName === "yieldAccounting")
+        return vault.vaultAddress
+      if (functionName === "paused") return false
+      if (functionName === "earnedAssets") return 2n * 10n ** 18n
+      if (functionName === "fundedOf") return 0n
+      return 10n ** 18n
+    },
+  )
+  const rpc = {
+    isReady: true,
+    evm: { getBlockNumber: async () => 123n, readContract },
+  } as unknown as TProviderContext
+  const query = vaultBalancesQuery(rpc, vault, 18, vault.vaultAddress)
+  if (typeof query.queryFn !== "function")
+    throw new Error("Expected query function")
+  const result = await query.queryFn({} as never)
+  expect(result.assetValue).toBe(1)
+  expect(result.pendingYield).toBe(2)
+  expect(result.harvestStatus).toBeNull()
 })

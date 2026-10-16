@@ -17,7 +17,7 @@ export const SHeader = styled.header(
     grid-template-columns: 1fr auto;
 
     align-items: center;
-    gap: ${theme.space.m};
+    gap: ${theme.space.base};
 
     height: 3.375rem;
 
@@ -36,7 +36,7 @@ export const SHeader = styled.header(
     }
 
     ${mq(FULL_HEADER_BREAKPOINT)} {
-      gap: ${theme.space.xxxl};
+      gap: ${theme.space.xl};
     }
   `,
 )
