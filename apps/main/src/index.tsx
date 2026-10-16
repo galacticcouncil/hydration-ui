@@ -14,5 +14,6 @@ patchBigJs()
 // Idempotent, so this can go once the sdk calls register() itself.
 registerNttLayouts()
 Big.PE = 666
+Big.NE = -666
 
 createRoot(document.getElementById("root")!).render(<App />)

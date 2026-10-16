@@ -77,7 +77,7 @@ export const WithdrawMethodPicker = ({
           subtitle={t("bil.method.queue.subtitle")}
           icon={Hourglass}
           rightChip={t("bil.method.queue.upToDays", {
-            days: worstCaseWaitDays,
+            count: worstCaseWaitDays,
           })}
           rightChipVariant="secondary"
         />
@@ -142,7 +142,7 @@ export const WithdrawMethodPicker = ({
                 />
                 <DetailRow
                   label={t("bil.method.instant.youReceiveQueue", {
-                    days: worstCaseWaitDays,
+                    count: worstCaseWaitDays,
                   })}
                   value={t("common:currency", {
                     value: queueHollarOut,
