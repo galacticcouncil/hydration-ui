@@ -1,0 +1,22 @@
+{
+  "checkout": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+  "packages": {
+    "typescript": "5.7.3",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "@tanstack/react-query": "5.101.4",
+    "@tanstack/query-core": "5.101.4",
+    "@tanstack/react-router": "1.170.10",
+    "polkadot-api": "2.2.2",
+    "viem": "2.56.8",
+    "@galacticcouncil/common": "1.2.0",
+    "@galacticcouncil/descriptors": "2.9.0",
+    "@galacticcouncil/sdk-next": "2.3.2",
+    "@galacticcouncil/xc": "2.1.0",
+    "@galacticcouncil/xc-cfg": "2.7.0",
+    "@galacticcouncil/xc-core": "2.6.0",
+    "@galacticcouncil/xc-sdk": "2.5.0",
+    "@galacticcouncil/xc-swap": "0.9.0",
+    "@galacticcouncil/xc-scan": "0.5.0"
+  }
+}

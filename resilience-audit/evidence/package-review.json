@@ -1,0 +1,57 @@
+{
+  "scope": "Declared package version and network-capable role review; not a full transitive audit.",
+  "checkedDeclaredPackages": 97,
+  "mismatches": [],
+  "notes": [
+    "All97 inventory versions match their actual declaring-workspace nearest installed package manifests. @radix-ui/react-slot resolves1.2.4 from packages/ui/node_modules while root/app transitive copy is1.2.3; this is an expected nested-version split, not an inventory error. Some package exports prevent CommonJS require validation; nearest installed manifests and entrypoint resolution were used instead.",
+    "ethers5.7.0 and standalone @ethersproject/providers5.8.0 are distinct pinned/installed packages; do not conflate ethers internal provider subdependencies with direct app provider import.",
+    "Aave helpers use supplied Hydration Web3Provider; dormant package IPFS utility is not a proven UI cloud dependency. No current UI getDefaultProvider/JsonRpcProvider/clusterApiUrl calls found.",
+    "Solana Connection has ordinary HTTP fetch+body reads without generic operation deadline, supplied chain endpoints, and429 backoff. Injected wallet providers may also wait independently; see wallet/chain slice.",
+    "p-wait-for6.0.0 does not bound hanging condition RPCs despite60s/3min consumer configuration; exact installed library3-case test proves this.",
+    "97 declared-production rows do not exhaust runtime imports/transitives. Separate source import omission artifact includes @mysten/sui (actual Transaction runtime use), Wormhole registration definitions, bundled math/WASM, rxjs, schema/encoding utilities. Some source imports are type-elided, development-only, stories, or workspace self-references; that artifact does not assert all run in production.",
+    "buffer is a Node builtin name, so CJS resolve.paths(name) returnsnull; browser package manifest independently confirms buffer6.0.3."
+  ],
+  "evidence": [
+    {
+      "path": "apps/main/src/api/borrow/contracts.ts",
+      "line": 26,
+      "note": "new Web3Provider(evm.transport)"
+    },
+    {
+      "path": "packages/web3-connect/src/signers/SolanaSigner.ts",
+      "line": 32,
+      "note": "supplied chainsMap solana connection"
+    },
+    {
+      "path": "node_modules/@solana/web3.js/lib/index.browser.esm.js",
+      "line": 4286,
+      "note": "fetch has no app abort signal/timeout; body awaited4310"
+    },
+    {
+      "path": "node_modules/@aave/contract-helpers/dist/esm/commons/ipfs.js",
+      "line": 7,
+      "note": "dormant cloudflare-ipfs default utility; no current UI use found"
+    },
+    {
+      "path": "packages/web3-connect/src/signers/SuiSigner.ts",
+      "line": 4,
+      "note": "@mysten/sui/transactions imported runtime API"
+    }
+  ],
+  "references": [
+    "audit/package-inventory.json",
+    "audit/deep-wait.json",
+    "audit/wait-faults.results.json",
+    "audit/source-runtime-import-omissions.json"
+  ],
+  "checkedWorkspaceResolutions": 116,
+  "rootVersionDifferences": [
+    {
+      "name": "@radix-ui/react-slot",
+      "from": "packages/ui/package.json",
+      "version": "1.2.4",
+      "rootVersion": "1.2.3",
+      "path": "packages/ui/node_modules/@radix-ui/react-slot/package.json"
+    }
+  ]
+}
