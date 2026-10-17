@@ -123,7 +123,7 @@ describe("getXcmReportAlerts", () => {
         {
           key: "omni.connectorUnreachable",
           message:
-            "Could not read the Zcash deposit minimum, so this transfer cannot be verified right now. Please try again in a moment.",
+            "Could not read the Zcash bridge minimum, so this transfer cannot be verified right now. Please try again in a moment.",
           severity: "error",
         },
       ])
