@@ -3,15 +3,15 @@ import {
   getChainAssetId,
   getVaaHeader,
   HYDRATION_CHAIN_KEY,
+  isNearChain,
   isZecChain,
   NearAddr,
   safeConvertSS58toH160,
   Ss58Addr,
 } from "@galacticcouncil/utils"
-import { assetsMap, chainsMap } from "@galacticcouncil/xc-cfg"
+import { assetsMap, chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Wormhole } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
-import { OMNI_CONNECTORS } from "@galacticcouncil/xc-swap"
 import { secondsToMilliseconds } from "date-fns"
 import { bytesToHex } from "viem"
 
@@ -164,6 +164,12 @@ export const toNearNttParty = (address: string): string | undefined => {
   }
 }
 
+/** NEAR account Omni's Zcash connector sends deposits from. */
+const getZcashConnectorAccount = (near: AnyChain, zcash: AnyChain) =>
+  isNearChain(near)
+    ? clients.omniClient(zcash, near).connector.account
+    : undefined
+
 const toChainAddress = (chain: AnyChain, universal: string) =>
   chain.key === HYDRATION_CHAIN_KEY ? `0x${universal.slice(-40)}` : universal
 
@@ -188,11 +194,13 @@ export const toNearNttJourney = (
   if (!asset) return
 
   const zcash = chainsMap.values().find(isZecChain)
-  const connector = OMNI_CONNECTORS.zcash?.account
+  const connector =
+    zcash && source.from.key === NEAR_CHAIN_KEY
+      ? getZcashConnectorAccount(source.from, zcash)
+      : undefined
   const isPaidOnZcash =
     !!zcash &&
     !!connector &&
-    source.from.key === NEAR_CHAIN_KEY &&
     transfer.sender ===
       Wormhole.fromChain(source.from).normalizeAddress(connector)
 

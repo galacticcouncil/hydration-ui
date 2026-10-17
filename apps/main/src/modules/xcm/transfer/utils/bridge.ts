@@ -52,6 +52,12 @@ export const isSnowbridgeRoute = (route: AssetRoute | null): boolean => {
   return tags.includes(XcmTag.Snowbridge)
 }
 
+// Zcash over NEAR: an Omni deposit in, a utxo emitter withdrawal out
+export const isOmniRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as string[]
+  return tags.includes(XcmTag.Omni)
+}
+
 export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
   const tags = (route.tags ?? []) as string[]
   return tags.includes(XcmTag.SnowbridgeV1)

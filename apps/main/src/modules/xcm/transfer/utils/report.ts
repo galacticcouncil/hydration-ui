@@ -13,10 +13,8 @@ const REPORT_ERROR_KEYS = [
   "asset.frozen",
   "account.insufficientDeposit",
   "omni.belowMinDeposit",
+  "omni.belowMinWithdraw",
   "omni.connectorUnreachable",
-  "oneClick.amountTooLow",
-  "oneClick.recipientInvalid",
-  "oneClick.quoteFailed",
 ] as const
 
 type ReportErrorKey = (typeof REPORT_ERROR_KEYS)[number]
@@ -89,7 +87,7 @@ const getHubNttAlert = (
  * Alerts for the sdk validation report.
  *
  * `isHubMetered`: an end has no ntt manager of its own, so the sdk checks the
- * ntt limits on NEAR, the hub it bridges through (an Omni deposit, a 1Click
+ * ntt limits on NEAR, the hub it bridges through (an Omni deposit or
  * withdrawal), which the wormhole limit hook does not read.
  */
 export const getXcmReportAlerts = (

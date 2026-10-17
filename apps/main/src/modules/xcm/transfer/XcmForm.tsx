@@ -9,18 +9,12 @@ import {
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { ZcashTransfer } from "@galacticcouncil/xc-swap"
 import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { pick } from "remeda"
-import { useShallow } from "zustand/shallow"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
-import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
-import { NEAR_CHAIN_KEY } from "@/modules/xcm/history/utils/journey"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -62,9 +56,6 @@ export const XcmForm = () => {
 
   const { watch, handleSubmit, reset, setValue } =
     useFormContext<XcmFormValues>()
-  const { addWithdrawal, removeWithdrawal } = useZecWithdrawalsStore(
-    useShallow(pick(["addWithdrawal", "removeWithdrawal"])),
-  )
 
   const resetAmounts = useResetAmounts()
 
@@ -88,39 +79,19 @@ export const XcmForm = () => {
 
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
-      // Opened by a withdrawal to Zcash as its calls were built
-      const { deposit } = transfer as ZcashTransfer
-
-      // The claim on NEAR names the deposit address in plain, which the vaa
-      // carries as a hash only
-      if (deposit) {
-        addWithdrawal({
-          txHash,
-          depositAddress: deposit.depositAddress,
-          recipient: values.destAddress,
-          deadline: deposit.deadline,
-        })
-      }
-
       if (account) {
-        // A 1Click withdrawal lists as its leg to NEAR, the journey that
-        // replaces this placeholder
-        const hub = deposit ? chainsMap.get(NEAR_CHAIN_KEY) : undefined
         insertOptimisticJourney(
           queryClient,
           account.address,
           txHash,
-          hub ? { ...values, destChain: hub } : values,
+          values,
           transfer,
         )
       }
 
       resetAmounts()
     },
-    onTransferError: (txHash, _values, transfer) => {
-      // A transfer that failed leaves nothing to claim on NEAR
-      if ((transfer as ZcashTransfer).deposit) removeWithdrawal(txHash)
-
+    onTransferError: (txHash) => {
       if (account) {
         removeOptimisticJourney(queryClient, account.address, txHash)
       }

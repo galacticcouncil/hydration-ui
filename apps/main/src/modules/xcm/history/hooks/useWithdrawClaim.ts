@@ -16,12 +16,8 @@ import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useMutation } from "@tanstack/react-query"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { pick } from "remeda"
-import { useShallow } from "zustand/shallow"
 
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { useZecWithdrawalsStore } from "@/modules/xcm/history/hooks/useZecWithdrawalsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
   buildClaimCall,
@@ -38,13 +34,9 @@ import { toDecimal } from "@/utils/formatting"
 import { useClaimTxOptions } from "./useClaimTxOptions"
 
 export function useWithdrawClaim(journey: XcJourney) {
-  const { t } = useTranslation("xcm")
   const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
   const { addPendingCorrelationId, removePendingCorrelationId } =
     usePendingClaimsStore()
-  const { findWithdrawal, removeWithdrawal } = useZecWithdrawalsStore(
-    useShallow(pick(["findWithdrawal", "removeWithdrawal"])),
-  )
 
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
@@ -67,24 +59,22 @@ export function useWithdrawClaim(journey: XcJourney) {
       const wallet = getWallet(account.provider)
       const signer = wallet?.signer
 
-      // A zcash withdrawal paid a 1Click deposit address, which the vaa names
-      // by hash only: the claim passes it in plain, from this browser's record
-      // or the copy its sender published on the source chain
+      // A transfer to another NEAR account, which the vaa names by hash only:
+      // the claim passes it in plain, from the copy its sender published on
+      // the source chain, so any NEAR account can claim it
       const vaaRaw = getJourneyVaaRaw(journey)
       const payee = vaaRaw
         ? parseNttTransfer(getVaaHeader(vaaRaw).payload)?.to
         : undefined
-      const withdrawal = payee ? findWithdrawal(payee) : undefined
-      const depositAddress =
-        withdrawal?.depositAddress ??
-        (payee && payee !== toNearUniversal(account.rawAddress)
+      const recipient =
+        payee && payee !== toNearUniversal(account.rawAddress)
           ? await findNearRecipient(journey)
-          : undefined)
+          : undefined
 
       const result = await buildClaimCall(
         journey,
         account.rawAddress,
-        depositAddress,
+        recipient,
       )
 
       if (!result) {
@@ -146,7 +136,6 @@ export function useWithdrawClaim(journey: XcJourney) {
 
       if (result.type === CallType.Near && isNearSigner(signer)) {
         const { call, chain } = result
-        const toastParams = { value, symbol }
 
         return signer.signAndSend(
           call,
@@ -154,17 +143,6 @@ export function useWithdrawClaim(journey: XcJourney) {
           getClaimTxOptions(chain, result.type, {
             createLink: (txHash) => nearblocks.tx(chain.key, txHash),
             ...commonCallbacks,
-            // Claimed into the deposit address, 1Click sends it on to Zcash
-            ...(depositAddress && {
-              onSuccess: () => {
-                if (withdrawal) removeWithdrawal(withdrawal.txHash)
-              },
-              titles: {
-                submitted: t("zecWithdrawal.toast.submitted", toastParams),
-                success: t("zecWithdrawal.toast.success", toastParams),
-                error: t("zecWithdrawal.toast.error", toastParams),
-              },
-            }),
           }),
         )
       }

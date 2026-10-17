@@ -16,7 +16,7 @@ export const useXcmTransferConfigs = (
 ): TransferConfigs | null => {
   const configService = useCrossChainConfigService()
   if (!srcAsset || !srcChain || !destChain || !destAsset) return null
-  // The sdk throws on a source without routes, which Zcash is
+  // The sdk throws on a source without routes
   if (!configService.routes.has(srcChain.key)) return null
   const { destination, destinationChains } = ConfigBuilder(configService)
     .assets()

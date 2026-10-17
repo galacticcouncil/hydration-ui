@@ -10,7 +10,7 @@ import {
   EvmParachain,
 } from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { prop, unique } from "remeda"
@@ -19,7 +19,7 @@ import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
-  useZcashRoutes,
+  xcmDestinationFeeQuery,
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
@@ -27,8 +27,8 @@ import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
-import { useZecWithdrawalAlerts } from "@/modules/xcm/transfer/hooks/useZecWithdrawal"
 import {
+  isOmniRoute,
   resolveValidBridgeProvider,
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
@@ -46,7 +46,6 @@ import {
   resolveBestDestination,
   resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
-import { findZcashRoute } from "@/modules/xcm/transfer/utils/zcash"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
@@ -62,7 +61,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const form = useXcmForm(transfer)
 
   const configService = useCrossChainConfigService()
-  const zcashRoutes = useZcashRoutes()
 
   const values = form.watch()
 
@@ -83,48 +81,26 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const sourceChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     return XCM_CHAINS.map((chain) => {
-      // The sdk throws on a source without routes, which Zcash is
+      // The sdk throws on a source without routes, as a destination-only
+      // chain is
       const isRouted = configService.routes.has(chain.key)
       const assets = [...chain.assetsData.values()]
         .map(({ asset }) => asset)
         .filter((asset) => {
-          const isZcashSource = zcashRoutes.some(
-            ({ source }) =>
-              source.chain.key === chain.key && source.asset.key === asset.key,
-          )
-          if (isZcashSource) return true
           if (!isRouted) return false
           const assetSource = config.asset(asset).source(chain)
           return assetSource.destinationChains.length > 0
         })
       return { chain, routes: [], assets, isTagSelect: false }
     })
-  }, [config, configService, zcashRoutes])
+  }, [config, configService])
 
   const destChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     const { routes } = configService
     const srcChainRoutes = routes.get(srcChain?.key ?? "")
 
-    if (!srcAsset || !srcChain) {
+    if (!srcAsset || !srcChain || !srcChainRoutes) {
       return []
-    }
-
-    // No routes to select: xc-swap builds the transfer
-    const zcashPairs = zcashRoutes
-      .filter(
-        ({ source }) =>
-          source.chain.key === srcChain.key &&
-          source.asset.key === srcAsset.key,
-      )
-      .map(({ destination }) => ({
-        chain: destination.chain,
-        routes: [],
-        assets: [destination.asset],
-        isTagSelect: false,
-      }))
-
-    if (!srcChainRoutes) {
-      return zcashPairs
     }
 
     const srcChainAssetRoutes = srcChainRoutes.getRoutes()
@@ -138,18 +114,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       )
       .map((a) => a.destination.chain)
 
-    return [
-      ...unique(destChains).map((chain) => {
-        const { routes, destinationAssets, isTagSelect } = config
-          .asset(srcAsset)
-          .source(srcChain)
-          .destination(chain)
+    return unique(destChains).map((chain) => {
+      const { routes, destinationAssets, isTagSelect } = config
+        .asset(srcAsset)
+        .source(srcChain)
+        .destination(chain)
 
-        return { chain, routes, assets: destinationAssets, isTagSelect }
-      }),
-      ...zcashPairs,
-    ]
-  }, [config, srcAsset, srcChain, configService, zcashRoutes])
+      return { chain, routes, assets: destinationAssets, isTagSelect }
+    })
+  }, [config, srcAsset, srcChain, configService])
 
   const destPair = destChainAssetPairs.find(
     (p) => p.chain.key === destChain?.key,
@@ -176,16 +149,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     [destPair, destAsset, bridgeProvider],
   )
 
-  const zcashRoute = findZcashRoute(zcashRoutes, {
-    srcChain: srcChain?.key,
-    srcAsset: srcAsset?.key,
-    destChain: destChain?.key,
-    destAsset: destAsset?.key,
-  })
+  const isOmni = isOmniRoute(selectedRoute)
+  const isOmniWithdrawal = isOmni && !!destChain?.isZec()
 
-  // A Zcash deposit lands over the ntt route from NEAR, so binds like it
   const requiresBinding = requiresEvmBinding(
-    selectedRoute ?? zcashRoute?.hub ?? null,
+    selectedRoute,
     destChain,
     destAddress,
   )
@@ -283,11 +251,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     report,
   } = useXcmTransfer(form, transferArgs)
 
-  const { alerts: transferAlerts, isLoading: isLoadingAlerts } =
-    useXcmTransferAlerts(form, report, requiresBinding)
+  const { alerts, isLoading: isLoadingAlerts } = useXcmTransferAlerts(
+    form,
+    report,
+    requiresBinding,
+  )
 
-  const zecWithdrawalAlerts = useZecWithdrawalAlerts(zcashRoute)
-  const alerts = [...transferAlerts, ...zecWithdrawalAlerts]
+  // An Omni withdrawal's bridge fee is rated on the amount, so what lands
+  // reads it per amount rather than the build-time snapshot
+  const { data: omniDestFee } = useQuery(
+    xcmDestinationFeeQuery(
+      isOmniWithdrawal ? xcmTransfer : null,
+      srcAmount,
+      transferArgs,
+    ),
+  )
 
   useEffect(() => {
     setTransfer(xcmTransfer)
@@ -299,10 +277,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
             srcAmount,
             xcmTransfer,
             !!selectedRoute?.destination.fee.prepaid,
+            omniDestFee,
           )
         : "",
     )
-  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer])
+  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer, omniDestFee])
 
   // Only the assets actually in view are subscribed now - the asset picker
   // fetches the full set on its own.
@@ -340,10 +319,10 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   useTrackApprovals(srcChainKey)
 
   const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
-  // Only the report checks an Omni deposit or a 1Click withdrawal against its
-  // minimum and the NEAR leg's limits, neither of which can be undone, so
-  // submit waits for it
-  const isLoadingBridgeReport = !!zcashRoute && isLoadingReport
+  // Only the report checks an Omni deposit or withdrawal against its minimum
+  // and the NEAR leg's limits, neither of which can be undone, so submit
+  // waits for it
+  const isLoadingBridgeReport = isOmni && isLoadingReport
   const isLoading =
     isLoadingTransfer ||
     isLoadingBalances ||
@@ -364,20 +343,13 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         destChainAssetPairs,
         availableBridgeRoutes,
         selectedRoute,
-        zcashRoute,
         transferArgs,
         alerts,
         transfer,
         call,
         dryRunError,
         registryChain,
-        status: getTransferStatus(
-          form.getValues(),
-          transfer,
-          call,
-          alerts,
-          !!zcashRoute,
-        ),
+        status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}
     >
       <FormProvider {...form}>{children}</FormProvider>

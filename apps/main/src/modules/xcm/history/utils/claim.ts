@@ -398,7 +398,8 @@ type ClaimCallResult =
 
 /**
  * NEAR account a vaa pays, as its sender published it on the source chain:
- * a 1Click withdrawal's deposit address, so any NEAR account can claim it.
+ * an implicit account the transfer names by hash only, so any NEAR account
+ * can claim it.
  */
 export async function findNearRecipient(
   journey: XcJourney,

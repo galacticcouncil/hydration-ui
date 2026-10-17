@@ -80,10 +80,11 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Solana ||
       c.ecosystem === ChainEcosystem.Sui ||
       c.ecosystem === ChainEcosystem.Ethereum ||
-      // NEAR is listed once the sdk routes it, so it comes with that release
-      (c.ecosystem === ChainEcosystem.Near && isRoutedChain(c.key)) ||
-      // Zcash has no routes: xc-swap's Zcash transfers serve it
-      c.ecosystem === ChainEcosystem.Zcash
+      // NEAR and Zcash are listed once the sdk routes them, so they come with
+      // that release
+      ((c.ecosystem === ChainEcosystem.Near ||
+        c.ecosystem === ChainEcosystem.Zcash) &&
+        isRoutedChain(c.key))
     )
   }),
   sortBy(

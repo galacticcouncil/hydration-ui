@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { portfolioBalanceQueryKey } from "@/api/portfolio"
-import { useCrossChainConfigService, useZcashRoutes } from "@/api/xcm"
+import { useCrossChainConfigService } from "@/api/xcm"
 import { PendingApproval } from "@/components/PendingApproval"
 import {
   isEvmApproveCall,
@@ -20,7 +20,6 @@ import {
   assertTransferValues,
   buildXcmTx,
 } from "@/modules/xcm/transfer/utils/transfer"
-import { findZcashRoute } from "@/modules/xcm/transfer/utils/zcash"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -52,7 +51,6 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
   const { t } = useTranslation(["xcm", "common"])
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
-  const zcashRoutes = useZcashRoutes()
   const { account } = useAccount()
   const { papi } = useRpcProvider()
 
@@ -81,33 +79,20 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const route = (() => {
-        // Zcash has no route of its own, and carries the ntt leg's tags
-        const zcashRoute = findZcashRoute(zcashRoutes, {
-          srcChain: srcChain.key,
-          srcAsset: srcAsset.key,
-          destChain: destChain.key,
-          destAsset: destAsset.key,
-        })
-        if (zcashRoute) return zcashRoute.hub
+      const destPair = ConfigBuilder(configService)
+        .assets()
+        .asset(srcAsset)
+        .source(srcChain)
+        .destination(destChain)
 
-        const destPair = ConfigBuilder(configService)
-          .assets()
-          .asset(srcAsset)
-          .source(srcChain)
-          .destination(destChain)
+      const { tag, destAsset: validDstAsset } = resolveRouteBuilderArgs(
+        destPair.routes,
+        destAsset,
+        bridgeProvider ?? undefined,
+      )
 
-        const { tag, destAsset: validDstAsset } = resolveRouteBuilderArgs(
-          destPair.routes,
-          destAsset,
-          bridgeProvider ?? undefined,
-        )
+      const route = destPair.build(validDstAsset, tag).origin.route
 
-        return destPair.build(validDstAsset, tag).origin.route
-      })()
-
-      // A withdrawal to Zcash opens its 1Click deposit address here, once per
-      // amount, and every later build of the amount pays it
       const calls = await transfer.buildCalls(srcAmount)
       const transferCall = calls.at(-1)
 

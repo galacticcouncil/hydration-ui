@@ -10,7 +10,12 @@ import {
   Ss58Addr,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
-import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
+import {
+  AnyChain,
+  Asset,
+  AssetAmount,
+  AssetRoute,
+} from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
@@ -52,9 +57,6 @@ export const getTransferStatus = (
   transfer: Transfer | null,
   call: Call | null,
   alerts: XcmAlert[],
-  // Building a Zcash transfer's call opens a deposit address, so it's built
-  // at submit only
-  isCallDeferred = false,
 ) => {
   switch (true) {
     case !values.destAddress:
@@ -69,7 +71,7 @@ export const getTransferStatus = (
       return XcmTransferStatus.TransferInvalid
     case !!call && isEvmApproveCall(call):
       return XcmTransferStatus.ApproveAndTransferValid
-    case !!transfer && (!!call || isCallDeferred):
+    case !!transfer && !!call:
       return XcmTransferStatus.TransferValid
     default:
       return XcmTransferStatus.Default
@@ -82,14 +84,17 @@ export const getTransferStatus = (
  * A destination fee sharing the transfer asset comes out of what lands -
  * unless the route prepays it on source on top of the amount (ntt executor
  * routes), in which case the whole amount is delivered.
+ *
+ * `amountDestFee` replaces the build-time fee where it's rated on the amount.
  */
 export const calculateTransferDestAmount = (
   asset: Asset,
   amount: string,
   transfer: Transfer,
   isDestFeePrepaid = false,
+  amountDestFee?: AssetAmount,
 ): string => {
-  const { destinationFee } = transfer.source
+  const destinationFee = amountDestFee ?? transfer.source.destinationFee
   if (!isValidBigSource(amount)) return ""
   if (asset.isEqual(destinationFee) && !isDestFeePrepaid) {
     const destFee = toDecimal(destinationFee.amount, destinationFee.decimals)
@@ -107,7 +112,7 @@ export type XcmDestination = {
 
 /**
  * The selected destination if a pair serves it, the top priority one
- * otherwise. A pair without routes (Zcash) serves each of its assets.
+ * otherwise. A pair without routes serves each of its assets.
  */
 export const resolveBestDestination = (
   destChainAssetPairs: ChainAssetPair[],
