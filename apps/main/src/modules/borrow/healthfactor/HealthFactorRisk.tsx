@@ -1,29 +1,32 @@
 import {
   useFormattedHealthFactor,
   useFormattedLtv,
-  useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
-import { getUserLoanToValue } from "@galacticcouncil/money-market/utils"
 import { Stack, Text } from "@galacticcouncil/ui/components"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorLtvScale } from "@/modules/borrow/healthfactor/HealthFactorLtvScale"
 import { HealthFactorRiskInfo } from "@/modules/borrow/healthfactor/HealthFactorRiskInfo"
 import { HealthFactorRiskScale } from "@/modules/borrow/healthfactor/HealthFactorRiskScale"
 
-export const HealthFactorRisk = () => {
+type HealthFactorRiskProps = {
+  readonly healthFactor: string
+  readonly loanToValue: string
+  readonly currentLoanToValue: string
+  readonly currentLiquidationThreshold: string
+}
+
+export const HealthFactorRisk: FC<HealthFactorRiskProps> = ({
+  healthFactor: healthFactorValue,
+  loanToValue,
+  currentLoanToValue,
+  currentLiquidationThreshold,
+}) => {
   const { t } = useTranslation(["common", "borrow"])
 
-  const { user } = useMoneyMarketData()
-
-  const { healthFactor, healthFactorColor } = useFormattedHealthFactor(
-    user.healthFactor,
-  )
-
-  const currentLoanToValue = user.currentLoanToValue || "0"
-  const currentLiquidationThreshold = user.currentLiquidationThreshold || "0"
-
-  const loanToValue = getUserLoanToValue(user)
+  const { healthFactor, healthFactorColor } =
+    useFormattedHealthFactor(healthFactorValue)
 
   const formattedLtvValues = useFormattedLtv(
     loanToValue,

@@ -5,6 +5,7 @@ import { useShallowCompareEffect } from "react-use"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
+import { useBorrowHistoryRoute } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
 import { BorrowHistoryPlaceholder } from "@/modules/borrow/history/BorrowHistoryPlaceholder"
 import { BorrowHistorySearch } from "@/modules/borrow/history/BorrowHistorySearch"
 import { BorrowHistoryTable } from "@/modules/borrow/history/BorrowHistoryTable"
@@ -13,19 +14,16 @@ export const BorrowHistoryPage = () => {
   const { t } = useTranslation(["borrow"])
   const { account } = useAccount()
   const accountAddress = account?.address
+  const route = useBorrowHistoryRoute()
 
-  const paginationProps = useDataTableUrlPagination(
-    "/borrow/history",
-    "page",
-    20,
-  )
+  const paginationProps = useDataTableUrlPagination(route, "page", 20)
 
   useShallowCompareEffect(() => {
     paginationProps.onPageClick(1)
   }, [accountAddress])
 
   const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
-    "/borrow/history",
+    route,
     "search",
     {
       onChange: () => paginationProps.onPageClick(1),

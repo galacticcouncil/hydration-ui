@@ -13,6 +13,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
+import { setupExternalApyPersistence } from "@/api/external/persistence"
 import { setupPortfolioPersistence } from "@/api/portfolio"
 import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
@@ -38,6 +39,7 @@ const queryClient = new QueryClient({
 })
 
 setupPortfolioPersistence(queryClient)
+setupExternalApyPersistence(queryClient)
 
 applyResetTutorialsParam()
 

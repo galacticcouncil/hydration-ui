@@ -63,6 +63,7 @@ export const BorrowInfo = ({
         <Flex gap={["m", "xxxl"]} justify="space-between" align="center">
           {showBorrowCapStatus && (
             <CapProgressCircle
+              type="borrow"
               radius={[16, 46]}
               thickness={3}
               labelPosition={["end", "center"]}

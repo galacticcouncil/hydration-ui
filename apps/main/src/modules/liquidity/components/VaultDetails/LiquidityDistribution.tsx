@@ -1,6 +1,7 @@
 import {
   Box,
   Chart,
+  ChartLegend,
   Chip,
   Flex,
   Stack,
@@ -24,7 +25,6 @@ import { useAssetColor } from "@/hooks/useAssetColor"
 import {
   SLiquidityLegend,
   SManagedBand,
-  SRangeLegendToggle,
   SSpotLine,
 } from "@/modules/liquidity/components/VaultDetails/LiquidityDistribution.styled"
 import {
@@ -68,21 +68,6 @@ import { scaleHuman } from "@/utils/formatting"
 
 export type { RangeScenario }
 
-const Legend = ({ color, label }: { color: string; label: string }) => (
-  <Flex align="center" gap="s">
-    <Box
-      as="span"
-      size="xs"
-      borderRadius="base"
-      bg={color}
-      display="inline-block"
-    />
-    <Text fs="p6" color={getToken("text.low")}>
-      {label}
-    </Text>
-  </Flex>
-)
-
 const RangeSwatch = ({ range }: { range: ManagedRangeStyle }) => (
   <Box
     as="span"
@@ -94,33 +79,6 @@ const RangeSwatch = ({ range }: { range: ManagedRangeStyle }) => (
       border: `1px solid ${managedRangeMixedColor(range.color, range.borderOpacity)}`,
     }}
   />
-)
-
-const RangeLegend = ({
-  range,
-  label,
-  visible,
-  onToggle,
-}: {
-  range: ManagedRangeStyle
-  label: string
-  visible: boolean
-  onToggle: () => void
-}) => (
-  <SRangeLegendToggle
-    as="button"
-    align="center"
-    gap="s"
-    aria-pressed={visible}
-    aria-label={label}
-    onClick={onToggle}
-    sx={{ opacity: visible ? 1 : FADED_OPACITY }}
-  >
-    <RangeSwatch range={range} />
-    <Text fs="p6" color={getToken("text.low")}>
-      {label}
-    </Text>
-  </SRangeLegendToggle>
 )
 
 export const LiquidityDistribution = ({
@@ -405,6 +363,7 @@ export const LiquidityDistribution = ({
   const [base, quote] = vault.pair
   const price0 = priceAtTick(spotTick, token0.decimals, token1.decimals)
   const price = flipped ? 1 / price0 : price0
+  const scenarioRange = rangeStyle()
 
   return (
     <Flex direction="column" flex={1} sx={{ minHeight: resolvedHeight }}>
@@ -527,7 +486,7 @@ export const LiquidityDistribution = ({
         <SLiquidityLegend mt="s" wrap>
           {/* left side of the chart first */}
           {(flipped ? [0, 1] : [1, 0]).map((side) => (
-            <Legend
+            <ChartLegend
               key={side}
               color={side ? colors.token1 : colors.token0}
               label={
@@ -546,31 +505,51 @@ export const LiquidityDistribution = ({
               }
             />
           ))}
-          <Legend color={colors.spot} label={t("vaults.chart.legend.spot")} />
+          <ChartLegend
+            color={colors.spot}
+            label={t("vaults.chart.legend.spot")}
+          />
           {scenario
             ? bands.length > 0 && (
-                <RangeLegend
-                  range={rangeStyle()}
+                <ChartLegend
+                  color={managedRangeMixedColor(
+                    scenarioRange.color,
+                    scenarioRange.fillOpacity,
+                  )}
+                  borderColor={managedRangeMixedColor(
+                    scenarioRange.color,
+                    scenarioRange.borderOpacity,
+                  )}
                   label={t("vaults.chart.legend.ranges")}
-                  visible={managedRangesVisible}
-                  onToggle={() => setManagedRangesVisible((value) => !value)}
+                  active={managedRangesVisible}
+                  onClick={() => setManagedRangesVisible((value) => !value)}
                 />
               )
-            : bands.map((band) => (
-                <RangeLegend
-                  key={band.id}
-                  range={rangeStyle(band.id)}
-                  label={
-                    band.id === "limit"
-                      ? t("vaults.chart.legend.limit")
-                      : t("vaults.chart.legend.base")
-                  }
-                  visible={managedRangesVisible}
-                  onToggle={() => setManagedRangesVisible((value) => !value)}
-                />
-              ))}
+            : bands.map((band) => {
+                const range = rangeStyle(band.id)
+                return (
+                  <ChartLegend
+                    key={band.id}
+                    color={managedRangeMixedColor(
+                      range.color,
+                      range.fillOpacity,
+                    )}
+                    borderColor={managedRangeMixedColor(
+                      range.color,
+                      range.borderOpacity,
+                    )}
+                    label={
+                      band.id === "limit"
+                        ? t("vaults.chart.legend.limit")
+                        : t("vaults.chart.legend.base")
+                    }
+                    active={managedRangesVisible}
+                    onClick={() => setManagedRangesVisible((value) => !value)}
+                  />
+                )
+              })}
           {scenario && (
-            <Legend
+            <ChartLegend
               color={colors.background}
               label={t("vaults.explainer.legend.otherLps")}
             />

@@ -4,7 +4,7 @@ import styled from "@emotion/styled"
 import { Content, Overlay } from "@radix-ui/react-dialog"
 
 import { Box } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
+import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"
 import { Paper } from "@/components/Paper"
 import { Separator } from "@/components/Separator"
@@ -172,7 +172,7 @@ export const SModalHeader = styled(Flex)`
   }
 `
 
-export const SModalHeaderButton = styled(ButtonIcon)<{
+export const SModalHeaderButton = styled(Button)<{
   align?: "left" | "right"
 }>`
   flex-grow: 0;

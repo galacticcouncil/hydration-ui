@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
@@ -16,9 +17,11 @@ const Template = (
 ) => {
   const [value, setValue] = useState(args.value)
   return (
-    <Box maxWidth="5xl">
-      <EditableText {...args} value={value} onChange={setValue} />
-    </Box>
+    <TooltipProvider>
+      <Box maxWidth="5xl">
+        <EditableText {...args} value={value} onChange={setValue} />
+      </Box>
+    </TooltipProvider>
   )
 }
 

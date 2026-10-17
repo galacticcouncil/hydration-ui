@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
 import { BookOpen } from "@/assets/icons"
-import { ButtonIcon, Icon, Paper, Tooltip } from "@/components"
+import { Button, Paper, Tooltip } from "@/components"
 
 import { AccountInput } from "./AccountInput"
 
@@ -61,9 +61,7 @@ export const WithContacts: Story = {
         alignOffset={0}
         asChild
       >
-        <ButtonIcon aria-label="My Contacts">
-          <Icon component={BookOpen} size="m" />
-        </ButtonIcon>
+        <Button icon={BookOpen} variant="ghost" aria-label="My Contacts" />
       </Tooltip>
     ),
   },

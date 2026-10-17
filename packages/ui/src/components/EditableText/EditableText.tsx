@@ -48,7 +48,9 @@ export const EditableText: FC<EditableTextProps> = ({
     const measure = measureRef.current
     if (!input || !measure) return
 
-    measure.textContent = input.value.slice(0, input.selectionEnd ?? 0)
+    measure.textContent = input.value
+      ? input.value.slice(0, input.selectionEnd ?? 0)
+      : input.placeholder
     setCaretOffset(measure.offsetWidth - input.scrollLeft)
   }
 

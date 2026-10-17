@@ -8,7 +8,7 @@ import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
 import { BoxProps } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
+import { ButtonTransparent } from "@/components/Button"
 import { Drawer, DrawerBody } from "@/components/Drawer"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -37,6 +37,8 @@ export type InfoTooltipProps = {
   asChild?: boolean
   preventDefault?: boolean
   iconColor?: BoxProps["color"]
+  /** The surface, border and shadow of a `Paper`, for rich content. */
+  paper?: boolean
 }
 
 export const Tooltip = ({
@@ -51,6 +53,7 @@ export const Tooltip = ({
   asChild = false,
   preventDefault,
   iconColor,
+  paper,
 }: InfoTooltipProps) => {
   const [open, setOpen] = useState(false)
   const { isMobile } = useBreakpoints()
@@ -99,20 +102,13 @@ export const Tooltip = ({
 
     return (
       <>
-        <ButtonIcon
+        <ButtonTransparent
           onClick={openDrawer}
           onPointerDown={openDrawer}
-          sx={{
-            p: 0,
-            height: "auto",
-            width: "auto",
-            justifyContent: "start",
-            color: iconColor,
-            "&:hover": { background: "transparent" },
-          }}
+          sx={{ justifyContent: "start", color: iconColor }}
         >
           {children || <TooltipIcon color={iconColor} />}
-        </ButtonIcon>
+        </ButtonTransparent>
         {drawer}
       </>
     )
@@ -151,6 +147,7 @@ export const Tooltip = ({
       <Portal>
         <SContent
           size={size}
+          paper={paper}
           side={side}
           align={align}
           sideOffset={sideOffset}
@@ -178,7 +175,7 @@ export const TooltipIcon: FC<BoxProps> = (props) => (
       color: getToken("icons.onContainer"),
     }}
     component={CircleInfo}
-    size="0.75em"
+    size="0.875em"
     {...props}
   />
 )

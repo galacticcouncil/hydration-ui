@@ -1,4 +1,4 @@
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useMatch, useNavigate, useSearch } from "@tanstack/react-router"
 
 export const borrowHistoryFilters = [
   "supply",
@@ -17,13 +17,16 @@ export type BorrowHistorySearch = {
   readonly search?: string
 }
 
+/** The history page is mounted under both money markets. */
+export const useBorrowHistoryRoute = () =>
+  useMatch({ from: "/money-market/history", shouldThrow: false })
+    ? ("/money-market/history" as const)
+    : ("/borrow/history" as const)
+
 export const useBorrowHistoryFilters = () => {
-  const navigate = useNavigate({
-    from: "/borrow/history",
-  })
-  const search = useSearch({
-    from: "/borrow/history",
-  })
+  const from = useBorrowHistoryRoute()
+  const navigate = useNavigate({ from })
+  const search = useSearch({ from })
 
   const setFilter = (
     filters: ReadonlyArray<BorrowHistoryFilterType> | undefined,

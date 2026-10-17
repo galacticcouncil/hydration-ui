@@ -61,6 +61,7 @@ export const SupplyInfo = ({
         <Flex gap={["m", "xxxl"]} justify="space-between" align="center">
           {showSupplyCapStatus && (
             <CapProgressCircle
+              type="supply"
               radius={[16, 46]}
               thickness={3}
               labelPosition={["end", "center"]}

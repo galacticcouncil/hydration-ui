@@ -6,7 +6,6 @@ import { createContext, FC, ReactNode, Ref, useContext, useMemo } from "react"
 import { Box, BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { FlexProps } from "@/components/Flex"
-import { Icon } from "@/components/Icon"
 import { ScrollArea } from "@/components/ScrollArea"
 import { useBreakpoints } from "@/theme"
 
@@ -137,10 +136,14 @@ type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
 
 const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
-    <SModalHeaderButton asChild align="right">
-      <DialogPrimitive.Close {...props}>
-        <Icon component={X} size="l" />
-      </DialogPrimitive.Close>
+    <SModalHeaderButton
+      icon={X}
+      variant="ghost"
+      size="medium"
+      asChild
+      align="right"
+    >
+      <DialogPrimitive.Close {...props} />
     </SModalHeaderButton>
   )
 }
@@ -174,9 +177,12 @@ const ModalHeader: FC<ModalHeaderProps> = ({
     <SModalHeader {...props}>
       <SModalTitleContainer>
         {onBack && (
-          <SModalHeaderButton onClick={onBack} align="left">
-            <Icon component={ArrowLeft} size="m" />
-          </SModalHeaderButton>
+          <SModalHeaderButton
+            icon={ArrowLeft}
+            variant="ghost"
+            onClick={onBack}
+            align="left"
+          />
         )}
 
         {customTitle ? (
