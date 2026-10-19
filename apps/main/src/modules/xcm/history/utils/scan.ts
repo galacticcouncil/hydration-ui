@@ -3,6 +3,7 @@ import {
   EvmAddr,
   getChainAssetId,
   HYDRATION_CHAIN_KEY,
+  NearAddr,
   safeConvertSS58toH160,
   Ss58Addr,
 } from "@galacticcouncil/utils"
@@ -19,6 +20,7 @@ import {
   TJourneyStatus,
   XcJourneyWhStop,
 } from "./journey"
+import { toNearUniversal } from "./nearNtt"
 
 /**
  * Chains of the transfers xc-scan doesn't index, as the scan names them. A utxo
@@ -65,6 +67,19 @@ export const toScanAccount = (address: string): string =>
   Ss58Addr.isValid(address) && !EvmAddr.isValid(address)
     ? safeConvertSS58toH160(address)
     : address
+
+/**
+ * The hash a NEAR account goes by in a transfer to it, which is all the scan
+ * shows of it until the transfer is redeemed.
+ */
+export const toScanNearHash = (address: string): string | undefined => {
+  // An Ethereum wallet's account on NEAR is its evm address, in lowercase
+  const accountId = EvmAddr.isValid(address) ? address.toLowerCase() : address
+
+  return NearAddr.isValid(accountId) && !Ss58Addr.isValid(accountId)
+    ? toNearUniversal(accountId)
+    : undefined
+}
 
 export const isScanTransferInFlight = (transfer: ScanTransfer): boolean =>
   transfer.status === "pending" || transfer.status === "held"

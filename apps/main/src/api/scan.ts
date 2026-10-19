@@ -4,6 +4,7 @@ import {
   scanTransferQuery,
   scanTransfersQuery,
 } from "@galacticcouncil/indexer/scan"
+import { stringEquals } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { type QueryClient, queryOptions } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
@@ -20,6 +21,7 @@ import {
   SCAN_ONLY_CHAINS,
   toScanAccount,
   toScanJourney,
+  toScanNearHash,
 } from "@/modules/xcm/history/utils/scan"
 
 export const transfersScanClient = getScanClient(ENV.VITE_TRANSFERS_SCAN_URL)
@@ -68,14 +70,19 @@ export const scanJourneysQuery = (queryClient: QueryClient, address: string) =>
         : false,
     queryFn: async (): Promise<XcJourney[]> => {
       const q = toScanAccount(address)
+      const nearHash = toScanNearHash(address)
       // Either end on one of the chains, so the account's other transfers
       // don't crowd them out of a page
+      const filters = [
+        { q, from: SCAN_ONLY_CHAINS },
+        { q, to: SCAN_ONLY_CHAINS },
+        ...(nearHash ? [{ q: nearHash, to: SCAN_ONLY_CHAINS }] : []),
+      ]
       const pages = await Promise.all(
-        [{ from: SCAN_ONLY_CHAINS }, { to: SCAN_ONLY_CHAINS }].map((ends) =>
+        filters.map((filter) =>
           queryClient.fetchQuery(
             scanTransfersQuery(transfersScanClient, {
-              q,
-              ...ends,
+              ...filter,
               limit: PAGE_SIZE,
             }),
           ),
@@ -84,6 +91,11 @@ export const scanJourneysQuery = (queryClient: QueryClient, address: string) =>
       const transfers = uniqueBy(
         pages.flatMap((page) => page.items),
         (transfer) => transfer.id,
+      ).map((transfer) =>
+        // Named where the scan has only the hash
+        nearHash && stringEquals(transfer.to_address, nearHash)
+          ? { ...transfer, to_address: address }
+          : transfer,
       )
 
       const journeys = await Promise.all(
