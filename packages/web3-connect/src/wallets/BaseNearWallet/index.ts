@@ -90,11 +90,35 @@ const registerManifest = (nearConnector: NearConnector, url: string) => {
 
 const popupUrls = new Set<string>()
 
+// Opened at the click, while the browser still allows a popup, for the
+// wallet's page to load into once the wallet asks for it
+let reservedPopup: Window | undefined
+
 // Centred over the app window
 const getPopupFeatures = () => {
   const left = window.screenX + (window.outerWidth - POPUP_WIDTH) / 2
   const top = window.screenY + (window.outerHeight - POPUP_HEIGHT) / 2
   return `popup,width=${POPUP_WIDTH},height=${POPUP_HEIGHT},left=${Math.round(left)},top=${Math.round(top)}`
+}
+
+const releasePopup = () => {
+  reservedPopup?.close()
+  reservedPopup = undefined
+}
+
+const reservePopup = () => {
+  releasePopup()
+  reservedPopup =
+    window.open("about:blank", "_blank", getPopupFeatures()) ?? undefined
+}
+
+const takeReservedPopup = (href: string) => {
+  const popup = reservedPopup
+  reservedPopup = undefined
+  if (!popup || popup.closed) return null
+
+  popup.location.href = href
+  return popup
 }
 
 /**
@@ -108,7 +132,9 @@ const openAsPopup = (url: string) => {
       const href = String(target ?? "")
       const isSizeless =
         !features && [...popupUrls].some((url) => href.startsWith(url))
-      return open(target, name, isSizeless ? getPopupFeatures() : features)
+      if (!isSizeless) return open(target, name, features)
+
+      return takeReservedPopup(href) ?? open(target, name, getPopupFeatures())
     }
   }
   popupUrls.add(url)
@@ -177,6 +203,9 @@ export class BaseNearWallet implements Wallet {
     )
   }
 
+  /** Readies what the wallet needs before it opens to sign in. */
+  beforeSignIn = async (): Promise<void> => {}
+
   /** Connects from the modal, signing in when the wallet holds no session. */
   enable = () => this.connect(true)
 
@@ -185,6 +214,7 @@ export class BaseNearWallet implements Wallet {
 
   private connect = async (signIn: boolean) => {
     const nearConnector = getNearConnector()
+    if (signIn && this.popupUrl) reservePopup()
 
     try {
       const wallet = await withTimeout(
@@ -196,6 +226,7 @@ export class BaseNearWallet implements Wallet {
       // A stored session comes back silently; only signing in opens the wallet
       let accounts = await wallet.getAccounts({ network: NETWORK })
       if (!accounts.length && signIn) {
+        await this.beforeSignIn()
         accounts = await wallet.signIn({ network: NETWORK })
       }
 
@@ -220,6 +251,9 @@ export class BaseNearWallet implements Wallet {
       }
 
       throw this.transformError(err)
+    } finally {
+      // Left over when a stored session came back or the wallet failed first
+      releasePopup()
     }
   }
 
