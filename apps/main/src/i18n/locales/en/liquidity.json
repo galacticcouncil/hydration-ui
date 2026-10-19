@@ -35,7 +35,7 @@
   "isolatedPool": "Isolated pool",
   "addLiquidity": "Add Liquidity",
   "moveToOmnipool": "Move to Omnipool",
-  "removeLiquidity": "Remove Liquidity",
+  "removeLiquidity": "Remove liquidity",
   "joinFarms": "Join Farms",
   "createPool": "Create Pool",
   "totalValueLocked": "Total value locked",

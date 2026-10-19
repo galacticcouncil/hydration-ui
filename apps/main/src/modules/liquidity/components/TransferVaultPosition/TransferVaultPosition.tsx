@@ -36,7 +36,7 @@ export const TransferVaultPosition: FC<TransferVaultPositionProps> = ({
   vault,
   onClose,
 }) => {
-  const { t } = useTranslation(["wallet", "common"])
+  const { t } = useTranslation(["wallet", "liquidity", "common"])
   const balance = scaleHuman(vault.positionShares, 18)
   const form = useTransferVaultPositionForm(balance)
   const transfer = useVaultTransfer()
@@ -73,7 +73,10 @@ export const TransferVaultPosition: FC<TransferVaultPositionProps> = ({
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-        <ModalHeader align="center" title={t("transfer.modal.title")} />
+        <ModalHeader
+          align="center"
+          title={t("liquidity:vaults.action.transfer")}
+        />
         <ModalBody sx={{ py: 0 }}>
           <ModalContentDivider />
           <Box py="l" width="100%">
