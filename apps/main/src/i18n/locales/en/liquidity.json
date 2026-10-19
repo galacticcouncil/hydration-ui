@@ -170,6 +170,7 @@
   "liquidity.tradeLimit.title": "Liquidity trade limit",
   "liquidity.exitFarms.toast.submitted": "Exiting farms from position",
   "liquidity.exitFarms.toast.success": "Exited farms from position",
+  "vaults.action.transfer": "Transfer position",
   "vaults.action.deposit": "Join pool",
   "vaults.add.blocked.cap": "Amount is over the vault's per-deposit cap for {{ symbol }}",
   "vaults.add.blocked.supplyCap": "The vault is at capacity right now",
