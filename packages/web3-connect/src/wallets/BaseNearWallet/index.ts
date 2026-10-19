@@ -24,6 +24,9 @@ import {
 const NETWORK = "mainnet"
 const MANIFEST_TIMEOUT_MS = 10_000
 
+const POPUP_WIDTH = 420
+const POPUP_HEIGHT = 680
+
 // near-connect registers only sandboxed wallets
 const sandboxWalletSchema = z.looseObject({
   id: z.string(),
@@ -85,6 +88,32 @@ const registerManifest = (nearConnector: NearConnector, url: string) => {
   return registration
 }
 
+const popupUrls = new Set<string>()
+
+// Centred over the app window
+const getPopupFeatures = () => {
+  const left = window.screenX + (window.outerWidth - POPUP_WIDTH) / 2
+  const top = window.screenY + (window.outerHeight - POPUP_HEIGHT) / 2
+  return `popup,width=${POPUP_WIDTH},height=${POPUP_HEIGHT},left=${Math.round(left)},top=${Math.round(top)}`
+}
+
+/**
+ * Opens a wallet's page as a popup when the wallet asks for it without a
+ * size, which browsers open as a tab; near-connect passes the size on as is.
+ */
+const openAsPopup = (url: string) => {
+  if (!popupUrls.size) {
+    const open = window.open.bind(window)
+    window.open = (target, name, features) => {
+      const href = String(target ?? "")
+      const isSizeless =
+        !features && [...popupUrls].some((url) => href.startsWith(url))
+      return open(target, name, isSizeless ? getPopupFeatures() : features)
+    }
+  }
+  popupUrls.add(url)
+}
+
 const isTimeoutError = (err: unknown): err is Error =>
   err instanceof Error && err.name === "TimeoutError"
 
@@ -103,6 +132,8 @@ export class BaseNearWallet implements Wallet {
   accessor = ""
   /** Manifest that lists the wallet, where NEAR's default one doesn't. */
   manifestUrl = ""
+  /** Page the wallet opens without a size, to open as a popup, not a tab. */
+  popupUrl = ""
   title = ""
   installUrl = ""
   logo = ""
@@ -193,6 +224,7 @@ export class BaseNearWallet implements Wallet {
   }
 
   private loadWallet = async (nearConnector: NearConnector) => {
+    if (this.popupUrl) openAsPopup(this.popupUrl)
     if (this.manifestUrl) {
       await registerManifest(nearConnector, this.manifestUrl)
     }
