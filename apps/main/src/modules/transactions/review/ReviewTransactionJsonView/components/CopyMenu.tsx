@@ -26,14 +26,12 @@ export type CopyMenuProps = {
   txUrl?: string
   txCallHash?: string
   txJson?: object | JsonValue
-  onOpenChange?: (open: boolean) => void
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
   txUrl,
   txCallHash,
   txJson,
-  onOpenChange,
 }) => {
   const { t } = useTranslation("common")
 
@@ -42,7 +40,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
   }
 
   return (
-    <DropdownMenu onOpenChange={onOpenChange}>
+    <DropdownMenu>
       <CopyMenuTrigger>
         <Icon size="s" component={CopyIcon} />
         {t("transaction.jsonview.copy.title")}

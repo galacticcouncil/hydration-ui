@@ -164,7 +164,9 @@ function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
         ? entry.savedBy
         : [...new Set([...entry.savedBy, ...match.savedBy])]
     const name =
-      !entry.isCustom && entry.name !== match.name ? match.name : entry.name
+      !entry.isCustom && !match.isCustom && match.name.trim()
+        ? match.name
+        : entry.name
 
     const changed =
       savedBy.length !== entry.savedBy.length || name !== entry.name

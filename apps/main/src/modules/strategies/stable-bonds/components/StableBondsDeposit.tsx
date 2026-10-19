@@ -21,6 +21,7 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
@@ -35,6 +36,7 @@ import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/hoo
 import {
   getOtcBuyAmountFromSellAmount,
   getOtcFeeAmount,
+  getOtcMaxFillAmount,
 } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
@@ -57,6 +59,9 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
 
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
+  )
+  const { data: edMultiplier = 0 } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
   )
   const { form, getMaxBalance } = useStableBondsForm(orders)
 
@@ -90,7 +95,12 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const depositAssetBalance = selectedOrder ? getMaxBalance(depositAsset) : "0"
 
   const assetInMax = selectedOrder
-    ? Big.min(selectedOrder.assetAmountIn, depositAssetBalance).toString()
+    ? getOtcMaxFillAmount(
+        selectedOrder,
+        depositAssetBalance,
+        edMultiplier,
+        feePct,
+      )
     : "0"
 
   const receiveAmount = getOtcBuyAmountFromSellAmount(
@@ -108,7 +118,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
           (values) =>
             isSelectedOrderFillable &&
             selectedOrder &&
-            submit.mutate({ values, order: selectedOrder, receiveAmount }),
+            submit.mutate({ values, order: selectedOrder }),
         )}
       >
         <Paper px="xl" position="relative">
@@ -135,9 +145,9 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
                 }}
                 isReadOnly
                 value={receiveAmount}
-                displayValue={t("currency", {
-                  value: receiveAmount,
-                })}
+                displayValue={
+                  receiveAmount && t("currency", { value: receiveAmount })
+                }
               />
             </Box>
           </Box>

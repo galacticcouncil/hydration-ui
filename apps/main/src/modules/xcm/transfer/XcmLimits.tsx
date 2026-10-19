@@ -4,6 +4,7 @@ import Big from "big.js"
 import { useFormContext } from "react-hook-form"
 
 import {
+  useBasejumpPoolLiquidity,
   useCrossChainDepositLimit,
   useCrossChainGlobalWithdrawLimit,
   useNttCustody,
@@ -11,6 +12,7 @@ import {
   useNttOutboundLimit,
 } from "@/api/xcm"
 import {
+  BasejumpPoolSummaryRow,
   CBreakerInboundLimitSummaryRow,
   CBreakerOutboundLimitSummaryRow,
   WormholeCustodySummaryRow,
@@ -19,6 +21,7 @@ import {
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
+  BASEJUMP_POOL_ALERT_KEYS,
   CBREAKER_INBOUND_LIMIT_ALERT_KEYS,
   CBREAKER_OUTBOUND_LIMIT_ALERT_KEYS,
   hasXcmLimitAlertKey,
@@ -73,6 +76,12 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
   const { data: custody, isLoading: isLoadingCustody } = useNttCustody(
     isNttRoute ? destChain : null,
     isNttRoute ? destAsset : null,
+  )
+
+  const isBasejumpPool = hasXcmLimitAlertKey(alertKey, BASEJUMP_POOL_ALERT_KEYS)
+  const { data: pool, isLoading: isLoadingPool } = useBasejumpPoolLiquidity(
+    isBasejumpPool ? destChain : null,
+    isBasejumpPool ? destAsset : null,
   )
 
   const isInbound = hasXcmLimitAlertKey(
@@ -131,7 +140,11 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
     !!destChain &&
     !!destAsset
 
+  const showBasejumpPoolRow =
+    isBasejumpPool && !!pool && !!destChain && !!destAsset
+
   if (
+    !showBasejumpPoolRow &&
     !showDepositRow &&
     !showGlobalWithdrawRow &&
     !showWormholeRow &&
@@ -175,6 +188,14 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
           destChain={destChain}
           destAsset={destAsset}
           loading={isLoading || isLoadingCustody}
+        />
+      )}
+      {showBasejumpPoolRow && (
+        <BasejumpPoolSummaryRow
+          pool={pool}
+          destChain={destChain}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingPool}
         />
       )}
     </Summary>

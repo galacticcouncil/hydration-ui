@@ -131,15 +131,19 @@ export const useTradeSettings = create<TradeSettingsStore>()(
     }),
     createZustandStorage({
       name: "trade-settings",
-      version: 2,
+      version: 3,
       schema: tradeSettingsSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
         switch (storedVersion) {
           case 0:
-            return migrateLegacySettings()
+            return migrateMinimumSlippage(migrateLegacySettings())
           case 1:
-            return migrateDcaSettingsToSplit(persistedState as TradeSettings)
+            return migrateMinimumSlippage(
+              migrateDcaSettingsToSplit(persistedState as TradeSettings),
+            )
+          case 2:
+            return migrateMinimumSlippage(persistedState as TradeSettings)
           default:
             return persistedState as TradeSettings
         }
@@ -219,6 +223,37 @@ function migrateDcaSettingsToSplit(state: TradeSettings): TradeSettings {
         twapSlippage: state.dca.slippage,
         twapMaxRetries: state.dca.maxRetries,
       },
+    },
+  }
+}
+
+function migrateMinimumSlippage(state: TradeSettings): TradeSettings {
+  return {
+    ...state,
+    swap: {
+      ...state.swap,
+      single: {
+        ...state.swap.single,
+        swapSlippage: Math.max(
+          MIN_TRADE_SLIPPAGE,
+          state.swap.single.swapSlippage,
+        ),
+      },
+      split: {
+        ...state.swap.split,
+        twapSlippage: Math.max(
+          MIN_TRADE_SLIPPAGE,
+          state.swap.split.twapSlippage,
+        ),
+      },
+    },
+    dca: {
+      ...state.dca,
+      slippage: Math.max(MIN_TRADE_SLIPPAGE, state.dca.slippage),
+    },
+    liquidity: {
+      ...state.liquidity,
+      slippage: Math.max(0, state.liquidity.slippage),
     },
   }
 }

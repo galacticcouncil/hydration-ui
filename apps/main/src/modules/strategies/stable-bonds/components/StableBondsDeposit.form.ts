@@ -6,8 +6,13 @@ import { useTranslation } from "react-i18next"
 import * as z from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
-import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrder.utils"
+import {
+  getOtcFillOrderTx,
+  getOtcMaxPartialFill,
+  isOtcFillAmountValid,
+} from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
+import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import {
   useFormMaxBalanceWithFee,
   ValidateFormMaxBalanceWithFee,
@@ -34,11 +39,12 @@ const useSchema = (
   orders: OtcOffer[],
   validateBalance: ValidateFormMaxBalanceWithFee,
 ) => {
-  const { t } = useTranslation(["trade"])
+  const { t } = useTranslation(["trade", "strategies"])
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
     otcExistentialDepositorMultiplierQuery(rpc),
   )
+  const { data: feePct = "0" } = useQuery(otcTradeFeeQuery(rpc))
 
   return z
     .object({
@@ -59,6 +65,38 @@ const useSchema = (
           path: ["depositAmount"],
         },
       ),
+      (ctx) => {
+        const { depositAsset, depositAmount } = ctx.value
+        const order = getSelectedOrder(orders, depositAsset)
+
+        if (
+          !order ||
+          !depositAmount ||
+          !existentialDepositMultiplier ||
+          isOtcFillAmountValid(
+            order,
+            depositAmount,
+            existentialDepositMultiplier,
+            feePct,
+          )
+        ) {
+          return
+        }
+
+        ctx.issues.push({
+          code: "custom",
+          input: depositAmount,
+          path: ["depositAmount"],
+          message: t("strategies:bonds.deposit.validation.max", {
+            amount: getOtcMaxPartialFill(
+              order,
+              existentialDepositMultiplier,
+              feePct,
+            ).toFixed(),
+            symbol: order.assetIn.symbol,
+          }),
+        })
+      },
       validateFormExistentialDeposit("depositAmount", (form) => {
         const order = getSelectedOrder(orders, form.depositAsset)
 

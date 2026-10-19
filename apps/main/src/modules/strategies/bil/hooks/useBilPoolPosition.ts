@@ -206,12 +206,22 @@ export function useBilReserveConfig() {
       // therefore the leveraged "Max Net APY" — is only real once it's on.
       const borrowingEnabled = ((reserveData.configuration >> 58n) & 1n) === 1n
 
-      const [bucketCapacity, bucketLevel] = await rpc.evm.readContract({
-        address: HOLLAR_ADDRESS,
-        abi: GHO_FACILITATOR_ABI,
-        functionName: "getFacilitatorBucket",
-        args: [reserveData.aTokenAddress],
+      const variableDebtToken = getContract({
+        address: reserveData.variableDebtTokenAddress,
+        abi: ERC20_ABI,
+        client: rpc.evm,
       })
+
+      const [[bucketCapacity, bucketLevel], totalVariableDebt] =
+        await Promise.all([
+          rpc.evm.readContract({
+            address: HOLLAR_ADDRESS,
+            abi: GHO_FACILITATOR_ABI,
+            functionName: "getFacilitatorBucket",
+            args: [reserveData.aTokenAddress],
+          }),
+          variableDebtToken.read.totalSupply(),
+        ])
 
       const facilitatorRemainingHollar =
         bucketCapacity > 0n
@@ -236,12 +246,6 @@ export function useBilReserveConfig() {
         (hollarConfig >> 80n) & 0xfffffffffn,
       )
 
-      const variableDebtToken = getContract({
-        address: reserveData.variableDebtTokenAddress,
-        abi: ERC20_ABI,
-        client: rpc.evm,
-      })
-      const totalVariableDebt = await variableDebtToken.read.totalSupply()
       const totalDebtHollar = Number(
         formatUnits(totalVariableDebt, EVM_DECIMALS),
       )

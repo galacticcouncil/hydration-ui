@@ -11,7 +11,6 @@ import { useTransactionsStore } from "@/states/transactions"
 type SubmitStableBondsOrderArgs = {
   values: StableBondsFormValues
   order: OtcOffer
-  receiveAmount: string
 }
 
 type SubmitStableBondsOrderOptions = {
@@ -41,18 +40,14 @@ export const useSubmitStableBondsOrder = ({
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   return useMutation({
-    mutationFn: async ({
-      values,
-      order,
-      receiveAmount,
-    }: SubmitStableBondsOrderArgs) => {
+    mutationFn: async ({ values, order }: SubmitStableBondsOrderArgs) => {
       const tx = getOtcFillOrderTx(papi, order, values.depositAmount)
 
       const hasAToken =
         isErc20AToken(order.assetIn) || isErc20AToken(order.assetOut)
 
       const toastValues = {
-        amount: receiveAmount,
+        amount: values.depositAmount,
         symbol: order.assetIn.symbol,
         bond: order.assetOut.symbol,
       }
