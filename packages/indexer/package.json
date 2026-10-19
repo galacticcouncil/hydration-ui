@@ -19,7 +19,8 @@
   "exports": {
     "./indexer": "./src/indexer/index.ts",
     "./neckwork": "./src/neckwork/index.ts",
-    "./multix": "./src/multix/index.ts"
+    "./multix": "./src/multix/index.ts",
+    "./scan": "./src/scan/index.ts"
   },
   "dependencies": {
     "graphql": "^16.11.0",

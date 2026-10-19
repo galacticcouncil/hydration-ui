@@ -33,13 +33,14 @@ import { isString } from "remeda"
 import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
-import { BASEJUMP_LANDING_CONTRACT } from "@/modules/xcm/history/utils/basejump"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()

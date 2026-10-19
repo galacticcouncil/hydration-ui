@@ -4,10 +4,10 @@ import {
   extrinsicByHashQuery,
   NeckworkClient,
 } from "@galacticcouncil/indexer/neckwork"
+import { scanTransfersQuery } from "@galacticcouncil/indexer/scan"
 import {
-  basejumpscan,
   HexString,
-  stringEquals,
+  transferscan,
   xcscan as xcscanExplorer,
 } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
@@ -20,12 +20,12 @@ import {
 import { QueryClient } from "@tanstack/react-query"
 import { PublicClient } from "viem"
 
+import { transfersScanClient } from "@/api/scan"
 import {
   fetchIntentOrder,
   resolveIntentOrder,
 } from "@/modules/transactions/utils/toasts/intents"
 import { getExplorerTxLink } from "@/modules/transactions/utils/tx"
-import { createBasejumpScanQueryKey } from "@/modules/xcm/history/useBasejumpScan"
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 import { ToastData } from "@/states/toasts"
 import { TransactionToastData } from "@/states/toasts"
@@ -215,30 +215,27 @@ const substrate =
   }
 
 const basejump =
-  (address: string, queryClient: QueryClient): ToastProcessorFn =>
+  (queryClient: QueryClient): ToastProcessorFn =>
   async (toast) => {
-    const bjScanJourneys = queryClient.getQueryData<XcJourney[]>(
-      createBasejumpScanQueryKey(address),
+    // The scan finds a transfer by its origin tx too
+    const { items } = await queryClient.fetchQuery(
+      scanTransfersQuery(transfersScanClient, {
+        q: toast.meta.txHash,
+        type: "basejump",
+        limit: 1,
+      }),
     )
-    const completedJourney = bjScanJourneys?.find(
-      (journey) =>
-        stringEquals(journey.originTxPrimary ?? "", toast.meta.txHash) &&
-        journey.status === "received",
-    )
-    if (completedJourney) {
-      return {
-        status: "success",
-        link: basejumpscan.tx(completedJourney.correlationId),
-        processed: true,
-        dateUpdated: completedJourney.recvAt
-          ? new Date(completedJourney.recvAt).toISOString()
-          : new Date().toISOString(),
-      }
-    }
-    return {
-      status: "unknown",
-      processed: false,
-      dateUpdated: new Date().toISOString(),
+    const transfer = items[0]
+    const link = transfer && transferscan.transfer(transfer.id)
+    const dateUpdated = new Date().toISOString()
+
+    switch (transfer?.status) {
+      case "completed":
+        return { status: "success", link, processed: true, dateUpdated }
+      case "failed":
+        return { status: "error", link, processed: true, dateUpdated }
+      default:
+        return { status: "unknown", link, processed: false, dateUpdated }
     }
   }
 

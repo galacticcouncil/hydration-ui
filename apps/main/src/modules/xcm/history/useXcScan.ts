@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { sortBy } from "remeda"
 
-import { useNearJourneys } from "@/modules/xcm/history/useNearJourneys"
+import { useScanJourneys } from "@/modules/xcm/history/useScanJourneys"
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import {
   getVisibleJourneys,
@@ -47,25 +47,25 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
     queryFn: () => [],
   })
 
-  // NEAR legs xc-scan doesn't index yet come from Wormholescan
-  const near = useNearJourneys(address)
+  // NEAR and Zcash legs xc-scan doesn't index come from the transfers scan
+  const scan = useScanJourneys(address)
 
   const data = useMemo(() => {
     const journeys = isIndexed ? xcscan.data : NO_JOURNEYS
-    const nearJourneys = near.data ?? NO_JOURNEYS
-    if (!nearJourneys.length) return journeys
+    const scanJourneys = scan.data ?? NO_JOURNEYS
+    if (!scanJourneys.length) return journeys
 
     return sortBy(
       [
-        ...withoutPlaceholdersOf(journeys, nearJourneys),
-        ...(claimableOnly ? getClaimableJourneys(nearJourneys) : nearJourneys),
+        ...withoutPlaceholdersOf(journeys, scanJourneys),
+        ...(claimableOnly ? getClaimableJourneys(scanJourneys) : scanJourneys),
       ],
       [journeyDate, "desc"],
     )
-  }, [claimableOnly, isIndexed, near.data, xcscan.data])
+  }, [claimableOnly, isIndexed, scan.data, xcscan.data])
 
   return {
-    isLoading: isIndexed ? xcscan.dataUpdatedAt === 0 : near.isLoading,
+    isLoading: isIndexed ? xcscan.dataUpdatedAt === 0 : scan.isLoading,
     data,
   }
 }

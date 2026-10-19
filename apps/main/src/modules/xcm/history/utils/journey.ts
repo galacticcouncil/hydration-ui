@@ -9,7 +9,7 @@ import {
   getChainId,
   isH160Address,
   stringEquals,
-  wormholescan,
+  transferscan,
   xcscan,
 } from "@galacticcouncil/utils"
 import { AnyChain, ChainEcosystem } from "@galacticcouncil/xc-core"
@@ -24,8 +24,8 @@ export const NEAR_CHAIN_KEY = "near"
 // key. near_testnet shares that wormhole id, but only mainnet is indexed.
 export const XCSCAN_NEAR_ID = "397"
 
-/** Journeys read from Wormholescan's vaas, keyed by the vaa id after it. */
-export const WORMHOLESCAN_JOURNEY_PREFIX = "wormholescan:"
+/** Journeys read from the transfers scan, keyed by its transfer id after it. */
+export const SCAN_JOURNEY_PREFIX = "scan:"
 
 export type TJourneyStatus = XcJourney["status"]
 
@@ -127,10 +127,10 @@ export function getVisibleJourneys(journeys: XcJourney[]): XcJourney[] {
 export function getJourneyExplorerLink(journey: XcJourney): string {
   const { correlationId } = journey
 
-  // xc-scan doesn't know a journey read from Wormholescan
-  if (correlationId.startsWith(WORMHOLESCAN_JOURNEY_PREFIX)) {
-    return wormholescan.tx(
-      correlationId.slice(WORMHOLESCAN_JOURNEY_PREFIX.length),
+  // xc-scan doesn't know a journey read from the transfers scan
+  if (correlationId.startsWith(SCAN_JOURNEY_PREFIX)) {
+    return transferscan.transfer(
+      correlationId.slice(SCAN_JOURNEY_PREFIX.length),
     )
   }
 
