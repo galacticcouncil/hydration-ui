@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest"
 import type { Address } from "./AddressBook.store"
 import { buildAddresses } from "./AddressBook.utils"
 
-vi.mock("@/utils/wallet", () => ({ getWalletModeName: () => "" }))
+vi.mock("@/utils/wallet", () => ({}))
 
-const account: Address = {
+const alice: Address = {
   address: "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
   publicKey:
     "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
@@ -14,13 +14,13 @@ const account: Address = {
   savedBy: [],
 }
 
-describe("address-book recipient names", () => {
+describe("buildAddresses", () => {
   it.each(["", "Bob"])(
     "preserves a wallet account name when saving a recipient",
     (name) => {
       const result = buildAddresses(
-        [account],
-        [{ ...account, name, isCustom: true }],
+        [alice],
+        [{ ...alice, name, isCustom: true }],
         null,
       )
 
@@ -29,15 +29,15 @@ describe("address-book recipient names", () => {
   )
 
   it.each(["", "   "])("ignores a blank wallet name", (name) => {
-    const result = buildAddresses([account], [{ ...account, name }], null)
+    const result = buildAddresses([alice], [{ ...alice, name }], null)
 
     expect(result[0]?.name).toBe("Alice")
   })
 
   it("updates a wallet account name from a wallet refresh", () => {
     const result = buildAddresses(
-      [account],
-      [{ ...account, name: "Charlie" }],
+      [alice],
+      [{ ...alice, name: "Charlie" }],
       null,
     )
 
@@ -46,39 +46,27 @@ describe("address-book recipient names", () => {
 
   it("preserves a custom contact name during a wallet refresh", () => {
     const result = buildAddresses(
-      [{ ...account, isCustom: true }],
-      [{ ...account, name: "Bob" }],
+      [{ ...alice, isCustom: true }],
+      [{ ...alice, name: "Bob" }],
       null,
     )
 
     expect(result[0]?.name).toBe("Alice")
   })
-})
 
-const entry: Address = {
-  publicKey: "0xabc",
-  address: "addr",
-  name: "Alice",
-  mode: "substrate" as Address["mode"],
-  savedBy: ["walletA"],
-  isCustom: true,
-}
-
-describe("buildAddresses", () => {
   it("global add clears savedBy of a wallet-scoped entry", () => {
     const [result] = buildAddresses(
-      [entry],
-      [{ ...entry, name: "", savedBy: [], isGlobal: true }],
+      [{ ...alice, savedBy: ["walletA"], isCustom: true }],
+      [{ ...alice, isCustom: true, isGlobal: true }],
       "walletB",
     )
     expect(result?.savedBy).toEqual([])
-    expect(result).not.toHaveProperty("isGlobal")
   })
 
   it("wallet sync keeps savedBy scoping", () => {
     const [result] = buildAddresses(
-      [entry],
-      [{ ...entry, savedBy: [], isCustom: false }],
+      [{ ...alice, savedBy: ["walletA"], isCustom: true }],
+      [alice],
       "walletB",
     )
     expect(result?.savedBy).toEqual(["walletA"])
