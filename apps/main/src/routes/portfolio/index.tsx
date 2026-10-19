@@ -13,7 +13,8 @@ const searchSchema = z.object({
   category: z
     .enum(["all", "assets", "strategies", "liquidity", "bonds"])
     .catch("assets")
-    .default("assets"),
+    .default("assets")
+    .transform((category) => (category === "strategies" ? "assets" : category)),
   assetsSort: dataTableSortSchema,
   strategiesPage: z.number().optional(),
   strategiesSort: dataTableSortSchema.default([
@@ -28,6 +29,7 @@ const searchSchema = z.object({
     { id: MyLiquidityTableColumnId.CurrentValue, desc: true },
   ]),
   search: z.string().optional(),
+  strategyPreview: z.boolean().optional(),
 })
 
 export type PortfolioOverviewCategory = z.infer<typeof searchSchema>["category"]

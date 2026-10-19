@@ -1,10 +1,11 @@
 import {
+  Box,
   DataTable,
   Modal,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, memo, useState } from "react"
+import { FC, memo, useMemo, useState } from "react"
 
 import { SearchEmptyState } from "@/components/EmptyState"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
@@ -17,7 +18,10 @@ import {
   MyAsset,
   useMyAssetsColumns,
 } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
+import { StrategyAssetMobileModal } from "@/modules/portfolio/overview/MyAssets/StrategyAssetMobileModal"
+import { MyStrategiesDetails } from "@/modules/portfolio/overview/MyStrategies/MyStrategiesDetails"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
+import { ShareTransferModal } from "@/modules/strategies/propeller/components/ShareTransferModal"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -43,10 +47,19 @@ export const MyAssetsTable: FC<Props> = memo(
 
     const useCompactColumns = isMobile || (isReadOnly && (isTablet || isLaptop))
 
+    const strategyPositions = useMemo(
+      () =>
+        data.flatMap((asset) =>
+          asset.strategyPosition ? [asset.strategyPosition] : [],
+        ),
+      [data],
+    )
+
     const columns = useMyAssetsColumns(
       !isLoading && data.length === 0,
       isReadOnly,
       showDepositAction,
+      strategyPositions,
     )
 
     const [isDetailOpen, setIsDetailOpen] = useState<{
@@ -78,7 +91,14 @@ export const MyAssetsTable: FC<Props> = memo(
           expandable={!isMobile && !isReadOnly}
           hideExpandColumn
           renderSubComponent={(asset) =>
-            asset.id === native.id ? (
+            asset.strategyPosition ? (
+              <Box p="m">
+                <MyStrategiesDetails
+                  position={asset.strategyPosition}
+                  showMainMetrics
+                />
+              </Box>
+            ) : asset.id === native.id ? (
               <ExpandedNativeRow asset={asset} />
             ) : (
               <AssetDetailExpanded asset={asset} />
@@ -92,7 +112,13 @@ export const MyAssetsTable: FC<Props> = memo(
         />
         <Modal
           variant="popup"
-          open={!!isDetailOpen}
+          open={
+            !!isDetailOpen &&
+            !(
+              isDetailOpen.type === "transfer" &&
+              !!isDetailOpen.detail.strategyPosition
+            )
+          }
           onOpenChange={() =>
             setIsDetailOpen(
               !isDetailOpen?.type ? null : { ...isDetailOpen, type: null },
@@ -101,7 +127,15 @@ export const MyAssetsTable: FC<Props> = memo(
         >
           {isDetailOpen?.type === null && (
             <>
-              {isDetailOpen.detail.id === native.id && !isReadOnly ? (
+              {isDetailOpen.detail.strategyPosition ? (
+                <StrategyAssetMobileModal
+                  asset={isDetailOpen.detail}
+                  position={isDetailOpen.detail.strategyPosition}
+                  onTransfer={() =>
+                    setIsDetailOpen({ ...isDetailOpen, type: "transfer" })
+                  }
+                />
+              ) : isDetailOpen.detail.id === native.id && !isReadOnly ? (
                 <AssetDetailNativeMobileModal
                   asset={isDetailOpen.detail}
                   onModalOpen={(type) =>
@@ -120,13 +154,33 @@ export const MyAssetsTable: FC<Props> = memo(
               )}
             </>
           )}
-          {isDetailOpen?.type === "transfer" && (
-            <TransferPositionModal
-              assetId={isDetailOpen.detail.id}
+          {isDetailOpen?.type === "transfer" &&
+            !isDetailOpen.detail.strategyPosition && (
+              <TransferPositionModal
+                assetId={isDetailOpen.detail.id}
+                onClose={() => setIsDetailOpen({ ...isDetailOpen, type: null })}
+              />
+            )}
+        </Modal>
+        {isDetailOpen?.type === "transfer" &&
+          isDetailOpen.detail.strategyPosition && (
+            <ShareTransferModal
+              positions={strategyPositions}
+              positionId={isDetailOpen.detail.strategyPosition.id}
+              symbol={isDetailOpen.detail.symbol}
+              balance={
+                isDetailOpen.detail.strategyPosition.strategy === "juicer"
+                  ? isDetailOpen.detail.strategyPosition.underlyingAmount
+                  : isDetailOpen.detail.strategyPosition.shareAmount
+              }
+              isJuicer={
+                isDetailOpen.detail.strategyPosition.strategy === "juicer"
+              }
+              assetId={isDetailOpen.detail.strategyPosition.assetId}
+              open
               onClose={() => setIsDetailOpen({ ...isDetailOpen, type: null })}
             />
           )}
-        </Modal>
       </TableContainer>
     )
   },

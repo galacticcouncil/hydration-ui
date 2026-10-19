@@ -1,3 +1,6 @@
+import DepositIllustration from "@galacticcouncil/ui/assets/images/juicer/Deposit.webp"
+import EarnIllustration from "@galacticcouncil/ui/assets/images/juicer/Earn.webp"
+import WithdrawIllustration from "@galacticcouncil/ui/assets/images/juicer/Withdraw.webp"
 import {
   Card,
   CardBody,
@@ -14,12 +17,17 @@ import { useTranslation } from "react-i18next"
 import { Markdown } from "@/components/Markdown"
 import {
   SJuicerExplainerFlow,
-  SJuicerExplainerNumber,
+  SJuicerExplainerIllustration,
   SJuicerExplainerPanel,
   SJuicerExplainerStep,
 } from "@/modules/strategies/propeller/components/AboutCard.styled"
 
 const STAGES = ["deposit", "earn", "withdraw"] as const
+const ILLUSTRATIONS = {
+  deposit: DepositIllustration,
+  earn: EarnIllustration,
+  withdraw: WithdrawIllustration,
+} as const
 const NOTES = {
   deposit: "explainer.deposit.note",
   earn: "explainer.earn.note",
@@ -48,17 +56,17 @@ export const AboutCard = () => {
             role="list"
             aria-label={t("propeller:explainer.steps")}
           >
-            {STAGES.map((stage, index) => (
+            {STAGES.map((stage) => (
               <SJuicerExplainerStep key={stage} as="li">
-                <SJuicerExplainerNumber
+                <SJuicerExplainerIllustration
+                  src={ILLUSTRATIONS[stage]}
+                  alt=""
                   aria-hidden="true"
-                  align="center"
-                  justify="center"
-                >
-                  <Text font="primary" fs="p3" fw={700} lh={1}>
-                    {index + 1}
-                  </Text>
-                </SJuicerExplainerNumber>
+                  width={560}
+                  height={400}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <SJuicerExplainerPanel>
                   <Text as="h3" fs="p2" font="primary" fw={500}>
                     {t(`propeller:explainer.${stage}.label`)}

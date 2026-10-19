@@ -2,8 +2,7 @@ import { keyframes } from "@emotion/react"
 import { Button } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-// An angle only animates as a registered property, and @property cannot sit
-// inside a styled rule. Unregistered, the border is a static gradient.
+// Register the angle so the gradient rotates smoothly where supported.
 try {
   CSS.registerProperty({
     name: "--juice-angle",
@@ -12,7 +11,7 @@ try {
     initialValue: "0deg",
   })
 } catch {
-  // already registered, or no CSS Houdini
+  // Already registered, or CSS Houdini is unavailable.
 }
 
 const spin = keyframes`
@@ -23,57 +22,52 @@ const spin = keyframes`
 
 export const SJuiceButton = styled(Button)(({ theme }) => {
   const yellow = theme.accents.alertAlt.primary
-  const pink = theme.colors.coral[900]
-  const gradient = `conic-gradient(from var(--juice-angle), ${yellow}, ${pink}, ${yellow})`
+  const orange = theme.accents.alert.primary
+  const lightYellow = `color-mix(in srgb, ${yellow} 60%, ${theme.text.high})`
 
   return css`
     isolation: isolate;
-    font-weight: 700;
 
-    &&,
-    &&:hover:not(:disabled):not([aria-disabled="true"]) {
-      background: transparent;
+    && {
+      color: ${yellow};
+      background: color-mix(in srgb, ${yellow} 10%, transparent);
+      box-shadow: none;
+      font-weight: 500;
     }
 
-    &::before,
-    &::after {
+    &::before {
       content: "";
       position: absolute;
+      inset: 0;
       border-radius: inherit;
-      background: ${gradient};
-      animation: ${spin} 3s linear infinite;
       pointer-events: none;
     }
 
-    /* spinning gradient border */
     &::before {
-      inset: 0;
-      padding: 1.5px;
+      padding: 1px;
+      background: conic-gradient(
+        from var(--juice-angle),
+        ${orange},
+        ${lightYellow},
+        ${orange}
+      );
+      animation: ${spin} 3s linear infinite;
       mask:
         linear-gradient(#000 0 0) content-box exclude,
         linear-gradient(#000 0 0);
     }
 
-    /* soft glow behind it */
-    &::after {
-      inset: -6px;
-      z-index: -1;
-      filter: blur(14px);
-      opacity: 0.28;
-      transition: ${theme.transitions.opacity};
+    &&:hover:not(:disabled):not([aria-disabled="true"]) {
+      color: ${yellow};
+      background: color-mix(in srgb, ${yellow} 28%, transparent);
     }
 
-    &:hover::before {
+    &:hover:not(:disabled):not([aria-disabled="true"])::before {
       animation-duration: 1.2s;
     }
 
-    &:hover::after {
-      opacity: 0.4;
-    }
-
     @media (prefers-reduced-motion: reduce) {
-      &::before,
-      &::after {
+      &::before {
         animation: none;
       }
     }

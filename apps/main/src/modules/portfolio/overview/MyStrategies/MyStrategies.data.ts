@@ -49,10 +49,8 @@ export type StrategyPosition = {
   hasPendingWithdrawal: boolean
   /** next step to promote on the row; a ready claim beats depositing more */
   action: "deposit" | "claim" | null
+  isPreview?: boolean
 }
-
-// Same cutoff the assets table uses to hide dust.
-const MIN_DEPOSIT_CTA_USD = 0.01
 
 export const getJuicerRemainingCollateral = (
   row: PropellerWithdrawalRow,
@@ -111,9 +109,7 @@ export const useMyJuicerPositions = () => {
     const canDepositMore =
       hasPosition &&
       !isWithdrawing &&
-      vaultDepositState(market?.stats) === "open" &&
-      (position?.collateralBalance ?? 0) * (market?.price ?? 0) >
-        MIN_DEPOSIT_CTA_USD
+      vaultDepositState(market?.stats) === "open"
     const hasPrice =
       !markets.isLoading &&
       market !== undefined &&

@@ -4,12 +4,16 @@ import {
   Box,
   Button,
   DataTable,
+  Flex,
   Modal,
   ModalHeader,
+  Separator,
   TableContainer,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { Link } from "@tanstack/react-router"
+import { HOLLAR_BOND_24_11_26_ID } from "@galacticcouncil/utils"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,6 +25,8 @@ import {
   SAssetDetailMobileSeparator,
   SAssetDetailModalBody,
 } from "@/modules/portfolio/overview/MyAssets/AssetDetailNativeMobileModal.styled"
+import { MyBondsTable } from "@/modules/portfolio/overview/MyBonds/MyBondsTable"
+import { useMyBondsTableData } from "@/modules/portfolio/overview/MyBonds/MyBondsTable.data"
 import {
   StrategyPositionActions,
   StrategyPositionLabel,
@@ -32,14 +38,26 @@ import {
   useMyBilPositions,
   useMyJuicerPositions,
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
+import {
+  createStrategyPreviewBond,
+  isLocalStrategyPreviewHost,
+  isStrategyPreviewEnabled,
+  STRATEGY_PREVIEW_POSITIONS,
+} from "@/modules/portfolio/overview/MyStrategies/MyStrategies.preview"
 import { MyStrategiesDetails } from "@/modules/portfolio/overview/MyStrategies/MyStrategiesDetails"
 import { BilStrategyProvider } from "@/modules/strategies/bil/context/BilStrategyContext"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   searchPhrase: string
   paginationProps: PaginationProps
   sortingProps: SortingProps
+}
+
+type StrategiesProps = Props & {
+  bondsPaginationProps: PaginationProps
+  bondsSortingProps: SortingProps
 }
 
 type PositionsResult = {
@@ -76,18 +94,19 @@ const EnabledBilPositions = ({
     children(EMPTY_POSITIONS)
   )
 
-export const MyStrategies = (props: Props) => {
+// Reuse the gated reads for the combined Assets experiment, without changing
+// wallet balance accounting or mounting unsupported strategy contracts.
+export const MyStrategiesPositions = ({ children }: DataProps) => {
   const { featureFlags, isReady } = useRpcProvider()
   const renderPositions = (juicer: PositionsResult) => (
     <EnabledBilPositions enabled={isReady && featureFlags.bilEnabled}>
-      {(bil) => (
-        <MyStrategiesTable
-          {...props}
-          data={[...juicer.data, ...bil.data]}
-          isLoading={!isReady || juicer.isLoading || bil.isLoading}
-          isError={juicer.isError || bil.isError}
-        />
-      )}
+      {(bil) =>
+        children({
+          data: [...juicer.data, ...bil.data],
+          isLoading: !isReady || juicer.isLoading || bil.isLoading,
+          isError: juicer.isError || bil.isError,
+        })
+      }
     </EnabledBilPositions>
   )
 
@@ -98,6 +117,115 @@ export const MyStrategies = (props: Props) => {
   )
 }
 
+export const MyStrategies = ({
+  bondsPaginationProps,
+  bondsSortingProps,
+  ...props
+}: StrategiesProps) => {
+  const { t } = useTranslation("wallet")
+  const navigate = useNavigate({ from: "/portfolio/" })
+  const { strategyPreview } = useSearch({ from: "/portfolio/" })
+  const { getBond, getAssetWithFallback } = useAssets()
+  const hostname = window.location.hostname
+  const isPreview = isStrategyPreviewEnabled(
+    hostname,
+    strategyPreview,
+    import.meta.env.VITE_PORTFOLIO_STRATEGY_PREVIEW === "true",
+  )
+  const { featureFlags, isReady } = useRpcProvider()
+  const liveBonds = useMyBondsTableData()
+  const bonds = isPreview
+    ? [
+        createStrategyPreviewBond(
+          getBond(HOLLAR_BOND_24_11_26_ID),
+          getAssetWithFallback("222").iconSrc,
+        ),
+      ]
+    : liveBonds.data
+  const isBondsLoading = !isPreview && liveBonds.isLoading
+  const showBonds = isBondsLoading || bonds.length > 0
+  const renderPositions = (juicer: PositionsResult) => (
+    <EnabledBilPositions enabled={isReady && featureFlags.bilEnabled}>
+      {(bil) => (
+        <MyStrategiesTable
+          {...props}
+          data={[...juicer.data, ...bil.data]}
+          isLoading={!isReady || juicer.isLoading || bil.isLoading}
+          isError={juicer.isError || bil.isError}
+          hideEmpty={showBonds}
+        />
+      )}
+    </EnabledBilPositions>
+  )
+
+  return (
+    <>
+      {isLocalStrategyPreviewHost(hostname) && (
+        <Box p="m">
+          <Flex align="center" justify="space-between" gap="base" wrap>
+            <Text fs="p6">
+              {isPreview
+                ? t("myStrategies.preview.description")
+                : t("myStrategies.preview.available")}
+            </Text>
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={() =>
+                navigate({
+                  search: (search) => ({
+                    ...search,
+                    strategyPreview: !isPreview,
+                  }),
+                  resetScroll: false,
+                  replace: true,
+                })
+              }
+            >
+              {t(
+                isPreview
+                  ? "myStrategies.preview.live"
+                  : "myStrategies.preview.samples",
+              )}
+            </Button>
+          </Flex>
+        </Box>
+      )}
+      {isPreview ? (
+        <MyStrategiesTable
+          {...props}
+          data={STRATEGY_PREVIEW_POSITIONS}
+          isLoading={false}
+          isError={false}
+          hideEmpty={false}
+        />
+      ) : isReady && featureFlags.propellerEnabled ? (
+        <JuicerPositions>{renderPositions}</JuicerPositions>
+      ) : (
+        renderPositions(EMPTY_POSITIONS)
+      )}
+      {showBonds && (
+        <Box>
+          <Separator />
+          <Box px="m" py="s">
+            <Text fs="p6" fw={600}>
+              {t("myAssets.tabs.bonds")}
+            </Text>
+          </Box>
+          <Separator />
+          <MyBondsTable
+            data={bonds}
+            isLoading={isBondsLoading}
+            searchPhrase={props.searchPhrase}
+            paginationProps={bondsPaginationProps}
+            sortingProps={bondsSortingProps}
+          />
+        </Box>
+      )}
+    </>
+  )
+}
+
 const MyStrategiesTable = ({
   data,
   isLoading,
@@ -105,7 +233,8 @@ const MyStrategiesTable = ({
   searchPhrase,
   paginationProps,
   sortingProps,
-}: Props & PositionsResult) => {
+  hideEmpty,
+}: Props & PositionsResult & { hideEmpty: boolean }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
   const [selected, setSelected] = useState<StrategyPosition | null>(null)
@@ -113,6 +242,10 @@ const MyStrategiesTable = ({
   const detail = selected
     ? (data.find((position) => position.id === selected.id) ?? selected)
     : null
+
+  if (hideEmpty && !isLoading && !isError && data.length === 0) {
+    return null
+  }
 
   return (
     <TableContainer>

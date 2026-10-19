@@ -21,9 +21,11 @@ import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MySt
 export const MyStrategiesDetails = ({
   position,
   showMainMetrics = false,
+  mobile = false,
 }: {
   position: StrategyPosition
   showMainMetrics?: boolean
+  mobile?: boolean
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const rows = [
@@ -136,7 +138,7 @@ export const MyStrategiesDetails = ({
       {rows.map(({ id, content }, index) => (
         <Fragment key={id}>
           {index > 0 &&
-            (showMainMetrics ? (
+            (mobile ? (
               <SAssetDetailMobileSeparator />
             ) : (
               <ExpandedRowSeparator />
