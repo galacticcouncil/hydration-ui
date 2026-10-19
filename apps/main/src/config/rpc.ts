@@ -19,7 +19,7 @@ export const createProvider = (
 })
 
 export const PROVIDERS: ProviderProps[] = [
-  createProvider("node0.lark (JUICER)", "wss://node0.lark.hydration.cloud"),
+  createProvider("Lark 4 (JUICER)", "wss://node4.lark.hydration.cloud"),
   // createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
@@ -29,13 +29,13 @@ export const PROVIDERS: ProviderProps[] = [
   // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
   // createProvider("parm", "wss://rpc.parm.hydration.cloud"),
   // createProvider("sin", "wss://subway.sin.hydration.cloud"),
-  createProvider("coke", "wss://subway.coke.hydration.cloud"),
+  // createProvider("coke", "wss://subway.coke.hydration.cloud"),
   // createProvider("kril", "wss://rpc.kril.hydration.cloud"),
-  createProvider("shellfish", "wss://subway.shellfish.hydration.cloud"),
-  createProvider("catfish-1", "wss://rpc-catfish-1.catfish.hydration.cloud"),
-  createProvider("catfish-2", "wss://rpc-catfish-2.catfish.hydration.cloud"),
+  // createProvider("shellfish", "wss://subway.shellfish.hydration.cloud"),
+  // createProvider("catfish-1", "wss://rpc-catfish-1.catfish.hydration.cloud"),
+  // createProvider("catfish-2", "wss://rpc-catfish-2.catfish.hydration.cloud"),
   // createProvider("catfish-3", "wss://rpc-catfish-3.catfish.hydration.cloud"),
-  createProvider("catfish-4", "wss://rpc-catfish-4.catfish.hydration.cloud"),
+  // createProvider("catfish-4", "wss://rpc-catfish-4.catfish.hydration.cloud"),
   createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",

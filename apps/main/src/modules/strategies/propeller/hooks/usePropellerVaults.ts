@@ -5,6 +5,7 @@ import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
+  vaultCollateral,
 } from "@/modules/strategies/propeller/config/vaults"
 import {
   subLoopQuery,
@@ -133,7 +134,7 @@ export const usePropellerVaults = () => {
     })
     return {
       vault,
-      asset: getAssetWithFallback(vault.assetId),
+      asset: vaultCollateral(vault, getAssetWithFallback(vault.assetId)),
       stats,
       apy,
       runRateApy:

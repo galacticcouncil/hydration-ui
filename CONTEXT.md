@@ -12,11 +12,15 @@ The leveraged-staking strategy, shown as Juicer in the UI. One strategy spanning
 _Avoid_: Propeller ETH, Propeller tBTC (as strategy names)
 
 **Vault**:
-One Propeller deposit venue per collateral asset, with its own share token, cap, pause state, exchange rate and withdrawal queue. Labelled in the UI by its asset symbol.
+One Propeller deposit venue per collateral asset, with its own share token, cap, pause state, exchange rate and withdrawal queue. Labelled in the UI by its share token (jETH, Juicer ETH) and described as backed by its collateral asset (GIGAETH).
 _Avoid_: Propeller asset, sub-strategy
 
 **Share token**:
-The token a Vault mints on deposit (jETH, jtBTC). Its balance includes funded earnings, so there is nothing to claim.
+The token a Vault mints on deposit (jETH, jBTC). Its balance includes funded earnings, so there is nothing to claim.
+
+**Base asset**:
+The asset a Vault's collateral tracks, such as ETH for GIGAETH. A deposit can pay with it through a swap into the collateral, and collateral amounts show their base asset equivalent.
+_Avoid_: Underlying asset
 
 **Position**:
 A user's share balance in one Vault. A user has at most one Position per Vault.

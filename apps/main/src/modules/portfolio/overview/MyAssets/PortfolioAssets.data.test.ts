@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { AssetType } from "@/api/assets"
 import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
-import { STRATEGY_PREVIEW_POSITIONS } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.preview"
+import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 
 import { mergePortfolioAssets } from "./PortfolioAssets.data"
@@ -25,13 +25,111 @@ const asset = (id: string, symbol: string): MyAsset => ({
   transferable: "5",
   transferableDisplay: "10",
 })
+const POSITIONS: StrategyPosition[] = [
+  {
+    id: "test:bil:supplied",
+    strategy: "bil",
+    assetId: "55",
+    symbol: "BIL",
+    name: "Brazilian Invoice Loans",
+    amount: "1000",
+    value: "1040",
+    netValue: "800",
+    borrowedValue: "240",
+    underlyingAmount: "1040",
+    underlyingSymbol: "HOLLAR",
+    transferAssetId: null,
+    rate: 18,
+    rateKind: "apy",
+    shareAmount: "1000",
+    shareSymbol: "BIL",
+    pendingEarnings: null,
+    pendingWithdrawal: null,
+    isPendingWithdrawalEstimate: false,
+    recoveryHollar: null,
+    recoveryPending: false,
+    status: "supplied",
+    hasPosition: true,
+    hasPendingWithdrawal: false,
+    action: null,
+  },
+  ...[
+    {
+      assetId: "34",
+      symbol: "ETH",
+      amount: "0.2",
+      value: "560",
+      rate: 1.81,
+      pendingEarnings: "0.0012",
+      pendingWithdrawal: null,
+    },
+    {
+      assetId: "1000765",
+      symbol: "tBTC",
+      amount: "0.04",
+      value: "3600",
+      rate: 1.93,
+      pendingEarnings: "0.00004",
+      pendingWithdrawal: "0.01",
+    },
+  ].map<StrategyPosition>((asset) => ({
+    ...asset,
+    id: `test:juicer:${asset.symbol}`,
+    strategy: "juicer",
+    name: "Juicer",
+    netValue: asset.value,
+    borrowedValue: null,
+    underlyingAmount: asset.amount,
+    underlyingSymbol: asset.symbol,
+    transferAssetId: null,
+    rateKind: "apr",
+    shareAmount: asset.amount,
+    shareSymbol: asset.symbol,
+    isPendingWithdrawalEstimate: !!asset.pendingWithdrawal,
+    recoveryHollar: null,
+    recoveryPending: false,
+    status: asset.pendingWithdrawal ? "withdrawing" : "active",
+    hasPosition: true,
+    hasPendingWithdrawal: !!asset.pendingWithdrawal,
+    action: null,
+  })),
+]
+
 const getAsset = (id: string) => asset(id, id)
 
 describe("combined portfolio assets", () => {
+  it.each([false, true])(
+    "keeps HDX first and interleaves strategy values (mobile: %s)",
+    (isMobile) => {
+      const wallet = [
+        {
+          ...asset("34", "ETH"),
+          totalDisplay: "600",
+          transferableDisplay: "600",
+        },
+        { ...asset("0", "HDX"), totalDisplay: "1", transferableDisplay: "1" },
+        {
+          ...asset("unknown", "Unknown"),
+          totalDisplay: undefined,
+          transferableDisplay: undefined,
+        },
+      ]
+      const result = mergePortfolioAssets(wallet, POSITIONS, getAsset, isMobile)
+      expect(result.map((row) => row.id)).toEqual([
+        "0",
+        POSITIONS[2]!.id,
+        POSITIONS[0]!.id,
+        "34",
+        POSITIONS[1]!.id,
+        "unknown",
+      ])
+    },
+  )
+
   it("keeps wallet ETH and tBTC and gives their Juicer positions unique rows", () => {
     const result = mergePortfolioAssets(
       [asset("34", "ETH"), asset("1000765", "tBTC")],
-      STRATEGY_PREVIEW_POSITIONS,
+      POSITIONS,
       getAsset,
     )
     expect(result).toHaveLength(5)
@@ -53,9 +151,9 @@ describe("combined portfolio assets", () => {
       asset(otherVault.shareAssetId, "jtBTC"),
     ]
     const position = {
-      ...STRATEGY_PREVIEW_POSITIONS[1]!,
-      isPreview: false,
+      ...POSITIONS[1]!,
       id: `juicer:${vault.vaultAddress}`,
+      assetId: vault.assetId,
     }
     const result = mergePortfolioAssets(wallet, [position], getAsset)
     expect(result).toHaveLength(3)
@@ -64,21 +162,10 @@ describe("combined portfolio assets", () => {
     expect(result.some((row) => row.id === otherVault.shareAssetId)).toBe(true)
   })
 
-  it("replaces duplicate BIL wallet rows in sample mode", () => {
-    const result = mergePortfolioAssets(
-      [asset("55", "BIL"), asset("550", "BIL")],
-      STRATEGY_PREVIEW_POSITIONS,
-      getAsset,
-    )
-    expect(result).toHaveLength(3)
-    expect(result.filter((row) => row.symbol === "BIL")).toHaveLength(1)
-  })
-
   it("keeps wallet holdings not represented by a successful live read", () => {
     const wallet = [asset("55", "BIL"), asset("550", "BIL")]
     const position = {
-      ...STRATEGY_PREVIEW_POSITIONS[0]!,
-      isPreview: false,
+      ...POSITIONS[0]!,
       transferAssetId: "55",
     }
     const result = mergePortfolioAssets(wallet, [position], getAsset)
@@ -87,21 +174,25 @@ describe("combined portfolio assets", () => {
   })
 
   it("does not invent live Juicer or supplied BIL transferable balances", () => {
-    const live = STRATEGY_PREVIEW_POSITIONS.map((position) => ({
+    const live = POSITIONS.map((position) => ({
       ...position,
-      isPreview: false,
     }))
     const result = mergePortfolioAssets([], live, getAsset)
     expect(result.every((row) => !row.strategyTransferableKnown)).toBe(true)
-    expect(result[0]?.strategyPosition?.borrowedValue).toBe("240")
-    expect(result[1]?.strategyPosition?.pendingEarnings).toBe("0.0012")
+    expect(
+      result.find((row) => row.strategyPosition?.strategy === "bil")
+        ?.strategyPosition?.borrowedValue,
+    ).toBe("240")
+    expect(
+      result.find((row) => row.strategyPosition?.id === POSITIONS[1]!.id)
+        ?.strategyPosition?.pendingEarnings,
+    ).toBe("0.0012")
   })
 
   it("uses the actual raw BIL wallet transfer balance when available", () => {
     const wallet = asset("550", "BIL")
     const position = {
-      ...STRATEGY_PREVIEW_POSITIONS[0]!,
-      isPreview: false,
+      ...POSITIONS[0]!,
       status: "wallet" as const,
       transferAssetId: "550",
     }

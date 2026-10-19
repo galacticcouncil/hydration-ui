@@ -22,7 +22,10 @@ import { type Hex } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { useWithdrawForm } from "@/modules/strategies/propeller/components/WithdrawModalForm.form"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
 import {
   subLoopQuery,
   vaultBalancesQuery,
@@ -52,7 +55,10 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const evmAddress = useEvmAddress() as Hex | undefined
   const { getAssetWithFallback } = useAssets()
   const { assetId, shareSymbol } = vault
-  const { symbol, decimals } = getAssetWithFallback(assetId)
+  const { symbol, decimals } = vaultCollateral(
+    vault,
+    getAssetWithFallback(assetId),
+  )
 
   const { data: stats, isError: statsError } = useQuery(
     vaultStatsQuery(rpc, vault, decimals),

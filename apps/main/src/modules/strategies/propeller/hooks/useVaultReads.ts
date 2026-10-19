@@ -17,6 +17,7 @@ import {
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
 import { readDepositCapacity } from "@/modules/strategies/propeller/utils/deposit"
+import { readHarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
 import { readPendingYield } from "@/modules/strategies/propeller/utils/pendingYield"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -309,6 +310,7 @@ export const vaultBalancesQuery = (
           sharesExact: "0",
           assetValue: 0,
           pendingYield: null,
+          harvestStatus: null,
         }
       const options = { blockNumber: await evm.getBlockNumber() }
 
@@ -328,7 +330,7 @@ export const vaultBalancesQuery = (
         contract.read.balanceOf([evmAddress], options),
       ])
 
-      const [assetValue, pendingYield] = await Promise.all([
+      const [assetValue, pendingYield, harvestStatus] = await Promise.all([
         contract.read.convertToAssets([shareBal], options),
         safeRead("vault pending yield", () =>
           readPendingYield(
@@ -338,9 +340,13 @@ export const vaultBalancesQuery = (
             options.blockNumber,
           ),
         ),
+        safeRead("vault harvest status", () =>
+          readHarvestStatus(evm, vault.vaultAddress, options.blockNumber),
+        ),
       ])
 
       return {
+        harvestStatus,
         pendingYield:
           pendingYield === null
             ? null

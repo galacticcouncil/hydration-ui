@@ -53,7 +53,7 @@ const PropellerVaultContent = () => {
       )}
 
       <TwoColumnGrid template="sidebar">
-        <Stack gap="xl" sx={{ order: [1, null, 0] }}>
+        <Stack gap="xl" minWidth={0} sx={{ order: [1, null, 0] }}>
           <MyPositionsCard
             positions={positions}
             onWithdraw={setWithdrawVault}
@@ -64,13 +64,13 @@ const PropellerVaultContent = () => {
           <AboutCard />
         </Stack>
 
-        <Stack gap="xl">
-          {defaultDeposit.vault ? (
+        <Stack gap="xl" minWidth={0}>
+          {defaultDeposit.deposit ? (
             <Paper px="xl" position="relative">
               <DepositForm
-                key={defaultDeposit.vault.vaultAddress}
-                initialVault={defaultDeposit.vault}
-                onVaultChange={defaultDeposit.markUserPick}
+                key={`${defaultDeposit.deposit.vault.vaultAddress}:${defaultDeposit.deposit.assetId}`}
+                initialDeposit={defaultDeposit.deposit}
+                onSelect={defaultDeposit.markUserPick}
               />
             </Paper>
           ) : (

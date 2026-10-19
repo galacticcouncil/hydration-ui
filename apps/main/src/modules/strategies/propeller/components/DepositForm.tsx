@@ -2,6 +2,8 @@ import { Scale, ShieldCheck } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Box,
+  CollapsibleContent,
+  CollapsibleRoot,
   Flex,
   Icon,
   LoadingButton,
@@ -28,72 +30,113 @@ import { useAccountBalances } from "@/api/balances"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDepositForm } from "@/modules/strategies/propeller/components/DepositForm.form"
+import { DepositSwapSummary } from "@/modules/strategies/propeller/components/DepositSwapSummary"
 import {
   PROPELLER_VAULTS,
-  type PropellerVaultConfig,
+  vaultCollateral,
 } from "@/modules/strategies/propeller/config/vaults"
+import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import {
+  getDepositOptions,
+  isSwapDeposit,
+  type PropellerDepositOption,
+} from "@/modules/strategies/propeller/utils/depositOptions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
+const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
+
 type Props = {
-  initialVault: PropellerVaultConfig
-  lockAsset?: boolean
+  initialDeposit: PropellerDepositOption
+  /** offer only the assets the initial vault accepts */
+  lockVault?: boolean
   onSuccess?: () => void
-  onVaultChange?: (vault: PropellerVaultConfig) => void
+  onSelect?: (deposit: PropellerDepositOption) => void
 }
 
 export const DepositForm = ({
-  initialVault,
-  lockAsset,
+  initialDeposit,
+  lockVault,
   onSuccess,
-  onVaultChange,
+  onSelect,
 }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const rpc = useRpcProvider()
   const { getAsset, getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
-  const [vault, setVault] = useState(initialVault)
+  const [selected, setSelected] = useState(initialDeposit)
+  const { vault, assetId } = selected
 
-  const asset = getAssetWithFallback(vault.assetId)
-  const assets = PROPELLER_VAULTS.map((v) => getAsset(v.assetId)).filter(
-    isTruthy,
-  )
+  const collateral = vaultCollateral(vault, getAssetWithFallback(vault.assetId))
+  const asset =
+    assetId === vault.assetId ? collateral : getAssetWithFallback(assetId)
+  const options = lockVault
+    ? DEPOSIT_OPTIONS.filter(
+        (o) => o.vault.vaultAddress === initialDeposit.vault.vaultAddress,
+      )
+    : DEPOSIT_OPTIONS
+  const assets = options
+    .map((o) => {
+      const option = getAsset(o.assetId)
+      return option && o.assetId === o.vault.assetId
+        ? vaultCollateral(o.vault, option)
+        : option
+    })
+    .filter(isTruthy)
 
   const { data: capacity, isError: capacityError } = useQuery(
     depositCapacityQuery(rpc, vault),
   )
-  const deposit = useDeposit(vault, { onSuccess })
+  const deposit = useDeposit(vault, {
+    onSuccess: () => {
+      deposit.reset()
+      onSuccess?.()
+    },
+  })
   const unavailable =
     !rpc.isReady || !capacity || capacityError || !capacity.ready
-  const maximum = formatUnits(capacity?.maximum ?? 0n, asset.decimals)
+  const maximum = formatUnits(capacity?.maximum ?? 0n, collateral.decimals)
   const atCapacity = capacity?.maximum === 0n
   const isPaused = capacity?.paused ?? false
 
-  const balance = scaleHuman(
-    getTransferableBalance(vault.assetId),
-    asset.decimals,
-  )
+  const isSwap = isSwapDeposit(selected)
+  const balance = scaleHuman(getTransferableBalance(assetId), asset.decimals)
   // Remaining capacity shrinks every block as totalAssets accrues interest, so
   // filling it EXACTLY guarantees an over-max by the next refetch and an
   // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
   // to a 6-decimal floor the drift cannot overtake between signing and inclusion.
-  const capacityBound = Big(balance).gt(maximum)
+  // Capacity is in collateral, so on a swap it bounds the output instead.
+  const capacityBound = !isSwap && Big(balance).gt(maximum)
   const maxButtonBalance = capacityBound
     ? Big(maximum).round(6, Big.roundDown).toString()
     : balance
 
   const form = useDepositForm({
     maxBalance: balance,
-    maxCapacity: maximum,
+    maxCapacity: isSwap ? undefined : maximum,
     decimals: asset.decimals,
   })
-  const { control, handleSubmit, formState, reset } = form
+  const { control, handleSubmit, formState, reset, watch } = form
+
+  const quote = useDepositQuote(selected, watch("amount"), asset.decimals)
+  const exceedsCapacity =
+    isSwap &&
+    !!capacity &&
+    quote.minAmountOut !== undefined &&
+    quote.minAmountOut > capacity.maximum
+  const isSwapReady =
+    !isSwap ||
+    (!!quote.tx &&
+      !quote.isLoading &&
+      !exceedsCapacity &&
+      (quote.minAmountOut ?? 0n) > 0n)
 
   const canSubmit =
     formState.isValid &&
+    isSwapReady &&
     !deposit.isPending &&
     !isPaused &&
     !atCapacity &&
@@ -103,7 +146,7 @@ export const DepositForm = ({
     if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
     if (atCapacity) return t("deposit.cta.full")
-    return t("deposit.cta.deposit")
+    return isSwap ? t("deposit.cta.swapAndDeposit") : t("deposit.cta.deposit")
   })()
 
   const blockedDescription = (() => {
@@ -111,18 +154,22 @@ export const DepositForm = ({
     if (capacity?.ready === false) return t("deposit.alert.notReady")
   })()
 
-  const onSelectAsset = (selected: TAssetData) => {
-    const next = PROPELLER_VAULTS.find((v) => v.assetId === selected.id)
-    if (!next || next.vaultAddress === vault.vaultAddress) return
-    setVault(next)
+  const onSelectAsset = (selectedAsset: TAssetData) => {
+    const next = options.find((o) => o.assetId === selectedAsset.id)
+    if (!next || next.assetId === assetId) return
+    setSelected(next)
     deposit.reset()
     reset()
-    onVaultChange?.(next)
+    onSelect?.(next)
   }
 
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
-    deposit.mutate(amount)
+    deposit.mutate(
+      isSwap && quote.tx
+        ? { amount, trade: { assetIn: assetId, tx: quote.tx } }
+        : { amount },
+    )
   })
 
   return (
@@ -137,7 +184,7 @@ export const DepositForm = ({
                 label={t("common:asset")}
                 assets={assets}
                 selectedAsset={asset}
-                setSelectedAsset={lockAsset ? undefined : onSelectAsset}
+                setSelectedAsset={assets.length > 1 ? onSelectAsset : undefined}
                 value={field.value}
                 onChange={field.onChange}
                 balance={{
@@ -150,7 +197,17 @@ export const DepositForm = ({
                     ),
                   isMaxDisabled: !(Number(maxButtonBalance) > 0),
                 }}
-                amountError={fieldState.error?.message}
+                amountError={
+                  fieldState.error?.message ??
+                  (exceedsCapacity
+                    ? t("deposit.validation.maximum", {
+                        amount: t("common:currency", {
+                          value: maximum,
+                          symbol: collateral.symbol,
+                        }),
+                      })
+                    : undefined)
+                }
               />
             </Box>
           )}
@@ -176,13 +233,20 @@ export const DepositForm = ({
         <Stack gap="xl" pb="xl">
           <Summary separator={<Separator mx="-xl" />} withTrailingSeparator>
             <SummaryRow
+              label={t("deposit.vault")}
+              content={t("deposit.vault.value", {
+                name: vault.shareName,
+                symbol: collateral.symbol,
+              })}
+            />
+            <SummaryRow
               label={t("strategy.remainingCapacity")}
               loading={!capacity && !capacityError}
               content={
                 capacity
                   ? t("common:currency", {
                       value: maximum,
-                      symbol: asset.symbol,
+                      symbol: collateral.symbol,
                     })
                   : "-"
               }
@@ -215,7 +279,7 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          {(blockedDescription || deposit.isError) && (
+          {(blockedDescription || quote.isError || deposit.isError) && (
             <Stack gap="base">
               {blockedDescription && (
                 <Alert
@@ -224,8 +288,24 @@ export const DepositForm = ({
                   description={blockedDescription}
                 />
               )}
+              {quote.isError && (
+                <Alert
+                  variant="warning"
+                  description={t("deposit.swap.unavailable", {
+                    symbolIn: asset.symbol,
+                    symbol: collateral.symbol,
+                  })}
+                />
+              )}
               {deposit.isError && (
-                <Alert variant="error" description={t("deposit.failed")} />
+                <Alert
+                  variant="error"
+                  description={
+                    isSwap
+                      ? t("deposit.swap.failed", { symbol: collateral.symbol })
+                      : t("deposit.failed")
+                  }
+                />
               )}
             </Stack>
           )}
@@ -242,6 +322,24 @@ export const DepositForm = ({
             </LoadingButton>
           </AuthorizedAction>
         </Stack>
+        {isSwap && (
+          <CollapsibleRoot
+            open={
+              !!quote.swap &&
+              quote.minAmountOut !== undefined &&
+              !quote.isLoading &&
+              !quote.isError
+            }
+          >
+            <CollapsibleContent>
+              <DepositSwapSummary
+                assetIn={asset}
+                collateral={collateral}
+                quote={quote}
+              />
+            </CollapsibleContent>
+          </CollapsibleRoot>
+        )}
       </form>
     </FormProvider>
   )

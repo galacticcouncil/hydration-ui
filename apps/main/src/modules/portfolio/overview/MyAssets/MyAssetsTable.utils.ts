@@ -19,7 +19,8 @@ const nativeFirst =
   }
 
 export const myAssetsSorter = nativeFirst(
-  (asset) => asset.transferableDisplay,
+  (asset) =>
+    asset.strategyPosition ? asset.totalDisplay : asset.transferableDisplay,
   undefinedLast(numericallyStrDesc),
 )
 

@@ -1,4 +1,4 @@
-A confirmed deposit supplies **your collateral asset** to the money market and mints funded vault shares. It does not borrow or swap during your deposit transaction. Keepers then borrow HOLLAR and build the shared **leveraged PRIME position** gradually through trades that respect the vault’s price limits.
+A confirmed deposit supplies **your collateral asset** to the money market and mints funded vault shares. It does not borrow or trade into the strategy during your deposit transaction; paying with another asset first swaps it into the collateral within your trade limit. Keepers then borrow HOLLAR and build the shared **leveraged PRIME position** gradually through trades that respect the vault’s price limits.
 
 Collateral awaiting deployment is pooled across the vault, including deposits and harvested earnings. It is not a separate personal queue or a promise of when your position will be fully deployed. Trading limits and market conditions determine the pace; the vault manages borrowing and rebalancing for you.
 

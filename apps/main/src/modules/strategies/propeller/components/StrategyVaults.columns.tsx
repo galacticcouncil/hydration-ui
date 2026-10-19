@@ -1,5 +1,6 @@
 import {
   Amount,
+  AssetLabel,
   Button,
   Flex,
   ProgressBar,
@@ -12,7 +13,8 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
+import { AssetLogo } from "@/components/AssetLogo"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
   type PropellerVaultMarket,
@@ -31,7 +33,13 @@ export const useStrategyVaultColumns = (
       id: "asset",
       header: t("strategy.col.asset"),
       cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original.asset} />
+        const { vault } = row.original
+        return (
+          <AssetLabelFullContainer>
+            <AssetLogo id={vault.assetId} />
+            <AssetLabel symbol={vault.shareSymbol} name={vault.shareName} />
+          </AssetLabelFullContainer>
+        )
       },
     })
 

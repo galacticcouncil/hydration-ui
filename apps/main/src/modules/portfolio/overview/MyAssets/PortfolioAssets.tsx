@@ -1,4 +1,5 @@
 import { Alert, Box } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { ComponentProps } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -6,14 +7,12 @@ import { MyAssets } from "@/modules/portfolio/overview/MyAssets/MyAssets"
 import { mergePortfolioAssets } from "@/modules/portfolio/overview/MyAssets/PortfolioAssets.data"
 import { MyStrategiesPositions } from "@/modules/portfolio/overview/MyStrategies/MyStrategies"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { STRATEGY_PREVIEW_POSITIONS } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.preview"
-import { usePortfolioPreview } from "@/modules/portfolio/overview/usePortfolioPreview"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const PortfolioAssets = (props: ComponentProps<typeof MyAssets>) => {
+  const { isMobile } = useBreakpoints()
   const { t } = useTranslation("wallet")
   const { getAssetWithFallback } = useAssets()
-  const { isPreview } = usePortfolioPreview()
   const renderAssets = (
     positions: StrategyPosition[],
     isLoading: boolean,
@@ -23,6 +22,7 @@ export const PortfolioAssets = (props: ComponentProps<typeof MyAssets>) => {
       props.data,
       positions,
       getAssetWithFallback,
+      isMobile,
     )
     return (
       <>
@@ -44,9 +44,7 @@ export const PortfolioAssets = (props: ComponentProps<typeof MyAssets>) => {
     )
   }
 
-  return isPreview ? (
-    renderAssets(STRATEGY_PREVIEW_POSITIONS, false, false)
-  ) : (
+  return (
     <MyStrategiesPositions>
       {(positions) =>
         renderAssets(positions.data, positions.isLoading, positions.isError)

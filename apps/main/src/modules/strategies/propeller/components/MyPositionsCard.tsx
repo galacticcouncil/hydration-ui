@@ -12,10 +12,16 @@ import {
   TooltipIcon,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
+import { formatUnits } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateral,
+} from "@/modules/strategies/propeller/config/vaults"
+import { useCollateralEquivalent } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerPosition } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -27,6 +33,7 @@ interface Props {
 export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
+  const getEquivalent = useCollateralEquivalent()
 
   if (!positions.length) return null
 
@@ -46,8 +53,12 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               apy,
               accrualPaused,
               pendingYield,
+              harvestStatus,
             }) => {
-              const { symbol } = getAssetWithFallback(vault.assetId)
+              const { symbol } = vaultCollateral(
+                vault,
+                getAssetWithFallback(vault.assetId),
+              )
               // demoted: a six-decimal dust figure as a headline stat reads as
               // broken; the accruing amount lives in the tooltip, the sublabel
               // just says the position is earning (dust-floored)
@@ -55,14 +66,32 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                 pendingYield !== null && pendingYield > assetValue * 1e-6
                   ? pendingYield
                   : null
+              const harvestState = harvestStatus?.state ?? "unavailable"
+              const harvestBlocked =
+                harvestStatus !== null && harvestState !== "awaiting"
+              const harvestExplanation = t(
+                `positions.harvest.${harvestState}.description`,
+                {
+                  gap: Number(formatUnits(harvestStatus?.reserveGap ?? 0n, 18)),
+                  minimum: Number(
+                    formatUnits(harvestStatus?.minimumSurplus ?? 0n, 18),
+                  ),
+                },
+              )
+              const usd = t("common:currency", { value: usdValue })
+              const equivalent = getEquivalent(vault, assetValue)
+              const value = equivalent
+                ? t("amount.equivalent", { ...equivalent, displayValue: usd })
+                : usd
 
               return (
                 <PositionCard
                   key={vault.vaultAddress}
+                  columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(176)}), 1fr))`}
                   logo={
                     <AssetLogo id={vault.assetId} size="medium" hideChain />
                   }
-                  symbol={symbol}
+                  symbol={vault.shareSymbol}
                   stats={
                     <>
                       <ValueStats
@@ -81,13 +110,13 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                             </Text>
                             {accruing !== null && (
                               <Tooltip
-                                text={t("positions.accruingTooltip", {
+                                text={`${t("positions.accruingTooltip", {
                                   amount: t("common:currency", {
                                     value: accruing,
                                     symbol,
                                     maximumFractionDigits: 6,
                                   }),
-                                })}
+                                })}${harvestBlocked ? ` ${harvestExplanation}` : ""}`}
                               >
                                 <TooltipIcon size="1em" />
                               </Tooltip>
@@ -96,10 +125,12 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                         }
                         bottomLabel={
                           accrualPaused
-                            ? `${t("common:currency", { value: usdValue })} · ${t("positions.accrualPaused")}`
-                            : apy !== null && apy > 0
-                              ? `${t("common:currency", { value: usdValue })} · ${t("positions.earning")}`
-                              : t("common:currency", { value: usdValue })
+                            ? `${value} · ${t("positions.accrualPaused")}`
+                            : accruing !== null && harvestBlocked
+                              ? `${value} · ${t(`positions.harvest.${harvestState}.label`)}`
+                              : apy !== null && apy > 0
+                                ? `${value} · ${t("positions.earning")}`
+                                : value
                         }
                       />
                       <ValueStats
@@ -125,7 +156,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   cta={
                     <Flex gap="s" wrap justify="flex-end">
                       <Button
-                        aria-label={`${t("positions.action.withdraw")} ${symbol}`}
+                        aria-label={`${t("positions.action.withdraw")} ${vault.shareSymbol}`}
                         disabled={shares <= 0}
                         variant="tertiary"
                         size="small"

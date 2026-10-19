@@ -20,10 +20,7 @@ type Props = {
 export const BondDetailMobileModal: FC<Props> = ({ bond, onTransfer }) => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const { timeLeft: liveTimeLeft } = useBondData(bond.id)
-  const timeLeft = bond.isPreview
-    ? Math.max(0, bond.maturity - Date.now())
-    : liveTimeLeft
+  const { timeLeft } = useBondData(bond.id)
 
   return (
     <>
@@ -57,21 +54,10 @@ export const BondDetailMobileModal: FC<Props> = ({ bond, onTransfer }) => {
           }
         />
         <SAssetDetailMobileActions>
-          <Button
-            variant="primary"
-            size="large"
-            disabled={bond.isPreview}
-            onClick={onTransfer}
-          >
+          <Button variant="primary" size="large" onClick={onTransfer}>
             {t("common:send")}
           </Button>
-          {bond.isPreview ? (
-            <Button size="large" disabled>
-              {t("common:redeem")}
-            </Button>
-          ) : (
-            <BondRedeemButton size="large" bondId={bond.id} />
-          )}
+          <BondRedeemButton size="large" bondId={bond.id} />
         </SAssetDetailMobileActions>
       </SAssetDetailModalBody>
     </>

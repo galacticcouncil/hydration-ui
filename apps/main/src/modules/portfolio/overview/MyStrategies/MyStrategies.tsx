@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   DataTable,
-  Flex,
   Modal,
   ModalHeader,
   Separator,
@@ -12,8 +11,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { HOLLAR_BOND_24_11_26_ID } from "@galacticcouncil/utils"
-import { Link, useNavigate, useSearch } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -38,15 +36,8 @@ import {
   useMyBilPositions,
   useMyJuicerPositions,
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import {
-  createStrategyPreviewBond,
-  isLocalStrategyPreviewHost,
-  isStrategyPreviewEnabled,
-  STRATEGY_PREVIEW_POSITIONS,
-} from "@/modules/portfolio/overview/MyStrategies/MyStrategies.preview"
 import { MyStrategiesDetails } from "@/modules/portfolio/overview/MyStrategies/MyStrategiesDetails"
 import { BilStrategyProvider } from "@/modules/strategies/bil/context/BilStrategyContext"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
@@ -123,26 +114,8 @@ export const MyStrategies = ({
   ...props
 }: StrategiesProps) => {
   const { t } = useTranslation("wallet")
-  const navigate = useNavigate({ from: "/portfolio/" })
-  const { strategyPreview } = useSearch({ from: "/portfolio/" })
-  const { getBond, getAssetWithFallback } = useAssets()
-  const hostname = window.location.hostname
-  const isPreview = isStrategyPreviewEnabled(
-    hostname,
-    strategyPreview,
-    import.meta.env.VITE_PORTFOLIO_STRATEGY_PREVIEW === "true",
-  )
   const { featureFlags, isReady } = useRpcProvider()
-  const liveBonds = useMyBondsTableData()
-  const bonds = isPreview
-    ? [
-        createStrategyPreviewBond(
-          getBond(HOLLAR_BOND_24_11_26_ID),
-          getAssetWithFallback("222").iconSrc,
-        ),
-      ]
-    : liveBonds.data
-  const isBondsLoading = !isPreview && liveBonds.isLoading
+  const { data: bonds, isLoading: isBondsLoading } = useMyBondsTableData()
   const showBonds = isBondsLoading || bonds.length > 0
   const renderPositions = (juicer: PositionsResult) => (
     <EnabledBilPositions enabled={isReady && featureFlags.bilEnabled}>
@@ -160,46 +133,7 @@ export const MyStrategies = ({
 
   return (
     <>
-      {isLocalStrategyPreviewHost(hostname) && (
-        <Box p="m">
-          <Flex align="center" justify="space-between" gap="base" wrap>
-            <Text fs="p6">
-              {isPreview
-                ? t("myStrategies.preview.description")
-                : t("myStrategies.preview.available")}
-            </Text>
-            <Button
-              size="small"
-              variant="secondary"
-              onClick={() =>
-                navigate({
-                  search: (search) => ({
-                    ...search,
-                    strategyPreview: !isPreview,
-                  }),
-                  resetScroll: false,
-                  replace: true,
-                })
-              }
-            >
-              {t(
-                isPreview
-                  ? "myStrategies.preview.live"
-                  : "myStrategies.preview.samples",
-              )}
-            </Button>
-          </Flex>
-        </Box>
-      )}
-      {isPreview ? (
-        <MyStrategiesTable
-          {...props}
-          data={STRATEGY_PREVIEW_POSITIONS}
-          isLoading={false}
-          isError={false}
-          hideEmpty={false}
-        />
-      ) : isReady && featureFlags.propellerEnabled ? (
+      {isReady && featureFlags.propellerEnabled ? (
         <JuicerPositions>{renderPositions}</JuicerPositions>
       ) : (
         renderPositions(EMPTY_POSITIONS)
@@ -265,7 +199,12 @@ const MyStrategiesTable = ({
         isLoading={isLoading}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
-          [row.original.symbol, row.original.name, row.original.strategy]
+          [
+            row.original.symbol,
+            row.original.name,
+            row.original.underlyingSymbol,
+            row.original.strategy,
+          ]
             .join(" ")
             .toLowerCase()
             .includes(searchPhrase.toLowerCase())

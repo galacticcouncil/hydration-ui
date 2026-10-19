@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
 import { DateText } from "@/components/RelativeDateText"
+import { vaultCollateral } from "@/modules/strategies/propeller/config/vaults"
+import { useCollateralEquivalent } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import {
   useClaim,
@@ -69,7 +71,13 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
 }) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
-  const { symbol } = getAssetWithFallback(row.vault.assetId)
+  const { symbol } = vaultCollateral(
+    row.vault,
+    getAssetWithFallback(row.vault.assetId),
+  )
+  const getEquivalent = useCollateralEquivalent()
+  const usd = t("common:currency", { value: row.estUsd })
+  const equivalent = getEquivalent(row.vault, row.estEth)
   const claim = useClaim()
   const isClaiming = usePendingClaimIds().includes(row.id)
   const cooldownElapsed = useCooldownElapsed(
@@ -122,13 +130,19 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
     <PendingPosition
       assetId={row.vault.assetId}
       value={t("common:currency", { value: row.estEth, symbol })}
-      displayValue={t("common:currency", { value: row.estUsd })}
+      displayValue={
+        equivalent
+          ? t("amount.equivalent", { ...equivalent, displayValue: usd })
+          : usd
+      }
       isLoading={row.isSettlementLoading}
       stats={stats}
       status={
         status === "claimable" ? (
           <LoadingButton
-            aria-label={t("withdrawals.claim.label", { symbol })}
+            aria-label={t("withdrawals.claim.label", {
+              symbol: row.vault.shareSymbol,
+            })}
             variant="secondary"
             size="small"
             loadingMode="replace"

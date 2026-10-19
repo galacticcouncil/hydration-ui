@@ -143,7 +143,9 @@ export const StrategyPositionValue = ({
               "common:currency",
               {
                 value: amount,
-                symbol: isJuicer ? position.symbol : position.shareSymbol,
+                symbol: isJuicer
+                  ? position.underlyingSymbol
+                  : position.shareSymbol,
               },
             )}`
       }
@@ -213,7 +215,7 @@ export const StrategyPositionEarnings = ({
       ? "—"
       : t("common:currency", {
           value: position.pendingEarnings,
-          symbol: position.symbol,
+          symbol: position.underlyingSymbol,
           maximumFractionDigits: 6,
         })
 
@@ -243,15 +245,6 @@ export const StrategyManageAction = ({
   mobile?: boolean
 }) => {
   const { t } = useTranslation("common")
-  if (position.isPreview) {
-    return mobile ? (
-      <Button variant="primary" size="large" disabled>
-        {t("manage")}
-      </Button>
-    ) : (
-      <TableRowAction disabled>{t("manage")}</TableRowAction>
-    )
-  }
   const link =
     position.strategy === "juicer" ? (
       <Link to={LINKS.strategiesJuicer} search={{ asset: position.symbol }}>

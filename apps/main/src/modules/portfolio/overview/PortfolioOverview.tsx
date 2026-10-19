@@ -38,7 +38,6 @@ import {
   SPortfolioSubsectionHeaderButton,
   SPortfolioTableWrapper,
 } from "@/modules/portfolio/overview/PortfolioOverview.styled"
-import { PortfolioPreviewControls } from "@/modules/portfolio/overview/PortfolioPreviewControls"
 import { PortfolioSummary } from "@/modules/portfolio/overview/PortfolioSummary"
 
 export const portfolioOverviewTabs = [
@@ -198,7 +197,6 @@ export const PortfolioOverview: FC<Props> = ({
                   )}
                 />
                 <Separator />
-                <PortfolioPreviewControls />
                 <SPortfolioTableWrapper
                   data-all={activeTab === "all" ? "" : undefined}
                 >

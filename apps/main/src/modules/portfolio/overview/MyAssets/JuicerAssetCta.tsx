@@ -43,7 +43,7 @@ export const JuicerAssetCta: FC<JuicerAssetCtaProps> = ({
           isExistingPosition
             ? "myAssets.actions.juicerDepositMore"
             : "myAssets.actions.juicerDeposit",
-          { symbol },
+          { symbol: isExistingPosition ? vault.shareSymbol : symbol },
         )}
       </Link>
     </SJuiceButton>

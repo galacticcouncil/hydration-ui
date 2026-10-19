@@ -126,7 +126,7 @@ export const MyStrategiesDetails = ({
           }
           value={t("common:currency", {
             value: position.pendingWithdrawal,
-            symbol: position.symbol,
+            symbol: position.underlyingSymbol,
           })}
         />
       ),

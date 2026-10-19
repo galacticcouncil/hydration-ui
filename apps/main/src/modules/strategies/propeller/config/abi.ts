@@ -8,6 +8,7 @@ export const VAULT_ABI = [
     "function reinvestAssets() view returns (uint256)",
     "function deleverTarget() view returns (uint256)",
     "function yieldAccounting() view returns (address)",
+    "function yieldSource() view returns (address)",
     "function feeController() view returns (address)",
     "function hollarDebtToken() view returns (address)",
     // keeper deposit stop; deposits revert while it or depositsPaused is set
@@ -236,6 +237,16 @@ export const VAULT_ABI = [
 ] as const
 
 export const SUBLOOP_ABI = [
+  ...parseAbi([
+    "function totalEquity() view returns (uint256)",
+    "function principalEquity() view returns (uint256)",
+    "function unwindTargetEquity() view returns (uint256)",
+    "function executionCostReserve() view returns (uint256)",
+    "function harvestCapacity() view returns (uint256)",
+    "function harvestThreshold() view returns (uint256)",
+    "function paused() view returns (bool)",
+    "function emergencyPaused() view returns (bool)",
+  ]),
   {
     type: "function",
     name: "healthFactor",
@@ -335,6 +346,8 @@ export const POOL_ABI = [
 ] as const
 
 export const MAIN_DEBT_ABI = parseAbi([
+  "function pendingSourceAccounting() view returns (bool)",
+  "function serviceBlocked() view returns (bool)",
   "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
   "function surplusOf(uint256 id) view returns (uint256 amount)",
   "function claimSurplus(uint256 id) returns (uint256 amount)",
