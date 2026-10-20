@@ -1,5 +1,5 @@
-import { Alert, Grid } from "@galacticcouncil/ui/components"
-import { useCallback } from "react"
+import { Alert, Grid, SearchInput } from "@galacticcouncil/ui/components"
+import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -21,6 +21,16 @@ export const MultisigConfigList: React.FC<{
     useShallow(pick(["setActive", "remove", "add", "update"])),
   )
   const configs = useMultisigConfigs()
+  const [search, setSearch] = useState("")
+
+  const phrase = search.toLowerCase().trim()
+  const filteredConfigs = phrase
+    ? configs.filter(
+        ({ name, address }) =>
+          name.toLowerCase().includes(phrase) ||
+          address.toLowerCase().includes(phrase),
+      )
+    : configs
 
   const handleMultisigSelect = useCallback(
     (config: MultisigConfig) => {
@@ -50,7 +60,15 @@ export const MultisigConfigList: React.FC<{
 
   return (
     <Grid gap="base">
-      {configs.map((config) => (
+      {configs.length > 0 && (
+        <SearchInput
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          customSize="large"
+          placeholder={t("multisig.configSelect.search")}
+        />
+      )}
+      {filteredConfigs.map((config) => (
         <AccountMultisigOption
           key={config.id}
           config={config}
@@ -59,7 +77,7 @@ export const MultisigConfigList: React.FC<{
           onDelete={remove}
         />
       ))}
-      {!configs.length && (
+      {!filteredConfigs.length && (
         <Alert
           variant="info"
           title={t("multisig.configSelect.empty.title")}

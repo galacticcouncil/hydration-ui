@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Chip,
-  CopyButton,
   Flex,
   HoverCard,
   HoverCardContent,
@@ -42,6 +41,7 @@ import {
   SUserMenuScrollArea,
 } from "@/modules/layout/components/UserMenu/UserMenu.styled"
 import { UserMenuChangeAccountButton } from "@/modules/layout/components/UserMenu/UserMenuChangeAccountButton"
+import { UserMenuCopyButton } from "@/modules/layout/components/UserMenu/UserMenuCopyButton"
 import {
   getRecentProviderAccount,
   useRecentProviderAccountsStore,
@@ -239,14 +239,10 @@ export const UserMenu: FC<Props> = ({
                         onCloseMenu={() => onOpenChange(false)}
                       />
                       <Tooltip text={copyLabel} size="small" asChild>
-                        <Button variant="ghost" data-icon-only="" asChild>
-                          <CopyButton
-                            text={address}
-                            // suppress CopyButton's default native title
-                            title=""
-                            aria-label={copyLabel}
-                          />
-                        </Button>
+                        <UserMenuCopyButton
+                          text={address}
+                          aria-label={copyLabel}
+                        />
                       </Tooltip>
                       <Tooltip text={disconnectLabel} size="small" asChild>
                         <Button

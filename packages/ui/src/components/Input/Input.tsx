@@ -90,7 +90,7 @@ export const Input: FC<InputProps> = ({
         </Label>
       )}
       {IconEnd && <IconEnd data-icon="end" />}
-      {trailingElement && <Box mr="-m">{trailingElement}</Box>}
+      {trailingElement}
     </SInputContainer>
   )
 }

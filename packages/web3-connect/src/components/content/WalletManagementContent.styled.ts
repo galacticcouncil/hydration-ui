@@ -3,9 +3,9 @@ import {
   Box,
   Flex,
   Grid,
-  Input,
   ModalBody,
   ModalHeader,
+  SearchInput,
 } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
@@ -19,7 +19,7 @@ const shouldForwardProp = (prop: string) => prop !== "showAccountPanel"
 const shouldForwardColumnProp = (prop: string) =>
   prop !== "showAccountPanel" && prop !== "mobileHidden"
 
-export const SSearchInput = styled(Input)(
+export const SSearchInput = styled(SearchInput)(
   ({ theme }) => css`
     width: calc(100% - ${theme.space.base});
     flex-shrink: 0;

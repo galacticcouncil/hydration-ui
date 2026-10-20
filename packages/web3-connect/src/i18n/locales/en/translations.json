@@ -111,6 +111,7 @@
   "multisig.setup.new.nameDescription.incomplete": "Name for your multisig account",
   "multisig.setup.new.summaryDescription.incomplete": "Review your multisig details",
   "multisig.configSelect.title": "Multisig accounts",
+  "multisig.configSelect.search": "Search multisig accounts...",
   "multisig.configSelect.setupNew": "Setup new multisig account",
   "multisig.configSelect.empty.title": "No multisig accounts found",
   "multisig.configSelect.empty.description": "Setup a new multisig account to get started.",

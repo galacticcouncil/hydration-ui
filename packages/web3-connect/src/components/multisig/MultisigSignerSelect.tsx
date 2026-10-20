@@ -3,15 +3,14 @@ import {
   AccountAvatar,
   Box,
   Button,
-  Collapsible,
   Flex,
   Grid,
   Icon,
-  ModalContentDivider,
-  Paper,
+  Separator,
   Spinner,
   Stack,
   Text,
+  TextMiddleTruncate,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -25,6 +24,7 @@ import { useShallow } from "zustand/shallow"
 import { SAccountActionCopyButton } from "@/components/account/AccountActionButton.styled"
 import { AccountIdentity } from "@/components/account/AccountIdentity"
 import { AccountOption } from "@/components/account/AccountOption"
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { MultisigAccount } from "@/components/multisig/components/MultisigAccount"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { SUBSTRATE_PROVIDERS } from "@/config/providers"
@@ -150,48 +150,48 @@ export const MultisigSignerSelect: React.FC = () => {
           </Stack>
           {otherSignatories.length > 0 && (
             <>
-              <ModalContentDivider my="m" />
-              <Collapsible
-                label={t("multisig.signerSelect.otherSignatories", {
+              <Text
+                fs="p4"
+                fw={500}
+                color={getToken("text.medium")}
+                mb="base"
+                mt="xl"
+              >
+                {t("multisig.signerSelect.otherSignatories", {
                   count: otherSignatories.length,
                 })}
-                actionLabel={t("show")}
-                actionLabelWhenOpen={t("hide")}
-              >
-                <Stack gap="base" sx={{ minWidth: 0, width: "100%" }}>
-                  {otherSignatories.map((address) => (
-                    <Flex key={address} align="center" gap="base" p="m" asChild>
-                      <Paper borderRadius="m">
-                        <Box sx={{ flexShrink: 0 }}>
-                          <AccountAvatar address={address} />
-                        </Box>
-                        <Stack width="100%" minWidth="0">
+              </Text>
+              <Stack gap="base" sx={{ minWidth: 0, width: "100%" }}>
+                {otherSignatories.map((address) => (
+                  <SAccountOption key={address} disabled>
+                    <Flex align="center" gap="m">
+                      <Box sx={{ flexShrink: 0 }}>
+                        <AccountAvatar address={address} />
+                      </Box>
+                      <Flex direction="column" width="100%" minWidth={0}>
+                        <Flex align="center" height="l" minWidth={0}>
                           <AccountIdentity
                             fs="p3"
                             papi={papi}
-                            key={address}
                             address={address}
                           />
-                          <Flex
-                            align="center"
-                            justify="space-between"
-                            gap="base"
+                        </Flex>
+                        <Flex align="center" justify="space-between" gap="s">
+                          <TextMiddleTruncate
+                            fs="p5"
+                            color={getToken("text.medium")}
                           >
-                            <Text
-                              truncate
-                              fs="p4"
-                              color={getToken("text.medium")}
-                            >
-                              {address}
-                            </Text>
+                            {address}
+                          </TextMiddleTruncate>
+                          <Flex pl="m" ml="auto">
                             <SAccountActionCopyButton text={address} />
                           </Flex>
-                        </Stack>
-                      </Paper>
+                        </Flex>
+                      </Flex>
                     </Flex>
-                  ))}
-                </Stack>
-              </Collapsible>
+                  </SAccountOption>
+                ))}
+              </Stack>
             </>
           )}
         </Stack>

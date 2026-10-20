@@ -1,4 +1,4 @@
-import { Plus, Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import { Plus, WalletIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Button,
@@ -619,7 +619,6 @@ export const WalletManagementContent = () => {
                 value={walletSearchValue}
                 onChange={(event) => setWalletSearchValue(event.target.value)}
                 customSize="large"
-                iconStart={Search}
                 placeholder={t("provider.searchWallets")}
               />
             )}
@@ -945,7 +944,6 @@ export const WalletManagementContent = () => {
                     setAccountSearchValue(event.target.value)
                   }
                   customSize="large"
-                  iconStart={Search}
                   placeholder={t("account.searchAccounts")}
                 />
 
