@@ -16,6 +16,7 @@ import {
   ChevronUp,
   CircleAlert,
   Download,
+  ExternalLink,
   HatGlasses,
   LogOut,
   LucideWallet,
@@ -72,6 +73,7 @@ import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.
 import { MultisigConfigList } from "@/components/multisig/MultisigConfigList"
 import { MultisigSetupPanel } from "@/components/multisig/MultisigSetupPanel"
 import { MultisigSignerSelect } from "@/components/multisig/MultisigSignerSelect"
+import { getWalletDeeplink } from "@/config/deeplinks"
 import { WalletProviderType } from "@/config/providers"
 import {
   chipModesForAccounts,
@@ -196,6 +198,13 @@ export const WalletManagementContent = () => {
   ])
 
   const allWallets = useMemo(() => getWallets(), [])
+  const deeplinkedProviders = useMemo(
+    () =>
+      allWallets
+        .map(prop("provider"))
+        .filter((provider) => !!getWalletDeeplink(provider)),
+    [allWallets],
+  )
 
   /**
    * The single gate the forced mode acts through. `null` means "no
@@ -246,6 +255,7 @@ export const WalletManagementContent = () => {
     recentGroups: recentWalletGroups,
     installedGroups: installedWalletGroups,
     moreGroups: moreWalletGroups,
+    deeplinkedGroups: deeplinkedWalletGroups,
     walletConnectGroups,
   } = useMemo(
     () =>
@@ -254,8 +264,15 @@ export const WalletManagementContent = () => {
         modeProviders,
         connectedProviderTypes,
         recentlyUsedProviders,
+        deeplinkedProviders,
       ),
-    [allWallets, connectedProviderTypes, modeProviders, recentlyUsedProviders],
+    [
+      allWallets,
+      connectedProviderTypes,
+      deeplinkedProviders,
+      modeProviders,
+      recentlyUsedProviders,
+    ],
   )
 
   const selectedWallet =
@@ -329,6 +346,11 @@ export const WalletManagementContent = () => {
   const visibleMoreWalletGroups = useMemo(
     () => filterWalletGroups(moreWalletGroups, walletSearch),
     [moreWalletGroups, walletSearch],
+  )
+
+  const visibleDeeplinkedWalletGroups = useMemo(
+    () => filterWalletGroups(deeplinkedWalletGroups, walletSearch),
+    [deeplinkedWalletGroups, walletSearch],
   )
 
   const visibleWalletConnectGroups = useMemo(
@@ -531,6 +553,7 @@ export const WalletManagementContent = () => {
           pendingProviderTypes.includes(provider),
         )}
         variant={variant}
+        connectLabel={connectLabel}
         onClick={() => handleWalletGroupSelect(group)}
         onDisconnect={() => {
           for (const provider of connectedGroupProviders) {
@@ -658,7 +681,8 @@ export const WalletManagementContent = () => {
                     </Flex>
                   )}
 
-                  {(visibleWalletConnectGroups.length > 0 ||
+                  {(visibleDeeplinkedWalletGroups.length > 0 ||
+                    visibleWalletConnectGroups.length > 0 ||
                     showExternalWallet ||
                     showMultisig) && (
                     <Flex direction="column" gap="s">
@@ -670,6 +694,9 @@ export const WalletManagementContent = () => {
                       >
                         {t("provider.other")}
                       </SSourceCategoryLabel>
+                      {visibleDeeplinkedWalletGroups.map((group) =>
+                        renderWalletGroup(group, t("provider.open")),
+                      )}
                       {visibleWalletConnectGroups.map((group) =>
                         renderWalletGroup(group, t("provider.open")),
                       )}
@@ -864,15 +891,7 @@ export const WalletManagementContent = () => {
               <WalletChainSelectState
                 group={selectedWalletGroup}
                 getStatus={getStatus}
-                onInstall={(wallet) => {
-                  if (wallet.installUrl) {
-                    window.open(
-                      wallet.installUrl,
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
-                }}
+                onInstall={openWalletOrInstall}
                 onSelect={handleWalletClick}
                 onDisconnect={(wallet) => disconnect(wallet.provider)}
               />
@@ -898,22 +917,22 @@ export const WalletManagementContent = () => {
                     ? {
                         label: t("provider.connectingWallet"),
                       }
-                    : {
-                        label: t("provider.installWallet", {
-                          wallet: selectedWallet.title,
-                        }),
-                        icon: Download,
-                        disabled: !selectedWallet.installUrl,
-                        onClick: () => {
-                          if (selectedWallet.installUrl) {
-                            window.open(
-                              selectedWallet.installUrl,
-                              "_blank",
-                              "noopener,noreferrer",
-                            )
-                          }
-                        },
-                      }
+                    : getWalletDeeplink(selectedWallet.provider)
+                      ? {
+                          label: t("provider.openInWallet", {
+                            wallet: selectedWallet.title,
+                          }),
+                          icon: ExternalLink,
+                          onClick: () => openWalletOrInstall(selectedWallet),
+                        }
+                      : {
+                          label: t("provider.installWallet", {
+                            wallet: selectedWallet.title,
+                          }),
+                          icon: Download,
+                          disabled: !selectedWallet.installUrl,
+                          onClick: () => openWalletOrInstall(selectedWallet),
+                        }
                 }
               />
             ) : isProvidersConnecting && pendingWallet ? (
@@ -1024,4 +1043,15 @@ export const WalletManagementContent = () => {
       </SModalBody>
     </SWalletManagementShell>
   )
+}
+
+// On mobile, a wallet with a deeplink opens Hydration in its in-app browser
+// instead of sending the user to the install page.
+function openWalletOrInstall(wallet: Wallet) {
+  const deeplink = getWalletDeeplink(wallet.provider)
+  if (deeplink) {
+    window.location.href = deeplink
+  } else if (wallet.installUrl) {
+    window.open(wallet.installUrl, "_blank", "noopener,noreferrer")
+  }
 }

@@ -38,6 +38,7 @@
   "provider.connectingWallet": "Connecting wallet",
   "provider.connectingWalletDescription": "Please authorize this wallet extension to connect to Hydration.",
   "provider.installWallet": "Install {{ wallet }}",
+  "provider.openInWallet": "Open in {{ wallet }}",
 
   "account.searchAccounts": "Search accounts...",
   "account.noResults": "No accounts found",

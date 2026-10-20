@@ -204,7 +204,7 @@ export const WalletProviderSourceButton: React.FC<{
   const chainModes = getWalletSourceModes(wallet.provider)
   const subtitle = isConnected
     ? t("provider.connected")
-    : wallet.installed
+    : wallet.installed || connectLabel
       ? (connectLabel ?? t("provider.connect"))
       : t("provider.notInstalled")
 
@@ -249,6 +249,7 @@ export const WalletGroupSourceButton: React.FC<{
   readonly connected: boolean
   readonly pending: boolean
   readonly variant?: WalletSourceButtonVariant
+  readonly connectLabel?: string
   readonly onClick: () => void
   readonly onDisconnect: () => void
 }> = ({
@@ -257,6 +258,7 @@ export const WalletGroupSourceButton: React.FC<{
   connected,
   pending,
   variant = "management",
+  connectLabel,
   onClick,
   onDisconnect,
 }) => {
@@ -265,8 +267,8 @@ export const WalletGroupSourceButton: React.FC<{
   const isInstalled = group.wallets.some((wallet) => wallet.installed)
   const subtitle = connected
     ? t("provider.connected")
-    : isInstalled
-      ? t("provider.connect")
+    : isInstalled || connectLabel
+      ? (connectLabel ?? t("provider.connect"))
       : t("provider.notInstalled")
 
   return (

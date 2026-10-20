@@ -166,6 +166,23 @@ describe("selectWalletSources", () => {
     expect(titles(moreGroups)).toEqual(["Enkrypt"])
   })
 
+  it("moves uninstalled sources with a deeplink out of more wallets", () => {
+    const { moreGroups, deeplinkedGroups } = selectWalletSources(
+      [
+        TALISMAN,
+        NOT_INSTALLED,
+        wallet(WalletProviderType.Phantom, "Phantom", false),
+      ],
+      null,
+      [],
+      [],
+      [WalletProviderType.Phantom, WalletProviderType.Talisman],
+    )
+
+    expect(titles(deeplinkedGroups)).toEqual(["Phantom"])
+    expect(titles(moreGroups)).toEqual(["Enkrypt"])
+  })
+
   it("promotes an uninstalled source once it is connected", () => {
     const { recentGroups, moreGroups } = selectWalletSources(
       [NOT_INSTALLED],

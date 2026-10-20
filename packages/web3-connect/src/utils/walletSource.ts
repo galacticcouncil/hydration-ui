@@ -137,6 +137,7 @@ export const selectWalletSources = <T extends WalletSourceLike>(
   modeProviders: WalletProviderType[] | null,
   connectedProviderTypes: WalletProviderType[],
   recentlyUsedProviders: WalletProviderType[] = [],
+  deeplinkedProviders: WalletProviderType[] = [],
 ) => {
   const available = wallets.filter(
     (wallet) =>
@@ -185,15 +186,26 @@ export const selectWalletSources = <T extends WalletSourceLike>(
     .filter((group) => !recentGroups.includes(group))
     .sort(byTitle)
 
-  const moreGroups = groups
+  const unreachableGroups = groups
     .filter((group) => !isGroupReachable(group))
-    .sort((a, b) => a.title.localeCompare(b.title))
+    .sort(byTitle)
+
+  // not installed, but the wallet's mobile app can open Hydration directly
+  const isGroupDeeplinked = (group: WalletSourceGroup<T>) =>
+    group.providers.some((provider) => deeplinkedProviders.includes(provider))
+
+  const deeplinkedGroups = unreachableGroups.filter(isGroupDeeplinked)
+
+  const moreGroups = unreachableGroups.filter(
+    (group) => !isGroupDeeplinked(group),
+  )
 
   return {
     available,
     recentGroups,
     installedGroups,
     moreGroups,
+    deeplinkedGroups,
     walletConnectGroups,
   }
 }

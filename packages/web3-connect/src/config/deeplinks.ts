@@ -1,4 +1,9 @@
-import { createQueryString, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  createQueryString,
+  HYDRATION_CHAIN_KEY,
+  isAndroid,
+  isMobileDevice,
+} from "@galacticcouncil/utils"
 
 import { WalletProviderType } from "@/config/providers"
 
@@ -61,6 +66,13 @@ export const WALLET_DEEPLINKS: Partial<
     android: OKX_ANDROID_DEEPLINK(ENCODED_SUI_TARGET_URL),
     universal: OKX_UNIVERSAL_DEEPLINK(ENCODED_SUI_TARGET_URL),
   },
+}
+
+/** Link that opens Hydration inside the wallet's in-app browser, on mobile only. */
+export const getWalletDeeplink = (provider: WalletProviderType) => {
+  const config = WALLET_DEEPLINKS[provider]
+  if (!config || !isMobileDevice()) return undefined
+  return config.android && isAndroid() ? config.android : config.universal
 }
 
 function encodeXcmTargetUrl(srcChain: string, asset: string) {
