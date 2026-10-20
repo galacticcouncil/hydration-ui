@@ -6,7 +6,6 @@ import {
   Flex,
   Grid,
   Icon,
-  Separator,
   Spinner,
   Stack,
   Text,

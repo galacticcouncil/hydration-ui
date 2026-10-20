@@ -31,6 +31,10 @@ export const SScrollAreaContent = styled(Flex)(
     min-width: 0;
     padding-right: ${theme.space.base};
     padding-bottom: calc(var(--source-footer-height, 0px) + ${theme.space.xs});
+
+    ${mq("max-sm")} {
+      zoom: 1.15;
+    }
   `,
 )
 
