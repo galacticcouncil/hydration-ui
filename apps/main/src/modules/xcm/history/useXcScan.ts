@@ -16,6 +16,7 @@ import {
   mergeLoadedJourneys,
   withoutPlaceholdersOf,
 } from "@/modules/xcm/history/utils/optimistic"
+import { withoutScanTwins } from "@/modules/xcm/history/utils/scan"
 
 import { xcStore } from "./xcScanStore"
 
@@ -47,11 +48,13 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
     queryFn: () => [],
   })
 
-  // NEAR and Zcash legs xc-scan doesn't index come from the transfers scan
+  // What the transfers scan indexes comes from it, xc-scan has the rest
   const scan = useScanJourneys(address)
 
   const data = useMemo(() => {
-    const journeys = isIndexed ? xcscan.data : NO_JOURNEYS
+    const indexed = isIndexed ? xcscan.data : NO_JOURNEYS
+    // xc-scan's copies of the scan's transfers stand in until it answers
+    const journeys = scan.data ? withoutScanTwins(indexed, scan.data) : indexed
     const scanJourneys = scan.data ?? NO_JOURNEYS
     if (!scanJourneys.length) return journeys
 
@@ -65,7 +68,8 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
   }, [claimableOnly, isIndexed, scan.data, xcscan.data])
 
   return {
-    isLoading: isIndexed ? xcscan.dataUpdatedAt === 0 : scan.isLoading,
+    // The scan's rows replace xc-scan's, so the list waits for its first answer
+    isLoading: (isIndexed && xcscan.dataUpdatedAt === 0) || scan.isLoading,
     data,
   }
 }

@@ -37,7 +37,10 @@ export const getScanClient = (baseUrl: string) => {
           entry[1] !== undefined && entry[1] !== "",
       ),
     )
-    const res = await fetch(`${baseUrl}${path}${createQueryString(params)}`)
+    // A hung scan fails, so callers fall back rather than wait
+    const res = await fetch(`${baseUrl}${path}${createQueryString(params)}`, {
+      signal: AbortSignal.timeout(10_000),
+    })
     if (!res.ok) throw new ScanApiError(res.status, path)
 
     const body: unknown = await res.json()

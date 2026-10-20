@@ -54,8 +54,8 @@ const getClaimVaa = async (
 }
 
 /**
- * An account's NEAR ntt transfers and Zcash deposits and withdrawals, which
- * xc-scan doesn't index. The scan has them from October 2026 on.
+ * An account's ntt, Basejump and Zcash transfers, as the scan lists them from
+ * October 2026 on.
  */
 export const scanJourneysQuery = (queryClient: QueryClient, address: string) =>
   queryOptions({
@@ -71,9 +71,10 @@ export const scanJourneysQuery = (queryClient: QueryClient, address: string) =>
     queryFn: async (): Promise<XcJourney[]> => {
       const q = toScanAccount(address)
       const nearHash = toScanNearHash(address)
-      // Either end on one of the chains, so the account's other transfers
-      // don't crowd them out of a page
+      // NEAR's and Zcash's legs apart, so the account's others don't crowd
+      // them out of the page: xc-scan stands in for the rest, not for them
       const filters = [
+        { q },
         { q, from: SCAN_ONLY_CHAINS },
         { q, to: SCAN_ONLY_CHAINS },
         ...(nearHash ? [{ q: nearHash, to: SCAN_ONLY_CHAINS }] : []),

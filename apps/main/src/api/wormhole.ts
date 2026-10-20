@@ -18,7 +18,9 @@ export const wormholeVaaQuery = (vaaId: string) =>
   queryOptions({
     queryKey: ["wormholescan", "vaa", vaaId],
     queryFn: async (): Promise<WormholeVaa | null> => {
-      const res = await fetch(wormholescan.api(`vaas/${vaaId}`))
+      const res = await fetch(wormholescan.api(`vaas/${vaaId}`), {
+        signal: AbortSignal.timeout(10_000),
+      })
       if (res.status === 404) return null
       if (!res.ok) {
         throw new Error(

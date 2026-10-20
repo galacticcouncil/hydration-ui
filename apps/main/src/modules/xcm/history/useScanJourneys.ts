@@ -36,7 +36,7 @@ export const useScanJourneysSubscription = (address: string) => {
 
     const unsubscribe = subscribeScanEvents(
       transfersScanClient,
-      ["ntt", "utxo"],
+      ["ntt", "utxo", "basejump"],
       {
         onChange: refetch,
         // The first connect finds the journeys just loaded
