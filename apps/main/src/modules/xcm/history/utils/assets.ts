@@ -10,6 +10,8 @@ const networkToEcosystem: Record<string, ChainEcosystem> = {
   ethereum: ChainEcosystem.Ethereum,
   solana: ChainEcosystem.Solana,
   sui: ChainEcosystem.Sui,
+  near: ChainEcosystem.Near,
+  zcash: ChainEcosystem.Zcash,
 }
 
 const H160_ASSET_IDS: Record<string, string> = {

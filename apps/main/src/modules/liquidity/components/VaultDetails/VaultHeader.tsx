@@ -1,5 +1,4 @@
 import { Button, Flex, Modal } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,7 +12,6 @@ export const VaultHeader = ({ vault }: { vault: VaultTable }) => {
   const { t } = useTranslation("liquidity")
   const [token0, token1] = vault.pair
   const [open, setOpen] = useState(false)
-  const { isMobile } = useBreakpoints()
 
   return (
     <>
@@ -41,14 +39,16 @@ export const VaultHeader = ({ vault }: { vault: VaultTable }) => {
           </Flex>
         }
         actions={
-          <Button
-            size={isMobile ? "medium" : "small"}
-            width="100%"
-            disabled={!vault.canDeposit}
-            onClick={() => setOpen(true)}
-          >
-            {t("vaults.action.deposit")}
-          </Button>
+          <Flex gap="base" align="center" width="100%">
+            <Button
+              size="medium"
+              width="100%"
+              disabled={!vault.canDeposit}
+              onClick={() => setOpen(true)}
+            >
+              {t("vaults.action.deposit")}
+            </Button>
+          </Flex>
         }
       />
 

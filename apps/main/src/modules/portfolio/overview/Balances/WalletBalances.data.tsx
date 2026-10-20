@@ -6,6 +6,7 @@ import { AssetType } from "@/api/assets"
 import { Balance, useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 import { useUserBorrowSummary } from "@/api/borrow"
 import { useMyIsolatedPoolsLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyIsolatedPoolsLiquidity.data"
+import { useMyVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 import {
   isOmnipoolDepositPosition,
   useAccountOmnipoolPositionsData,
@@ -35,6 +36,9 @@ export const useWalletBalancesSectionData = () => {
     data: isolatedPoolsLiquidity,
     isLoading: isLoadingIsolatedPoolsLiquidity,
   } = useMyIsolatedPoolsLiquidity()
+
+  const { data: vaultLiquidity, isLoading: isLoadingVaultLiquidity } =
+    useMyVaultLiquidity()
 
   const { data: userBorrowSummary, isLoading: isLoadingBorrowSummary } =
     useUserBorrowSummary()
@@ -85,6 +89,11 @@ export const useWalletBalancesSectionData = () => {
       { liquidity: Big(0), farming: Big(0) },
     )
 
+    const vaultLiquidityTotal = vaultLiquidity.reduce(
+      (acc, vault) => acc.plus(vault.currentTotalDisplay),
+      Big(0),
+    )
+
     const tokensTotal = calculateBalancesTotal(
       balancesWithPrice?.tokenBalances ?? [],
     )
@@ -102,20 +111,29 @@ export const useWalletBalancesSectionData = () => {
     const liquidityTotal = omnipoolLiquidity.liquidity
       .plus(stableSwapTotal)
       .plus(isolatedPoolsLiquidityTotals.liquidity)
+      .plus(vaultLiquidityTotal)
 
     const farmingTotal = omnipoolLiquidity.farming.plus(
       isolatedPoolsLiquidityTotals.farming,
     )
 
     return { omnipoolLiquidity, assetsTotal, liquidityTotal, farmingTotal }
-  }, [balancesWithPrice, isolatedPoolsLiquidity, positions?.all])
+  }, [
+    balancesWithPrice,
+    isolatedPoolsLiquidity,
+    positions?.all,
+    vaultLiquidity,
+  ])
 
   return {
     assets: assetsTotal.toString(),
     isAssetsLoading: !isBalanceSettled,
     liquidity: liquidityTotal.toString(),
     farms: farmingTotal.toString(),
-    isLiquidityLoading: isLoadingIsolatedPoolsLiquidity || isLoadingPositions,
+    isLiquidityLoading:
+      isLoadingIsolatedPoolsLiquidity ||
+      isLoadingPositions ||
+      isLoadingVaultLiquidity,
     supply: userBorrowSummary?.totalLiquidityUSD ?? "",
     borrow: userBorrowSummary?.totalBorrowsUSD ?? "",
     isBorrowLoading: isLoadingBorrowSummary,

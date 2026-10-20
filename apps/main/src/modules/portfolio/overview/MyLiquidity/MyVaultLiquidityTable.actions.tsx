@@ -1,4 +1,8 @@
-import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
+import {
+  ArrowRightLeftIcon,
+  CircleMinus,
+  Ellipsis,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,6 +10,7 @@ import {
   DropdownMenuTrigger,
   Flex,
   Icon,
+  MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   Modal,
@@ -17,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { AddVaultLiquidity } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity"
 import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
+import { TransferVaultPosition } from "@/modules/liquidity/components/TransferVaultPosition/TransferVaultPosition"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 type Props = {
@@ -24,9 +30,10 @@ type Props = {
 }
 
 export const MyVaultLiquidityTableActions: FC<Props> = ({ vault }) => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation(["wallet", "liquidity"])
   const [isRemoveOpen, setIsRemoveOpen] = useState(false)
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
 
   return (
     <>
@@ -52,20 +59,42 @@ export const MyVaultLiquidityTableActions: FC<Props> = ({ vault }) => {
           </TableRowAction>
           <DropdownMenuContent>
             <DropdownMenuItem asChild>
-              <MenuSelectionItem variant="filterLink" asChild>
-                <div>
-                  <MenuItemLabel
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      setIsRemoveOpen(true)
-                    }}
-                  >
-                    {t("myLiquidity.actions.removeLiquidity")}
-                  </MenuItemLabel>
-                </div>
+              <MenuSelectionItem
+                variant="filterLink"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  setIsRemoveOpen(true)
+                }}
+              >
+                <MenuItemIcon component={CircleMinus} />
+                <MenuItemLabel
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    setIsRemoveOpen(true)
+                  }}
+                >
+                  {t("myLiquidity.actions.removeLiquidity")}
+                </MenuItemLabel>
               </MenuSelectionItem>
             </DropdownMenuItem>
+            {vault.vault && vault.positionShares > 0n && (
+              <DropdownMenuItem asChild>
+                <MenuSelectionItem
+                  variant="filterLink"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsTransferOpen(true)
+                  }}
+                >
+                  <MenuItemIcon component={ArrowRightLeftIcon} />
+                  <MenuItemLabel>
+                    {t("liquidity:vaults.action.transfer")}
+                  </MenuItemLabel>
+                </MenuSelectionItem>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </Flex>
@@ -75,6 +104,18 @@ export const MyVaultLiquidityTableActions: FC<Props> = ({ vault }) => {
             vault={vault}
             closable
             onSubmitted={() => setIsRemoveOpen(false)}
+          />
+        )}
+      </Modal>
+      <Modal
+        variant="popup"
+        open={isTransferOpen}
+        onOpenChange={setIsTransferOpen}
+      >
+        {isTransferOpen && (
+          <TransferVaultPosition
+            vault={vault}
+            onClose={() => setIsTransferOpen(false)}
           />
         )}
       </Modal>

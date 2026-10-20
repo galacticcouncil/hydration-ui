@@ -15,6 +15,7 @@ import {
   isNearCall,
   isSolanaCall,
   isSuiCall,
+  isZecCall,
 } from "@/modules/transactions/utils/xcm"
 
 export const decodeEvmCall = (abi: Abi, data: Hex) => {
@@ -80,8 +81,9 @@ export const decodeTx = (
     return tx.commands
   }
 
-  // The sdk serializes the receiver and actions, bigints as strings
-  if (isNearCall(tx)) {
+  // The sdk serializes these as json: NEAR's receiver and actions, a Zcash
+  // payment's address and amount, bigints as strings
+  if (isNearCall(tx) || isZecCall(tx)) {
     try {
       return safeParse<object>(tx.data)
     } catch {
@@ -97,4 +99,5 @@ export const hasTxCallData = (tx: AnyTransaction): boolean =>
   isEvmCall(tx) ||
   isSolanaCall(tx) ||
   isSuiCall(tx) ||
-  isNearCall(tx)
+  isNearCall(tx) ||
+  isZecCall(tx)

@@ -3,10 +3,12 @@ import {
   getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
+  isZecChain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
   resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
+import { readNoirBalance } from "@galacticcouncil/web3-connect/src/utils/zec"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import {
@@ -31,13 +33,14 @@ import { isString } from "remeda"
 import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
-import { BASEJUMP_LANDING_CONTRACT } from "@/modules/xcm/history/utils/basejump"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -53,6 +56,13 @@ export const useCrossChainConfig = () => {
       const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
       if (hydration && isEvmParachain(hydration)) {
         withPermissiveEvmResolver(hydration)
+      }
+
+      // Zcash is utxo with no public balance api, so balances come from the
+      // connected Noir wallet
+      const zcash = ctx.config.chains.get("zec")
+      if (zcash && isZecChain(zcash)) {
+        zcash.registerBalanceReader(readNoirBalance)
       }
 
       // Wormhole carries basejump with it — basejump routes hop through the

@@ -162,6 +162,30 @@ function isSameTransfer(optimistic: XcJourney, incoming: XcJourney): boolean {
   return sameSender && sameRecipient && sameTime && sameAsset
 }
 
+/**
+ * Drops the placeholders that journeys from outside xc-scan stand for: the
+ * same route, sent within the match window.
+ *
+ * Unlike `isSameTransfer`, neither party nor amount can tie them: a NEAR party
+ * is the hash of its id and ntt trims the amount, so a placeholder's recipient
+ * and amount never turn up in them.
+ */
+export function withoutPlaceholdersOf(
+  list: XcJourney[],
+  journeys: XcJourney[],
+): XcJourney[] {
+  return list.filter(
+    (item) =>
+      !isOptimisticJourney(item) ||
+      !journeys.some(
+        (journey) =>
+          journey.origin === item.origin &&
+          journey.destination === item.destination &&
+          Math.abs(journeyDate(journey) - journeyDate(item)) <= MATCH_WINDOW_MS,
+      ),
+  )
+}
+
 function findReplaced(
   list: XcJourney[],
   incoming: XcJourney,

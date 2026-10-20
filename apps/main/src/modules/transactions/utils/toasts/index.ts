@@ -89,7 +89,7 @@ export const createToastProcessorFn = (
   const substrateProcessor = processors.substrate(queryClient, neckworkClient)
   const evmProcessor = processors.evm(queryClient, neckworkClient, evm)
   const xcscanProcessor = processors.xcscan(address, xcScanHttpClient)
-  const basejumpProcessor = processors.basejump(address, queryClient)
+  const basejumpProcessor = processors.basejump(queryClient)
   const xcSwapProcessor = processors.xcSwap()
   const invalidProcessor = processors.invalid()
 

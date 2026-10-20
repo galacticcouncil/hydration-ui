@@ -5,6 +5,7 @@ import { Wallet, WalletData } from "@/types/wallet"
 import { AlephZero } from "@/wallets/AlephZeroSigner"
 import { BraveWallet, BraveWalletSol } from "@/wallets/BraveWallet"
 import { Enkrypt } from "@/wallets/Enkrypt"
+import { EthereumWalletsNear } from "@/wallets/EthereumWallets"
 import { ExternalWallet } from "@/wallets/ExternalWallet"
 import { FearlessWallet } from "@/wallets/FearlessWallet"
 import { HotWalletNear } from "@/wallets/HotWallet"
@@ -31,6 +32,7 @@ export {
   BraveWallet,
   BraveWalletSol,
   Enkrypt,
+  EthereumWalletsNear,
   ExternalWallet,
   FearlessWallet,
   HotWalletNear,
@@ -100,6 +102,7 @@ const wallets = [
   new HotWalletNear(),
   new IntearWallet(),
   new LedgerNear(),
+  new EthereumWalletsNear(),
 
   // Zcash
   new NoirWallet(),

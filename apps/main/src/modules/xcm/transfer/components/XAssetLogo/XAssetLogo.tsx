@@ -7,7 +7,7 @@ import {
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
 
 import { useAssetMetadata } from "@/api/metadata"
-import { useHydrationDisplayAssetId } from "@/api/xcm"
+import { useHydrationAssetId, useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
 
@@ -34,6 +34,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
 }) => {
   const metadata = useAssetMetadata()
   const getDisplayAssetId = useHydrationDisplayAssetId()
+  const getHydrationAssetId = useHydrationAssetId()
 
   const registryId = getDisplayAssetId(asset)
 
@@ -68,5 +69,10 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
     )
   }
 
-  return <AssetLogo id={registryId ?? ""} className={className} />
+  // An asset with no registry entry of its own, like wNEAR on NEAR, takes the
+  // entry of what it lands as on Hydration.
+  const fallbackRegistryId =
+    registryId ?? getHydrationAssetId(asset, chain.key) ?? ""
+
+  return <AssetLogo id={fallbackRegistryId} className={className} />
 }
