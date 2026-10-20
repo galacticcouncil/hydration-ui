@@ -4,7 +4,6 @@ import {
   Button,
   Flex,
   Icon,
-  Input,
   ScrollArea,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -48,6 +47,7 @@ import {
   SRightColumn,
   SRightPanelFrame,
   SScrollAreaContent,
+  SSearchInput,
   SSourceColumn,
   SSourceFooter,
   SSourceFooterAction,
@@ -68,6 +68,7 @@ import {
   WalletChainSelectState,
   WalletConnectionState,
 } from "@/components/content/WalletManagementStates"
+import { SWalletMark } from "@/components/content/WalletManagementStates.styled"
 import { ExternalWalletForm } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
 import { MultisigConfigList } from "@/components/multisig/MultisigConfigList"
@@ -289,6 +290,7 @@ export const WalletManagementContent = () => {
         ...walletConnectGroups,
       ].find((group) => group.id === selectedSource)
     : undefined
+  const emptyStateWallet = selectedWallet ?? selectedWalletGroup
   const selectedWalletStatus = selectedWallet
     ? getStatus(selectedWallet.provider)
     : null
@@ -321,6 +323,20 @@ export const WalletManagementContent = () => {
    * emptied panel falls back to the wallet list on its own.
    */
   const isAccountsView = showAccounts && showAccountPanel
+
+  /**
+   * The panel's content mounts once the columns finish opening: rendering it
+   * mid-transition costs frames on the main thread the width animation needs.
+   * Mobile and reduced motion have no column transition to wait for.
+   */
+  const [isPanelOpened, setIsPanelOpened] = useState(showAccountPanel)
+  if (
+    isPanelOpened !== showAccountPanel &&
+    (!showAccountPanel ||
+      !isDesktop ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+  )
+    setIsPanelOpened(showAccountPanel)
 
   /**
    * Below `md` the width is pinned: only one column is ever on screen, and
@@ -577,7 +593,7 @@ export const WalletManagementContent = () => {
     : (selectedWallet?.title ?? selectedWalletGroup?.title)
 
   return (
-    <SWalletManagementShell showAccountPanel={showAccountPanel}>
+    <SWalletManagementShell>
       <SModalHeader
         title={
           meta?.title ??
@@ -596,17 +612,25 @@ export const WalletManagementContent = () => {
         align="center"
       />
       <SModalBody noPadding scrollable={false}>
-        <SLayoutGrid showAccountPanel={showAccountPanel}>
+        <SLayoutGrid
+          showAccountPanel={showAccountPanel}
+          onTransitionEnd={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              event.propertyName === "grid-template-columns" &&
+              showAccountPanel
+            )
+              setIsPanelOpened(true)
+          }}
+        >
           <SSourceColumn mobileHidden={isAccountsView}>
             {!isChainMode && (
-              <Input
+              <SSearchInput
                 value={walletSearchValue}
                 onChange={(event) => setWalletSearchValue(event.target.value)}
                 customSize="large"
                 iconStart={Search}
                 placeholder={t("provider.searchWallets")}
-                width="100%"
-                sx={{ flexShrink: 0 }}
               />
             )}
 
@@ -817,7 +841,7 @@ export const WalletManagementContent = () => {
             showAccountPanel={showAccountPanel}
             mobileHidden={!isAccountsView}
           >
-            {isMultisigSelected ? (
+            {!isPanelOpened ? null : isMultisigSelected ? (
               <SRightColumn>
                 {multisigStep !== "list" && multisigConfigs.length > 0 && (
                   <Button
@@ -949,7 +973,7 @@ export const WalletManagementContent = () => {
               />
             ) : (
               <SRightColumn>
-                <Input
+                <SSearchInput
                   value={accountSearchValue}
                   onChange={(event) =>
                     setAccountSearchValue(event.target.value)
@@ -957,8 +981,6 @@ export const WalletManagementContent = () => {
                   customSize="large"
                   iconStart={Search}
                   placeholder={t("account.searchAccounts")}
-                  width="100%"
-                  sx={{ flexShrink: 0 }}
                 />
 
                 {chipModes.length > 0 && (
@@ -1022,12 +1044,29 @@ export const WalletManagementContent = () => {
                         )
                       ) : (
                         <Flex
+                          direction="column"
                           align="center"
                           justify="center"
+                          gap="base"
                           borderRadius="m"
                           bg={getToken("surfaces.containers.dim.dimOnBg")}
                           sx={{ minHeight: pxToRem(260) }}
                         >
+                          {emptyStateWallet?.logo && (
+                            <SWalletMark src={emptyStateWallet.logo} alt="" />
+                          )}
+                          {emptyStateWallet && (
+                            <Text
+                              fs="h7"
+                              fw={500}
+                              lh={1}
+                              font="primary"
+                              align="center"
+                              color={getToken("text.high")}
+                            >
+                              {emptyStateWallet.title}
+                            </Text>
+                          )}
                           <Text fs="p4" color={getToken("text.medium")}>
                             {t("account.noResults")}
                           </Text>

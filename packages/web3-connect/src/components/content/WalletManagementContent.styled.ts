@@ -1,7 +1,9 @@
+import { keyframes } from "@emotion/react"
 import {
   Box,
   Flex,
   Grid,
+  Input,
   ModalBody,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
@@ -17,6 +19,13 @@ const shouldForwardProp = (prop: string) => prop !== "showAccountPanel"
 const shouldForwardColumnProp = (prop: string) =>
   prop !== "showAccountPanel" && prop !== "mobileHidden"
 
+export const SSearchInput = styled(Input)(
+  ({ theme }) => css`
+    width: calc(100% - ${theme.space.base});
+    flex-shrink: 0;
+  `,
+)
+
 export const SScrollAreaContent = styled(Flex)(
   ({ theme }) => css`
     min-width: 0;
@@ -25,10 +34,8 @@ export const SScrollAreaContent = styled(Flex)(
   `,
 )
 
-export const SWalletManagementShell = styled(Box, {
-  shouldForwardProp,
-})<PanelProps>(
-  ({ showAccountPanel }) => css`
+export const SWalletManagementShell = styled(Box)(
+  () => css`
     width: 100%;
     max-width: 100%;
     max-height: 75dvh;
@@ -37,15 +44,9 @@ export const SWalletManagementShell = styled(Box, {
     flex-direction: column;
     overflow: hidden;
 
-    transition: width 180ms ease;
-
     ${mq("max-xs")} {
       height: 100dvh;
       max-height: 100dvh;
-    }
-
-    ${mq("md")} {
-      width: ${showAccountPanel ? pxToRem(650) : pxToRem(452)};
     }
   `,
 )
@@ -87,15 +88,17 @@ export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
     min-height: 0;
     overflow: hidden;
 
-    transition:
-      grid-template-columns 180ms ease,
-      gap 180ms ease;
-
     ${mq("md")} {
       grid-template-columns: ${showAccountPanel
-        ? `${pxToRem(200)} minmax(0, 1fr)`
-        : "minmax(0, 1fr) minmax(0, 0fr)"};
+        ? `${pxToRem(200)} calc(100% - ${pxToRem(200)} - ${theme.space.s})`
+        : "100% 0px"};
       gap: ${showAccountPanel ? theme.space.s : 0};
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        grid-template-columns 320ms ${theme.easings.outExpo},
+        gap 320ms ${theme.easings.outExpo};
     }
   `,
 )
@@ -163,10 +166,17 @@ export const SSourceFooterAction = styled(Box)`
   min-height: ${SOURCE_FOOTER_BUTTON_HEIGHT};
 `
 
+const revealUp = keyframes`
+  from {
+    opacity: 0;
+    translate: 0 ${pxToRem(8)};
+  }
+`
+
 export const SRightPanelFrame = styled(Box, {
   shouldForwardProp: shouldForwardColumnProp,
 })<PanelProps & MobileColumnProps>(
-  ({ showAccountPanel, mobileHidden }) => css`
+  ({ theme, showAccountPanel, mobileHidden }) => css`
     min-width: 0;
     min-height: 0;
     max-height: ${showAccountPanel ? "none" : 0};
@@ -176,8 +186,28 @@ export const SRightPanelFrame = styled(Box, {
     visibility: ${showAccountPanel ? "visible" : "hidden"};
     pointer-events: ${showAccountPanel ? "auto" : "none"};
     transition: ${showAccountPanel
-      ? "opacity 120ms ease 120ms"
-      : "opacity 80ms ease, visibility 0s linear 80ms"};
+      ? "opacity 160ms ease-out 80ms"
+      : "opacity 80ms ease-out, visibility 0s linear 80ms"};
+
+    ${showAccountPanel &&
+    css`
+      @media (prefers-reduced-motion: no-preference) {
+        & > :not([aria-live]) > *,
+        & > [aria-live] > * > * {
+          animation: ${revealUp} 360ms ${theme.easings.outExpo} both;
+          animation-delay: 250ms;
+        }
+
+        ${[0, 1, 2, 3, 4].map(
+          (i) => css`
+            & > :not([aria-live]) > :nth-child(${i + 1}),
+            & > [aria-live] > * > :nth-child(${i + 1}) {
+              animation-delay: ${i * 50}ms;
+            }
+          `,
+        )}
+      }
+    `}
 
     ${mq("max-sm")} {
       display: ${mobileHidden ? "none" : "flex"};

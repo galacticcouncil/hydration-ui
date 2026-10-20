@@ -70,6 +70,7 @@ const ModalContent: FC<ModalContentProps> = ({
   forceMount,
   animationDurationMs,
   centered = false,
+  onAnimationEnd,
   ...props
 }) => (
   <ModalPortal forceMount={forceMount}>
@@ -87,6 +88,10 @@ const ModalContent: FC<ModalContentProps> = ({
         {...props}
         hasTopContent={!!topContent}
         centered={centered}
+        onAnimationEnd={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.dataset.settled = ""
+          onAnimationEnd?.(e)
+        }}
       >
         {topContent && <SModalTopContent>{topContent}</SModalTopContent>}
         <SModalPaper>{children}</SModalPaper>

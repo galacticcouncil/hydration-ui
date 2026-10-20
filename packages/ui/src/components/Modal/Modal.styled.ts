@@ -133,6 +133,14 @@ export const SModalContent = styled(Content, {
       );
       height: auto;
 
+      @media (prefers-reduced-motion: no-preference) {
+        &[data-settled] {
+          transition:
+            width 320ms ${theme.easings.outExpo},
+            max-width 320ms ${theme.easings.outExpo};
+        }
+      }
+
       &[data-state="open"] {
         animation: ${centered
           ? theme.animations.scaleInCenter
