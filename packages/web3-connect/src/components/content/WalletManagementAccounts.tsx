@@ -19,6 +19,7 @@ import {
 } from "@/components/content/WalletManagementAccounts.styled"
 import { RoundLogo } from "@/components/RoundLogo"
 import { getWalletChainModes, getWalletModeIcon } from "@/config/wallet"
+import { useReorderAnimation } from "@/hooks/useReorderAnimation"
 import { isEip1193Provider, requestAccounts, toAccount } from "@/utils"
 import { isAccountSelected } from "@/utils/accountFilter"
 import { getWallet, MetaMask } from "@/wallets"
@@ -51,10 +52,33 @@ export const WalletAccountSection: React.FC<{
         {title}
       </Text>
     </SSectionLabel>
-    <Flex direction="column" gap="base">
+    <WalletAccountList
+      accounts={accounts}
+      currentAccount={currentAccount}
+      isBalanceLoading={isBalanceLoading}
+      onAccountSelect={onAccountSelect}
+    />
+  </Flex>
+)
+
+const getAccountKey = (account: WalletAccount) =>
+  `${account.publicKey}-${account.provider}`
+
+export const WalletAccountList: React.FC<{
+  readonly accounts: WalletAccount[]
+  readonly currentAccount: WalletAccount | null
+  readonly isBalanceLoading: boolean
+  readonly onAccountSelect: (account: WalletAccount) => void
+}> = ({ accounts, currentAccount, isBalanceLoading, onAccountSelect }) => {
+  const ref = useReorderAnimation<HTMLDivElement>(
+    accounts.map(getAccountKey).join(),
+  )
+
+  return (
+    <Flex ref={ref} direction="column" gap="base" position="relative">
       {accounts.map((account) => (
         <WalletAccountTile
-          key={`${account.publicKey}-${account.provider}`}
+          key={getAccountKey(account)}
           account={account}
           isActive={isAccountSelected(currentAccount, account)}
           isBalanceLoading={isBalanceLoading}
@@ -62,8 +86,8 @@ export const WalletAccountSection: React.FC<{
         />
       ))}
     </Flex>
-  </Flex>
-)
+  )
+}
 
 export const WalletAccountTile: React.FC<{
   readonly account: WalletAccount

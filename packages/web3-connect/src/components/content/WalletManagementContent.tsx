@@ -36,8 +36,8 @@ import { useShallow } from "zustand/react/shallow"
 
 import {
   WalletAccount,
+  WalletAccountList,
   WalletAccountSection,
-  WalletAccountTile,
 } from "@/components/content/WalletManagementAccounts"
 import {
   SLayoutGrid,
@@ -86,11 +86,7 @@ import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { Wallet } from "@/types/wallet"
 import { getWalletModeName, isNovaWalletApp, toAccount } from "@/utils"
-import {
-  filterAccounts,
-  getFilteredAccounts,
-  isAccountSelected,
-} from "@/utils/accountFilter"
+import { filterAccounts, getFilteredAccounts } from "@/utils/accountFilter"
 import {
   getConnectAllGroups,
   getSelectableWallets,
@@ -1011,20 +1007,12 @@ export const WalletManagementContent = () => {
                             />
                           ))
                         ) : (
-                          <Flex direction="column" gap="base">
-                            {accountsWithBalances.map((account) => (
-                              <WalletAccountTile
-                                key={`${account.publicKey}-${account.provider}`}
-                                account={account}
-                                isActive={isAccountSelected(
-                                  currentAccount,
-                                  account,
-                                )}
-                                isBalanceLoading={areBalancesLoading}
-                                onClick={() => handleAccountSelect(account)}
-                              />
-                            ))}
-                          </Flex>
+                          <WalletAccountList
+                            accounts={accountsWithBalances}
+                            currentAccount={currentAccount}
+                            isBalanceLoading={areBalancesLoading}
+                            onAccountSelect={handleAccountSelect}
+                          />
                         )
                       ) : (
                         <WalletAccountsEmptyState source={emptyStateWallet} />
