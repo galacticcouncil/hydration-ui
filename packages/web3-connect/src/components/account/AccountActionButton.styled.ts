@@ -14,6 +14,12 @@ const accountActionButtonCss = (theme: Theme) => css`
   &:hover:not(:disabled) {
     color: ${theme.text.high};
   }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: ${theme.radii.base};
+  }
 `
 
 export const SAccountActionCopyButton = styled(CopyButton)(({ theme }) =>

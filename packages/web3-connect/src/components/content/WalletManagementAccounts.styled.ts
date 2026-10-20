@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "@galacticcouncil/ui/components"
+import { Button, Flex } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 import { OptionTile } from "@/components/account/OptionTile"
@@ -10,20 +10,15 @@ export const SAccountTile = styled(OptionTile)`
   }
 `
 
-export const SAccountTileCopyButton = styled(Box)(
+export const SAccountTileCopyButton = styled(Button)(
   ({ theme }) => css`
-    color: ${theme.text.medium};
-    cursor: pointer;
     flex-shrink: 0;
-
     margin-left: auto;
 
-    &[data-copied="true"] {
-      color: ${theme.accents.success.emphasis};
-    }
+    background-color: transparent;
 
-    &:hover:not(:disabled) {
-      color: ${theme.text.high};
+    &[data-copied="true"] {
+      color: ${theme.accents.success.emphasis} !important;
     }
   `,
 )

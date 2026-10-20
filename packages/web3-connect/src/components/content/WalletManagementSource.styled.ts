@@ -31,7 +31,6 @@ export const SSourceButton = styled.button(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: ${theme.space.s};
 
     padding: ${theme.space.base};
     padding-right: ${theme.space.s};

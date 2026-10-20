@@ -181,7 +181,7 @@ export const WalletSourceButton: React.FC<{
     {pending ? (
       <Spinner size="xs" />
     ) : variant === "firstConnectionPlain" ? null : (
-      <Flex align="center" gap="xs" flexShrink={0}>
+      <Flex align="center" flexShrink={0}>
         {chainModes && chainModes.length > 0 && (
           <WalletSourceChainBadges modes={chainModes} />
         )}

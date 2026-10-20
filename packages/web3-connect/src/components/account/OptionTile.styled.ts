@@ -25,6 +25,12 @@ export const optionTile = (theme: Theme) => css`
       background: ${theme.controls.dim.active};
     }
   }
+
+  /* inset, so the scroll areas the tiles sit in don't clip the ring */
+  &:focus-visible {
+    outline: 2px solid ${theme.buttons.secondary.accent.outline};
+    outline-offset: -2px;
+  }
 `
 
 export const SOptionTile = styled(Box)(
@@ -40,10 +46,5 @@ export const SOptionTile = styled(Box)(
 
     padding: ${theme.space.base};
     overflow: hidden;
-
-    &:focus-visible {
-      outline: 2px solid ${theme.buttons.secondary.accent.outline};
-      outline-offset: 2px;
-    }
   `,
 )

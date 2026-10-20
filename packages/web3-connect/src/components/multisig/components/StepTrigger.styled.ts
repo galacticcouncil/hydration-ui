@@ -58,6 +58,12 @@ export const SStepTrigger = styled.button<{ isInteractive?: boolean }>(
         opacity: 0;
         transition: ${theme.transitions.opacity};
       }
+
+      &:focus-visible {
+        outline: 2px solid ${theme.buttons.secondary.accent.outline};
+        outline-offset: -2px;
+        border-radius: ${theme.radii.l};
+      }
     `,
     isInteractive &&
       css`

@@ -1,12 +1,13 @@
+import { CheckIcon, CopyIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountAvatar,
   Box,
   Chip,
-  CopyButton,
   Flex,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useCopy } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { ShortAddress } from "@/components/account/ShortAddress"
@@ -137,17 +138,7 @@ export const WalletAccountTile: React.FC<{
             >
               <ShortAddress address={account.displayAddress} length={12} />
             </Text>
-            <SAccountTileCopyButton
-              asChild
-              onClick={(event) => event.stopPropagation()}
-              onKeyDown={(event) => event.stopPropagation()}
-            >
-              <CopyButton
-                aria-label={t("addressBook.copyAddress")}
-                text={account.displayAddress}
-                iconSize="xs"
-              />
-            </SAccountTileCopyButton>
+            <AccountTileCopyButton text={account.displayAddress} />
           </Flex>
         </Flex>
       </SAccountTile>
@@ -165,5 +156,27 @@ export const WalletAccountTile: React.FC<{
         </SChangeAccountButton>
       )}
     </Box>
+  )
+}
+
+const AccountTileCopyButton: React.FC<{ readonly text: string }> = ({
+  text,
+}) => {
+  const { t } = useTranslation()
+  const { copied, copy } = useCopy(5000)
+
+  return (
+    <SAccountTileCopyButton
+      variant="ghost"
+      size="micro"
+      icon={copied ? CheckIcon : CopyIcon}
+      data-copied={copied}
+      aria-label={t("addressBook.copyAddress")}
+      onClick={(event) => {
+        event.stopPropagation()
+        copy(text)
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
+    />
   )
 }

@@ -957,7 +957,7 @@ export const WalletManagementContent = () => {
                 }}
               />
             ) : (
-              <SRightColumn>
+              <SRightColumn key={selectedSource}>
                 <SSearchInput
                   value={accountSearchValue}
                   onChange={(event) =>
