@@ -7,14 +7,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
   Icon,
-  MenuItem,
   MenuItemAction,
   MenuItemDescription,
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   Separator,
-  Skeleton,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -26,7 +24,6 @@ import {
   useWeb3Connect,
   useWeb3ConnectModal,
   WalletProviderStatus,
-  WalletRestoreState,
 } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
@@ -51,20 +48,6 @@ const UserMenuSeparator = () => (
   <Separator my="base" mx="-base" flexShrink={0} />
 )
 
-const UserMenuSkeletonRow = () => (
-  <MenuItem aria-hidden>
-    <Box gridRow="1 / -1" flexShrink={0} display="flex">
-      <Skeleton circle width={pxToRem(36)} height={pxToRem(36)} />
-    </Box>
-    <MenuItemLabel>
-      <Skeleton width={pxToRem(120)} />
-    </MenuItemLabel>
-    <MenuItemDescription>
-      <Skeleton width={pxToRem(80)} />
-    </MenuItemDescription>
-  </MenuItem>
-)
-
 type Props = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
@@ -83,16 +66,14 @@ export const UserMenu: FC<Props> = ({
   const { t } = useTranslation()
   const { account, accounts } = useAccount()
   const { toggle } = useWeb3ConnectModal()
-  const { providers, restoreStates, storedAccounts, setAccount, disconnect } =
-    useWeb3Connect(
-      useShallow((s) => ({
-        providers: s.providers,
-        restoreStates: s.restoreStates,
-        storedAccounts: s.accounts,
-        setAccount: s.setAccount,
-        disconnect: s.disconnect,
-      })),
-    )
+  const { providers, storedAccounts, setAccount, disconnect } = useWeb3Connect(
+    useShallow((s) => ({
+      providers: s.providers,
+      storedAccounts: s.accounts,
+      setAccount: s.setAccount,
+      disconnect: s.disconnect,
+    })),
+  )
   const recentByProvider = useRecentProviderAccountsStore(
     (s) => s.recentByProvider,
   )
@@ -144,7 +125,7 @@ export const UserMenu: FC<Props> = ({
         <UserMenuSeparator />
 
         <SUserMenuScrollArea>
-          {listedProviders.map(({ type, status }) => {
+          {listedProviders.map(({ type }) => {
             const wallet = getWallet(type)
             const providerAccounts = accounts.filter((a) => a.provider === type)
             const recentAccount = getRecentProviderAccount(
@@ -152,15 +133,8 @@ export const UserMenu: FC<Props> = ({
               providerAccounts,
               recentByProvider,
             )
-            if (!wallet) return null
-
             // Accounts aren't persisted, so a reconnecting wallet has none yet.
-            if (!recentAccount) {
-              const isLoading =
-                status === WalletProviderStatus.Pending ||
-                restoreStates[type] === WalletRestoreState.Restoring
-              return isLoading ? <UserMenuSkeletonRow key={type} /> : null
-            }
+            if (!wallet || !recentAccount) return null
 
             const isActiveProvider = type === account.provider
             const address = isActiveProvider
