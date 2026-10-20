@@ -47,3 +47,11 @@ export const vaultCollateral = <T extends { symbol: string }>(
   asset: T,
 ): T =>
   vault.collateralSymbol ? { ...asset, symbol: vault.collateralSymbol } : asset
+
+/**
+ * The asset every user-facing amount is denominated in: the base asset when
+ * the collateral tracks one (GETH shows as ETH), the collateral itself
+ * otherwise. Share and collateral units never reach the user.
+ */
+export const vaultDisplayAssetId = (vault: PropellerVaultConfig): string =>
+  vault.baseAssetId ?? vault.assetId

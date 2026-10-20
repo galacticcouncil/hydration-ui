@@ -15,13 +15,20 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultDisplayAssetId,
+} from "@/modules/strategies/propeller/config/vaults"
 import {
   type PropellerVaultMarket,
   vaultDepositState,
 } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 
 const columnHelper = createColumnHelper<PropellerVaultMarket>()
+
+/** collateral amounts shown to the user, converted to the display asset */
+const toDisplay = (market: PropellerVaultMarket, value: number | string) =>
+  Number(value) * (market.baseRate ? Number(market.baseRate) : 1)
 
 export const useStrategyVaultColumns = (
   onDeposit: (vault: PropellerVaultConfig) => void,
@@ -33,11 +40,11 @@ export const useStrategyVaultColumns = (
       id: "asset",
       header: t("strategy.col.asset"),
       cell: ({ row }) => {
-        const { vault } = row.original
+        const { vault, displayAsset } = row.original
         return (
           <AssetLabelFullContainer>
-            <AssetLogo id={vault.assetId} />
-            <AssetLabel symbol={vault.shareSymbol} name={vault.shareName} />
+            <AssetLogo id={vaultDisplayAssetId(vault)} />
+            <AssetLabel symbol={displayAsset.symbol} name={vault.shareName} />
           </AssetLabelFullContainer>
         )
       },
@@ -47,12 +54,12 @@ export const useStrategyVaultColumns = (
       id: "tvl",
       header: t("strategy.col.tvl"),
       cell: ({ row }) => {
-        const { asset, stats, tvlUsd } = row.original
+        const { displayAsset, stats, tvlUsd } = row.original
         return (
           <Amount
             value={t("common:currency", {
-              value: stats?.tvl ?? 0,
-              symbol: asset.symbol,
+              value: toDisplay(row.original, stats?.tvl ?? 0),
+              symbol: displayAsset.symbol,
             })}
             displayValue={t("common:currency.compact", { value: tvlUsd })}
           />
@@ -104,7 +111,7 @@ export const useStrategyVaultColumns = (
       id: "remainingCapacity",
       header: t("strategy.remainingCapacity"),
       cell: ({ row }) => {
-        const { asset, stats } = row.original
+        const { displayAsset, stats } = row.original
         if (!stats || stats.cap <= 0) return null
         return (
           <Stack gap="xs" width="100%" minWidth="3xl">
@@ -115,8 +122,8 @@ export const useStrategyVaultColumns = (
                 color={getToken("text.high")}
               >
                 {t("common:currency", {
-                  value: stats.remaining,
-                  symbol: asset.symbol,
+                  value: toDisplay(row.original, stats.remaining),
+                  symbol: displayAsset.symbol,
                 })}
               </Text>
               <Text
@@ -162,14 +169,14 @@ export const useStrategyVaultColumns = (
         </Flex>
       ),
       cell: ({ row }) => {
-        const { asset, stats } = row.original
+        const { displayAsset, stats } = row.original
         const pendingDeployment = stats?.pendingDeployment
         return (
           <Text fs="p4">
             {typeof pendingDeployment === "string"
               ? t("common:currency", {
-                  value: pendingDeployment,
-                  symbol: asset.symbol,
+                  value: toDisplay(row.original, pendingDeployment),
+                  symbol: displayAsset.symbol,
                 })
               : "—"}
           </Text>

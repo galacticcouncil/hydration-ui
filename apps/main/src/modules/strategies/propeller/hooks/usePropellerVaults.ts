@@ -6,7 +6,9 @@ import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
   vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
+import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
   subLoopQuery,
   vaultStatsQuery,
@@ -58,7 +60,12 @@ export type PropellerVaultStats = {
 
 export type PropellerVaultMarket = {
   vault: PropellerVaultConfig
+  /** collateral asset, with the vault's symbol override (GIGAETH) */
   asset: TAsset
+  /** what the user sees: the base asset (ETH) when the collateral tracks one */
+  displayAsset: TAsset
+  /** collateral -> display-asset spot rate; null while loading — hold amounts back */
+  baseRate: string | null
   stats: PropellerVaultStats | undefined
   /** steady-state estimate at target leverage, compounded — the advertised rate */
   apy: number | null
@@ -73,6 +80,7 @@ export type PropellerVaultMarket = {
 export const usePropellerVaults = () => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
+  const { getRate, isLoading: isRateLoading } = useBaseRates()
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(VAULT_ASSET_IDS)
 
@@ -135,6 +143,8 @@ export const usePropellerVaults = () => {
     return {
       vault,
       asset: vaultCollateral(vault, getAssetWithFallback(vault.assetId)),
+      displayAsset: getAssetWithFallback(vaultDisplayAssetId(vault)),
+      baseRate: getRate(vault),
       stats,
       apy,
       runRateApy:
@@ -156,6 +166,7 @@ export const usePropellerVaults = () => {
       statsQueries.some((q) => q.isLoading) ||
       isSubLoopLoading ||
       isApyLoading ||
-      isPriceLoading,
+      isPriceLoading ||
+      isRateLoading,
   }
 }

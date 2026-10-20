@@ -83,6 +83,7 @@ export const buildWithdrawalRow = ({
   isSettlementLoading,
   exchangeRate,
   price,
+  baseRate = 1,
 }: {
   vault: PropellerVaultConfig
   entry: QueueEntry
@@ -90,6 +91,8 @@ export const buildWithdrawalRow = ({
   isSettlementLoading: boolean
   exchangeRate: number
   price: number
+  /** collateral -> display-asset spot (GETH -> ETH); 1 when they coincide */
+  baseRate?: number
 }): PropellerWithdrawalRow => {
   const settledSoFar = entry.claimedCollateral + entry.collateralSettled
   const state = withdrawalState({
@@ -100,7 +103,9 @@ export const buildWithdrawalRow = ({
     complete: entry.complete,
     settledAmount: settledSoFar,
   })
-  const estEth = entry.started
+  // collateral entitlement; USD prices the collateral, display amounts are
+  // converted to the vault's display asset below
+  const estCollateral = entry.started
     ? entry.collateralOwed
     : entry.shares * exchangeRate
 
@@ -109,15 +114,15 @@ export const buildWithdrawalRow = ({
     requestId: entry.requestId,
     vault,
     amountShares: entry.shares,
-    estEth,
-    estUsd: estEth * price,
+    estEth: estCollateral * baseRate,
+    estUsd: estCollateral * price,
     isEstimate: !entry.started,
     isSettlementLoading,
     state,
     settledBlock: settlement?.firstSettledBlock,
-    collateralOwed: entry.collateralOwed,
-    collateralSettled: entry.collateralSettled,
-    settledSoFar,
+    collateralOwed: entry.collateralOwed * baseRate,
+    collateralSettled: entry.collateralSettled * baseRate,
+    settledSoFar: settledSoFar * baseRate,
     eligibleAt: entry.eligibleAt,
     mainDebt: entry.mainDebt,
     surplusHollar: entry.surplusHollar,
@@ -193,18 +198,21 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
     if (shares <= 0 && !((pendingYield ?? 0) > 0)) return []
     const market = markets[i]
     const assetValue = balanceQueries[i]?.data?.assetValue ?? 0
+    // user-facing amounts leave this hook in the vault's display asset
+    // (GETH balances show as ETH); USD prices the raw collateral value
+    const baseRate = market?.baseRate ? Number(market.baseRate) : 1
     return [
       {
         vault,
         shares,
         sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
-        pendingYield,
+        pendingYield: pendingYield === null ? null : pendingYield * baseRate,
         collateralBalance: balanceQueries[i]?.data?.eth ?? 0,
         harvestStatus:
           rpc.isReady && !balanceQueries[i]?.isError
             ? (balanceQueries[i]?.data?.harvestStatus ?? null)
             : null,
-        assetValue,
+        assetValue: assetValue * baseRate,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.runRateApy ?? null,
         accrualPaused: market?.accrualPaused ?? false,
@@ -237,6 +245,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
             !settlement && settlementFetching && needsSettlement(entry),
           exchangeRate: market?.stats?.exchangeRate ?? 1,
           price: market?.price ?? 0,
+          baseRate: market?.baseRate ? Number(market.baseRate) : 1,
         })
       })
     }),

@@ -12,6 +12,10 @@ vi.mock("@galacticcouncil/utils", () => ({
   ETH_ASSET_ID: "34",
 }))
 vi.mock("@/api/borrow", () => ({}))
+vi.mock(
+  "@/modules/strategies/propeller/hooks/useCollateralEquivalent",
+  () => ({}),
+)
 vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
 vi.mock("@/providers/assetsProvider", () => ({}))
 vi.mock("@/providers/rpcProvider", () => ({}))

@@ -6,11 +6,21 @@ export type PropellerDepositOption = {
   assetId: string
 }
 
-/** collateral first, then the assets a swap converts into it */
-const payAssets = (vault: PropellerVaultConfig) => [
-  vault.assetId,
-  ...(vault.payAssetIds ?? (vault.baseAssetId ? [vault.baseAssetId] : [])),
-]
+/**
+ * The base asset leads (the user thinks in ETH, not the pool-share
+ * collateral), other pay assets follow, the raw collateral comes last.
+ */
+const payAssets = (vault: PropellerVaultConfig) => {
+  const swapAssets =
+    vault.payAssetIds ?? (vault.baseAssetId ? [vault.baseAssetId] : [])
+  return [
+    ...new Set([
+      ...(vault.baseAssetId ? [vault.baseAssetId] : []),
+      ...swapAssets,
+      vault.assetId,
+    ]),
+  ]
+}
 
 export const getDepositOptions = (
   vaults: ReadonlyArray<PropellerVaultConfig>,
@@ -22,7 +32,7 @@ export const getDepositOptions = (
 export const isSwapDeposit = ({ vault, assetId }: PropellerDepositOption) =>
   assetId !== vault.assetId
 
-/** the first asset the wallet holds, collateral first; the collateral if none */
+/** the first asset the wallet holds, base asset first; the base asset if none */
 export const getVaultDepositOption = (
   vault: PropellerVaultConfig,
   getBalance: (assetId: string) => bigint,
@@ -30,5 +40,6 @@ export const getVaultDepositOption = (
   vault,
   assetId:
     payAssets(vault).find((assetId) => getBalance(assetId) > 0n) ??
+    payAssets(vault)[0] ??
     vault.assetId,
 })

@@ -10,7 +10,7 @@ import {
 } from "@/modules/strategies/bil/hooks/useVaultReads"
 import {
   PROPELLER_VAULTS,
-  vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
 import {
   type PropellerWithdrawalRow,
@@ -89,7 +89,9 @@ export const useMyJuicerPositions = () => {
     )
     if (!position && withdrawals.length === 0) return []
 
-    const asset = vaultCollateral(vault, getAssetWithFallback(vault.assetId))
+    // position amounts arrive from usePropellerAccount in the vault's display
+    // asset (ETH for the GETH vault); shares and collateral never surface
+    const asset = getAssetWithFallback(vaultDisplayAssetId(vault))
     const amount = Big(position?.assetValue ?? 0).toString()
     const pendingWithdrawal = withdrawals.reduce(
       (sum, row) => sum.plus(getJuicerRemainingCollateral(row)),
@@ -117,14 +119,20 @@ export const useMyJuicerPositions = () => {
       market !== undefined &&
       Number.isFinite(market.price) &&
       market.price > 0
-    const value = hasPrice ? Big(amount).times(market.price).toString() : null
+    // usdValue prices the raw collateral; amount is in the display asset, so
+    // multiplying it by the collateral price would be off by the spot rate
+    const value = !hasPrice
+      ? null
+      : position
+        ? Big(position.usdValue).toString()
+        : Big(amount).times(market.price).toString()
 
     return [
       {
         id: `juicer:${vault.vaultAddress}`,
         strategy: "juicer",
-        assetId: vault.assetId,
-        symbol: vault.shareSymbol,
+        assetId: vaultDisplayAssetId(vault),
+        symbol: asset.symbol,
         name: vault.shareName,
         amount,
         value,

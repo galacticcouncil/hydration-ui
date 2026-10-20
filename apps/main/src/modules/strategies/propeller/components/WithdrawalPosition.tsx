@@ -8,8 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
 import { DateText } from "@/components/RelativeDateText"
-import { vaultCollateral } from "@/modules/strategies/propeller/config/vaults"
-import { useCollateralEquivalent } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { vaultDisplayAssetId } from "@/modules/strategies/propeller/config/vaults"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import {
   useClaim,
@@ -71,13 +70,9 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
 }) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
-  const { symbol } = vaultCollateral(
-    row.vault,
-    getAssetWithFallback(row.vault.assetId),
-  )
-  const getEquivalent = useCollateralEquivalent()
+  // row amounts arrive already converted to the display asset (ETH)
+  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(row.vault))
   const usd = t("common:currency", { value: row.estUsd })
-  const equivalent = getEquivalent(row.vault, row.estEth)
   const claim = useClaim()
   const isClaiming = usePendingClaimIds().includes(row.id)
   const cooldownElapsed = useCooldownElapsed(
@@ -128,21 +123,15 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
 
   return (
     <PendingPosition
-      assetId={row.vault.assetId}
+      assetId={vaultDisplayAssetId(row.vault)}
       value={t("common:currency", { value: row.estEth, symbol })}
-      displayValue={
-        equivalent
-          ? t("amount.equivalent", { ...equivalent, displayValue: usd })
-          : usd
-      }
+      displayValue={usd}
       isLoading={row.isSettlementLoading}
       stats={stats}
       status={
         status === "claimable" ? (
           <LoadingButton
-            aria-label={t("withdrawals.claim.label", {
-              symbol: row.vault.shareSymbol,
-            })}
+            aria-label={t("withdrawals.claim.label", { symbol })}
             variant="secondary"
             size="small"
             loadingMode="replace"

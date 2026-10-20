@@ -85,7 +85,12 @@ beforeEach(() => {
   vi.mocked(useAssets).mockReturnValue({
     getAssetWithFallback: (id: string) => ({
       id,
-      symbol: id === vault.assetId ? "GIGAETH" : "tBTC",
+      symbol:
+        id === vault.assetId
+          ? "GIGAETH"
+          : id === vault.baseAssetId
+            ? "ETH"
+            : "tBTC",
     }),
   } as ReturnType<typeof useAssets>)
   vi.mocked(usePropellerAccount).mockReturnValue({
@@ -214,7 +219,7 @@ describe("Portfolio strategy position projection", () => {
           shares: 1.8,
           sharesExact: "1.800000000000000001",
           assetValue: 2,
-          usdValue: 999,
+          usdValue: 5000,
           accrualPaused: false,
           apy: 6.5,
           pendingYield: 0.03,
@@ -233,8 +238,9 @@ describe("Portfolio strategy position projection", () => {
     expect(result.data[0]).toMatchObject({
       id: `juicer:${vault.vaultAddress}`,
       strategy: "juicer",
-      assetId: vault.assetId,
-      symbol: "jETH",
+      // the user-facing identity is the base asset; shares stay internal
+      assetId: vault.baseAssetId,
+      symbol: "ETH",
       name: "Juicer ETH",
       shareSymbol: "jETH",
       amount: "2",
@@ -242,7 +248,7 @@ describe("Portfolio strategy position projection", () => {
       netValue: "5000",
       borrowedValue: null,
       underlyingAmount: "2",
-      underlyingSymbol: "GIGAETH",
+      underlyingSymbol: "ETH",
       transferAssetId: null,
       shareAmount: "1.800000000000000001",
       rate: 6.5,

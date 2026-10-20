@@ -19,9 +19,8 @@ import { formatUnits } from "viem"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   type PropellerVaultConfig,
-  vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
-import { useCollateralEquivalent } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerPosition } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -33,7 +32,6 @@ interface Props {
 export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
   const { getAssetWithFallback } = useAssets()
-  const getEquivalent = useCollateralEquivalent()
 
   if (!positions.length) return null
 
@@ -55,9 +53,11 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               pendingYield,
               harvestStatus,
             }) => {
-              const { symbol } = vaultCollateral(
-                vault,
-                getAssetWithFallback(vault.assetId),
+              // amounts arrive from usePropellerAccount already converted to
+              // the display asset (ETH for the GETH vault); shares and
+              // collateral units never surface here
+              const { symbol } = getAssetWithFallback(
+                vaultDisplayAssetId(vault),
               )
               // demoted: a six-decimal dust figure as a headline stat reads as
               // broken; the accruing amount lives in the tooltip, the sublabel
@@ -78,20 +78,20 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   ),
                 },
               )
-              const usd = t("common:currency", { value: usdValue })
-              const equivalent = getEquivalent(vault, assetValue)
-              const value = equivalent
-                ? t("amount.equivalent", { ...equivalent, displayValue: usd })
-                : usd
+              const value = t("common:currency", { value: usdValue })
 
               return (
                 <PositionCard
                   key={vault.vaultAddress}
                   columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(176)}), 1fr))`}
                   logo={
-                    <AssetLogo id={vault.assetId} size="medium" hideChain />
+                    <AssetLogo
+                      id={vaultDisplayAssetId(vault)}
+                      size="medium"
+                      hideChain
+                    />
                   }
-                  symbol={vault.shareSymbol}
+                  symbol={symbol}
                   stats={
                     <>
                       <ValueStats
@@ -156,7 +156,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   cta={
                     <Flex gap="s" wrap justify="flex-end">
                       <Button
-                        aria-label={`${t("positions.action.withdraw")} ${vault.shareSymbol}`}
+                        aria-label={`${t("positions.action.withdraw")} ${symbol}`}
                         disabled={shares <= 0}
                         variant="tertiary"
                         size="small"

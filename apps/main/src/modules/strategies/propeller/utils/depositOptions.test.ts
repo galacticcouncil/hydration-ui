@@ -25,10 +25,10 @@ const jbtc: PropellerVaultConfig = {
 }
 
 describe("Deposit options", () => {
-  it("offers each vault's collateral, then its base asset", () => {
+  it("offers each vault's base asset first, the raw collateral last", () => {
     expect(getDepositOptions([jeth, jbtc])).toEqual([
-      { vault: jeth, assetId: "4200" },
       { vault: jeth, assetId: "34" },
+      { vault: jeth, assetId: "4200" },
       { vault: jbtc, assetId: "1000765" },
     ])
   })
@@ -39,7 +39,7 @@ describe("Deposit options", () => {
     expect(isSwapDeposit({ vault: jbtc, assetId: "1000765" })).toBe(false)
   })
 
-  it("starts a vault's deposit on the base asset only when the wallet has no collateral", () => {
+  it("starts on the base asset; the collateral only when it is all the wallet holds", () => {
     const balances = (values: Record<string, bigint>) => (id: string) =>
       values[id] ?? 0n
     expect(getVaultDepositOption(jeth, balances({ "34": 1n })).assetId).toBe(
@@ -47,28 +47,31 @@ describe("Deposit options", () => {
     )
     expect(
       getVaultDepositOption(jeth, balances({ "34": 1n, "4200": 1n })).assetId,
-    ).toBe("4200")
-    expect(getVaultDepositOption(jeth, balances({})).assetId).toBe("4200")
+    ).toBe("34")
+    expect(getVaultDepositOption(jeth, balances({ "4200": 1n })).assetId).toBe(
+      "4200",
+    )
+    expect(getVaultDepositOption(jeth, balances({})).assetId).toBe("34")
     expect(getVaultDepositOption(jbtc, balances({ "34": 1n })).assetId).toBe(
       "1000765",
     )
   })
 
-  it("offers the listed pay assets in order and starts on the first one held", () => {
+  it("keeps the listed pay assets behind the base asset and starts on the first one held", () => {
     const giga = { ...jeth, payAssetIds: ["420", "34"] }
     const balances = (values: Record<string, bigint>) => (id: string) =>
       values[id] ?? 0n
     expect(getDepositOptions([giga]).map((o) => o.assetId)).toEqual([
-      "4200",
-      "420",
       "34",
+      "420",
+      "4200",
     ])
     expect(
       getVaultDepositOption(giga, balances({ "34": 1n, "420": 1n })).assetId,
-    ).toBe("420")
-    expect(getVaultDepositOption(giga, balances({ "34": 1n })).assetId).toBe(
-      "34",
+    ).toBe("34")
+    expect(getVaultDepositOption(giga, balances({ "420": 1n })).assetId).toBe(
+      "420",
     )
-    expect(getVaultDepositOption(giga, balances({})).assetId).toBe("4200")
+    expect(getVaultDepositOption(giga, balances({})).assetId).toBe("34")
   })
 })

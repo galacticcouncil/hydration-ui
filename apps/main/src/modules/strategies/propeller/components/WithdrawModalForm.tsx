@@ -24,8 +24,9 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useWithdrawForm } from "@/modules/strategies/propeller/components/WithdrawModalForm.form"
 import {
   type PropellerVaultConfig,
-  vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
+import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
   subLoopQuery,
   vaultBalancesQuery,
@@ -54,11 +55,13 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const rpc = useRpcProvider()
   const evmAddress = useEvmAddress() as Hex | undefined
   const { getAssetWithFallback } = useAssets()
-  const { assetId, shareSymbol } = vault
-  const { symbol, decimals } = vaultCollateral(
-    vault,
-    getAssetWithFallback(assetId),
-  )
+  const { assetId } = vault
+  const { decimals } = getAssetWithFallback(assetId)
+  // user-facing unit: the base asset (ETH) when the collateral tracks one;
+  // share and collateral units never surface in this form
+  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
+  const { getRate } = useBaseRates()
+  const baseRate = getRate(vault)
 
   const { data: stats, isError: statsError } = useQuery(
     vaultStatsQuery(rpc, vault, decimals),
@@ -70,18 +73,26 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const redeem = useRequestRedeem(vault, { onSuccess })
 
   const exchangeRate = stats?.exchangeRate ?? 1
+  const rate = baseRate ?? "1"
   const shareBalance = balances?.sharesExact ?? "0"
-  // The user thinks in the underlying (1 jETH ~ 1 ETH); the input takes the
-  // asset and the submit converts back to shares. Rounded DOWN both ways so a
-  // typed amount never exceeds what the shares cover.
+  // The user thinks in the display asset (ETH); the input takes it and the
+  // submit converts back through the collateral spot rate and the share
+  // exchange rate. Rounded DOWN both ways so a typed amount never exceeds
+  // what the shares cover.
   const maxAssets = Big(shareBalance)
     .times(exchangeRate)
+    .times(rate)
     .toFixed(decimals, Big.roundDown)
   const negativeCarry = subLoop?.negativeCarry ?? 0
   const carry = negativeCarry
 
   const blockedReason =
-    !rpc.isReady || !stats || !balances || statsError || balancesError
+    !rpc.isReady ||
+    !stats ||
+    !balances ||
+    statsError ||
+    balancesError ||
+    baseRate === null
       ? "loading"
       : stats.paused
         ? "paused"
@@ -96,8 +107,9 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const { control, handleSubmit, watch, formState } = form
 
   const amount = watch("amount")
-  // fine print: the shares actually escrowed for a typed asset amount
+  // the shares actually escrowed for a typed display-asset amount
   const sharesIn = Big(amount || "0")
+    .div(rate)
     .div(exchangeRate)
     .toFixed(decimals, Big.roundDown)
 
@@ -134,14 +146,10 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                   label={t("common:amount")}
                   asset={{
                     symbol,
-                    icon: <AssetLogo id={assetId} />,
+                    icon: <AssetLogo id={vaultDisplayAssetId(vault)} />,
                   }}
                   value={field.value}
                   onChange={field.onChange}
-                  displayValue={t("withdraw.sharesFinePrint", {
-                    value: t("common:number", { value: sharesIn }),
-                    shareSymbol,
-                  })}
                   balance={{
                     label: t("common:withdrawableBalance"),
                     value: t("common:number", { value: maxAssets }),
@@ -193,7 +201,6 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                       />
                       {t("withdraw.ack", {
                         symbol,
-                        shareSymbol,
                         duration: formatCooldown(stats?.withdrawalDelay ?? 0),
                       })}
                     </CheckboxLabel>

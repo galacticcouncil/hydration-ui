@@ -50,11 +50,13 @@ describe("Default deposit option", () => {
       vault: jeth,
       assetId: "34",
     })
+    // ties and the empty wallet both land on the base asset, never the
+    // pool-share collateral
     expect(select("unknown", { "4200": 5, "34": 5 })).toEqual({
       vault: jeth,
-      assetId: "4200",
+      assetId: "34",
     })
-    expect(select()).toEqual({ vault: jeth, assetId: "4200" })
+    expect(select()).toEqual({ vault: jeth, assetId: "34" })
     expect(selectDefaultDeposit([], { symbols, balancesUsd: {} })).toBeNull()
   })
 })

@@ -9,24 +9,43 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-/** Collateral amounts converted to the vault's base asset at spot price. */
-export const useCollateralEquivalent = () => {
+/**
+ * Collateral -> base-asset spot rate per vault (GETH -> ETH). "1" for vaults
+ * whose collateral is the display asset, null while the rate is loading —
+ * callers must hold amounts back rather than show them in the wrong unit.
+ */
+export const useBaseRates = () => {
   const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
   const prices = useQueries({
     queries: PROPELLER_VAULTS.map((vault) =>
       spotPriceQuery(rpc, vault.assetId, vault.baseAssetId ?? ""),
     ),
   })
 
+  return {
+    getRate: (vault: PropellerVaultConfig): string | null => {
+      if (!vault.baseAssetId) return "1"
+      const index = PROPELLER_VAULTS.findIndex(
+        (v) => v.vaultAddress === vault.vaultAddress,
+      )
+      return prices[index]?.data?.spotPrice ?? null
+    },
+    isLoading: prices.some(
+      (q, i) => PROPELLER_VAULTS[i]?.baseAssetId && q.isLoading,
+    ),
+  }
+}
+
+/** Collateral amounts converted to the vault's base asset at spot price. */
+export const useCollateralEquivalent = () => {
+  const { getAssetWithFallback } = useAssets()
+  const { getRate } = useBaseRates()
+
   return (vault: PropellerVaultConfig, amount: number | string) => {
-    const index = PROPELLER_VAULTS.findIndex(
-      (v) => v.vaultAddress === vault.vaultAddress,
-    )
-    const price = prices[index]?.data?.spotPrice
-    if (!vault.baseAssetId || !price) return null
+    const rate = getRate(vault)
+    if (!vault.baseAssetId || rate === null) return null
     return {
-      value: Big(amount).times(price).toString(),
+      value: Big(amount).times(rate).toString(),
       symbol: getAssetWithFallback(vault.baseAssetId).symbol,
     }
   }

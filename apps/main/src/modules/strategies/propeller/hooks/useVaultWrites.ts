@@ -15,6 +15,7 @@ import {
   useMutationState,
   useQueryClient,
 } from "@tanstack/react-query"
+import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 import { useCallback } from "react"
@@ -34,9 +35,10 @@ import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
   type PropellerVaultConfig,
-  vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
+import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
@@ -449,7 +451,10 @@ export function useRequestRedeem(
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitTx } = useVaultEvmCall(options)
   const { vaultAddress, assetId, shareSymbol } = vault
-  const { symbol, decimals } = getAssetWithFallback(assetId)
+  const { decimals } = getAssetWithFallback(assetId)
+  // toasts speak the display asset (ETH); the share symbol only labels the
+  // raw-share fallback no UI path takes
+  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
 
   return useMutation({
     mutationFn: ({ shareAmount, isMax, displayAmount }: RedeemVariables) => {
@@ -485,6 +490,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
   const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitBatch } = useVaultEvmCall(options)
+  const { getRate } = useBaseRates()
 
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
@@ -496,15 +502,17 @@ export function useClaim(options: VaultWriteOptions = {}) {
         evmAddress,
       )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      const { symbol, decimals } = vaultCollateral(
-        vault,
-        getAssetWithFallback(vault.assetId),
-      )
+      // the chain pays collateral; the toast speaks the display asset (ETH)
+      const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
+      const { decimals } = getAssetWithFallback(vault.assetId)
+      const rate = getRate(vault) ?? "1"
       const payouts = [
         ...(collateral > 0n
           ? [
               t("common:currency", {
-                value: formatUnits(collateral, decimals),
+                value: Big(formatUnits(collateral, decimals))
+                  .times(rate)
+                  .toString(),
                 symbol,
                 maximumFractionDigits: decimals,
               }),

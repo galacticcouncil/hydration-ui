@@ -34,7 +34,9 @@ import { DepositSwapSummary } from "@/modules/strategies/propeller/components/De
 import {
   PROPELLER_VAULTS,
   vaultCollateral,
+  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
+import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
@@ -73,6 +75,13 @@ export const DepositForm = ({
   const collateral = vaultCollateral(vault, getAssetWithFallback(vault.assetId))
   const asset =
     assetId === vault.assetId ? collateral : getAssetWithFallback(assetId)
+  // informational amounts (capacity, vault identity) speak the display asset;
+  // the pay-asset input and swap details keep their own true units
+  const displayAsset = getAssetWithFallback(vaultDisplayAssetId(vault))
+  const { getRate } = useBaseRates()
+  const baseRate = getRate(vault) ?? "1"
+  const toDisplay = (value: string | number) =>
+    Big(value).times(baseRate).toString()
   const options = lockVault
     ? DEPOSIT_OPTIONS.filter(
         (o) => o.vault.vaultAddress === initialDeposit.vault.vaultAddress,
@@ -202,8 +211,8 @@ export const DepositForm = ({
                   (exceedsCapacity
                     ? t("deposit.validation.maximum", {
                         amount: t("common:currency", {
-                          value: maximum,
-                          symbol: collateral.symbol,
+                          value: toDisplay(maximum),
+                          symbol: displayAsset.symbol,
                         }),
                       })
                     : undefined)
@@ -236,7 +245,7 @@ export const DepositForm = ({
               label={t("deposit.vault")}
               content={t("deposit.vault.value", {
                 name: vault.shareName,
-                symbol: collateral.symbol,
+                symbol: displayAsset.symbol,
               })}
             />
             <SummaryRow
@@ -245,8 +254,8 @@ export const DepositForm = ({
               content={
                 capacity
                   ? t("common:currency", {
-                      value: maximum,
-                      symbol: collateral.symbol,
+                      value: toDisplay(maximum),
+                      symbol: displayAsset.symbol,
                     })
                   : "-"
               }
