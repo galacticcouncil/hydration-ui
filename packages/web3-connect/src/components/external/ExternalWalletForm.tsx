@@ -26,8 +26,7 @@ import {
   Address,
   useAddresses,
 } from "@/components/address-book/AddressBook.store"
-import { SScrollAreaContent } from "@/components/content/WalletManagementContent.styled"
-import { SSourceCategoryLabel } from "@/components/content/WalletManagementSource.styled"
+import { WalletSourceCategoryLabel } from "@/components/content/WalletManagementSource"
 import { ExternalWalletFormValues } from "@/components/external/ExternalWalletForm.form"
 import { ExternalWalletOption } from "@/components/external/ExternalWalletOption"
 import { useRecentExternalWallets } from "@/components/external/RecentExternalWallets.store"
@@ -179,18 +178,13 @@ export const ExternalWalletForm = () => {
         />
         <Box flex={1} height="100%" overflow="hidden" sx={{ minHeight: 0 }}>
           <ScrollArea>
-            <SScrollAreaContent direction="column" gap="base">
+            <Flex direction="column" gap="base" minWidth={0} pr="base" pb="xs">
               {sections.length ? (
                 sections.map(({ key, entries }) => (
                   <Flex key={key} direction="column" gap="s">
-                    <SSourceCategoryLabel
-                      fs="p5"
-                      fw={500}
-                      lh={1.25}
-                      color={getToken("text.low")}
-                    >
+                    <WalletSourceCategoryLabel>
                       {t(`external.section.${key}`)}
-                    </SSourceCategoryLabel>
+                    </WalletSourceCategoryLabel>
                     <Flex direction="column" gap="base">
                       {entries.map((address) => (
                         <ExternalWalletOption
@@ -217,7 +211,7 @@ export const ExternalWalletForm = () => {
                   {t("external.empty")}
                 </Text>
               )}
-            </SScrollAreaContent>
+            </Flex>
           </ScrollArea>
         </Box>
       </Stack>

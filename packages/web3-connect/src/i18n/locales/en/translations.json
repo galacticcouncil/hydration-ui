@@ -42,7 +42,7 @@
 
   "account.searchAccounts": "Search accounts...",
   "account.noResults": "No accounts found",
-  "account.active": "ACTIVE",
+  "account.active": "Active",
   "account.changeAccount": "Change Account",
   "account.balance": "{{ value, number }} {{ symbol }}",
   "account.balanceValue": "{{ value, currency }}",

@@ -2,13 +2,8 @@ import { Theme } from "@emotion/react"
 import { Box, Image, Text } from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
-const roundMark = (theme: Theme, size: string) => css`
-  width: ${size};
-  height: ${size};
-  border-radius: ${theme.radii.full};
-  flex-shrink: 0;
-  object-fit: contain;
-`
+import { optionTile } from "@/components/account/OptionTile.styled"
+import { RoundLogo } from "@/components/RoundLogo"
 
 export const SConnectedDot = styled(Box)(
   ({ theme }) => css`
@@ -25,31 +20,6 @@ export const SConnectedDot = styled(Box)(
     transition: ${theme.transitions.colors};
   `,
 )
-
-/** Shared look of the modal's clickable rows: wallet sources, accounts, external wallet recents/contacts. */
-export const optionTile = (theme: Theme) => css`
-  border: 1px solid transparent;
-  border-radius: ${theme.radii.m};
-  background: ${theme.surfaces.containers.dim.dimOnBg};
-  color: ${theme.text.high};
-
-  cursor: pointer;
-  transition: ${theme.transitions.colors};
-
-  &:hover {
-    background-color: ${theme.controls.dim.active};
-    border-color: ${theme.buttons.secondary.outline.outline};
-  }
-
-  &[data-active="true"] {
-    background: ${theme.buttons.secondary.accent.rest};
-    border-color: ${theme.buttons.secondary.accent.outline};
-
-    &:hover {
-      background: ${theme.controls.dim.active};
-    }
-  }
-`
 
 export const SSourceButton = styled.button(
   ({ theme }) => css`
@@ -121,10 +91,8 @@ export const SSourceLogo = styled(Image)(
   `,
 )
 
-export const SStackedSourceLogo = styled(Image)(
+export const SStackedSourceLogo = styled(RoundLogo)(
   ({ theme }) => css`
-    ${roundMark(theme, theme.sizes.s)}
-
     & + & {
       margin-left: -${theme.space.s};
     }
@@ -148,12 +116,6 @@ export const SSourceChainBadge = styled(Box)(
     & + & {
       margin-left: ${pxToRem(-5)};
     }
-  `,
-)
-
-export const SChainBadgeImage = styled(Image)(
-  ({ theme }) => css`
-    ${roundMark(theme, theme.sizes.xs)}
   `,
 )
 

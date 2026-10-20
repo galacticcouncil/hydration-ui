@@ -4,9 +4,9 @@ import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
+import { OptionTile } from "@/components/account/OptionTile"
 import { ShortAddress } from "@/components/account/ShortAddress"
 import { Address } from "@/components/address-book/AddressBook.store"
-import { SAccountTile } from "@/components/content/WalletManagementAccounts.styled"
 
 type Props = Pick<Address, "address" | "name"> & {
   readonly onSelect: () => void
@@ -23,18 +23,7 @@ export const ExternalWalletOption: React.FC<Props> = ({
   const shortAddress = shortenAccountAddress(address)
 
   return (
-    <SAccountTile
-      role="button"
-      tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return
-        if (event.key !== "Enter" && event.key !== " ") return
-
-        event.preventDefault()
-        onSelect()
-      }}
-    >
+    <OptionTile onSelect={onSelect}>
       <AccountAvatar address={address} size={24} />
       <Text fs="p4" fw={500} color={getToken("text.high")} flex={1} truncate>
         {name || shortAddress}
@@ -48,6 +37,6 @@ export const ExternalWalletOption: React.FC<Props> = ({
           onClick={onDelete}
         />
       )}
-    </SAccountTile>
+    </OptionTile>
   )
 }

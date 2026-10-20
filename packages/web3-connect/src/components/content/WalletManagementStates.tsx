@@ -1,15 +1,15 @@
 import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { ChevronRight, Download, LogOut } from "lucide-react"
+import { ChevronRight, Download } from "lucide-react"
 import type { ComponentType } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SRightColumn } from "@/components/content/WalletManagementContent.styled"
 import {
+  WalletSourceAction,
   WalletSourceButton,
+  WalletSourceDisconnectAction,
   WalletSourceGroup,
 } from "@/components/content/WalletManagementSource"
-import { SSourceAction } from "@/components/content/WalletManagementSource.styled"
 import {
   SChainSelectHeader,
   SWalletConnectionAction,
@@ -18,8 +18,8 @@ import {
   SWalletConnectionState,
   SWalletConnectionStatusIcon,
   SWalletConnectionVisual,
-  SWalletMark,
 } from "@/components/content/WalletManagementStates.styled"
+import { RoundLogo } from "@/components/RoundLogo"
 import { WalletProviderType } from "@/config/providers"
 import { getWalletModeIcon } from "@/config/wallet"
 import { WalletProviderStatus } from "@/hooks/useWeb3Connect"
@@ -94,9 +94,8 @@ export const WalletConnectionState: React.FC<WalletConnectionStateProps> = ({
               {isError && <SWalletConnectionErrorRing />}
               <SWalletConnectionLogo
                 src={visual.wallet.logo}
-                alt=""
+                size="2xl"
                 data-framed={isLoading || isError}
-                lazy={false}
               />
             </>
           )}
@@ -158,9 +157,9 @@ export const WalletChainSelectState: React.FC<{
   })
 
   return (
-    <SRightColumn>
+    <>
       <SChainSelectHeader>
-        {group.logo && <SWalletMark src={group.logo} alt="" />}
+        {group.logo && <RoundLogo src={group.logo} size="2xl" />}
         <Text
           fs="h7"
           fw={500}
@@ -210,27 +209,17 @@ export const WalletChainSelectState: React.FC<{
                 }}
                 action={
                   isConnected ? (
-                    <SSourceAction
-                      as="span"
-                      aria-label={t("provider.disconnect")}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onDisconnect(wallet)
-                      }}
-                    >
-                      <Icon size="xs" component={LogOut} />
-                    </SSourceAction>
+                    <WalletSourceDisconnectAction
+                      onDisconnect={() => onDisconnect(wallet)}
+                    />
                   ) : (
-                    <SSourceAction as="span">
-                      <Icon
-                        size="xs"
-                        component={
-                          !wallet.installed && wallet.installUrl
-                            ? Download
-                            : ChevronRight
-                        }
-                      />
-                    </SSourceAction>
+                    <WalletSourceAction
+                      icon={
+                        !wallet.installed && wallet.installUrl
+                          ? Download
+                          : ChevronRight
+                      }
+                    />
                   )
                 }
               />
@@ -238,6 +227,41 @@ export const WalletChainSelectState: React.FC<{
           })}
         </Flex>
       </Box>
-    </SRightColumn>
+    </>
+  )
+}
+
+export const WalletAccountsEmptyState: React.FC<{
+  readonly source?: { readonly title: string; readonly logo?: string }
+}> = ({ source }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Flex
+      direction="column"
+      align="center"
+      justify="center"
+      gap="base"
+      borderRadius="m"
+      bg={getToken("surfaces.containers.dim.dimOnBg")}
+      sx={{ minHeight: pxToRem(260) }}
+    >
+      {source?.logo && <RoundLogo src={source.logo} size="2xl" />}
+      {source && (
+        <Text
+          fs="h7"
+          fw={500}
+          lh={1}
+          font="primary"
+          align="center"
+          color={getToken("text.high")}
+        >
+          {source.title}
+        </Text>
+      )}
+      <Text fs="p4" color={getToken("text.medium")}>
+        {t("account.noResults")}
+      </Text>
+    </Flex>
   )
 }

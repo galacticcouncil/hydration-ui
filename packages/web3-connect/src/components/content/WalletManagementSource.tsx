@@ -1,20 +1,21 @@
 import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ChevronRight, LogOut } from "lucide-react"
-import { ComponentType } from "react"
+import { ComponentType, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  SChainBadgeImage,
   SConnectedDot,
   SourceIconColor,
   SSourceAction,
   SSourceButton,
+  SSourceCategoryLabel,
   SSourceChainBadge,
   SSourceIcon,
   SSourceLogo,
   SStackedSourceLogo,
 } from "@/components/content/WalletManagementSource.styled"
+import { RoundLogo } from "@/components/RoundLogo"
 import { WalletProviderType } from "@/config/providers"
 import { getWalletModeIcon, WalletMode } from "@/config/wallet"
 import { WalletProviderStatus } from "@/hooks/useWeb3Connect"
@@ -56,6 +57,48 @@ const getWalletSourceChainBadges = (
     return badges
   })
 
+export const WalletSourceCategoryLabel: React.FC<{
+  readonly children: ReactNode
+}> = ({ children }) => (
+  <SSourceCategoryLabel fs="p5" fw={500} lh={1.25} color={getToken("text.low")}>
+    {children}
+  </SSourceCategoryLabel>
+)
+
+export const WalletSourceAction: React.FC<{
+  readonly icon: ComponentType
+  readonly label?: string
+  readonly onClick?: () => void
+}> = ({ icon, label, onClick }) => (
+  <SSourceAction
+    as="span"
+    aria-label={label}
+    onClick={
+      onClick &&
+      ((event) => {
+        event.stopPropagation()
+        onClick()
+      })
+    }
+  >
+    <Icon size="xs" component={icon} />
+  </SSourceAction>
+)
+
+export const WalletSourceDisconnectAction: React.FC<{
+  readonly onDisconnect: () => void
+}> = ({ onDisconnect }) => {
+  const { t } = useTranslation()
+
+  return (
+    <WalletSourceAction
+      icon={LogOut}
+      label={t("provider.disconnect")}
+      onClick={onDisconnect}
+    />
+  )
+}
+
 export const WalletSourceButton: React.FC<{
   readonly active?: boolean
   readonly title: string
@@ -68,7 +111,7 @@ export const WalletSourceButton: React.FC<{
   readonly connected?: boolean
   readonly variant?: WalletSourceButtonVariant
   readonly chainModes?: WalletMode[]
-  readonly action?: React.ReactNode
+  readonly action?: ReactNode
   readonly onClick: () => void
 }> = ({
   active,
@@ -93,7 +136,7 @@ export const WalletSourceButton: React.FC<{
   >
     <Flex align="center" gap="base" minWidth={0} flex={1}>
       {(logo || icon || logos?.length) && (
-        <Box position="relative" sx={{ flexShrink: 0 }}>
+        <Box position="relative" flexShrink={0}>
           {logo ? (
             <SSourceLogo src={logo} alt="" lazy={false} />
           ) : icon ? (
@@ -101,7 +144,7 @@ export const WalletSourceButton: React.FC<{
               <Icon size="xs" component={icon} />
             </SSourceIcon>
           ) : (
-            <Flex sx={{ flexShrink: 0 }}>
+            <Flex flexShrink={0}>
               {logos?.slice(0, 3).map((provider) => {
                 const wallet = getWallet(provider)
                 if (!wallet) return null
@@ -109,8 +152,7 @@ export const WalletSourceButton: React.FC<{
                   <SStackedSourceLogo
                     key={provider}
                     src={wallet.logo}
-                    alt=""
-                    lazy={false}
+                    size="s"
                   />
                 )
               })}
@@ -139,15 +181,11 @@ export const WalletSourceButton: React.FC<{
     {pending ? (
       <Spinner size="xs" />
     ) : variant === "firstConnectionPlain" ? null : (
-      <Flex align="center" gap="xs" sx={{ flexShrink: 0 }}>
+      <Flex align="center" gap="xs" flexShrink={0}>
         {chainModes && chainModes.length > 0 && (
           <WalletSourceChainBadges modes={chainModes} />
         )}
-        {action || (
-          <SSourceAction as="span">
-            <Icon size="xs" component={ChevronRight} />
-          </SSourceAction>
-        )}
+        {action || <WalletSourceAction icon={ChevronRight} />}
       </Flex>
     )}
   </SSourceButton>
@@ -159,13 +197,13 @@ export const WalletSourceChainBadges: React.FC<{
   const badges = getWalletSourceChainBadges(modes)
 
   return (
-    <Flex align="center" sx={{ flexShrink: 0 }}>
+    <Flex align="center" flexShrink={0}>
       {badges.slice(0, 4).map((badge) => (
         <SSourceChainBadge key={badge.id}>
           {badge.icon ? (
             <Icon component={badge.icon} />
           ) : badge.iconSrc ? (
-            <SChainBadgeImage src={badge.iconSrc} alt="" lazy={false} />
+            <RoundLogo src={badge.iconSrc} size="xs" />
           ) : null}
         </SSourceChainBadge>
       ))}
@@ -222,21 +260,8 @@ export const WalletProviderSourceButton: React.FC<{
       chainModes={chainModes}
       onClick={onClick}
       action={
-        isConnected ? (
-          <SSourceAction
-            as="span"
-            aria-label={t("provider.disconnect")}
-            onClick={(event) => {
-              event.stopPropagation()
-              onDisconnect()
-            }}
-          >
-            <Icon size="xs" component={LogOut} />
-          </SSourceAction>
-        ) : (
-          <SSourceAction as="span">
-            <Icon size="xs" component={ChevronRight} />
-          </SSourceAction>
+        isConnected && (
+          <WalletSourceDisconnectAction onDisconnect={onDisconnect} />
         )
       }
     />
@@ -283,21 +308,8 @@ export const WalletGroupSourceButton: React.FC<{
       chainModes={chainModes}
       onClick={onClick}
       action={
-        connected ? (
-          <SSourceAction
-            as="span"
-            aria-label={t("provider.disconnect")}
-            onClick={(event) => {
-              event.stopPropagation()
-              onDisconnect()
-            }}
-          >
-            <Icon size="xs" component={LogOut} />
-          </SSourceAction>
-        ) : (
-          <SSourceAction as="span">
-            <Icon size="xs" component={ChevronRight} />
-          </SSourceAction>
+        connected && (
+          <WalletSourceDisconnectAction onDisconnect={onDisconnect} />
         )
       }
     />

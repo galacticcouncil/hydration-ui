@@ -1,14 +1,21 @@
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
-import React, { useCallback, useRef, useState } from "react"
+import {
+  ComponentPropsWithoutRef,
+  FC,
+  FocusEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react"
 
 import { UserMenu } from "@/modules/layout/components/UserMenu"
 import { SUserMenuAnchor } from "@/modules/layout/components/UserMenu/UserMenu.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRecentProviderAccountSync } from "@/states/recentProviderAccounts"
 
-export const HeaderWeb3ConnectButton: React.FC<
-  React.ComponentPropsWithoutRef<typeof Web3ConnectButton>
+export const HeaderWeb3ConnectButton: FC<
+  ComponentPropsWithoutRef<typeof Web3ConnectButton>
 > = (props) => {
   useRecentProviderAccountSync()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -47,7 +54,7 @@ export const HeaderWeb3ConnectButton: React.FC<
   )
 
   const onBlur = useCallback(
-    (event: React.FocusEvent<HTMLDivElement>) => {
+    (event: FocusEvent<HTMLDivElement>) => {
       if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
         return
       }

@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import { accountIcon } from "./accountIcon"
 
 // Expectations pinned by running upstream snakewatch emojify.js once against
-// each input's chain-native public key (see progress.txt US-004). This is a
-// parity test: if the vendored array reorders or the derivation drifts, it fails.
+// each input's chain-native public key. This is a parity test: if the
+// vendored array reorders or the derivation drifts, it fails.
 describe("accountIcon", () => {
   it.each([
     ["ss58", "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "🐷"],

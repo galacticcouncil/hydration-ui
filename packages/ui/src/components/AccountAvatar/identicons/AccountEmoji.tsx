@@ -37,7 +37,7 @@ export const AccountEmoji: React.FC<AccountEmojiProps> = ({
           sx={{ objectFit: "contain" }}
         />
       ) : (
-        <span aria-hidden style={{ fontSize: size * 0.6, lineHeight: 1 }}>
+        <span aria-hidden sx={{ fontSize: size * 0.6, lineHeight: 1 }}>
           {icon?.emoji}
         </span>
       )}

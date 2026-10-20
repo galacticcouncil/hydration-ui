@@ -1,4 +1,8 @@
-import { Flex, MenuSelectionItem } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  MenuSelectionItem,
+  ScrollArea,
+} from "@galacticcouncil/ui/components"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 export const SHoverActions = styled(Flex)(
@@ -33,3 +37,11 @@ export const SUserMenuAnchor = styled.div(
     }
   `,
 )
+
+export const SUserMenuScrollArea = styled(ScrollArea)`
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+`

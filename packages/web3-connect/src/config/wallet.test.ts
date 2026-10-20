@@ -116,8 +116,8 @@ describe("providersForMode", () => {
     expect(providersForMode(WalletMode.Solana)).toEqual(
       WALLET_MODES[WalletMode.Solana].providers,
     )
-    // The regression this whole candidate exists for: Sui and H160 were
-    // stripped from the wallet list before the forced mode was consulted.
+    // Regression guard: Sui and H160 were stripped from the wallet list
+    // before the forced mode was consulted.
     expect(providersForMode(WalletMode.Sui)).toContain(WalletProviderType.Suiet)
     expect(providersForMode(WalletMode.SubstrateH160)).toContain(
       WalletProviderType.TalismanH160,

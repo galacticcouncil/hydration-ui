@@ -11,13 +11,12 @@ import { useTranslation } from "react-i18next"
 
 import { ShortAddress } from "@/components/account/ShortAddress"
 import {
-  SAccountModeIcon,
   SAccountTile,
   SAccountTileCopyButton,
   SChangeAccountButton,
   SSectionLabel,
-  SSectionLogo,
 } from "@/components/content/WalletManagementAccounts.styled"
+import { RoundLogo } from "@/components/RoundLogo"
 import { getWalletChainModes, getWalletModeIcon } from "@/config/wallet"
 import { isEip1193Provider, requestAccounts, toAccount } from "@/utils"
 import { isAccountSelected } from "@/utils/accountFilter"
@@ -46,7 +45,7 @@ export const WalletAccountSection: React.FC<{
 }) => (
   <Flex direction="column">
     <SSectionLabel gap="xs">
-      {logo && <SSectionLogo src={logo} alt="" lazy={false} />}
+      {logo && <RoundLogo src={logo} size="m" />}
       <Text fs="p4" fw={500} color={getToken("text.high")} truncate>
         {title}
       </Text>
@@ -93,40 +92,30 @@ export const WalletAccountTile: React.FC<{
   return (
     <Box>
       <SAccountTile
-        role="button"
-        tabIndex={0}
         data-active={isActive}
         data-has-change-account={!!metaMaskExtension || undefined}
-        onClick={onClick}
-        onKeyDown={(event) => {
-          if (event.key !== "Enter" && event.key !== " ") return
-
-          event.preventDefault()
-          onClick()
-        }}
+        onSelect={onClick}
       >
         <AccountAvatar address={account.displayAddress} size={38} />
         <Flex direction="column" minWidth={0} flex={1}>
           <Flex align="center" justify="space-between" gap="base" minWidth={0}>
             <Flex align="center" width="100%" minWidth={0} gap="xs">
-              {modeIcon && (
-                <SAccountModeIcon src={modeIcon} alt="" lazy={false} />
-              )}
+              {modeIcon && <RoundLogo src={modeIcon} size="xs" />}
               <Text fs="p4" fw={500} color={getToken("text.high")} truncate>
                 {account.name}
               </Text>
               {isActive && (
-                <Chip size="small" rounded variant="green">
+                <Chip
+                  size="small"
+                  rounded
+                  variant="green"
+                  sx={{ textTransform: "uppercase" }}
+                >
                   {t("account.active")}
                 </Chip>
               )}
             </Flex>
-            <Text
-              fs="p4"
-              fw={500}
-              color={getToken("text.high")}
-              sx={{ flexShrink: 0 }}
-            >
+            <Text fs="p4" fw={500} color={getToken("text.high")} flexShrink={0}>
               {isBalanceLoading && account.balance === undefined
                 ? ""
                 : balanceLabel}

@@ -162,10 +162,6 @@ export const SSourceFooter = styled(Box)(
   `,
 )
 
-export const SSourceFooterAction = styled(Box)`
-  min-height: ${SOURCE_FOOTER_BUTTON_HEIGHT};
-`
-
 const revealUp = keyframes`
   from {
     opacity: 0;

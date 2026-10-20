@@ -5,10 +5,9 @@ import {
   Flex,
   Icon,
   ScrollArea,
-  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import {
   ChevronDown,
   ChevronLeft,
@@ -50,25 +49,22 @@ import {
   SSearchInput,
   SSourceColumn,
   SSourceFooter,
-  SSourceFooterAction,
   SSourceScrollFrame,
   SWalletManagementShell,
 } from "@/components/content/WalletManagementContent.styled"
 import {
   WalletGroupSourceButton,
   WalletProviderSourceButton,
+  WalletSourceAction,
   WalletSourceButton,
+  WalletSourceCategoryLabel,
   WalletSourceGroup,
 } from "@/components/content/WalletManagementSource"
 import {
-  SSourceAction,
-  SSourceCategoryLabel,
-} from "@/components/content/WalletManagementSource.styled"
-import {
+  WalletAccountsEmptyState,
   WalletChainSelectState,
   WalletConnectionState,
 } from "@/components/content/WalletManagementStates"
-import { SWalletMark } from "@/components/content/WalletManagementStates.styled"
 import { ExternalWalletForm } from "@/components/external/ExternalWalletForm"
 import { useExternalWalletForm } from "@/components/external/ExternalWalletForm.form"
 import { MultisigConfigList } from "@/components/multisig/MultisigConfigList"
@@ -207,12 +203,6 @@ export const WalletManagementContent = () => {
     [allWallets],
   )
 
-  /**
-   * The single gate the forced mode acts through. `null` means "no
-   * restriction" and covers two cases: Default, where no chain has been
-   * singled out and every wallet is connectable; and a chain that has no
-   * connectors yet, where filtering would render an empty modal.
-   */
   const modeProviders = useMemo(() => providersForMode(mode), [mode])
 
   const providers = useMemo(
@@ -653,14 +643,9 @@ export const WalletManagementContent = () => {
 
                   {visibleRecentWalletGroups.length > 0 && (
                     <Flex direction="column" gap="s">
-                      <SSourceCategoryLabel
-                        fs="p5"
-                        fw={500}
-                        lh={1.25}
-                        color={getToken("text.low")}
-                      >
+                      <WalletSourceCategoryLabel>
                         {t("provider.recentlyUsed")}
-                      </SSourceCategoryLabel>
+                      </WalletSourceCategoryLabel>
                       {visibleRecentWalletGroups.map((group) =>
                         renderWalletGroup(group),
                       )}
@@ -671,18 +656,13 @@ export const WalletManagementContent = () => {
                     showConnectAll) && (
                     <Flex direction="column" gap="s">
                       {visibleInstalledWalletGroups.length > 0 && (
-                        <SSourceCategoryLabel
-                          fs="p5"
-                          fw={500}
-                          lh={1.25}
-                          color={getToken("text.low")}
-                        >
+                        <WalletSourceCategoryLabel>
                           {t(
                             isChainMode
                               ? "provider.available"
                               : "provider.installed",
                           )}
-                        </SSourceCategoryLabel>
+                        </WalletSourceCategoryLabel>
                       )}
                       {visibleInstalledWalletGroups.map((group) =>
                         renderWalletGroup(group),
@@ -710,14 +690,9 @@ export const WalletManagementContent = () => {
                     showExternalWallet ||
                     showMultisig) && (
                     <Flex direction="column" gap="s">
-                      <SSourceCategoryLabel
-                        fs="p5"
-                        fw={500}
-                        lh={1.25}
-                        color={getToken("text.low")}
-                      >
+                      <WalletSourceCategoryLabel>
                         {t("provider.other")}
-                      </SSourceCategoryLabel>
+                      </WalletSourceCategoryLabel>
                       {visibleDeeplinkedWalletGroups.map((group) =>
                         renderWalletGroup(group, t("provider.open")),
                       )}
@@ -773,14 +748,9 @@ export const WalletManagementContent = () => {
 
                   {visibleMoreWalletGroups.length > 0 && (
                     <Flex direction="column" gap="s">
-                      <SSourceCategoryLabel
-                        fs="p5"
-                        fw={500}
-                        lh={1.25}
-                        color={getToken("text.low")}
-                      >
+                      <WalletSourceCategoryLabel>
                         {t("provider.moreWallets")}
-                      </SSourceCategoryLabel>
+                      </WalletSourceCategoryLabel>
                       {visibleMoreWallets.map((group) =>
                         renderWalletGroup(group),
                       )}
@@ -797,16 +767,11 @@ export const WalletManagementContent = () => {
                             showAccountPanel ? "management" : "firstConnection"
                           }
                           action={
-                            <SSourceAction as="span">
-                              <Icon
-                                size="xs"
-                                component={
-                                  isMoreWalletsListOpen
-                                    ? ChevronUp
-                                    : ChevronDown
-                                }
-                              />
-                            </SSourceAction>
+                            <WalletSourceAction
+                              icon={
+                                isMoreWalletsListOpen ? ChevronUp : ChevronDown
+                              }
+                            />
                           }
                           onClick={() => setIsMoreOpen((open) => !open)}
                         />
@@ -817,20 +782,18 @@ export const WalletManagementContent = () => {
               </ScrollArea>
               {showLogOutAll && (
                 <SSourceFooter>
-                  <SSourceFooterAction>
-                    <WalletSourceButton
-                      title={t("provider.logOutAll")}
-                      icon={LogOut}
-                      iconColor="red"
-                      variant={
-                        showAccountPanel ? "management" : "firstConnection"
-                      }
-                      onClick={() => {
-                        disconnect()
-                        sourceViewportRef.current?.scrollTo({ top: 0 })
-                      }}
-                    />
-                  </SSourceFooterAction>
+                  <WalletSourceButton
+                    title={t("provider.logOutAll")}
+                    icon={LogOut}
+                    iconColor="red"
+                    variant={
+                      showAccountPanel ? "management" : "firstConnection"
+                    }
+                    onClick={() => {
+                      disconnect()
+                      sourceViewportRef.current?.scrollTo({ top: 0 })
+                    }}
+                  />
                 </SSourceFooter>
               )}
             </SSourceScrollFrame>
@@ -848,7 +811,8 @@ export const WalletManagementContent = () => {
                     variant="muted"
                     size="small"
                     type="button"
-                    sx={{ flexShrink: 0, alignSelf: "flex-start" }}
+                    flexShrink={0}
+                    sx={{ alignSelf: "flex-start" }}
                     onClick={() => setMultisigStep("list")}
                   >
                     <Icon size="s" component={ChevronLeft} />
@@ -875,7 +839,7 @@ export const WalletManagementContent = () => {
                     size="large"
                     width="100%"
                     type="button"
-                    sx={{ flexShrink: 0 }}
+                    flexShrink={0}
                     onClick={() => setMultisigStep("setup")}
                   >
                     <Icon size="s" component={Plus} />
@@ -912,13 +876,15 @@ export const WalletManagementContent = () => {
                 }
               />
             ) : showWalletGroupChainSelectState && selectedWalletGroup ? (
-              <WalletChainSelectState
-                group={selectedWalletGroup}
-                getStatus={getStatus}
-                onInstall={openWalletOrInstall}
-                onSelect={handleWalletClick}
-                onDisconnect={(wallet) => disconnect(wallet.provider)}
-              />
+              <SRightColumn>
+                <WalletChainSelectState
+                  group={selectedWalletGroup}
+                  getStatus={getStatus}
+                  onInstall={openWalletOrInstall}
+                  onSelect={handleWalletClick}
+                  onDisconnect={(wallet) => disconnect(wallet.provider)}
+                />
+              </SRightColumn>
             ) : showSelectedWalletConnectState && selectedWallet ? (
               <WalletConnectionState
                 title={selectedWallet.title}
@@ -984,7 +950,7 @@ export const WalletManagementContent = () => {
                 />
 
                 {chipModes.length > 0 && (
-                  <Flex gap="base" wrap sx={{ flexShrink: 0 }}>
+                  <Flex gap="base" wrap flexShrink={0}>
                     {chipModes.map((filter) => (
                       <Button
                         key={filter}
@@ -1043,34 +1009,7 @@ export const WalletManagementContent = () => {
                           </Flex>
                         )
                       ) : (
-                        <Flex
-                          direction="column"
-                          align="center"
-                          justify="center"
-                          gap="base"
-                          borderRadius="m"
-                          bg={getToken("surfaces.containers.dim.dimOnBg")}
-                          sx={{ minHeight: pxToRem(260) }}
-                        >
-                          {emptyStateWallet?.logo && (
-                            <SWalletMark src={emptyStateWallet.logo} alt="" />
-                          )}
-                          {emptyStateWallet && (
-                            <Text
-                              fs="h7"
-                              fw={500}
-                              lh={1}
-                              font="primary"
-                              align="center"
-                              color={getToken("text.high")}
-                            >
-                              {emptyStateWallet.title}
-                            </Text>
-                          )}
-                          <Text fs="p4" color={getToken("text.medium")}>
-                            {t("account.noResults")}
-                          </Text>
-                        </Flex>
+                        <WalletAccountsEmptyState source={emptyStateWallet} />
                       )}
                     </SScrollAreaContent>
                   </ScrollArea>

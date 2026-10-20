@@ -1,6 +1,8 @@
-import { Box, Flex, Image, LoadingButton } from "@galacticcouncil/ui/components"
+import { Box, Flex, LoadingButton } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
+
+import { RoundLogo } from "@/components/RoundLogo"
 
 export const SChainSelectHeader = styled(Flex)(
   ({ theme }) => css`
@@ -13,16 +15,6 @@ export const SChainSelectHeader = styled(Flex)(
     ${mq("md")} {
       padding: ${theme.space.xl} ${theme.space.xxxl} ${theme.space.s};
     }
-  `,
-)
-
-export const SWalletMark = styled(Image)(
-  ({ theme }) => css`
-    width: ${theme.sizes["2xl"]};
-    height: ${theme.sizes["2xl"]};
-    border-radius: ${theme.radii.full};
-    flex-shrink: 0;
-    object-fit: contain;
   `,
 )
 
@@ -83,14 +75,8 @@ export const SWalletConnectionErrorRing = styled(Box)(
   `,
 )
 
-export const SWalletConnectionLogo = styled(Image)(
+export const SWalletConnectionLogo = styled(RoundLogo)(
   ({ theme }) => css`
-    width: ${theme.sizes["2xl"]};
-    height: ${theme.sizes["2xl"]};
-    border-radius: ${theme.radii.full};
-    flex-shrink: 0;
-    object-fit: contain;
-
     &[data-framed="true"] {
       width: calc(${theme.sizes["2xl"]} - ${theme.space.base});
       height: calc(${theme.sizes["2xl"]} - ${theme.space.base});

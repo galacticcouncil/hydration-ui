@@ -8,14 +8,15 @@ import {
   HoverCardContent,
   HoverCardTrigger,
   Icon,
+  MenuItem,
   MenuItemAction,
   MenuItemDescription,
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   MicroButton,
-  ScrollArea,
   Separator,
+  Skeleton,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -27,6 +28,7 @@ import {
   useWeb3Connect,
   useWeb3ConnectModal,
   WalletProviderStatus,
+  WalletRestoreState,
 } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
@@ -36,7 +38,10 @@ import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { useShallow } from "zustand/react/shallow"
 
-import { SHoverActions } from "@/modules/layout/components/UserMenu/UserMenu.styled"
+import {
+  SHoverActions,
+  SUserMenuScrollArea,
+} from "@/modules/layout/components/UserMenu/UserMenu.styled"
 import { UserMenuChangeAccountButton } from "@/modules/layout/components/UserMenu/UserMenuChangeAccountButton"
 import {
   getRecentProviderAccount,
@@ -45,6 +50,20 @@ import {
 
 const UserMenuSeparator = () => (
   <Separator my="base" mx="-base" flexShrink={0} />
+)
+
+const UserMenuSkeletonRow = () => (
+  <MenuItem aria-hidden>
+    <Box gridRow="1 / -1" flexShrink={0} display="flex">
+      <Skeleton circle width={pxToRem(36)} height={pxToRem(36)} />
+    </Box>
+    <MenuItemLabel>
+      <Skeleton width={pxToRem(120)} />
+    </MenuItemLabel>
+    <MenuItemDescription>
+      <Skeleton width={pxToRem(80)} />
+    </MenuItemDescription>
+  </MenuItem>
 )
 
 type Props = {
@@ -65,23 +84,27 @@ export const UserMenu: FC<Props> = ({
   const { t } = useTranslation()
   const { account, accounts } = useAccount()
   const { toggle } = useWeb3ConnectModal()
-  const { providers, storedAccounts, setAccount, disconnect } = useWeb3Connect(
-    useShallow((s) => ({
-      providers: s.providers,
-      storedAccounts: s.accounts,
-      setAccount: s.setAccount,
-      disconnect: s.disconnect,
-    })),
-  )
+  const { providers, restoreStates, storedAccounts, setAccount, disconnect } =
+    useWeb3Connect(
+      useShallow((s) => ({
+        providers: s.providers,
+        restoreStates: s.restoreStates,
+        storedAccounts: s.accounts,
+        setAccount: s.setAccount,
+        disconnect: s.disconnect,
+      })),
+    )
   const recentByProvider = useRecentProviderAccountsStore(
     (s) => s.recentByProvider,
   )
 
   if (!account) return null
 
-  const connectedTypes = providers
-    .filter((p) => p.status === WalletProviderStatus.Connected)
-    .map((p) => p.type)
+  const listedProviders = providers.filter(
+    (p) =>
+      p.status === WalletProviderStatus.Connected ||
+      p.status === WalletProviderStatus.Pending,
+  )
 
   const openManageWallets = (initialProvider?: WalletProviderType) => {
     onOpenChange(false)
@@ -96,12 +119,10 @@ export const UserMenu: FC<Props> = ({
         sideOffset={8}
         onMouseEnter={onHoverStart}
         onMouseLeave={onHoverEnd}
-        sx={{
-          minWidth: pxToRem(360),
-          maxHeight: "var(--radix-hover-card-content-available-height)",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        minWidth={pxToRem(360)}
+        maxHeight="var(--radix-hover-card-content-available-height)"
+        display="flex"
+        sx={{ flexDirection: "column" }}
       >
         <Flex align="center" justify="space-between" gap="s" py="base" px="m">
           <Flex align="center" gap="base">
@@ -116,23 +137,15 @@ export const UserMenu: FC<Props> = ({
           </Flex>
           <MicroButton py="s" asChild>
             <Link to="/wallet" onClick={() => onOpenChange(false)}>
-              {t("userMenu.goToWallet")}
+              {t("userMenu.goToPortfolio")}
             </Link>
           </MicroButton>
         </Flex>
 
         <UserMenuSeparator />
 
-        <ScrollArea
-          sx={{
-            flex: 1,
-            height: "auto",
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {connectedTypes.map((type) => {
+        <SUserMenuScrollArea>
+          {listedProviders.map(({ type, status }) => {
             const wallet = getWallet(type)
             const providerAccounts = accounts.filter((a) => a.provider === type)
             const recentAccount = getRecentProviderAccount(
@@ -140,7 +153,15 @@ export const UserMenu: FC<Props> = ({
               providerAccounts,
               recentByProvider,
             )
-            if (!wallet || !recentAccount) return null
+            if (!wallet) return null
+
+            // Accounts aren't persisted, so a reconnecting wallet has none yet.
+            if (!recentAccount) {
+              const isLoading =
+                status === WalletProviderStatus.Pending ||
+                restoreStates[type] === WalletRestoreState.Restoring
+              return isLoading ? <UserMenuSkeletonRow key={type} /> : null
+            }
 
             const isActiveProvider = type === account.provider
             const address = isActiveProvider
@@ -179,7 +200,7 @@ export const UserMenu: FC<Props> = ({
                       : undefined
                 }
               >
-                <Box gridRow="1 / -1" sx={{ flexShrink: 0 }}>
+                <Box gridRow="1 / -1" flexShrink={0}>
                   <AccountWalletAvatar
                     address={address}
                     provider={type}
@@ -195,7 +216,12 @@ export const UserMenu: FC<Props> = ({
                       shortAddress
                     )}
                     {isActiveProvider && (
-                      <Chip size="small" rounded variant="green">
+                      <Chip
+                        size="small"
+                        rounded
+                        variant="green"
+                        sx={{ textTransform: "uppercase" }}
+                      >
                         {t("userMenu.active")}
                       </Chip>
                     )}
@@ -240,12 +266,12 @@ export const UserMenu: FC<Props> = ({
               </MenuSelectionItem>
             )
           })}
-        </ScrollArea>
+        </SUserMenuScrollArea>
 
         <UserMenuSeparator />
 
         <MenuSelectionItem onClick={() => openManageWallets()}>
-          <MenuItemIcon sx={{ width: "xl", height: "xl" }} component={Plus} />
+          <MenuItemIcon component={Plus} />
           <MenuItemLabel>{t("userMenu.manageWallets")}</MenuItemLabel>
         </MenuSelectionItem>
 
@@ -255,7 +281,7 @@ export const UserMenu: FC<Props> = ({
             onOpenChange(false)
           }}
         >
-          <MenuItemIcon sx={{ width: "xl", height: "xl" }} component={LogOut} />
+          <MenuItemIcon component={LogOut} />
           <MenuItemLabel>{t("userMenu.logOutAll")}</MenuItemLabel>
         </MenuSelectionItem>
       </HoverCardContent>

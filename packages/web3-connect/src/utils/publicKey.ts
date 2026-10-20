@@ -9,20 +9,11 @@ import {
 } from "@galacticcouncil/utils"
 
 /**
- * Canonical dedup / savedBy key for an address across every supported chain.
+ * Canonical dedup / savedBy key for an address across every supported chain,
+ * or "" when unresolvable. Branching mirrors `getWalletModeByAddress`.
  *
- * - H160 (EVM) -> the address itself
- * - SS58 (Substrate) -> the decoded public key
- * - Solana -> the address itself
- * - Sui -> the address itself
- * - anything else -> "" (falsy)
- *
- * Keys are stored case-preserved (base58 chains like Solana are
- * case-sensitive). Always compare two keys with `stringEquals` (case-insensitive
- * by default) — never `===` — so EVM checksum-case variants still match.
- *
- * Branching mirrors getWalletModeByAddress so the key is consistent with the
- * chainKey classification used elsewhere.
+ * Keys keep their case (base58 chains are case-sensitive), so compare them
+ * with `stringEquals`, never `===`, or EVM checksum variants won't match.
  */
 export const addressToPublicKey = (address: string): string => {
   switch (true) {

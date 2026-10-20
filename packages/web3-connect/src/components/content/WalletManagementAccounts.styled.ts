@@ -1,48 +1,14 @@
-import { Box, Button, Flex, Image } from "@galacticcouncil/ui/components"
-import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
+import { Box, Button, Flex } from "@galacticcouncil/ui/components"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
-import { optionTile } from "@/components/content/WalletManagementSource.styled"
+import { OptionTile } from "@/components/account/OptionTile"
 
-const roundMark = (size: number) =>
-  styled(Image)(
-    ({ theme }) => css`
-      width: ${pxToRem(size)};
-      height: ${pxToRem(size)};
-      border-radius: ${theme.radii.full};
-      flex-shrink: 0;
-      object-fit: contain;
-    `,
-  )
-
-export const SSectionLogo = roundMark(16)
-
-export const SAccountModeIcon = roundMark(12)
-
-export const SAccountTile = styled(Box)(
-  ({ theme }) => css`
-    ${optionTile(theme)}
-
-    width: 100%;
-    min-width: 0;
-
-    display: flex;
-    align-items: center;
-    gap: ${theme.space.base};
-
-    padding: ${theme.space.base};
-    overflow: hidden;
-
-    &:focus-visible {
-      outline: 2px solid ${theme.buttons.secondary.accent.outline};
-      outline-offset: 2px;
-    }
-
-    &[data-has-change-account="true"] {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  `,
-)
+export const SAccountTile = styled(OptionTile)`
+  &[data-has-change-account="true"] {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+`
 
 export const SAccountTileCopyButton = styled(Box)(
   ({ theme }) => css`
