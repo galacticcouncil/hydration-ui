@@ -4,7 +4,7 @@ import {
   scanTransferQuery,
   scanTransfersQuery,
 } from "@galacticcouncil/indexer/scan"
-import { stringEquals } from "@galacticcouncil/utils"
+import { intentscan, stringEquals } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { type QueryClient, queryOptions } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
@@ -25,6 +25,7 @@ import {
 } from "@/modules/xcm/history/utils/scan"
 
 export const transfersScanClient = getScanClient(ENV.VITE_TRANSFERS_SCAN_URL)
+export const intentsScanClient = getScanClient(intentscan.apiUrl)
 
 // Newest first; a claim stays open two weeks, well inside a page
 const PAGE_SIZE = 50
