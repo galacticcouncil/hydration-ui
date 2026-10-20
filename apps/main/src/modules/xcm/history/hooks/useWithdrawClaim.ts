@@ -1,9 +1,4 @@
-import {
-  etherscan,
-  getVaaHeader,
-  nearblocks,
-  solexplorer,
-} from "@galacticcouncil/utils"
+import { etherscan, nearblocks, solexplorer } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import {
   isEthereumSigner,
@@ -21,14 +16,8 @@ import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingCla
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import {
   buildClaimCall,
-  findNearRecipient,
-  getJourneyVaaRaw,
   resolveChainFromUrn,
 } from "@/modules/xcm/history/utils/claim"
-import {
-  parseNttTransfer,
-  toNearUniversal,
-} from "@/modules/xcm/history/utils/nearNtt"
 import { toDecimal } from "@/utils/formatting"
 
 import { useClaimTxOptions } from "./useClaimTxOptions"
@@ -59,23 +48,7 @@ export function useWithdrawClaim(journey: XcJourney) {
       const wallet = getWallet(account.provider)
       const signer = wallet?.signer
 
-      // A transfer to another NEAR account, which the vaa names by hash only:
-      // the claim passes it in plain, from the copy its sender published on
-      // the source chain, so any NEAR account can claim it
-      const vaaRaw = getJourneyVaaRaw(journey)
-      const payee = vaaRaw
-        ? parseNttTransfer(getVaaHeader(vaaRaw).payload)?.to
-        : undefined
-      const recipient =
-        payee && payee !== toNearUniversal(account.rawAddress)
-          ? await findNearRecipient(journey)
-          : undefined
-
-      const result = await buildClaimCall(
-        journey,
-        account.rawAddress,
-        recipient,
-      )
+      const result = await buildClaimCall(journey, account.rawAddress)
 
       if (!result) {
         throw new Error("Failed to build claim call")

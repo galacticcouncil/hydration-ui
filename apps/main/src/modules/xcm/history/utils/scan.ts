@@ -21,7 +21,6 @@ import {
   TJourneyStatus,
   XcJourneyWhStop,
 } from "./journey"
-import { toNearUniversal } from "./nearNtt"
 
 /**
  * Chains whose legs come only from the scan, as it names them. xc-scan times
@@ -95,6 +94,12 @@ export const toScanAccount = (address: string): string =>
   Ss58Addr.isValid(address) && !EvmAddr.isValid(address)
     ? safeConvertSS58toH160(address)
     : address
+
+/** How ntt names a NEAR account: the hash of its id. */
+const toNearUniversal = (accountId: string): string | undefined => {
+  const near = chainsMap.get(NEAR_CHAIN_KEY)
+  return near ? Wormhole.fromChain(near).normalizeAddress(accountId) : undefined
+}
 
 /**
  * The hash a NEAR account goes by in a transfer to it, which is all the scan

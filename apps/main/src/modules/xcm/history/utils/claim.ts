@@ -396,30 +396,9 @@ type ClaimCallResult =
       chain: EvmParachain
     }
 
-/**
- * NEAR account a vaa pays, as its sender published it on the source chain:
- * an implicit account the transfer names by hash only, so any NEAR account
- * can claim it.
- */
-export async function findNearRecipient(
-  journey: XcJourney,
-): Promise<string | undefined> {
-  const vaaRaw = getJourneyVaaRaw(journey)
-  const toChain = resolveChainFromUrn(journey.destination)
-  const fromChain = resolveChainFromUrn(journey.origin)
-  if (!vaaRaw || !toChain || !fromChain) return undefined
-  if (!isNearChain(toChain) || !isAnyEvmChain(fromChain)) return undefined
-
-  return new NearClaim(toChain).findRecipient(vaaRaw, fromChain)
-}
-
-/**
- * @param recipient - NEAR account the vaa pays, where it isn't the claimer
- */
 export async function buildClaimCall(
   journey: XcJourney,
   claimerAddress: string,
-  recipient?: string,
 ): Promise<ClaimCallResult | undefined> {
   const vaaRaw = getJourneyVaaRaw(journey)
   const toChain = resolveChainFromUrn(journey.destination)
@@ -448,9 +427,18 @@ export async function buildClaimCall(
 
   // No executor serves NEAR, so a claim anyone may submit completes it. The
   // vaa names the payee by hash only: passed in plain, the claimer by default,
-  // and the sdk rejects a mismatch up front.
+  // and the sdk rejects a mismatch up front. Another account, such as an
+  // implicit one, comes from the copy its sender published on the source chain.
   if (isNearChain(toChain)) {
     const nearClaim = new NearClaim(toChain)
+    const fromChain = resolveChainFromUrn(journey.origin)
+    const recipient =
+      !nearClaim.isPayee(vaaRaw, claimerAddress) &&
+      fromChain &&
+      isAnyEvmChain(fromChain)
+        ? await nearClaim.findRecipient(vaaRaw, fromChain)
+        : undefined
+
     return {
       type: CallType.Near,
       call: nearClaim.redeem(claimerAddress, vaaRaw, ntt, recipient),
