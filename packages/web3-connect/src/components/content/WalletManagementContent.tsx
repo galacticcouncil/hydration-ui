@@ -85,7 +85,7 @@ import { useMultisigConfigs } from "@/hooks/useMultisigConfigs"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { Wallet } from "@/types/wallet"
-import { getWalletModeName, toAccount } from "@/utils"
+import { getWalletModeName, isNovaWalletApp, toAccount } from "@/utils"
 import {
   filterAccounts,
   getFilteredAccounts,
@@ -378,6 +378,7 @@ export const WalletManagementContent = () => {
    * flips `hasConnectedWalletState`.
    */
   const showConnectAll =
+    !isNovaWalletApp() &&
     !isChainMode &&
     !walletSearch &&
     (isConnectingAll ||
@@ -571,7 +572,17 @@ export const WalletManagementContent = () => {
   }
 
   const moreWalletsPreviewCount = 2
+  // The title only separates more wallets from the sections above it
+  const isMoreWalletsOnlySection =
+    !(showAccountPanel && connectedAccountsCount > 0) &&
+    visibleReachableWalletCount === 0 &&
+    !showConnectAll &&
+    visibleDeeplinkedWalletGroups.length === 0 &&
+    visibleWalletConnectGroups.length === 0 &&
+    !showExternalWallet &&
+    !showMultisig
   const hasCollapsedMoreWallets =
+    !shouldAutoOpenMoreWallets &&
     visibleMoreWalletGroups.length > moreWalletsPreviewCount
   const visibleMoreWallets =
     !hasCollapsedMoreWallets || isMoreWalletsListOpen
@@ -745,38 +756,47 @@ export const WalletManagementContent = () => {
                     </Flex>
                   )}
 
-                  {visibleMoreWalletGroups.length > 0 && (
-                    <Flex direction="column" gap="s">
-                      <WalletSourceCategoryLabel>
-                        {t("provider.moreWallets")}
-                      </WalletSourceCategoryLabel>
-                      {visibleMoreWallets.map((group) =>
-                        renderWalletGroup(group),
-                      )}
-                      {hasCollapsedMoreWallets && (
-                        <WalletSourceButton
-                          title={
-                            isMoreWalletsListOpen
-                              ? t("provider.hide")
-                              : t("provider.showMore")
-                          }
-                          icon={isMoreWalletsListOpen ? ChevronUp : ChevronDown}
-                          iconColor="neutral"
-                          variant={
-                            showAccountPanel ? "management" : "firstConnection"
-                          }
-                          action={
-                            <WalletSourceAction
-                              icon={
-                                isMoreWalletsListOpen ? ChevronUp : ChevronDown
-                              }
-                            />
-                          }
-                          onClick={() => setIsMoreOpen((open) => !open)}
-                        />
-                      )}
-                    </Flex>
-                  )}
+                  {!(isNovaWalletApp() && !isChainMode) &&
+                    visibleMoreWalletGroups.length > 0 && (
+                      <Flex direction="column" gap="s">
+                        {!isMoreWalletsOnlySection && (
+                          <WalletSourceCategoryLabel>
+                            {t("provider.moreWallets")}
+                          </WalletSourceCategoryLabel>
+                        )}
+                        {visibleMoreWallets.map((group) =>
+                          renderWalletGroup(group),
+                        )}
+                        {hasCollapsedMoreWallets && (
+                          <WalletSourceButton
+                            title={
+                              isMoreWalletsListOpen
+                                ? t("provider.hide")
+                                : t("provider.showMore")
+                            }
+                            icon={
+                              isMoreWalletsListOpen ? ChevronUp : ChevronDown
+                            }
+                            iconColor="neutral"
+                            variant={
+                              showAccountPanel
+                                ? "management"
+                                : "firstConnection"
+                            }
+                            action={
+                              <WalletSourceAction
+                                icon={
+                                  isMoreWalletsListOpen
+                                    ? ChevronUp
+                                    : ChevronDown
+                                }
+                              />
+                            }
+                            onClick={() => setIsMoreOpen((open) => !open)}
+                          />
+                        )}
+                      </Flex>
+                    )}
                 </SScrollAreaContent>
               </ScrollArea>
               {showLogOutAll && (

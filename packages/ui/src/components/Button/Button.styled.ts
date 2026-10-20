@@ -123,6 +123,16 @@ const defaultStyles = createStyles(
       ${theme.transitions.opacity},
       ${pressScaleTransition};
 
+    /* Safari resolves var() heights to auto while a registered property transitions, so there the fill fades as itself */
+    @supports (font: -apple-system-body) {
+      transition:
+        color 0.2s,
+        border-color 0.2s,
+        background-color 0.2s,
+        ${theme.transitions.opacity},
+        ${pressScaleTransition};
+    }
+
     ${pressScale};
 
     &:is(:link) {
