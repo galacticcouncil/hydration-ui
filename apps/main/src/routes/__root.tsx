@@ -13,7 +13,10 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
-import { useXcScanSubscription } from "@/modules/xcm/history"
+import {
+  useScanJourneysSubscription,
+  useXcScanSubscription,
+} from "@/modules/xcm/history"
 import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
@@ -113,6 +116,7 @@ function ApiSubscriptions() {
 
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
+  useScanJourneysSubscription(account.address)
 
   return null
 }

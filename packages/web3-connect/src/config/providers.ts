@@ -3,6 +3,7 @@ export enum WalletProviderType {
   BraveWallet = "bravewallet",
   BraveWalletSol = "bravewallet-sol",
   Enkrypt = "enkrypt",
+  EthereumWalletsNear = "ethereum-wallets-near",
   ExternalWallet = "external",
   FearlessWallet = "fearless-wallet",
   HotWalletNear = "hot-wallet-near",
@@ -94,6 +95,7 @@ export const NEAR_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.HotWalletNear,
   WalletProviderType.IntearWallet,
   WalletProviderType.LedgerNear,
+  WalletProviderType.EthereumWalletsNear,
 ]
 
 export const ZCASH_PROVIDERS: WalletProviderType[] = [

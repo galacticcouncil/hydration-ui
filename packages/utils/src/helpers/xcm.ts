@@ -12,6 +12,7 @@ import {
   Parachain,
   SolanaChain,
   SuiChain,
+  ZecChain,
 } from "@galacticcouncil/xc-core"
 
 import { HYDRATION_CHAIN_KEY } from "../constants"
@@ -22,7 +23,14 @@ import {
   safeConvertSS58ToSolanaAddress,
   safeConvertSS58ToSuiAddress,
 } from "../helpers"
-import { EvmAddr, NearAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
+import {
+  EvmAddr,
+  NearAddr,
+  SolanaAddr,
+  Ss58Addr,
+  SuiAddr,
+  ZecAddr,
+} from "./address"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
@@ -69,6 +77,8 @@ export function isAddressValidOnChain(address: string, chain: AnyChain) {
       return SuiAddr.isValid(address)
     case chain.isNear():
       return NearAddr.isValid(address)
+    case chain.isZec():
+      return ZecAddr.isValid(address)
     default:
       return false
   }
@@ -103,6 +113,10 @@ export function isSuiChain(chain: AnyChain): chain is SuiChain {
 
 export function isNearChain(chain: AnyChain): chain is NearChain {
   return chain.getType() === ChainType.NearChain
+}
+
+export function isZecChain(chain: AnyChain): chain is ZecChain {
+  return chain.getType() === ChainType.ZecChain
 }
 
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
@@ -144,6 +158,10 @@ export function formatSourceChainAddress(
 
   if (isNearChain(chain)) {
     return NearAddr.isValid(address) ? address : ""
+  }
+
+  if (isZecChain(chain)) {
+    return ZecAddr.isValid(address) ? address : ""
   }
 
   return safeConvertAddressSS58(address)

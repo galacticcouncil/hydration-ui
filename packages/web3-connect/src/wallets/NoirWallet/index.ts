@@ -6,12 +6,14 @@ import {
   type ZcashAPI,
   type ZcashConnectResult,
 } from "@noir-wallet/sdk"
-import { isObjectType } from "remeda"
+import { isObjectType, sortBy } from "remeda"
 
 import { WalletProviderType } from "@/config/providers"
+import { ZecSigner } from "@/signers/ZecSigner"
 import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
 import {
   BaseWalletError,
+  getWalletErrorMessage,
   NotInstalledError,
   UserRejectedError,
 } from "@/utils/errors"
@@ -24,28 +26,27 @@ const USER_REJECTED_CODE = 4001
 const isRejection = (err: unknown) =>
   isObjectType(err) && "code" in err && err.code === USER_REJECTED_CODE
 
-const getErrorMessage = (err: unknown) =>
-  isObjectType(err) && "message" in err && typeof err.message === "string"
-    ? err.message
-    : ""
-
 /**
  * One account per approved Noir wallet, by its transparent address.
  *
  * - Swaps pay out to `t1`/`t3` only, so shielded addresses are left out
  * - A testnet build's addresses fail the same check
+ * - Noir's active account comes first, so a default pick is the account Noir
+ *   pays from
  */
 const toWalletAccounts = (
-  { accounts }: ZcashConnectResult,
+  { accounts, transparent }: ZcashConnectResult,
   provider: WalletProviderType,
+  active = transparent,
 ): WalletAccount[] =>
-  accounts
-    .filter(({ addresses }) => ZecAddr.isValid(addresses.transparent))
-    .map(({ label, addresses }) => ({
-      address: addresses.transparent,
-      name: label || shortenAccountAddress(addresses.transparent),
-      provider,
-    }))
+  sortBy(
+    accounts.filter(({ addresses }) => ZecAddr.isValid(addresses.transparent)),
+    [({ addresses }) => addresses.transparent === active, "desc"],
+  ).map(({ label, addresses }) => ({
+    address: addresses.transparent,
+    name: label || shortenAccountAddress(addresses.transparent),
+    provider,
+  }))
 
 export class NoirWallet implements Wallet {
   provider = WalletProviderType.NoirWallet
@@ -55,10 +56,8 @@ export class NoirWallet implements Wallet {
     "https://chromewebstore.google.com/detail/noir-wallet/mfoghjbpfanobmnoemoepenjjcmfpmdn"
   logo = logo
 
-  // Noir only receives swap payouts so far, so it never signs
-  signer = undefined
-
   _extension: ZcashAPI | undefined
+  _signer: ZecSigner | undefined
   _enabled: boolean = false
 
   _accounts: WalletAccount[] = []
@@ -75,13 +74,17 @@ export class NoirWallet implements Wallet {
     return this._extension
   }
 
+  get signer() {
+    return this._signer
+  }
+
   transformError = (err: unknown): Error => {
     if (err instanceof BaseWalletError) return err
     if (isRejection(err)) return new UserRejectedError(this)
 
     return new BaseWalletError(
       this,
-      getErrorMessage(err) || `${this.title} could not be connected.`,
+      getWalletErrorMessage(err) || `${this.title} could not be connected.`,
     )
   }
 
@@ -114,6 +117,8 @@ export class NoirWallet implements Wallet {
       }
 
       this._extension = zcash
+      // Noir builds, signs and broadcasts a payment on its own
+      this._signer = new ZecSigner(zcash)
       this._enabled = true
       this.setAccounts(accounts)
     } catch (err: unknown) {
@@ -133,13 +138,13 @@ export class NoirWallet implements Wallet {
     const zcash = this._extension
     if (!zcash) return () => {}
 
-    // Noir sends null on a lock or a revoked approval, and otherwise only the
-    // primary account, so the full list is read again
-    const handler = async (addresses: ZcashAddress | null) => {
-      const result = addresses
-        ? await zcash.getAccounts().catch(() => null)
-        : null
-      const accounts = result ? toWalletAccounts(result, this.provider) : []
+    // Noir sends null on a lock or a revoked approval, and otherwise only its
+    // active account, so the full list is read again with that one first
+    const handler = async (active: ZcashAddress | null) => {
+      const result = active ? await zcash.getAccounts().catch(() => null) : null
+      const accounts = result
+        ? toWalletAccounts(result, this.provider, active?.transparent)
+        : []
 
       this.setAccounts(accounts)
       callback(accounts)
@@ -154,6 +159,7 @@ export class NoirWallet implements Wallet {
   disconnect = () => {
     this._enabled = false
     this._extension = undefined
+    this._signer = undefined
     this._accounts = []
   }
 }
