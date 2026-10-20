@@ -52,6 +52,7 @@ export const MyBorrowsCard = () => {
 
   // Hidden while borrowing is disabled so we don't advertise it, but kept
   // whenever debt exists so repay stays reachable.
+  if (!evmAddress) return null
   if (!(reserveConfig?.borrowingEnabled ?? false) && !hasDebt) return null
 
   const totalCreditUsd = totalCollateralUsd * (ltvPct / 100)

@@ -1,10 +1,22 @@
-import { LiquidityIcon, Trash } from "@galacticcouncil/ui/assets/icons"
+import {
+  ArrowRightLeftIcon,
+  CircleMinus,
+  Ellipsis,
+  LiquidityIcon,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
   DataTable,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Flex,
   Icon,
+  MenuItemIcon,
+  MenuItemLabel,
+  MenuSelectionItem,
   Modal,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -12,7 +24,6 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
-import { Minus } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,6 +31,7 @@ import { AssetLabelXYK } from "@/components/AssetLabelFull/AssetLabelFull"
 import { PositionsTableShell } from "@/modules/liquidity/components/PositionsTable"
 import { STableHeader } from "@/modules/liquidity/components/PositionsTable/PositionsTable.styled"
 import { RemoveVaultLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveVaultLiquidity"
+import { TransferVaultPosition } from "@/modules/liquidity/components/TransferVaultPosition/TransferVaultPosition"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 
 type PositionRow = {
@@ -74,7 +86,7 @@ const usePositionColumns = (
         cell: () => (
           <Flex gap="m" justify="end" align="center">
             <Button variant="tertiary" outline flex="none" onClick={onRemove}>
-              <Trash />
+              <CircleMinus />
               {t("common:remove")}
             </Button>
           </Flex>
@@ -97,6 +109,7 @@ export const VaultPositions = ({
   const { t } = useTranslation(["common", "liquidity"])
   const [expanded, setExpanded] = useState(true)
   const [isRemoveOpen, setIsRemoveOpen] = useState(false)
+  const [isTransferOpen, setIsTransferOpen] = useState(false)
   const { isMobile } = useBreakpoints()
   const columns = usePositionColumns(
     vault,
@@ -135,14 +148,33 @@ export const VaultPositions = ({
         </Flex>
 
         {!!rows.length && (
-          <Button
-            variant="tertiary"
-            outline
-            onClick={() => setIsRemoveOpen(true)}
-          >
-            <Minus />
-            {t("liquidity:removeLiquidity")}
-          </Button>
+          <Flex gap="m" align="center">
+            <Button
+              variant="tertiary"
+              outline
+              onClick={() => setIsRemoveOpen(true)}
+            >
+              <CircleMinus />
+              {t("liquidity:removeLiquidity")}
+            </Button>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="tertiary" outline aria-label={t("more")}>
+                  <Icon component={Ellipsis} size="m" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <MenuSelectionItem onClick={() => setIsTransferOpen(true)}>
+                    <MenuItemIcon component={ArrowRightLeftIcon} />
+                    <MenuItemLabel>
+                      {t("liquidity:vaults.action.transfer")}
+                    </MenuItemLabel>
+                  </MenuSelectionItem>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </Flex>
         )}
       </STableHeader>
       <DataTable
@@ -161,6 +193,18 @@ export const VaultPositions = ({
           </Text>
         }
       />
+      <Modal
+        variant="popup"
+        open={isTransferOpen}
+        onOpenChange={setIsTransferOpen}
+      >
+        {isTransferOpen && (
+          <TransferVaultPosition
+            vault={vault}
+            onClose={() => setIsTransferOpen(false)}
+          />
+        )}
+      </Modal>
       <Modal variant="popup" open={isRemoveOpen} onOpenChange={setIsRemoveOpen}>
         {isRemoveOpen && (
           <RemoveVaultLiquidity
