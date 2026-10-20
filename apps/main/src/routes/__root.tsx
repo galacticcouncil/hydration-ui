@@ -13,6 +13,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
   useXcScanSubscription,
@@ -86,19 +87,21 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <MultisigProvider>
-            <AssetRegistryGate>
-              <MainLayout />
-              <Services />
-              <Footer />
-              <AppUpdateBanner />
-              {!hasTopNavbar && (
-                <Suspense>
-                  <MobileTabBar />
-                </Suspense>
-              )}
-            </AssetRegistryGate>
-          </MultisigProvider>
+          <TutorialProvider>
+            <MultisigProvider>
+              <AssetRegistryGate>
+                <MainLayout />
+                <Services />
+                <Footer />
+                <AppUpdateBanner />
+                {!hasTopNavbar && (
+                  <Suspense>
+                    <MobileTabBar />
+                  </Suspense>
+                )}
+              </AssetRegistryGate>
+            </MultisigProvider>
+          </TutorialProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && (

@@ -17,15 +17,6 @@ export type Tutorial = {
 }
 
 export const tutorials = {
-  "trade-intents": {
-    steps: [
-      {
-        i18nKey: "trade:hints.intents",
-        side: "bottom",
-      },
-    ],
-    when: () => useIntentsStore.getState().hasSeenModal,
-  },
   "settings-avatar": {
     steps: [
       {
@@ -34,6 +25,15 @@ export const tutorials = {
         side: "bottom",
       },
     ],
+  },
+  "trade-intents": {
+    steps: [
+      {
+        i18nKey: "trade:hints.intents",
+        side: "bottom",
+      },
+    ],
+    when: () => useIntentsStore.getState().hasSeenModal,
   },
 } satisfies Record<string, Tutorial>
 

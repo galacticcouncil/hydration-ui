@@ -4,6 +4,7 @@ import React, { useCallback, useRef, useState } from "react"
 
 import { UserMenu } from "@/modules/layout/components/UserMenu"
 import { SUserMenuAnchor } from "@/modules/layout/components/UserMenu/UserMenu.styled"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRecentProviderAccountSync } from "@/states/recentProviderAccounts"
 
 export const HeaderWeb3ConnectButton: React.FC<
@@ -14,6 +15,7 @@ export const HeaderWeb3ConnectButton: React.FC<
   const closeTimerRef = useRef<number | null>(null)
 
   const { account } = useAccount()
+  const { isReady } = useRpcProvider()
   const showUserMenu = !!account
 
   const clearCloseTimer = useCallback(() => {
@@ -68,7 +70,7 @@ export const HeaderWeb3ConnectButton: React.FC<
 
   return (
     <UserMenu
-      open={isMenuOpen}
+      open={isReady && isMenuOpen}
       onOpenChange={onOpenChange}
       onHoverStart={openMenu}
       onHoverEnd={scheduleCloseMenu}
