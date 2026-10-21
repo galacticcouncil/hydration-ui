@@ -2,8 +2,8 @@ import { Box, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { FC, ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { PerpsDeposit } from "@/modules/perps/components/PerpsDeposit"
 import { PerpsPanel } from "@/modules/perps/components/PerpsPanel"
-import { PerpsTransfer } from "@/modules/perps/components/PerpsTransfer"
 import {
   useAllMarkets,
   useOpenOrders,
@@ -68,7 +68,7 @@ const ORDER_COLS = "1.2fr 0.8fr 1fr 1fr 0.8fr"
 export const PerpsBottomPanel: FC = () => {
   const { t } = useTranslation("trade")
   const [tab, setTab] = useState<Tab>("balances")
-  const [isTransferOpen, setIsTransferOpen] = useState(false)
+  const [isDepositOpen, setIsDepositOpen] = useState(false)
 
   const { data: account } = usePerpsAccount()
   const { balances } = useSpotBalances()
@@ -137,9 +137,9 @@ export const PerpsBottomPanel: FC = () => {
             size="small"
             variant="muted"
             sx={{ marginLeft: "auto", borderRadius: 4 }}
-            onClick={() => setIsTransferOpen(true)}
+            onClick={() => setIsDepositOpen(true)}
           >
-            {t("perps.transfer.title")}
+            {t("perps.deposit.title")}
           </Button>
         </Flex>
       }
@@ -294,7 +294,7 @@ export const PerpsBottomPanel: FC = () => {
         </>
       )}
 
-      <PerpsTransfer open={isTransferOpen} onOpenChange={setIsTransferOpen} />
+      <PerpsDeposit open={isDepositOpen} onOpenChange={setIsDepositOpen} />
     </PerpsPanel>
   )
 }

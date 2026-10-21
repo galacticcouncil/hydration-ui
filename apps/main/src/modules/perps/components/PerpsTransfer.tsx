@@ -3,9 +3,6 @@ import {
   Button,
   Flex,
   Input,
-  Modal,
-  ModalBody,
-  ModalHeader,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -25,11 +22,10 @@ const floorUsd = (value: number) =>
   value > 0 ? String(Math.floor(value * 1e6) / 1e6) : "0"
 
 type Props = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  onDone: () => void
 }
 
-export const PerpsTransfer: FC<Props> = ({ open, onOpenChange }) => {
+export const PerpsTransfer: FC<Props> = ({ onDone }) => {
   const { t } = useTranslation("trade")
   const wallet = useWallet()
   const [toPerp, setToPerp] = useState(true)
@@ -55,92 +51,83 @@ export const PerpsTransfer: FC<Props> = ({ open, onOpenChange }) => {
   const canSubmit = Number(amount) > 0 && !isOverBalance && !transfer.isPending
 
   return (
-    <Modal variant="popup" open={open} onOpenChange={onOpenChange}>
-      <ModalHeader title={t("perps.transfer.title")} />
-      <ModalBody>
-        <Stack gap="m">
-          <Flex gap="xs">
-            {[true, false].map((direction) => (
-              <Button
-                key={String(direction)}
-                size="small"
-                variant={direction === toPerp ? "secondary" : "muted"}
-                onClick={() => setToPerp(direction)}
-                sx={{ flex: 1, borderRadius: 4 }}
-              >
-                <Text fs="p6" font="mono">
-                  {t(
-                    direction
-                      ? "perps.transfer.toPerp"
-                      : "perps.transfer.toSpot",
-                  )}
-                </Text>
-              </Button>
-            ))}
-          </Flex>
-
-          <PerpsStatRow
-            label={t("perps.transfer.available")}
-            value={`${floorUsd(available)} USDC`}
-          />
-
-          <Flex gap="xs" align="center">
-            <Input
-              value={amount}
-              placeholder="0.0"
-              onChange={(e) => setAmount(e.target.value)}
-              sx={{ flex: 1 }}
-            />
-            <Button
-              size="small"
-              variant="muted"
-              disabled={!available}
-              onClick={() => setAmount(floorUsd(available))}
-              sx={{ borderRadius: 4 }}
-            >
-              {t("perps.transfer.max")}
-            </Button>
-          </Flex>
-
-          {isOverBalance && (
-            <Text fs="p6" color="red500">
-              {t("perps.transfer.insufficient")}
-            </Text>
-          )}
-
+    <Stack gap="m">
+      <Flex gap="xs">
+        {[true, false].map((direction) => (
           <Button
-            variant="primary"
-            disabled={!canSubmit}
-            sx={{ borderRadius: 4 }}
-            onClick={() =>
-              transfer.mutate(
-                {
-                  address: signer.address,
-                  provider: signer.provider,
-                  amount,
-                  toPerp,
-                },
-                {
-                  onSuccess: () => {
-                    setAmount("")
-                    onOpenChange(false)
-                  },
-                },
-              )
-            }
+            key={String(direction)}
+            size="small"
+            variant={direction === toPerp ? "secondary" : "muted"}
+            onClick={() => setToPerp(direction)}
+            sx={{ flex: 1, borderRadius: 4 }}
           >
-            {transfer.isPending
-              ? t("perps.transfer.pending")
-              : t("perps.transfer.cta")}
-          </Button>
-
-          {transfer.isError && (
-            <Text fs="p6" color="red500">
-              {transfer.error.message}
+            <Text fs="p6" font="mono">
+              {t(direction ? "perps.transfer.toPerp" : "perps.transfer.toSpot")}
             </Text>
-          )}
-        </Stack>
-      </ModalBody>
-    </Modal>
+          </Button>
+        ))}
+      </Flex>
+
+      <PerpsStatRow
+        label={t("perps.transfer.available")}
+        value={`${floorUsd(available)} USDC`}
+      />
+
+      <Flex gap="xs" align="center">
+        <Input
+          value={amount}
+          placeholder="0.0"
+          onChange={(e) => setAmount(e.target.value)}
+          sx={{ flex: 1 }}
+        />
+        <Button
+          size="small"
+          variant="muted"
+          disabled={!available}
+          onClick={() => setAmount(floorUsd(available))}
+          sx={{ borderRadius: 4 }}
+        >
+          {t("perps.transfer.max")}
+        </Button>
+      </Flex>
+
+      {isOverBalance && (
+        <Text fs="p6" color="red500">
+          {t("perps.transfer.insufficient")}
+        </Text>
+      )}
+
+      <Button
+        variant="primary"
+        disabled={!canSubmit}
+        sx={{ borderRadius: 4 }}
+        onClick={() =>
+          transfer.mutate(
+            {
+              address: signer.address,
+              provider: signer.provider,
+              amount,
+              toPerp,
+            },
+            {
+              onSuccess: () => {
+                setAmount("")
+                onDone()
+              },
+            },
+          )
+        }
+      >
+        {transfer.isPending
+          ? t("perps.transfer.pending")
+          : t("perps.transfer.cta")}
+      </Button>
+
+      {transfer.isError && (
+        <Text fs="p6" color="red500">
+          {transfer.error.message}
+        </Text>
+      )}
+    </Stack>
   )
 }

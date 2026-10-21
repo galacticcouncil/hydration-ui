@@ -2,10 +2,11 @@ import { tenthsBpsToPercent } from "@galacticcouncil/hyperliquid/config"
 import { useApproveBuilderFee } from "@galacticcouncil/hyperliquid/hooks"
 import { Alert, Button } from "@galacticcouncil/ui/components"
 import { isEthereumSigner, useWallet } from "@galacticcouncil/web3-connect"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HYPERLIQUID } from "@/config/hyperliquid"
+import { PerpsDeposit } from "@/modules/perps/components/PerpsDeposit"
 import {
   useBuilderApproval,
   useHyperliquidAccount,
@@ -16,6 +17,7 @@ export const PerpsApproval: FC = () => {
   const wallet = useWallet()
   const { exists, isLoading: isAccountLoading } = useHyperliquidAccount()
   const { isApproved, isLoading } = useBuilderApproval()
+  const [isDepositOpen, setIsDepositOpen] = useState(false)
 
   const approve = useApproveBuilderFee({
     isTestnet: HYPERLIQUID.isTestnet,
@@ -38,11 +40,23 @@ export const PerpsApproval: FC = () => {
   // deposited, so offering the approval here would only fail opaquely.
   if (!exists) {
     return (
-      <Alert
-        variant="info"
-        title={t("perps.approval.deposit.title")}
-        description={t("perps.approval.deposit.description")}
-      />
+      <>
+        <Alert
+          variant="info"
+          title={t("perps.approval.deposit.title")}
+          description={t("perps.approval.deposit.description")}
+          action={
+            <Button
+              size="small"
+              variant="primary"
+              onClick={() => setIsDepositOpen(true)}
+            >
+              {t("perps.deposit.title")}
+            </Button>
+          }
+        />
+        <PerpsDeposit open={isDepositOpen} onOpenChange={setIsDepositOpen} />
+      </>
     )
   }
 
