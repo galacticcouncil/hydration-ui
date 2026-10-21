@@ -18,14 +18,17 @@ const defaultValues: DepositFormValues = {
 
 type UseDepositFormParams = {
   maxBalance: string
-  /** in the asset paid with; undefined when a swap converts it */
+  /** remaining vault capacity expressed in the asset paid with */
   maxCapacity?: string
+  /** symbol of the asset paid with, for the capacity error */
+  symbol?: string
   decimals: number
 }
 
 export const useDepositForm = ({
   maxBalance,
   maxCapacity,
+  symbol,
   decimals,
 }: UseDepositFormParams) => {
   const { t } = useTranslation("propeller")
@@ -43,7 +46,11 @@ export const useDepositForm = ({
         refine<string>(
           (value) =>
             maxCapacity === undefined || Big(value || "0").lte(maxCapacity),
-          { error: t("deposit.validation.maximum", { amount: maxCapacity }) },
+          {
+            error: t("deposit.validation.maximum", {
+              amount: symbol ? `${maxCapacity} ${symbol}` : maxCapacity,
+            }),
+          },
         ),
       ),
   })

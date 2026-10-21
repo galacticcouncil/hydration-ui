@@ -27,6 +27,7 @@ import { formatUnits } from "viem"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDepositForm } from "@/modules/strategies/propeller/components/DepositForm.form"
@@ -106,19 +107,34 @@ export const DepositForm = ({
 
   const isSwap = isSwapDeposit(selected)
   const balance = scaleHuman(getTransferableBalance(assetId), asset.decimals)
+  // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
+  // the cap in the pay asset at spot. The swap executes below spot (fees,
+  // impact), so a spot-converted fill always lands under the cap.
+  const { data: paySpot } = useQuery({
+    ...spotPriceQuery(rpc, vault.assetId, assetId),
+    enabled: rpc.isReady && isSwap,
+  })
+  const capacityInPay = !isSwap
+    ? maximum
+    : paySpot?.spotPrice
+      ? Big(maximum).times(paySpot.spotPrice).toString()
+      : null
   // Remaining capacity shrinks every block as totalAssets accrues interest, so
   // filling it EXACTLY guarantees an over-max by the next refetch and an
   // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
   // to a 6-decimal floor the drift cannot overtake between signing and inclusion.
-  // Capacity is in collateral, so on a swap it bounds the output instead.
-  const capacityBound = !isSwap && Big(balance).gt(maximum)
+  const capacityBound = capacityInPay !== null && Big(balance).gt(capacityInPay)
   const maxButtonBalance = capacityBound
-    ? Big(maximum).round(6, Big.roundDown).toString()
+    ? Big(capacityInPay).round(6, Big.roundDown).toString()
     : balance
 
   const form = useDepositForm({
     maxBalance: balance,
-    maxCapacity: isSwap ? undefined : maximum,
+    maxCapacity:
+      capacityInPay === null
+        ? undefined
+        : `${Big(capacityInPay).round(6, Big.roundDown)}`,
+    symbol: asset.symbol,
     decimals: asset.decimals,
   })
   const { control, handleSubmit, formState, reset, watch } = form
@@ -204,8 +220,13 @@ export const DepositForm = ({
                   (exceedsCapacity
                     ? t("deposit.validation.maximum", {
                         amount: t("common:currency", {
-                          value: toDisplay(maximum),
-                          symbol: displayAsset.symbol,
+                          value:
+                            capacityInPay === null
+                              ? maximum
+                              : Big(capacityInPay)
+                                  .round(6, Big.roundDown)
+                                  .toString(),
+                          symbol: asset.symbol,
                         }),
                       })
                     : undefined)
