@@ -38,6 +38,14 @@ export async function requestNetworkSwitch(
   ]
 
   try {
+    if ((options.chain ?? HYDRATION_CHAIN_KEY) === HYDRATION_CHAIN_KEY) {
+      // Refresh Hydration's network configuration before switching to it.
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [params],
+      })
+    }
+
     await provider.request({
       method: "wallet_switchEthereumChain",
       params: switchChainParams,
