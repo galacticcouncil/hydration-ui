@@ -16,8 +16,12 @@ export interface PropellerVaultConfig {
   baseAssetId?: string
   /** assets a deposit can pay with through a swap; the base asset when unset */
   payAssetIds?: string[]
-  /** the collateral's name in the strategy when its registry symbol is a pool share's */
-  collateralSymbol?: string
+  /**
+   * The asset whose identity (symbol, logo) represents the collateral in the
+   * UI when the collateral itself is a pool share — the same convention as
+   * the money market's reserve display (2-Pool-GETH wears GETH's face).
+   */
+  collateralDisplayId?: string
 }
 
 export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
@@ -29,7 +33,7 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
     shareName: "Juicer ETH",
     baseAssetId: ETH_ASSET_ID,
     payAssetIds: [GETH_ERC20_ID, ETH_ASSET_ID],
-    collateralSymbol: "GIGAETH",
+    collateralDisplayId: GETH_ERC20_ID,
   },
   {
     assetId: "1000765",
@@ -42,11 +46,12 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
 
 export const PROPELLER_RISK_PROFILE = "low"
 
-export const vaultCollateral = <T extends { symbol: string }>(
-  vault: PropellerVaultConfig,
-  asset: T,
-): T =>
-  vault.collateralSymbol ? { ...asset, symbol: vault.collateralSymbol } : asset
+/**
+ * The identity the collateral is shown under: a pool-share collateral wears
+ * its product token's symbol and logo (2-Pool-GETH displays as GETH).
+ */
+export const vaultCollateralDisplayId = (vault: PropellerVaultConfig): string =>
+  vault.collateralDisplayId ?? vault.assetId
 
 /**
  * The asset every user-facing amount is denominated in: the base asset when

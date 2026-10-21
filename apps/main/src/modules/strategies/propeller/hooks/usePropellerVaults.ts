@@ -5,7 +5,6 @@ import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
-  vaultCollateral,
 } from "@/modules/strategies/propeller/config/vaults"
 import {
   useBaseRates,
@@ -62,7 +61,7 @@ export type PropellerVaultStats = {
 
 export type PropellerVaultMarket = {
   vault: PropellerVaultConfig
-  /** collateral asset, with the vault's symbol override (GIGAETH) */
+  /** the raw collateral asset as registered (2-Pool-GETH for the GETH vault) */
   asset: TAsset
   /** what the user sees: the base asset (ETH) when the collateral tracks one */
   displayAsset: TAsset
@@ -145,7 +144,7 @@ export const usePropellerVaults = () => {
     })
     return {
       vault,
-      asset: vaultCollateral(vault, getAssetWithFallback(vault.assetId)),
+      asset: getAssetWithFallback(vault.assetId),
       displayAsset: getDisplayAsset(vault),
       baseRate: getRate(vault),
       stats,

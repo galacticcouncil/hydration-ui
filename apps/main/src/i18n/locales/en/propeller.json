@@ -72,7 +72,7 @@
   "deposit.vault.value": "{{ name }}, backed by {{ symbol }}",
   "denomination.label": "Show amounts in",
   "denomination.base": "ETH",
-  "denomination.collateral": "GIGAETH",
+  "denomination.collateral": "GETH",
   "withdraw.title": "Withdraw {{symbol}}",
   "withdraw.carryEstimate": "The strategy currently has a funding deficit. Your collateral claim is not reduced, but settlement may take longer while funding is recovered.",
   "withdraw.ack": "Withdrawals unlock after a {{duration}} cooldown, then settle in parts as the vault frees liquidity. Unconverted yield may pay out separately in HOLLAR, after costs.",

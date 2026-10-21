@@ -31,10 +31,7 @@ import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDepositForm } from "@/modules/strategies/propeller/components/DepositForm.form"
 import { DepositSwapSummary } from "@/modules/strategies/propeller/components/DepositSwapSummary"
-import {
-  PROPELLER_VAULTS,
-  vaultCollateral,
-} from "@/modules/strategies/propeller/config/vaults"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import {
   useBaseRates,
   useVaultDisplayAsset,
@@ -74,9 +71,10 @@ export const DepositForm = ({
   const [selected, setSelected] = useState(initialDeposit)
   const { vault, assetId } = selected
 
-  const collateral = vaultCollateral(vault, getAssetWithFallback(vault.assetId))
-  const asset =
-    assetId === vault.assetId ? collateral : getAssetWithFallback(assetId)
+  // the raw pool-share collateral keeps its registry identity (2-Pool-GETH)
+  // in the picker, so it stays distinguishable from the GETH ERC20 pay asset
+  const collateral = getAssetWithFallback(vault.assetId)
+  const asset = getAssetWithFallback(assetId)
   // informational amounts (capacity, vault identity) speak the display asset;
   // the pay-asset input and swap details keep their own true units
   const displayAsset = useVaultDisplayAsset()(vault)
@@ -89,14 +87,7 @@ export const DepositForm = ({
         (o) => o.vault.vaultAddress === initialDeposit.vault.vaultAddress,
       )
     : DEPOSIT_OPTIONS
-  const assets = options
-    .map((o) => {
-      const option = getAsset(o.assetId)
-      return option && o.assetId === o.vault.assetId
-        ? vaultCollateral(o.vault, option)
-        : option
-    })
-    .filter(isTruthy)
+  const assets = options.map((o) => getAsset(o.assetId)).filter(isTruthy)
 
   const { data: capacity, isError: capacityError } = useQuery(
     depositCapacityQuery(rpc, vault),

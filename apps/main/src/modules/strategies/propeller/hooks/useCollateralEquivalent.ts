@@ -7,7 +7,7 @@ import { spotPriceQuery } from "@/api/spotPrice"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
-  vaultCollateral,
+  vaultCollateralDisplayId,
   vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
@@ -15,7 +15,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 /**
  * What unit the Juicer UI speaks: the vault's base asset (ETH for the GETH
- * vault) or the raw collateral (GIGAETH). Vaults without a base asset show
+ * vault) or the collateral under its product identity (GETH). Vaults without a base asset show
  * their collateral either way.
  */
 export type PropellerDenomination = "base" | "collateral"
@@ -68,8 +68,8 @@ export const useBaseRates = () => {
 
 /**
  * The asset every user-facing amount is denominated in under the current
- * denomination: the base asset (ETH), or the collateral with its product
- * symbol (GIGAETH).
+ * denomination: the base asset (ETH), or the collateral under its product
+ * identity (GETH) — the money market's reserve-display convention.
  */
 export const useVaultDisplayAsset = () => {
   const { getAssetWithFallback } = useAssets()
@@ -78,7 +78,7 @@ export const useVaultDisplayAsset = () => {
   return (vault: PropellerVaultConfig) =>
     denomination === "base"
       ? getAssetWithFallback(vaultDisplayAssetId(vault))
-      : vaultCollateral(vault, getAssetWithFallback(vault.assetId))
+      : getAssetWithFallback(vaultCollateralDisplayId(vault))
 }
 
 /** Collateral amounts converted to the vault's base asset at spot price. */
