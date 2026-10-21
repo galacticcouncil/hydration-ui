@@ -15,10 +15,7 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
-import {
-  type PropellerVaultConfig,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
   type PropellerVaultMarket,
   vaultDepositState,
@@ -43,7 +40,7 @@ export const useStrategyVaultColumns = (
         const { vault, displayAsset } = row.original
         return (
           <AssetLabelFullContainer>
-            <AssetLogo id={vaultDisplayAssetId(vault)} />
+            <AssetLogo id={displayAsset.id} />
             <AssetLabel symbol={displayAsset.symbol} name={vault.shareName} />
           </AssetLabelFullContainer>
         )

@@ -8,10 +8,8 @@ import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import {
-  PROPELLER_VAULTS,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
   type PropellerWithdrawalRow,
   usePropellerAccount,
@@ -21,7 +19,6 @@ import {
   vaultDepositState,
 } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type StrategyPosition = {
@@ -69,7 +66,7 @@ export const getJuicerRemainingCollateral = (
 export const useMyJuicerPositions = () => {
   const evmAddress = useEvmAddress() as Hex | undefined
   const { isReady } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
+  const getDisplayAsset = useVaultDisplayAsset()
   const account = usePropellerAccount(evmAddress)
   const markets = usePropellerVaults()
 
@@ -89,9 +86,9 @@ export const useMyJuicerPositions = () => {
     )
     if (!position && withdrawals.length === 0) return []
 
-    // position amounts arrive from usePropellerAccount in the vault's display
-    // asset (ETH for the GETH vault); shares and collateral never surface
-    const asset = getAssetWithFallback(vaultDisplayAssetId(vault))
+    // position amounts arrive from usePropellerAccount in the vault's current
+    // display asset; shares never surface
+    const asset = getDisplayAsset(vault)
     const amount = Big(position?.assetValue ?? 0).toString()
     const pendingWithdrawal = withdrawals.reduce(
       (sum, row) => sum.plus(getJuicerRemainingCollateral(row)),
@@ -131,7 +128,7 @@ export const useMyJuicerPositions = () => {
       {
         id: `juicer:${vault.vaultAddress}`,
         strategy: "juicer",
-        assetId: vaultDisplayAssetId(vault),
+        assetId: asset.id,
         symbol: asset.symbol,
         name: vault.shareName,
         amount,

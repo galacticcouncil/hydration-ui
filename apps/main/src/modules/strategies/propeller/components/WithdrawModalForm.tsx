@@ -22,11 +22,11 @@ import { type Hex } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { useWithdrawForm } from "@/modules/strategies/propeller/components/WithdrawModalForm.form"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
-  type PropellerVaultConfig,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
-import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+  useBaseRates,
+  useVaultDisplayAsset,
+} from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
   subLoopQuery,
   vaultBalancesQuery,
@@ -57,9 +57,10 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const { getAssetWithFallback } = useAssets()
   const { assetId } = vault
   const { decimals } = getAssetWithFallback(assetId)
-  // user-facing unit: the base asset (ETH) when the collateral tracks one;
-  // share and collateral units never surface in this form
-  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
+  // user-facing unit under the current denomination; share units never
+  // surface in this form
+  const displayAsset = useVaultDisplayAsset()(vault)
+  const { symbol } = displayAsset
   const { getRate } = useBaseRates()
   const baseRate = getRate(vault)
 
@@ -146,7 +147,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                   label={t("common:amount")}
                   asset={{
                     symbol,
-                    icon: <AssetLogo id={vaultDisplayAssetId(vault)} />,
+                    icon: <AssetLogo id={displayAsset.id} />,
                   }}
                   value={field.value}
                   onChange={field.onChange}

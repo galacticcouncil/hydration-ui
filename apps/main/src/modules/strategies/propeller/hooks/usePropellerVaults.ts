@@ -6,9 +6,11 @@ import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
   vaultCollateral,
-  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
-import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import {
+  useBaseRates,
+  useVaultDisplayAsset,
+} from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
   subLoopQuery,
   vaultStatsQuery,
@@ -81,6 +83,7 @@ export const usePropellerVaults = () => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { getRate, isLoading: isRateLoading } = useBaseRates()
+  const getDisplayAsset = useVaultDisplayAsset()
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(VAULT_ASSET_IDS)
 
@@ -143,7 +146,7 @@ export const usePropellerVaults = () => {
     return {
       vault,
       asset: vaultCollateral(vault, getAssetWithFallback(vault.assetId)),
-      displayAsset: getAssetWithFallback(vaultDisplayAssetId(vault)),
+      displayAsset: getDisplayAsset(vault),
       baseRate: getRate(vault),
       stats,
       apy,

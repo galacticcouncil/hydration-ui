@@ -47,6 +47,15 @@ vi.mock(
   }),
 )
 // The real usePropellerVaults module is kept for vaultDepositState.
+// The denomination store is a real zustand hook; stub it for plain-function calls.
+vi.mock("@/modules/strategies/propeller/hooks/useCollateralEquivalent", () => ({
+  useBaseRates: () => ({ getRate: () => "1", isLoading: false }),
+  useVaultDisplayAsset:
+    () => (vault: { assetId: string; baseAssetId?: string }) => ({
+      id: vault.baseAssetId ?? vault.assetId,
+      symbol: vault.baseAssetId ? "ETH" : "tBTC",
+    }),
+}))
 vi.mock("@/api/borrow", () => ({}))
 vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
 vi.mock("@/states/displayAsset", () => ({}))

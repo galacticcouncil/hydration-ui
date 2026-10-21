@@ -8,14 +8,13 @@ import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
 import { DateText } from "@/components/RelativeDateText"
-import { vaultDisplayAssetId } from "@/modules/strategies/propeller/config/vaults"
+import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import {
   useClaim,
   usePendingClaimIds,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
-import { useAssets } from "@/providers/assetsProvider"
 
 const statusVariants: Record<
   ReturnType<typeof getWithdrawalStateLabel>,
@@ -69,9 +68,9 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
   row,
 }) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { getAssetWithFallback } = useAssets()
-  // row amounts arrive already converted to the display asset (ETH)
-  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(row.vault))
+  // row amounts arrive already converted to the current display asset
+  const displayAsset = useVaultDisplayAsset()(row.vault)
+  const { symbol } = displayAsset
   const usd = t("common:currency", { value: row.estUsd })
   const claim = useClaim()
   const isClaiming = usePendingClaimIds().includes(row.id)
@@ -123,7 +122,7 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
 
   return (
     <PendingPosition
-      assetId={vaultDisplayAssetId(row.vault)}
+      assetId={displayAsset.id}
       value={t("common:currency", { value: row.estEth, symbol })}
       displayValue={usd}
       isLoading={row.isSettlementLoading}

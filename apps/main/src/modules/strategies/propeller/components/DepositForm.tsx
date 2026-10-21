@@ -34,9 +34,11 @@ import { DepositSwapSummary } from "@/modules/strategies/propeller/components/De
 import {
   PROPELLER_VAULTS,
   vaultCollateral,
-  vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
-import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import {
+  useBaseRates,
+  useVaultDisplayAsset,
+} from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
@@ -77,7 +79,7 @@ export const DepositForm = ({
     assetId === vault.assetId ? collateral : getAssetWithFallback(assetId)
   // informational amounts (capacity, vault identity) speak the display asset;
   // the pay-asset input and swap details keep their own true units
-  const displayAsset = getAssetWithFallback(vaultDisplayAssetId(vault))
+  const displayAsset = useVaultDisplayAsset()(vault)
   const { getRate } = useBaseRates()
   const baseRate = getRate(vault) ?? "1"
   const toDisplay = (value: string | number) =>

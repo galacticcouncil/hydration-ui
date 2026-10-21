@@ -17,12 +17,9 @@ import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import {
-  type PropellerVaultConfig,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerPosition } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
-import { useAssets } from "@/providers/assetsProvider"
 
 interface Props {
   positions: PropellerPosition[]
@@ -31,7 +28,7 @@ interface Props {
 
 export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
   const { t } = useTranslation(["propeller", "common"])
-  const { getAssetWithFallback } = useAssets()
+  const getDisplayAsset = useVaultDisplayAsset()
 
   if (!positions.length) return null
 
@@ -54,11 +51,9 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               harvestStatus,
             }) => {
               // amounts arrive from usePropellerAccount already converted to
-              // the display asset (ETH for the GETH vault); shares and
-              // collateral units never surface here
-              const { symbol } = getAssetWithFallback(
-                vaultDisplayAssetId(vault),
-              )
+              // the current display asset; share units never surface here
+              const displayAsset = getDisplayAsset(vault)
+              const { symbol } = displayAsset
               // demoted: a six-decimal dust figure as a headline stat reads as
               // broken; the accruing amount lives in the tooltip, the sublabel
               // just says the position is earning (dust-floored)
@@ -85,11 +80,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                   key={vault.vaultAddress}
                   columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(176)}), 1fr))`}
                   logo={
-                    <AssetLogo
-                      id={vaultDisplayAssetId(vault)}
-                      size="medium"
-                      hideChain
-                    />
+                    <AssetLogo id={displayAsset.id} size="medium" hideChain />
                   }
                   symbol={symbol}
                   stats={

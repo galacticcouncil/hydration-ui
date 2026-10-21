@@ -33,12 +33,12 @@ import { getDryRunError } from "@/api/dryRun"
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
 import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
-import {
-  type PropellerVaultConfig,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
-import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import {
+  useBaseRates,
+  useVaultDisplayAsset,
+} from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
@@ -452,9 +452,9 @@ export function useRequestRedeem(
   const { evmAddress, submitTx } = useVaultEvmCall(options)
   const { vaultAddress, assetId, shareSymbol } = vault
   const { decimals } = getAssetWithFallback(assetId)
-  // toasts speak the display asset (ETH); the share symbol only labels the
+  // toasts speak the current display asset; the share symbol only labels the
   // raw-share fallback no UI path takes
-  const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
+  const { symbol } = useVaultDisplayAsset()(vault)
 
   return useMutation({
     mutationFn: ({ shareAmount, isMax, displayAmount }: RedeemVariables) => {
@@ -491,6 +491,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, submitBatch } = useVaultEvmCall(options)
   const { getRate } = useBaseRates()
+  const getDisplayAsset = useVaultDisplayAsset()
 
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
@@ -502,8 +503,8 @@ export function useClaim(options: VaultWriteOptions = {}) {
         evmAddress,
       )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      // the chain pays collateral; the toast speaks the display asset (ETH)
-      const { symbol } = getAssetWithFallback(vaultDisplayAssetId(vault))
+      // the chain pays collateral; the toast speaks the current display asset
+      const { symbol } = getDisplayAsset(vault)
       const { decimals } = getAssetWithFallback(vault.assetId)
       const rate = getRate(vault) ?? "1"
       const payouts = [

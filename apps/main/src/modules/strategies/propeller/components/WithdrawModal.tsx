@@ -2,11 +2,8 @@ import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { WithdrawModalForm } from "@/modules/strategies/propeller/components/WithdrawModalForm"
-import {
-  type PropellerVaultConfig,
-  vaultDisplayAssetId,
-} from "@/modules/strategies/propeller/config/vaults"
-import { useAssets } from "@/providers/assetsProvider"
+import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 
 type Props = {
   vault: PropellerVaultConfig
@@ -16,7 +13,7 @@ type Props = {
 
 export const WithdrawModal = ({ vault, open, onClose }: Props) => {
   const { t } = useTranslation("propeller")
-  const { getAssetWithFallback } = useAssets()
+  const getDisplayAsset = useVaultDisplayAsset()
 
   return (
     <Modal
@@ -26,9 +23,7 @@ export const WithdrawModal = ({ vault, open, onClose }: Props) => {
       disableInteractOutside
     >
       <ModalHeader
-        title={t("withdraw.title", {
-          symbol: getAssetWithFallback(vaultDisplayAssetId(vault)).symbol,
-        })}
+        title={t("withdraw.title", { symbol: getDisplayAsset(vault).symbol })}
       />
       <WithdrawModalForm vault={vault} onSuccess={onClose} />
     </Modal>
