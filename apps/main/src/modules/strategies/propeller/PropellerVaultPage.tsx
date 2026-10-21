@@ -1,13 +1,4 @@
-import {
-  Alert,
-  Flex,
-  Paper,
-  Stack,
-  Text,
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Alert, Paper, Stack } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Navigate } from "@tanstack/react-router"
@@ -25,10 +16,6 @@ import { StrategyHeader } from "@/modules/strategies/propeller/components/Strate
 import { WithdrawalsCard } from "@/modules/strategies/propeller/components/WithdrawalsCard"
 import { WithdrawModal } from "@/modules/strategies/propeller/components/WithdrawModal"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
-import {
-  type PropellerDenomination,
-  usePropellerDenomination,
-} from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { useDefaultDepositVault } from "@/modules/strategies/propeller/hooks/useDefaultDepositVault"
 import { usePropellerAccount } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -55,31 +42,12 @@ const PropellerVaultContent = () => {
     : undefined
 
   const { positions, withdrawals, isError } = usePropellerAccount(evmAddress)
-  const { denomination, setDenomination } = usePropellerDenomination()
 
   const defaultDeposit = useDefaultDepositVault()
 
   return (
     <Stack gap="xxl">
       <StrategyHeader />
-      <Flex justify="flex-end" align="center" gap="s" mt="-xl">
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("denomination.label")}
-        </Text>
-        <ToggleGroup<PropellerDenomination>
-          type="single"
-          size="small"
-          value={denomination}
-          onValueChange={(value) => value && setDenomination(value)}
-        >
-          <ToggleGroupItem value="base">
-            {t("denomination.base")}
-          </ToggleGroupItem>
-          <ToggleGroupItem value="collateral">
-            {t("denomination.collateral")}
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </Flex>
       {isError && (
         <Alert variant="warning" description={t("positions.readFailed")} />
       )}

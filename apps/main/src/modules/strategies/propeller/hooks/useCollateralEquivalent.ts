@@ -1,7 +1,6 @@
 import { useQueries } from "@tanstack/react-query"
 import Big from "big.js"
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
 
 import { spotPriceQuery } from "@/api/spotPrice"
 import {
@@ -25,15 +24,13 @@ type DenominationStore = {
   setDenomination: (denomination: PropellerDenomination) => void
 }
 
-export const usePropellerDenomination = create<DenominationStore>()(
-  persist(
-    (set) => ({
-      denomination: "base",
-      setDenomination: (denomination) => set({ denomination }),
-    }),
-    { name: "propeller-denomination" },
-  ),
-)
+// The testing toggle is hidden; the mode is kept in memory only so a stale
+// persisted value can never strand anyone in collateral denomination. Flip
+// the default (or restore the page toggle) to bring GETH mode back.
+export const usePropellerDenomination = create<DenominationStore>()((set) => ({
+  denomination: "base",
+  setDenomination: (denomination) => set({ denomination }),
+}))
 
 /**
  * Collateral -> display-asset spot rate per vault (GETH -> ETH in base
