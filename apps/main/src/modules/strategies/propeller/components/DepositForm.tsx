@@ -32,7 +32,10 @@ import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDepositForm } from "@/modules/strategies/propeller/components/DepositForm.form"
 import { DepositSwapSummary } from "@/modules/strategies/propeller/components/DepositSwapSummary"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import {
+  PROPELLER_VAULTS,
+  vaultCollateralDisplayId,
+} from "@/modules/strategies/propeller/config/vaults"
 import {
   useBaseRates,
   useVaultDisplayAsset,
@@ -259,7 +262,10 @@ export const DepositForm = ({
               label={t("deposit.vault")}
               content={t("deposit.vault.value", {
                 name: vault.shareName,
-                symbol: displayAsset.symbol,
+                // what actually backs the vault — a fact about the collateral,
+                // never restated in the display denomination
+                symbol: getAssetWithFallback(vaultCollateralDisplayId(vault))
+                  .symbol,
               })}
             />
             <SummaryRow
