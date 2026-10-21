@@ -46,6 +46,7 @@
   "withdrawals.state.claimed": "Claimed",
   "withdrawals.settledProgress": "{{ settled }} ({{ pct }}%)",
   "withdrawals.settledLabel": "Settled so far",
+  "withdrawals.etaAtPace": "{{ eta }} at current pace",
   "withdrawals.action.claim": "Claim",
   "withdrawals.action.claimPartial": "Claim ≥ {{ amount }}",
   "withdrawals.claim.label": "Claim available payouts for {{symbol}} withdrawal",

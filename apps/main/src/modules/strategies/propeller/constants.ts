@@ -10,6 +10,9 @@ export const SUBLOOP_ADDRESS: Hex = "0xe0983cedd797b38090e6dcde54af88aa6eb22edc"
 // Too low wastes time; too high truncates history.
 export const VAULT_DEPLOY_BLOCK = 48n
 
+// mainnet and the lark forks run 2s blocks (since 2026-09-03)
+export const BLOCK_TIME_SECONDS = 2
+
 export const EVM_CALL_GAS = 2_000_000n
 // a deposit uses ~1.55M gas
 export const DEPOSIT_MIN_GAS = 1_700_000n

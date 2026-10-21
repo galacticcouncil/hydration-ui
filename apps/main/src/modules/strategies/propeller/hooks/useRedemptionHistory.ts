@@ -42,7 +42,17 @@ export interface RedemptionSettlement {
   collateralSettled: number
   /** Resolve to a date lazily via `blockTimestampQuery`. */
   firstSettledBlock: bigint
+  /**
+   * Trailing settlement pace in collateral per block, measured from the
+   * oldest tranche in the recent window to the chain head — so a stall
+   * decays the pace (and any ETA built on it) instead of freezing it.
+   * null when nothing settled recently.
+   */
+  recentRatePerBlock: number | null
 }
+
+/** settlements older than this say nothing about the current pace (~10 min) */
+const RATE_WINDOW_BLOCKS = 300n
 
 /**
  * Measured payout totals and first settlement blocks by requestId. Scans new
@@ -114,26 +124,52 @@ export const vaultSettlementsQuery = (
 
       const byId = new Map<
         number,
-        { collateral: bigint; firstSettledBlock: bigint }
+        {
+          collateral: bigint
+          firstSettledBlock: bigint
+          recentCollateral: bigint
+          recentFirstBlock: bigint | null
+        }
       >()
+      const windowStart =
+        head > RATE_WINDOW_BLOCKS ? head - RATE_WINDOW_BLOCKS : 0n
       for (const l of scan.logs.values()) {
         const entry = byId.get(l.requestId) ?? {
           collateral: 0n,
           firstSettledBlock: l.blockNumber,
+          recentCollateral: 0n,
+          recentFirstBlock: null,
         }
         // _retireExhaustedHead can emit RedeemSettled(id, 0) with no collateral.
         entry.collateral += l.collateral
         if (l.blockNumber < entry.firstSettledBlock) {
           entry.firstSettledBlock = l.blockNumber
         }
+        if (l.blockNumber >= windowStart && l.collateral > 0n) {
+          entry.recentCollateral += l.collateral
+          if (
+            entry.recentFirstBlock === null ||
+            l.blockNumber < entry.recentFirstBlock
+          ) {
+            entry.recentFirstBlock = l.blockNumber
+          }
+        }
         byId.set(l.requestId, entry)
       }
 
       return [...byId].map(
-        ([requestId, { collateral, firstSettledBlock }]) => ({
+        ([
+          requestId,
+          { collateral, firstSettledBlock, recentCollateral, recentFirstBlock },
+        ]) => ({
           requestId,
           collateralSettled: Number(formatUnits(collateral, decimals)),
           firstSettledBlock,
+          recentRatePerBlock:
+            recentFirstBlock === null
+              ? null
+              : Number(formatUnits(recentCollateral, decimals)) /
+                Number(head - recentFirstBlock + 1n),
         }),
       )
     },

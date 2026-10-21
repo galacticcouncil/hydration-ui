@@ -5,6 +5,7 @@ import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
+import { BLOCK_TIME_SECONDS } from "@/modules/strategies/propeller/constants"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
   type RedemptionSettlement,
@@ -59,6 +60,8 @@ export type PropellerWithdrawalRow = {
   collateralOwed?: number
   collateralSettled?: number
   settledSoFar?: number
+  /** at the trailing settlement pace; null while stalled or already settled */
+  etaSeconds: number | null
   eligibleAt: number
   mainDebt: Hex
   surplusHollar: number
@@ -109,6 +112,15 @@ export const buildWithdrawalRow = ({
     ? entry.collateralOwed
     : entry.shares * exchangeRate
 
+  // "at the current pace" only: a stall drops the trailing rate and with it
+  // the ETA — never project a frozen pace forward
+  const remainingCollateral = entry.collateralOwed - settledSoFar
+  const rate = settlement?.recentRatePerBlock ?? null
+  const etaSeconds =
+    entry.active && entry.started && remainingCollateral > 0 && rate && rate > 0
+      ? (remainingCollateral / rate) * BLOCK_TIME_SECONDS
+      : null
+
   return {
     id: withdrawalRowId(vault.vaultAddress, entry.requestId),
     requestId: entry.requestId,
@@ -123,6 +135,7 @@ export const buildWithdrawalRow = ({
     collateralOwed: entry.collateralOwed * baseRate,
     collateralSettled: entry.collateralSettled * baseRate,
     settledSoFar: settledSoFar * baseRate,
+    etaSeconds,
     eligibleAt: entry.eligibleAt,
     mainDebt: entry.mainDebt,
     surplusHollar: entry.surplusHollar,

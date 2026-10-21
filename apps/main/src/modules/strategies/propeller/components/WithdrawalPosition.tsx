@@ -53,6 +53,14 @@ const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
 const PARTIAL_CLAIM_MIN_FRACTION = 0.25
 const PARTIAL_CLAIM_MIN_USD = 1_000
 
+/** coarse on purpose: the pace wobbles, so minutes beat false precision */
+const formatEta = (seconds: number) => {
+  if (seconds < 90) return "~1 min"
+  if (seconds < 5400) return `~${Math.round(seconds / 60)} min`
+  if (seconds < 172800) return `~${Math.round(seconds / 3600)} h`
+  return `~${Math.round(seconds / 86400)} d`
+}
+
 const partialClaimWorthwhile = (row: PropellerWithdrawalRow) => {
   const unclaimed = row.collateralSettled ?? 0
   const owed = row.collateralOwed ?? 0
@@ -105,7 +113,7 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
               // the chip already says Settling and the row's amount is the
               // total owed; a compact settled-so-far is all this line adds
               label: t("withdrawals.settledLabel"),
-              value: t("withdrawals.settledProgress", {
+              value: `${t("withdrawals.settledProgress", {
                 settled: t("common:currency", {
                   value: row.settledSoFar ?? 0,
                   symbol,
@@ -115,7 +123,15 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
                   ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
                   100
                 ).toFixed(1),
-              }),
+                // the pace is measured from recent tranches and decays through
+                // stalls, so this is "at the current pace", never a promise
+              })}${
+                row.etaSeconds !== null
+                  ? ` · ${t("withdrawals.etaAtPace", {
+                      eta: formatEta(row.etaSeconds),
+                    })}`
+                  : ""
+              }`,
             },
           ]
         : undefined
