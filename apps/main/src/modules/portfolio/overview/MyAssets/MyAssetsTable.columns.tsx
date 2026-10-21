@@ -261,6 +261,7 @@ export const useMyAssetsColumns = (
                       ? position.underlyingAmount
                       : position.shareAmount
                   }
+                  shareBalance={position.shareAmount}
                   isJuicer={position.strategy === "juicer"}
                   assetId={position.assetId}
                   open

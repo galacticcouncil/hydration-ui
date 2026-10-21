@@ -21,6 +21,8 @@ export type ShareTransferAsset = {
   assetId: string
   symbol: string
   balance: string | null
+  /** exact share balance backing the position; the MAX transfer sends this */
+  shareBalance?: string | null
 }
 
 type ShareTransferAssetPickerProps = {

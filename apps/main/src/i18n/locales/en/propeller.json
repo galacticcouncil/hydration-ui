@@ -151,5 +151,7 @@
   "transfer.title": "Send {{shareSymbol}}",
   "transfer.description": "This sends position shares, not the underlying asset.",
   "transfer.juicerDescription": "The recipient receives your Juicer position, not {{symbol}}. Amounts are shown as the current {{symbol}} equivalent.",
-  "transfer.previewOnly": "Preview only — transfers are not connected yet."
+  "transfer.previewOnly": "Preview only — transfers are not connected yet.",
+  "transfer.toast.submitted": "Sending {{ amount }} Juicer position...",
+  "transfer.toast.success": "Sent {{ amount }} Juicer position"
 }

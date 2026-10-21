@@ -173,6 +173,7 @@ export const MyAssetsTable: FC<Props> = memo(
                   ? isDetailOpen.detail.strategyPosition.underlyingAmount
                   : isDetailOpen.detail.strategyPosition.shareAmount
               }
+              shareBalance={isDetailOpen.detail.strategyPosition.shareAmount}
               isJuicer={
                 isDetailOpen.detail.strategyPosition.strategy === "juicer"
               }

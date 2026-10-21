@@ -4,23 +4,34 @@ import {
   Box,
   Button,
   Chip,
+  LoadingButton,
   Modal,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
+import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import {
   AddressBook,
   AddressBookModal,
   WalletMode,
 } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { type Hex, isAddress } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
+import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { vaultStatsQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { useTransferShares } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { ShareTransferAssetPicker } from "./ShareTransferAssetPicker"
 
@@ -29,16 +40,21 @@ type Props = {
   symbol: string
   assetId: string
   balance: string | null
+  /** exact share balance backing the position; the MAX transfer sends this */
+  shareBalance?: string | null
   isJuicer: boolean
   positions?: StrategyPosition[]
   open: boolean
   onClose: () => void
 }
 
-// TODO: Connect share-specific transfers before enabling Confirm. For Juicer,
-// assetId identifies the collateral logo, not the vault share token. Juicer
-// inputs use underlying-asset equivalents; convert these to the correct vault's
-// shares at confirmation, and use the exact share balance for Max transfers.
+/** the recipient as an EVM address: 0x as-is, SS58 via its H160 twin */
+const resolveRecipient = (destination: string): Hex | null => {
+  if (isAddress(destination)) return destination
+  const converted = safeConvertSS58toH160(destination)
+  return converted && isAddress(converted) ? converted : null
+}
+
 export const ShareTransferModal = ({ open, onClose, ...props }: Props) => (
   <Modal
     variant="popup"
@@ -65,12 +81,94 @@ const ShareTransferModalContent = ({
   ...initialAsset
 }: Omit<Props, "open">) => {
   const { t } = useTranslation(["propeller", "common", "wallet"])
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
   const [selectedAsset, setSelectedAsset] = useState(initialAsset)
   const { symbol, assetId, balance } = selectedAsset
   const [isAssetPickerOpen, setIsAssetPickerOpen] = useState(false)
   const [amount, setAmount] = useState("")
   const [destination, setDestination] = useState("")
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
+
+  // Juicer: the modal's amounts are display-asset equivalents, but what moves
+  // is vault shares — convert through the share and collateral spot rates.
+  const vault = PROPELLER_VAULTS.find(
+    (vault) => `juicer:${vault.vaultAddress}` === selectedAsset.positionId,
+  )
+  const decimals = vault
+    ? getAssetWithFallback(vault.assetId).decimals
+    : undefined
+  const { data: stats } = useQuery({
+    ...vaultStatsQuery(rpc, vault ?? PROPELLER_VAULTS[0]!, decimals ?? 18),
+    enabled: rpc.isReady && isJuicer && !!vault,
+  })
+  const { getRate } = useBaseRates()
+  const transfer = useTransferShares(vault ?? PROPELLER_VAULTS[0]!, {
+    onSuccess: onClose,
+  })
+
+  const exchangeRate = stats?.exchangeRate ?? null
+  const rate = vault ? getRate(vault) : null
+  const shareBalance = selectedAsset.shareBalance ?? null
+  // MAX in display units, floored so a typed max never exceeds the shares
+  const maxDisplay =
+    shareBalance !== null &&
+    exchangeRate !== null &&
+    rate !== null &&
+    decimals !== undefined
+      ? Big(shareBalance)
+          .times(exchangeRate)
+          .times(rate)
+          .toFixed(decimals, Big.roundDown)
+      : null
+
+  const recipient = destination ? resolveRecipient(destination) : null
+  const parsedAmount = (() => {
+    try {
+      return amount ? Big(amount) : null
+    } catch {
+      return null
+    }
+  })()
+  const canConfirm =
+    isJuicer &&
+    !!vault &&
+    maxDisplay !== null &&
+    parsedAmount !== null &&
+    parsedAmount.gt(0) &&
+    parsedAmount.lte(maxDisplay) &&
+    recipient !== null &&
+    !transfer.isPending
+
+  const onConfirm = () => {
+    if (
+      !canConfirm ||
+      !vault ||
+      !recipient ||
+      shareBalance === null ||
+      exchangeRate === null ||
+      rate === null ||
+      decimals === undefined
+    )
+      return
+    // asking for everything shown sends the EXACT share balance; a partial
+    // amount converts down and is clamped so rounding can never overdraw
+    const isMax = Big(amount).gte(maxDisplay ?? "0")
+    const sharesIn = Big(amount)
+      .div(rate)
+      .div(exchangeRate)
+      .toFixed(decimals, Big.roundDown)
+    transfer.mutate({
+      shareAmount: isMax
+        ? shareBalance
+        : (Big(sharesIn).lt(shareBalance)
+            ? Big(sharesIn)
+            : Big(shareBalance)
+          ).toFixed(decimals, Big.roundDown),
+      displayAmount: amount,
+      to: recipient,
+    })
+  }
 
   if (isJuicer && isAssetPickerOpen) {
     return (
@@ -85,6 +183,7 @@ const ShareTransferModalContent = ({
             assetId: position.assetId,
             symbol: position.symbol,
             balance: position.underlyingAmount,
+            shareBalance: position.shareAmount,
           }))}
         selected={selectedAsset}
         onSelect={(asset) => {
@@ -145,13 +244,16 @@ const ShareTransferModalContent = ({
             balance={{
               label: t("common:balance"),
               value:
-                balance === null
+                (maxDisplay ?? balance) === null
                   ? "—"
                   : `${isJuicer ? `${t("common:approx.short")} ` : ""}${t(
                       "common:number",
-                      { value: balance },
+                      { value: maxDisplay ?? balance },
                     )}`,
-              onMax: balance === null ? null : () => setAmount(balance),
+              onMax:
+                (maxDisplay ?? balance) === null
+                  ? null
+                  : () => setAmount((maxDisplay ?? balance) as string),
             }}
           />
         </Box>
@@ -174,11 +276,11 @@ const ShareTransferModalContent = ({
       >
         <Alert
           variant="info"
-          description={`${t("transfer.previewOnly")} ${
+          description={
             isJuicer
               ? t("transfer.juicerDescription", { symbol })
-              : t("transfer.description")
-          }`}
+              : `${t("transfer.previewOnly")} ${t("transfer.description")}`
+          }
         />
         <Button
           variant="tertiary"
@@ -188,9 +290,14 @@ const ShareTransferModalContent = ({
         >
           {t("common:cancel")}
         </Button>
-        <Button size="large" disabled>
+        <LoadingButton
+          size="large"
+          isLoading={transfer.isPending}
+          disabled={!canConfirm}
+          onClick={onConfirm}
+        >
           {t("common:confirm")}
-        </Button>
+        </LoadingButton>
       </ModalFooter>
     </>
   )

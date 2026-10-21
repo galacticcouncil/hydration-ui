@@ -480,6 +480,53 @@ export function useRequestRedeem(
   })
 }
 
+export type TransferSharesVariables = {
+  /** exact share amount to move; the caller resolves display units to shares */
+  shareAmount: string
+  /** user-facing amount in the current display asset, for the toast only */
+  displayAmount: string
+  to: Hex
+}
+
+/**
+ * Transfers vault shares (the position itself). The vault token folds any
+ * funded-but-virtual yield into real shares on transfer, so the exact share
+ * amount is all the chain needs.
+ */
+export function useTransferShares(
+  vault: PropellerVaultConfig,
+  options: VaultWriteOptions = {},
+) {
+  const { t } = useTranslation(["common", "propeller"])
+  const { getAssetWithFallback } = useAssets()
+  const { submitTx } = useVaultEvmCall(options)
+  const { decimals } = getAssetWithFallback(vault.assetId)
+  const { symbol } = useVaultDisplayAsset()(vault)
+
+  return useMutation({
+    mutationFn: ({
+      shareAmount,
+      displayAmount,
+      to,
+    }: TransferSharesVariables) => {
+      const data = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "transfer",
+        args: [to, parseExactAmount(shareAmount, decimals)],
+      })
+      const amount = t("currency", {
+        value: displayAmount,
+        symbol,
+        maximumFractionDigits: 4,
+      })
+      return submitTx(vault.vaultAddress, data, [...erc20Abi], {
+        submitted: t("propeller:transfer.toast.submitted", { amount }),
+        success: t("propeller:transfer.toast.success", { amount }),
+      })
+    },
+  })
+}
+
 export type ClaimVariables = {
   vault: PropellerVaultConfig
   requestId: number
