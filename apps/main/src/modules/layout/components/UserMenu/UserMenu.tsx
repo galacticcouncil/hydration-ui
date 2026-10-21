@@ -84,8 +84,6 @@ export const UserMenu: FC<Props> = ({
     (p) => p.status === WalletProviderStatus.Connected,
   )
 
-  console.log({ listedProviders })
-
   const openManageWallets = (initialProvider?: WalletProviderType) => {
     onOpenChange(false)
     toggle(undefined, { initialProvider })
