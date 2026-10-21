@@ -148,9 +148,10 @@ export const WalletManagementContent = () => {
   )
   /**
    * Which column is on screen below `md`. Desktop shows both, but the flag is
-   * still set there so it is correct on every viewport.
+   * still set there so it is correct on every viewport. Opens on the accounts
+   * when one is already selected.
    */
-  const [showAccounts, setShowAccounts] = useState(false)
+  const [showAccounts, setShowAccounts] = useState(!!currentAccount)
   const [walletSearchValue, setWalletSearchValue] = useState("")
   const [accountSearchValue, setAccountSearchValue] = useState("")
   const [walletSearch, setWalletSearch] = useState("")
@@ -175,8 +176,8 @@ export const WalletManagementContent = () => {
 
   /**
    * The single entry point for picking a wallet source. Seeding the initial
-   * provider above deliberately does not go through it: the modal always opens
-   * on the wallet list, even when a wallet is already connected.
+   * provider above deliberately does not go through it: it must not switch
+   * columns on its own.
    */
   const selectSource = useCallback((source: WalletSourceId) => {
     setSelectedSource(source)

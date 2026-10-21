@@ -39,8 +39,11 @@ export const SSectionLabel = styled(Flex)(
   `,
 )
 
+/* mirrors `optionTile`, so the button reads as part of the account tile above it */
 export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
   ({ theme, isActive }) => css`
+    --button-bg: ${theme.surfaces.containers.dim.dimOnBg};
+
     width: 100%;
     text-transform: uppercase;
     border: 1px solid transparent;
@@ -49,11 +52,22 @@ export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 
+    &:hover {
+      background-color: ${theme.controls.dim.active};
+      border-color: ${theme.buttons.secondary.outline.outline};
+      border-top-color: ${theme.details.borders};
+    }
+
     ${isActive &&
     css`
-      background-color: ${theme.buttons.secondary.outline.fill};
-      border-color: ${theme.buttons.secondary.outline.outline};
+      --button-bg: ${theme.buttons.secondary.accent.rest};
+      border-color: ${theme.buttons.secondary.accent.outline};
       border-top-color: transparent;
+
+      &:hover {
+        border-color: ${theme.buttons.secondary.accent.outline};
+        border-top-color: transparent;
+      }
     `}
   `,
 )
