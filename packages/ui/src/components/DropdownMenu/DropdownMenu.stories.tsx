@@ -14,7 +14,6 @@ import { Button } from "@/components/Button"
 import { CopyButton } from "@/components/CopyButton"
 import { ExternalLink } from "@/components/ExternalLink"
 import { Flex } from "@/components/Flex"
-import { Icon } from "@/components/Icon"
 import {
   MenuItem,
   MenuItemDescription,
@@ -39,10 +38,13 @@ export default {
 export const Default: StoryFn = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="secondary" size="medium">
-        <Icon size="s" component={SettingsIcon} />
+      <Button
+        iconStart={SettingsIcon}
+        iconEnd={ChevronDownIcon}
+        variant="secondary"
+        size="medium"
+      >
         Settings
-        <Icon size="s" component={ChevronDownIcon} />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start">
@@ -70,13 +72,10 @@ export const Default: StoryFn = () => (
   </DropdownMenu>
 )
 
-/** Items rendered as links and copy buttons — the pattern used by the
- * transaction review CopyMenu. */
 export const LinksAndActions: StoryFn = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="tertiary" size="small">
-        <Icon size="s" component={CopyIcon} />
+      <Button iconStart={CopyIcon} variant="tertiary" size="small">
         Copy
       </Button>
     </DropdownMenuTrigger>
@@ -110,7 +109,7 @@ export const LinksAndActions: StoryFn = () => (
 
 export const Animations: StoryFn = () => (
   <Flex gap="m">
-    {(["scale-top", "scale-bottom", "slide-top", "slide-bottom"] as const).map(
+    {(["bottom", "top", "right", "left", "slide-bottom"] as const).map(
       (animation) => (
         <DropdownMenu key={animation}>
           <DropdownMenuTrigger asChild>
@@ -119,8 +118,9 @@ export const Animations: StoryFn = () => (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            animation={animation}
-            side={animation.endsWith("top") ? "bottom" : "top"}
+            {...(animation === "slide-bottom"
+              ? { animation, side: "top" }
+              : { side: animation })}
           >
             <DropdownMenuItem asChild>
               <MenuSelectionItem>
@@ -139,8 +139,34 @@ export const Animations: StoryFn = () => (
   </Flex>
 )
 
-/** `fullWidth` stretches the content to the viewport — used by the mobile tab
- * bar menu. */
+export const Sizes: StoryFn = () => (
+  <Flex gap="m">
+    {(["small", "medium", "large"] as const).map((size) => (
+      <DropdownMenu key={size}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="secondary" size="small">
+            {size}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent size={size} align="start">
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem>
+              <MenuItemIcon component={IconPlaceholder} />
+              <MenuItemLabel>Item 1</MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem>
+              <MenuItemIcon component={IconPlaceholder} />
+              <MenuItemLabel>Item 2</MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ))}
+  </Flex>
+)
+
 export const FullWidth: StoryFn = () => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>

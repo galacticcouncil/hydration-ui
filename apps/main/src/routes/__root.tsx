@@ -13,6 +13,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
   useXcScanSubscription,
@@ -37,6 +38,12 @@ const TransactionManager = lazy(async () => ({
 const Web3ConnectModal = lazy(async () => ({
   default: await import("@galacticcouncil/web3-connect").then(
     (m) => m.Web3ConnectModal,
+  ),
+}))
+
+const Web3ConnectSession = lazy(async () => ({
+  default: await import("@galacticcouncil/web3-connect").then(
+    (m) => m.Web3ConnectSession,
   ),
 }))
 
@@ -80,19 +87,21 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <MultisigProvider>
-            <AssetRegistryGate>
-              <MainLayout />
-              <Services />
-              <Footer />
-              <AppUpdateBanner />
-              {!hasTopNavbar && (
-                <Suspense>
-                  <MobileTabBar />
-                </Suspense>
-              )}
-            </AssetRegistryGate>
-          </MultisigProvider>
+          <TutorialProvider>
+            <MultisigProvider>
+              <AssetRegistryGate>
+                <MainLayout />
+                <Services />
+                <Footer />
+                <AppUpdateBanner />
+                {!hasTopNavbar && (
+                  <Suspense>
+                    <MobileTabBar />
+                  </Suspense>
+                )}
+              </AssetRegistryGate>
+            </MultisigProvider>
+          </TutorialProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && (
@@ -128,6 +137,7 @@ function Services() {
     <>
       <Suspense fallback={null}>
         <TransactionManager />
+        <Web3ConnectSession />
         <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
       </Suspense>
       {isReady && <ApiSubscriptions />}

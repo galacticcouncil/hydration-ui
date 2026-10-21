@@ -1,5 +1,7 @@
 export enum WalletProviderType {
   AlephZero = "aleph-zero",
+  BackpackSol = "backpack-sol",
+  BackpackSui = "backpack-sui",
   BraveWallet = "bravewallet",
   BraveWalletSol = "bravewallet-sol",
   Enkrypt = "enkrypt",
@@ -11,11 +13,15 @@ export enum WalletProviderType {
   LedgerNear = "ledger-near",
   MantaWallet = "manta-wallet-js",
   MetaMask = "metamask",
+  MetaMaskSol = "metamask-sol",
   MeteorWallet = "meteor-wallet",
   NoirWallet = "noir-wallet",
   NovaWallet = "nova-wallet",
   NovaWalletEvm = "nova-wallet-evm",
   NovaWalletH160 = "nova-wallet-h160",
+  OKXWallet = "okx-wallet",
+  OKXWalletSol = "okx-wallet-sol",
+  OKXWalletSui = "okx-wallet-sui",
   Phantom = "phantom",
   PhantomSui = "phantom-sui",
   PolkadotJS = "polkadot-js",
@@ -28,7 +34,8 @@ export enum WalletProviderType {
   Talisman = "talisman",
   TalismanEvm = "talisman-evm",
   TalismanH160 = "talisman-h160",
-  TrustWallet = "trustwallet",
+  TalismanSol = "talisman-sol",
+  TrustWalletSol = "trustwallet-sol",
   Slush = "slush",
   Suiet = "suiet",
   WalletConnect = "walletconnect",
@@ -43,17 +50,12 @@ export const isWalletProviderType = (
   )
 }
 
-export const TALISMAN_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.Talisman,
-  WalletProviderType.TalismanEvm,
-]
-
 export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
+  WalletProviderType.OKXWallet,
   WalletProviderType.NovaWalletEvm,
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletEvm,
-  WalletProviderType.TrustWallet,
   WalletProviderType.BraveWallet,
   WalletProviderType.RabbyWallet,
   WalletProviderType.WalletConnect,
@@ -81,11 +83,18 @@ export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
 export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
+  WalletProviderType.TrustWalletSol,
+  WalletProviderType.OKXWalletSol,
+  WalletProviderType.MetaMaskSol,
+  WalletProviderType.BackpackSol,
+  WalletProviderType.TalismanSol,
   WalletProviderType.BraveWalletSol,
 ]
 
 export const SUI_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Suiet,
+  WalletProviderType.OKXWalletSui,
+  WalletProviderType.BackpackSui,
   WalletProviderType.Slush,
   WalletProviderType.PhantomSui,
 ]
@@ -100,10 +109,6 @@ export const NEAR_PROVIDERS: WalletProviderType[] = [
 
 export const ZCASH_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.NoirWallet,
-]
-
-export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.ExternalWallet,
 ]
 
 export const NOVA_WALLET_BLACKLISTED_PROVIDERS: WalletProviderType[] = [

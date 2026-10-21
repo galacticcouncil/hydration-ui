@@ -175,6 +175,10 @@ export class BaseNearWallet implements Wallet {
     return true
   }
 
+  get hasExtension() {
+    return false
+  }
+
   get enabled() {
     return this._enabled
   }

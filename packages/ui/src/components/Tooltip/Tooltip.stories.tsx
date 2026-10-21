@@ -32,13 +32,3 @@ export const Sizes: Story = {
     </div>
   ),
 }
-
-export const Immediate: Story = {
-  render: Template,
-  args: {
-    text: "My Contacts",
-    size: "small",
-    side: "bottom",
-    delayDuration: 0,
-  },
-}

@@ -17,11 +17,13 @@ import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { WalletProviderType } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import { Account } from "@/hooks/useWeb3Connect"
-import { getAccountAvatarTheme } from "@/utils"
 import { getWalletModeIcon } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
-export type AccountOptionProps = Omit<Account, "provider"> & {
+export type AccountOptionProps = Omit<
+  Account,
+  "provider" | "canUseOnHydration"
+> & {
   provider?: WalletProviderType
   mode?: WalletMode
   className?: string
@@ -67,10 +69,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
     >
       <Flex align="center" gap="m">
         <Box sx={{ flexShrink: 0 }}>
-          <AccountAvatar
-            address={account.displayAddress}
-            theme={getAccountAvatarTheme(account as Account)}
-          />
+          <AccountAvatar address={account.displayAddress} />
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
           <Flex align="center" justify="space-between" height="l">

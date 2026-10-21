@@ -6,7 +6,7 @@ Web app for the Hydration parachain. `apps/main` is the one deployable (a React 
 
 - **Branch.** Create a branch off `master` (`feat/`, `fix/`, `chore/`, `refactor/`) before starting a feature or fix.
 - **Stale build.** `apps/main` type-checks the packages through `packages/<name>/build/`, so after editing a package run `npx tsc --build` in it, then type-check the app. "has no exported member" or implicit-`any` errors in files you left untouched mean a stale build: rebuild the package they point at.
-- **Checks.** `yarn lint` runs ESLint and `tsc` in every workspace; `yarn lint:fix` sorts imports and formats. `yarn test` runs Vitest, which covers pure logic in `apps/main/src/**/*.test.ts`.
+- **Checks.** `yarn lint` runs ESLint and `tsc` in every workspace; `yarn lint:fix` sorts imports and formats. `yarn test` runs Vitest, which covers pure logic in `*.test.ts` files under `apps/main/src`, `packages/web3-connect/src` and `packages/ui/src`.
 - **UI changes are verified by eye.** Open the affected page in the running app, or the story in Storybook, and report which of the two you looked at.
   - App: `yarn workspace @galacticcouncil/main dev` runs against the test network; `dev:production` runs against mainnet. By default, run the mainnet dev server, unless told otherwise.
   - Storybook: `yarn workspace @galacticcouncil/ui dev`, port 6006.

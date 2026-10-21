@@ -1,13 +1,7 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { Close } from "@galacticcouncil/ui/assets/icons"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
-import {
-  Button,
-  ButtonIcon,
-  Icon,
-  Text,
-  ValueStats,
-} from "@galacticcouncil/ui/components"
+import { Button, Text, ValueStats } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import Big from "big.js"
@@ -125,19 +119,20 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
           )}
         </SValuesContainer>
       </SContent>
-      <ButtonIcon
+      <Button
+        icon={Close}
+        size="micro"
+        uppercase
+        variant="transparent"
         sx={{
           position: "absolute",
           top: -5,
           right: -5,
-          p: "s",
           zIndex: 1,
           background: getToken("icons.onSurface"),
         }}
         onClick={() => setBannerVisible("hollar-banner", false, Date.now())}
-      >
-        <Icon component={Close} size={12} color={getToken("text.high")} />
-      </ButtonIcon>
+      />
     </SContainer>
   )
 }

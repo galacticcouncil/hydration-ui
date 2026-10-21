@@ -3,11 +3,9 @@ import {
   AccountAvatar,
   AccountInput,
   Button,
-  ButtonIcon,
   Expander,
   Flex,
   FormError,
-  Icon,
   Paper,
   Stack,
   Text,
@@ -73,7 +71,7 @@ export const SignersStep: React.FC<SignersStepProps> = ({
   const isAddDisabled = !lastValue || !!errors.signers?.[lastIndex]?.value
 
   return (
-    <Stack gap="base" p="xl" pt={0}>
+    <Stack gap="base" pb="xl" px="s" pt={0}>
       {fields.map((field, index) => {
         const signerValue = signers[index]?.value ?? ""
 
@@ -96,16 +94,15 @@ export const SignersStep: React.FC<SignersStepProps> = ({
                     {safeConvertAddressSS58(signerValue)}
                   </Text>
                 </Stack>
-                <ButtonIcon
+                <Button
+                  icon={Trash2}
                   variant="muted"
                   outline
                   size="small"
                   sx={{ flexShrink: 0, ml: "auto" }}
                   onClick={() => onRemoveSigner(index)}
                   type="button"
-                >
-                  <Icon size="s" component={Trash2} />
-                </ButtonIcon>
+                />
               </SMultisigAccount>
             </Expander>
           )
