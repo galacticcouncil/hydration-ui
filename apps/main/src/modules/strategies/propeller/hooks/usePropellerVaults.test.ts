@@ -10,6 +10,7 @@ vi.mock("@galacticcouncil/utils", () => ({
   GETH_ASSET_ID: "4200",
   GETH_ERC20_ID: "420",
   ETH_ASSET_ID: "34",
+  WSTETH_ASSET_ID: "1000809",
 }))
 vi.mock("@/api/borrow", () => ({}))
 vi.mock(

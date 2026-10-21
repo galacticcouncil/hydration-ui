@@ -74,6 +74,7 @@ const withdrawal = (
   estUsd: 2500,
   state: "pending",
   etaSeconds: null,
+  typicalSettleSeconds: null,
   settledSoFar: 0,
   collateralSettled: 0,
   eligibleAt: 0,

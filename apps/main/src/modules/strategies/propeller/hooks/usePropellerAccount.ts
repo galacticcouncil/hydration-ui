@@ -62,6 +62,8 @@ export type PropellerWithdrawalRow = {
   settledSoFar?: number
   /** at the trailing settlement pace; null while stalled or already settled */
   etaSeconds: number | null
+  /** the vault's median settle-phase length, for when there is no live pace */
+  typicalSettleSeconds: number | null
   eligibleAt: number
   mainDebt: Hex
   surplusHollar: number
@@ -136,6 +138,10 @@ export const buildWithdrawalRow = ({
     collateralSettled: entry.collateralSettled * baseRate,
     settledSoFar: settledSoFar * baseRate,
     etaSeconds,
+    typicalSettleSeconds:
+      entry.active && entry.started && remainingCollateral > 0
+        ? (settlement?.typicalSettleSeconds ?? null)
+        : null,
     eligibleAt: entry.eligibleAt,
     mainDebt: entry.mainDebt,
     surplusHollar: entry.surplusHollar,

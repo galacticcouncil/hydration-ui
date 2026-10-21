@@ -2,7 +2,10 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 import { formatUnits, type Hex, parseAbiItem } from "viem"
 
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
-import { VAULT_DEPLOY_BLOCK } from "@/modules/strategies/propeller/constants"
+import {
+  BLOCK_TIME_SECONDS,
+  VAULT_DEPLOY_BLOCK,
+} from "@/modules/strategies/propeller/constants"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
 
@@ -49,6 +52,14 @@ export interface RedemptionSettlement {
    * null when nothing settled recently.
    */
   recentRatePerBlock: number | null
+  lastSettledBlock: bigint
+  /**
+   * How long settling typically takes on this vault, in seconds: the median
+   * first-to-last-tranche span of requests that finished settling. The keeper
+   * completes in bursts, so this phase length beats any linear projection.
+   * Vault-wide (every settlement the scan has seen), same on each entry.
+   */
+  typicalSettleSeconds: number | null
 }
 
 /** settlements older than this say nothing about the current pace (~10 min) */
@@ -127,6 +138,7 @@ export const vaultSettlementsQuery = (
         {
           collateral: bigint
           firstSettledBlock: bigint
+          lastSettledBlock: bigint
           recentCollateral: bigint
           recentFirstBlock: bigint | null
         }
@@ -137,6 +149,7 @@ export const vaultSettlementsQuery = (
         const entry = byId.get(l.requestId) ?? {
           collateral: 0n,
           firstSettledBlock: l.blockNumber,
+          lastSettledBlock: l.blockNumber,
           recentCollateral: 0n,
           recentFirstBlock: null,
         }
@@ -144,6 +157,9 @@ export const vaultSettlementsQuery = (
         entry.collateral += l.collateral
         if (l.blockNumber < entry.firstSettledBlock) {
           entry.firstSettledBlock = l.blockNumber
+        }
+        if (l.blockNumber > entry.lastSettledBlock) {
+          entry.lastSettledBlock = l.blockNumber
         }
         if (l.blockNumber >= windowStart && l.collateral > 0n) {
           entry.recentCollateral += l.collateral
@@ -157,19 +173,37 @@ export const vaultSettlementsQuery = (
         byId.set(l.requestId, entry)
       }
 
+      // requests whose last tranche is outside the rate window have finished
+      // settling; their first-to-last span is the vault's typical phase length
+      const spans = [...byId.values()]
+        .filter((e) => e.collateral > 0n && e.lastSettledBlock < windowStart)
+        .map((e) => Number(e.lastSettledBlock - e.firstSettledBlock))
+        .sort((a, b) => a - b)
+      const typicalSettleSeconds = spans.length
+        ? spans[Math.floor(spans.length / 2)]! * BLOCK_TIME_SECONDS
+        : null
+
       return [...byId].map(
         ([
           requestId,
-          { collateral, firstSettledBlock, recentCollateral, recentFirstBlock },
+          {
+            collateral,
+            firstSettledBlock,
+            lastSettledBlock,
+            recentCollateral,
+            recentFirstBlock,
+          },
         ]) => ({
           requestId,
           collateralSettled: Number(formatUnits(collateral, decimals)),
           firstSettledBlock,
+          lastSettledBlock,
           recentRatePerBlock:
             recentFirstBlock === null
               ? null
               : Number(formatUnits(recentCollateral, decimals)) /
                 Number(head - recentFirstBlock + 1n),
+          typicalSettleSeconds,
         }),
       )
     },

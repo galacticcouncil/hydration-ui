@@ -2,6 +2,7 @@ import {
   ETH_ASSET_ID,
   GETH_ASSET_ID,
   GETH_ERC20_ID,
+  WSTETH_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { type Hex } from "viem"
 
@@ -32,7 +33,10 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
     shareSymbol: "jETH",
     shareName: "Juicer ETH",
     baseAssetId: ETH_ASSET_ID,
-    payAssetIds: [GETH_ERC20_ID, ETH_ASSET_ID],
+    // every entry the router already handles: ETH wraps to aETH and joins the
+    // pool, wstETH joins directly (it is a constituent), GETH unwinds 1:1
+    // through the Aave leg, and the raw pool share deposits with no swap
+    payAssetIds: [GETH_ERC20_ID, ETH_ASSET_ID, WSTETH_ASSET_ID],
     collateralDisplayId: GETH_ERC20_ID,
   },
   {

@@ -130,7 +130,11 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
                   ? ` · ${t("withdrawals.etaAtPace", {
                       eta: formatEta(row.etaSeconds),
                     })}`
-                  : ""
+                  : row.typicalSettleSeconds !== null
+                    ? ` · ${t("withdrawals.etaTypical", {
+                        eta: formatEta(row.typicalSettleSeconds),
+                      })}`
+                    : ""
               }`,
             },
           ]
