@@ -17,6 +17,10 @@ const schema = z.object({
   VITE_DRY_RUN_ENABLED: coerceToBoolean,
   VITE_WORMHOLE_DISABLED: coerceToBoolean,
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
+  VITE_HL_TESTNET: coerceToBoolean,
+  VITE_HL_BUILDER_ADDR: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+  VITE_HL_BUILDER_FEE: z.coerce.number().int().min(0).max(100),
+  VITE_HL_BUILDER_MAX_FEE: z.coerce.number().int().min(0).max(100),
 })
 
 export const ENV = schema.parse(import.meta.env)
