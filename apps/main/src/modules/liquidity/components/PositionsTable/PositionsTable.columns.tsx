@@ -1,9 +1,9 @@
 import {
   ChevronRight,
+  CircleMinus,
   CupSoda,
   Ellipsis,
   Plus,
-  Trash,
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -296,7 +296,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                           e.preventDefault()
                         }}
                       >
-                        <MenuItemIcon component={Trash} />
+                        <MenuItemIcon component={CircleMinus} />
                         <MenuItemLabel>
                           <Link
                             to="/liquidity/$id/remove"
@@ -379,7 +379,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                     stableswapId: original.stableswapId,
                   }}
                 >
-                  <Trash />
+                  <CircleMinus />
                   {t("remove")}
                 </Link>
               </Button>
@@ -532,7 +532,7 @@ export const useBalanceTableColumns = () => {
                           e.preventDefault()
                         }}
                       >
-                        <MenuItemIcon component={Trash} />
+                        <MenuItemIcon component={CircleMinus} />
                         <MenuItemLabel>
                           <Link
                             to="/liquidity/$id/remove"
@@ -587,7 +587,7 @@ export const useBalanceTableColumns = () => {
                     stableswapId: stableswapId,
                   }}
                 >
-                  <Trash />
+                  <CircleMinus />
                   {t("remove")}
                 </Link>
               </Button>
@@ -752,7 +752,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                           e.preventDefault()
                         }}
                       >
-                        <MenuItemIcon component={Trash} />
+                        <MenuItemIcon component={CircleMinus} />
                         <MenuItemLabel>
                           <Link
                             to="/liquidity/$id/remove"
@@ -804,7 +804,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                     shareTokenId: !positionId ? shareTokenId : undefined,
                   }}
                 >
-                  <Trash />
+                  <CircleMinus />
                   {t("remove")}
                 </Link>
               </Button>

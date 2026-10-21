@@ -51,7 +51,7 @@ These standards describe new and changed code. Where older code differs, follow 
 - **`<Name>.form.ts` exports the form hook**, built on `useForm` with `resolver: standardSchemaResolver(schema)` (`apps/main/src/modules/staking/Stake.form.ts`).
 - **The schema is Zod** (`zod/v4`). When validation needs runtime values such as a balance, a function or hook builds the schema from them. Shared validators come from `@/utils/validators`.
 - **Form value types are inferred**: `type StakeFormValues = z.infer<ReturnType<typeof getSchema>>`.
-- **Validation messages are translations**, produced with `i18n.t(…)` inside the schema.
+- **Validation messages are translations.** When building a schema inside a React hook, use `t(…)` from `useTranslation`. Outside React hooks, use `i18n.t(…)`.
 - **The parent creates the form and provides it** with `<FormProvider {...form}>`; fields read it from context.
 
 ## Transactions

@@ -19,6 +19,10 @@ import {
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { bilVaultContractQuery } from "@/modules/strategies/bil/hooks/useBilVaultContract"
 import { bilQueryKeys } from "@/modules/strategies/bil/utils/queryKeys"
+import {
+  getQueueWait,
+  getQueueWaitSlots,
+} from "@/modules/strategies/bil/utils/queueWait"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type UserBalances = {
@@ -114,6 +118,9 @@ export function useVaultStats() {
         idleHollar,
         positionCount,
         positionHead,
+        decentralPoolAddr,
+        config,
+        aTokenSupply,
       ] = await Promise.all([
         vault.read.totalAssets(),
         vault.read.totalSupply(),
@@ -129,55 +136,12 @@ export function useVaultStats() {
         vault.read.getIdleHollar(),
         vault.read.getPositionCount(),
         vault.read.getPositionHead(),
-      ])
-
-      // There is no separate redemption delay — the queue settles as
-      // positions mature.
-      let worstCaseWaitSec = 0n
-      let nextMaturitySec = 0n
-      const now = BigInt(Math.floor(Date.now() / 1000))
-
-      if (positionCount > positionHead) {
-        const [, , , , maturityTime] = await vault.read.getPosition([
-          positionHead,
-        ])
-        if (maturityTime > now) {
-          nextMaturitySec = maturityTime - now
-        }
-      }
-
-      // Estimate wait for a new queue entry: scan active slots plus the
-      // append index. getEstimatedWaitTime often returns 0 for settled/
-      // claimable requests, so floor on next maturity when idle HOLLAR is 0.
-      if (queueLength > queueHead) {
-        worstCaseWaitSec = await vault.read.getEstimatedWaitTime([queueLength])
-        for (let i = queueHead; i < queueLength; i++) {
-          const wait = await vault.read.getEstimatedWaitTime([i])
-          if (wait > worstCaseWaitSec) worstCaseWaitSec = wait
-        }
-      }
-
-      if (
-        idleHollar === 0n &&
-        nextMaturitySec > 0n &&
-        worstCaseWaitSec < nextMaturitySec
-      ) {
-        worstCaseWaitSec = nextMaturitySec
-      }
-
-      // Max lockup a *new* deposit faces, regardless of queue contention.
-      // The active deposit pool is read on-chain, not from a local constant.
-      const decentralPoolAddr = await vault.read.activeDepositPool()
-      const investmentPeriodSec = await rpc.evm.readContract({
-        address: decentralPoolAddr,
-        abi: DECENTRAL_POOL_ABI,
-        functionName: "minimumInvestmentPeriodSeconds",
-      })
-
-      // Aave pool supply cap for the BIL reserve. A deposit is atomically
-      // `vault.deposit` + `pool.supply` (see BILDepositZap), so the pool cap
-      // binds alongside the vault's `tvlCap`.
-      const [config, aTokenSupply] = await Promise.all([
+        // Max lockup a *new* deposit faces, regardless of queue contention.
+        // The active deposit pool is read on-chain, not from a local constant.
+        vault.read.activeDepositPool(),
+        // Aave pool supply cap for the BIL reserve. A deposit is atomically
+        // `vault.deposit` + `pool.supply` (see BILDepositZap), so the pool cap
+        // binds alongside the vault's `tvlCap`.
         rpc.evm.readContract({
           address: BIL_POOL_ADDRESS,
           abi: BIL_POOL_ABI,
@@ -192,6 +156,32 @@ export function useVaultStats() {
           functionName: "totalSupply",
         }),
       ])
+
+      // Everything below depends only on the first round, so it goes out
+      // together as the second.
+      const [position, investmentPeriodSec, waits] = await Promise.all([
+        positionCount > positionHead
+          ? vault.read.getPosition([positionHead])
+          : null,
+        rpc.evm.readContract({
+          address: decentralPoolAddr,
+          abi: DECENTRAL_POOL_ABI,
+          functionName: "minimumInvestmentPeriodSeconds",
+        }),
+        Promise.all(
+          getQueueWaitSlots(queueHead, queueLength).map((slot) =>
+            vault.read.getEstimatedWaitTime([slot]),
+          ),
+        ),
+      ])
+
+      const { nextMaturitySec, worstCaseWaitSec } = getQueueWait({
+        waits,
+        maturityTime: position?.[4] ?? 0n,
+        now: BigInt(Math.floor(Date.now() / 1000)),
+        idleHollar,
+      })
+
       // Aave V3 packs the supply cap into bits 116-151 of the reserve
       // config (36 bits, whole tokens, no decimals). 0 == uncapped.
       const supplyCapBil = Number((config.data >> 116n) & 0xfffffffffn)

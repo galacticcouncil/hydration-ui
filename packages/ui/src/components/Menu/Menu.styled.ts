@@ -58,8 +58,8 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
 export const MenuItemIcon = styled(Icon)(
   ({ theme }) => css`
     grid-row: 1 / -1;
-    width: var(--menu-item-icon-size, ${theme.sizes.l});
-    height: var(--menu-item-icon-size, ${theme.sizes.l});
+    width: var(--menu-item-icon-size, ${theme.sizes.xl});
+    height: var(--menu-item-icon-size, ${theme.sizes.xl});
     padding: ${theme.space.xs};
     flex-shrink: 0;
   `,

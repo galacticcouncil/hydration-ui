@@ -34,10 +34,17 @@ export const SHeader = styled.header(
       padding-left: var(--layout-gutter);
       padding-right: ${theme.space.m};
       margin-bottom: ${theme.space.xxl};
+
+      [data-intersect="explorer"] {
+        display: none;
+      }
     }
 
     ${mq(FULL_HEADER_BREAKPOINT)} {
       gap: ${theme.space.xxxl};
+      [data-intersect="explorer"] {
+        display: block;
+      }
     }
   `,
 )

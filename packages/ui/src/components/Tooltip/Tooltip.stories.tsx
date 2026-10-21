@@ -36,13 +36,3 @@ export const Sizes: Story = {
 export const Paper: Story = {
   render: (args) => <Template {...args} paper text={LIPSUM} />,
 }
-
-export const Immediate: Story = {
-  render: Template,
-  args: {
-    text: "My Contacts",
-    size: "small",
-    side: "bottom",
-    delayDuration: 0,
-  },
-}

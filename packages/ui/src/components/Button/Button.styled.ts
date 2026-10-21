@@ -69,10 +69,6 @@ const iconStyles = css`
     height: round(var(--button-icon, 1.15em), 2px);
   }
 
-  & > ${ICON} * {
-    vector-effect: non-scaling-stroke;
-  }
-
   & > [data-icon="start"] {
     margin-inline-start: -0.125em;
     margin-inline-start: round(-0.125em, 1px);
@@ -122,6 +118,16 @@ const defaultStyles = createStyles(
       --button-bg 0.2s,
       ${theme.transitions.opacity},
       ${pressScaleTransition};
+
+    /* Safari resolves var() heights to auto while a registered property transitions, so there the fill fades as itself */
+    @supports (font: -apple-system-body) {
+      transition:
+        color 0.2s,
+        border-color 0.2s,
+        background-color 0.2s,
+        ${theme.transitions.opacity},
+        ${pressScaleTransition};
+    }
 
     ${pressScale};
 
@@ -388,11 +394,6 @@ const sizes = createVariants<ButtonSize>((theme) => ({
 
     column-gap: 0.2em;
     column-gap: round(0.2em, 1px);
-
-    & > ${ICON} *,
-    & > * > [data-loading-content] > ${ICON} * {
-      stroke-width: 1.5px;
-    }
   `,
   small: css`
     --button-height: 1.875rem;
@@ -401,11 +402,6 @@ const sizes = createVariants<ButtonSize>((theme) => ({
     line-height: 1.2;
     font-size: ${theme.fontSizes.p6};
     padding: ${theme.space.base} ${theme.buttons.paddings.primary};
-
-    & > ${ICON} *,
-    & > * > [data-loading-content] > ${ICON} * {
-      stroke-width: 1.5px;
-    }
   `,
   medium: css`
     --button-height: 2.5rem;

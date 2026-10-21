@@ -40,6 +40,8 @@ export const useTransactionEcosystem = (
       return CallType.Solana
     case chain.isNear():
       return CallType.Near
+    case chain.isZec():
+      return CallType.Zec
     default:
       return CallType.Substrate
   }

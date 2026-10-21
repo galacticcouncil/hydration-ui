@@ -1,8 +1,9 @@
-const INTENTSCAN_URL = "https://explorer-intent.play.hydration.cloud"
+const INTENTSCAN_URL = "https://scan.play.hydration.cloud"
+const INTENTSCAN_API_URL = "https://intents.scan.play.hydration.cloud"
 
 export const intentscan = {
-  baseUrl: INTENTSCAN_URL,
+  apiUrl: INTENTSCAN_API_URL,
   order: (sequence: string | number): string => {
-    return `${INTENTSCAN_URL}/orders/${encodeURIComponent(sequence)}`
+    return `${INTENTSCAN_URL}/order/${encodeURIComponent(sequence)}`
   },
 }

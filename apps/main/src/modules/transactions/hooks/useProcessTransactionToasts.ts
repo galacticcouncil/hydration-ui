@@ -1,3 +1,4 @@
+import { subscribeScanEvents } from "@galacticcouncil/indexer/scan"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
@@ -7,6 +8,7 @@ import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
+import { intentsScanClient } from "@/api/scan"
 import { xcDestBalanceQueryKey } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestBalance"
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -102,6 +104,26 @@ export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
   )
 
   const processToast = useTransactionToastProcessorFn()
+
+  const xcSwapToastIds = toastsToProcess
+    .filter((toast) => toast.meta.type === TransactionType.XcSwap)
+    .map(prop("id"))
+    .join()
+
+  // A swap's order changing re-checks it at once rather than at its next poll,
+  // which stays the fallback for a dropped stream
+  useEffect(() => {
+    if (!xcSwapToastIds) return
+
+    const ids = xcSwapToastIds.split(",")
+    return subscribeScanEvents(intentsScanClient, ["orders"], {
+      onChange: () => {
+        for (const id of ids) {
+          queryClient.invalidateQueries({ queryKey: ["toast", "status", id] })
+        }
+      },
+    })
+  }, [queryClient, xcSwapToastIds])
 
   const getXcSwapCopy = useCallback(
     (

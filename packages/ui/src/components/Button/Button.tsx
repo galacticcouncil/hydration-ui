@@ -29,7 +29,6 @@ export type ButtonProps = BoxProps &
     ref?: React.Ref<HTMLButtonElement>
   }
 
-// only an icon next to a label gets a side, which shifts it towards that edge
 const buttonIcon = (
   component: React.ComponentType | undefined,
   side?: "start" | "end",
@@ -42,15 +41,21 @@ export const Button: FC<ButtonProps> = ({
   children,
   ...props
 }) => {
+  const sButtonProps = {
+    as: "button",
+    type: "button",
+    "data-icon-only": icon ? "" : undefined,
+    ...props,
+  } as const
+
+  if (!icon && !iconStart && !iconEnd) {
+    return <SButton {...sButtonProps}>{children}</SButton>
+  }
+
   const hasLabel = !icon && React.Children.count(children) > 0
 
   return (
-    <SButton
-      as="button"
-      type="button"
-      data-icon-only={icon ? "" : undefined}
-      {...props}
-    >
+    <SButton {...sButtonProps}>
       {buttonIcon(icon ?? iconStart, hasLabel ? "start" : undefined)}
       <Slottable>{children}</Slottable>
       {!icon && buttonIcon(iconEnd, hasLabel ? "end" : undefined)}

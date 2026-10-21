@@ -4,6 +4,8 @@ import { useIntentsStore } from "@/states/intents"
 
 export type TutorialStep = {
   i18nKey: string
+  titleKey?: string
+  badgeKey?: string
   side?: "top" | "right" | "bottom" | "left"
   align?: "start" | "center" | "end"
   badgeVariant?: ChipVariant
@@ -16,6 +18,16 @@ export type Tutorial = {
 }
 
 export const tutorials = {
+  "settings-avatar": {
+    steps: [
+      {
+        i18nKey: "hints.avatar",
+        titleKey: "avatar.title",
+        badgeKey: "new",
+        side: "bottom",
+      },
+    ],
+  },
   "trade-intents": {
     steps: [
       {

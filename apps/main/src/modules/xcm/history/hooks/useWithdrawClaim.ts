@@ -1,7 +1,8 @@
-import { etherscan, solexplorer } from "@galacticcouncil/utils"
+import { etherscan, nearblocks, solexplorer } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import {
   isEthereumSigner,
+  isNearSigner,
   isSolanaSigner,
   isSuiSigner,
 } from "@galacticcouncil/web3-connect"
@@ -104,6 +105,19 @@ export function useWithdrawClaim(journey: XcJourney) {
 
         const options = getClaimTxOptions(chain, result.type, commonCallbacks)
         return signer.signAndSend(call.data, options)
+      }
+
+      if (result.type === CallType.Near && isNearSigner(signer)) {
+        const { call, chain } = result
+
+        return signer.signAndSend(
+          call,
+          chain,
+          getClaimTxOptions(chain, result.type, {
+            createLink: (txHash) => nearblocks.tx(chain.key, txHash),
+            ...commonCallbacks,
+          }),
+        )
       }
 
       throw new Error("Unsupported claim transaction type")

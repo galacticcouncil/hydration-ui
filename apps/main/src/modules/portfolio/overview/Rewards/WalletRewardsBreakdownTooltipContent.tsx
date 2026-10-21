@@ -12,7 +12,11 @@ type BreakdownRowProps = {
   isLoading?: boolean
 }
 
-const BreakdownRow: FC<BreakdownRowProps> = ({ label, value, isLoading }) => (
+export const BreakdownRow: FC<BreakdownRowProps> = ({
+  label,
+  value,
+  isLoading,
+}) => (
   <Flex justify="space-between" align="center" gap="l">
     <Text fs="p6" fw={500} lh={1.4} color={getToken("text.medium")}>
       {label}

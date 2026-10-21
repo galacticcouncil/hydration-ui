@@ -5,8 +5,9 @@ export const SConnectedButton = styled(Button)(
   ({ theme }) => css`
     --button-bg: ${theme.buttons.outlineDark.rest};
     --button-icon: ${pxToRem(8)};
-    gap: ${theme.space.s};
+    gap: ${theme.space.base};
     padding: ${theme.space.base};
+    padding-left: calc(${theme.space.base} - 0.1rem);
 
     &:not(:disabled):hover,
     &:not(:disabled):active {

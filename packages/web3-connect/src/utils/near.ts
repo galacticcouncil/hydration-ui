@@ -1,6 +1,9 @@
 import type { NearTxOutcome } from "@galacticcouncil/xc-core"
 import type { NearTxObserver } from "@galacticcouncil/xc-sdk"
 
+// Relative: the app's tests load this file, and read "@/" as the app's src
+import { getWalletErrorMessage } from "./errors"
+
 const NEAR_TX_FAILED = "NEAR transaction failed"
 const NEAR_TX_NO_OUTCOME = "The wallet returned no transaction outcome"
 
@@ -9,21 +12,6 @@ export type NearTxCallbacks = {
   onSuccess: (outcome: NearTxOutcome) => void
   onError: (error: string) => void
   onFinalized: (outcome: NearTxOutcome) => void
-}
-
-// Wallets reject with their own value, often a string rather than an Error
-export const getNearErrorMessage = (err: unknown): string => {
-  if (err instanceof Error) return err.message
-  if (typeof err === "string") return err
-  if (
-    err &&
-    typeof err === "object" &&
-    "message" in err &&
-    typeof err.message === "string"
-  ) {
-    return err.message
-  }
-  return ""
 }
 
 /**
@@ -56,14 +44,14 @@ export const reportNearSend = async (
   if (!outcome) {
     // A wallet that hands back no outcome leaves nothing to follow
     const message = failure
-      ? getNearErrorMessage(failure.error) || NEAR_TX_FAILED
+      ? getWalletErrorMessage(failure.error) || NEAR_TX_FAILED
       : NEAR_TX_NO_OUTCOME
     onError(message)
     throw failure?.error instanceof Error ? failure.error : new Error(message)
   }
 
   if (failure) {
-    onError(getNearErrorMessage(failure.error) || NEAR_TX_FAILED)
+    onError(getWalletErrorMessage(failure.error) || NEAR_TX_FAILED)
   } else {
     onSuccess(outcome)
   }
