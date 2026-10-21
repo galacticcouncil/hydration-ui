@@ -29,6 +29,7 @@ import {
   SolanaAddr,
   Ss58Addr,
   SuiAddr,
+  toNearAccountId,
   ZecAddr,
 } from "./address"
 
@@ -76,7 +77,7 @@ export function isAddressValidOnChain(address: string, chain: AnyChain) {
     case chain.isSui():
       return SuiAddr.isValid(address)
     case chain.isNear():
-      return NearAddr.isValid(address)
+      return NearAddr.isValid(toNearAccountId(address))
     case chain.isZec():
       return ZecAddr.isValid(address)
     default:
@@ -157,7 +158,8 @@ export function formatSourceChainAddress(
   }
 
   if (isNearChain(chain)) {
-    return NearAddr.isValid(address) ? address : ""
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
   }
 
   if (isZecChain(chain)) {
@@ -173,6 +175,10 @@ export function formatDestChainAddress(
 ): string {
   if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
     return safeConvertH160toSS58(address)
+  }
+  if (isNearChain(chain)) {
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
   }
   return isAddressValidOnChain(address, chain) ? address : ""
 }

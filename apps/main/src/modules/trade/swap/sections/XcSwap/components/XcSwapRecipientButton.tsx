@@ -36,6 +36,7 @@ import { useTranslation } from "react-i18next"
 import { neckworkClient } from "@/api/neckwork"
 import { useNearRecipientValidation } from "@/modules/trade/swap/sections/XcSwap/hooks/useNearRecipientValidation"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { normalizeAddressForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -98,7 +99,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
       committedAddress !== "" &&
       savedCommitRef.current !== committedAddress &&
       destChain.addressValidator(committedAddress) &&
-      (destChain.platform !== "near" || nearAccountStatus === "exists")
+      (nearAccountStatus === "notApplicable" || nearAccountStatus === "exists")
     ) {
       savedCommitRef.current = committedAddress
       addAddressToAddressBook({
@@ -122,10 +123,11 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
   const destAccount =
     connectedAccount?.rawAddress === destAddress ? connectedAccount : null
   const selectAddress = (address: string, account: Account | null = null) => {
+    const value = normalizeAddressForPlatform(destChain.platform, address)
     setConnectedAccount(account)
     savedCommitRef.current = null
-    setCommittedAddress(address.trim())
-    setValue("destAddress", address, {
+    setCommittedAddress(value.trim())
+    setValue("destAddress", value, {
       shouldValidate: true,
       shouldTouch: true,
     })
@@ -166,7 +168,11 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
                   setConnectedAccount(null)
                   savedCommitRef.current = null
                   setCommittedAddress(null)
-                  setValue("destAddress", address, { shouldValidate: true })
+                  setValue(
+                    "destAddress",
+                    normalizeAddressForPlatform(destChain.platform, address),
+                    { shouldValidate: true },
+                  )
                 }}
                 onBlur={() => {
                   setCommittedAddress(field.value.trim())
