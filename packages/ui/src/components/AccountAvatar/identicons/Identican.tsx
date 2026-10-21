@@ -1,3 +1,4 @@
+import { accountPublicKey } from "@galacticcouncil/utils"
 import { Identican as IdenticanImpl } from "identican"
 import { useMemo } from "react"
 
@@ -76,13 +77,11 @@ export const Identican: React.FC<IdenticanProps> = ({
 }) => {
   const { theme } = useTheme()
 
-  const src = useMemo(
-    () =>
-      theme === "dark"
-        ? canDark(address, { size }).toDataURL()
-        : canLight(address, { size }).toDataURL(),
-    [address, size, theme],
-  )
+  const src = useMemo(() => {
+    const seed = accountPublicKey(address) || address
+    const can = theme === "dark" ? canDark : canLight
+    return can(seed, { size }).toDataURL()
+  }, [address, size, theme])
 
   return (
     <Flex

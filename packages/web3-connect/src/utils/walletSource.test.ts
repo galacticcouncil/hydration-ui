@@ -322,10 +322,13 @@ describe("getWalletSourceAction", () => {
     expect(getWalletSourceAction(TALISMAN, "disconnected")).toBe("connect")
   })
 
+  it("connects a wallet whose last attempt failed, so it can be retried", () => {
+    expect(getWalletSourceAction(TALISMAN, "error")).toBe("connect")
+  })
+
   it("only selects a wallet that is connected or already connecting", () => {
     expect(getWalletSourceAction(TALISMAN, "connected")).toBe("select")
     expect(getWalletSourceAction(TALISMAN, "pending")).toBe("select")
-    expect(getWalletSourceAction(TALISMAN, "error")).toBe("select")
   })
 
   it("installs a wallet that is not installed", () => {

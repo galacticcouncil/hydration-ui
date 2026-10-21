@@ -1,5 +1,6 @@
 import { Bell as BellIcon } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   Button,
   SheetBody,
   SheetContent,
@@ -46,16 +47,14 @@ export const NotificationCenter: FC = () => {
       <SheetTrigger asChild>
         <Button icon={BellIcon} variant="ghost" size="medium">
           {pending.length > 0 && (
-            <Spinner
-              sx={{
-                position: "absolute",
-                inset: 0,
-                size: "100%",
-                strokeWidth: 1,
-              }}
-            />
+            <Box position="absolute" sx={{ inset: 0 }}>
+              <Spinner sx={{ size: "100%", strokeWidth: 1 }} />
+            </Box>
           )}
-          <NotificationBadge count={totalImportantCount} />
+          <NotificationBadge
+            count={totalImportantCount}
+            sx={{ transform: "translate(-20%, 20%)" }}
+          />
         </Button>
       </SheetTrigger>
       <SheetContent>

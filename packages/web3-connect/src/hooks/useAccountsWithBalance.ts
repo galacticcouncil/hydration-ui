@@ -14,6 +14,7 @@ import {
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks"
 import { useAccountBalancesMap } from "@/hooks/useAccountBalancesMap"
+import { useBalanceCache } from "@/hooks/useBalanceCache"
 import { Account, useWeb3Connect } from "@/hooks/useWeb3Connect"
 import { readNoirBalance } from "@/utils/zec"
 
@@ -97,9 +98,8 @@ const getSortRank = (account: {
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
   const { neckwork } = useWeb3ConnectContext()
-  const { setBalances } = useWeb3Connect(
-    useShallow(pick(["accounts", "setBalances"])),
-  )
+  const { setBalances } = useWeb3Connect(useShallow(pick(["setBalances"])))
+  const { balances: balanceCache, save: cacheBalances } = useBalanceCache()
 
   const [nativeAccounts, fiatAccounts] = useMemo(
     () => partition(accounts, hasNativeBalance),
@@ -147,8 +147,27 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
   useEffect(() => {
     if (!areFiatBalancesLoading) {
       setBalances(balancesMap)
+      cacheBalances(
+        new Map(
+          Array.from(balancesMap, ([key, balance]) => [key, { balance }]),
+        ),
+      )
     }
-  }, [balancesMap, areFiatBalancesLoading, setBalances])
+  }, [balancesMap, areFiatBalancesLoading, setBalances, cacheBalances])
+
+  useEffect(() => {
+    cacheBalances(
+      new Map(
+        Array.from(nativeBalancesMap, ([key, amount]) => [
+          key,
+          {
+            balance: amount.toBigDecimal().toNumber(),
+            symbol: amount.originSymbol,
+          },
+        ]),
+      ),
+    )
+  }, [nativeBalancesMap, cacheBalances])
 
   const accountsWithBalances = useMemo(() => {
     const accountsWithActive = accounts.map((account) => {
@@ -156,17 +175,25 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
         currentAccount?.address === account.address &&
         currentAccount?.provider === account.provider
 
-      const nativeBalance = nativeBalancesMap.get(getNativeBalanceKey(account))
+      const isNative = hasNativeBalance(account)
+      const balanceKey = isNative
+        ? getNativeBalanceKey(account)
+        : account.publicKey
+      // shown until the fresh balance loads, so the list keeps its order
+      const cached = balanceCache[balanceKey]
+      const nativeBalance = nativeBalancesMap.get(balanceKey)
 
-      const balance = hasNativeBalance(account)
-        ? nativeBalance?.toBigDecimal().toNumber()
-        : account.balance
+      const balance = isNative
+        ? (nativeBalance?.toBigDecimal().toNumber() ?? cached?.balance)
+        : (account.balance ?? cached?.balance)
 
       return {
         ...account,
         isActive,
         balance,
-        balanceSymbol: nativeBalance?.originSymbol,
+        balanceSymbol: isNative
+          ? (nativeBalance?.originSymbol ?? cached?.symbol)
+          : undefined,
       }
     })
 
@@ -180,6 +207,7 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
     currentAccount?.address,
     currentAccount?.provider,
     nativeBalancesMap,
+    balanceCache,
   ])
 
   return {

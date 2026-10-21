@@ -254,7 +254,7 @@ export const getWalletSourceAction = <T extends WalletSourceLike>(
   status: WalletSourceStatus,
 ): WalletSourceAction => {
   if (!wallet.installed) return "install"
-  return status === "disconnected" ? "connect" : "select"
+  return status === "disconnected" || status === "error" ? "connect" : "select"
 }
 
 /**
