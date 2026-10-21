@@ -19,6 +19,7 @@ export type Web3ConnectContextType = {
   onAccountSelect: (account: Account) => void
   mode: WalletMode
   meta?: Web3ConnectModalMeta | null
+  setModalContentWidth: (width: string) => void
 }
 
 const Web3ConnectContext = createContext<Web3ConnectContextType | null>(null)

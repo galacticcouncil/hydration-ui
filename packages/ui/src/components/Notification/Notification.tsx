@@ -12,7 +12,7 @@ import {
   XIcon,
 } from "@/assets/icons"
 import {
-  ButtonIcon,
+  Button,
   ExternalLink,
   Flex,
   Icon,
@@ -110,17 +110,13 @@ export const Notification = ({
         <Flex ml="auto" mb="auto">
           {hint && (
             <Tooltip text={hint} asChild>
-              <ButtonIcon>
-                <Icon component={QuestionCircleRegular} size="m" />
-              </ButtonIcon>
+              <Button icon={QuestionCircleRegular} variant="ghost" />
             </Tooltip>
           )}
           {link && (
-            <ButtonIcon asChild>
-              <ExternalLink href={link}>
-                <Icon component={MoveUpRight} size="m" />
-              </ExternalLink>
-            </ButtonIcon>
+            <Button icon={MoveUpRight} variant="ghost" asChild>
+              <ExternalLink href={link} />
+            </Button>
           )}
           {actions}
         </Flex>

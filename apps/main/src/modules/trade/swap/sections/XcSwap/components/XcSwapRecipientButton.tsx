@@ -3,7 +3,7 @@ import {
   AccountAvatar,
   AccountInput,
   Box,
-  ButtonIcon,
+  Button,
   Flex,
   Icon,
   InputSuggestions,
@@ -34,6 +34,7 @@ import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
+import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { useNearRecipientValidation } from "@/modules/trade/swap/sections/XcSwap/hooks/useNearRecipientValidation"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { normalizeAddressForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
@@ -205,13 +206,12 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
                         alignOffset={0}
                         asChild
                       >
-                        <ButtonIcon
-                          type="button"
+                        <Button
+                          icon={BookOpen}
+                          variant="ghost"
                           aria-label={t("trade:xc.swap.field.myContacts")}
                           onClick={() => setIsContactsOpen(true)}
-                        >
-                          <Icon component={BookOpen} size="m" />
-                        </ButtonIcon>
+                        />
                       </Tooltip>
                     )}
                   </>
@@ -240,9 +240,20 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
                 key={address}
                 onSelect={() => selectAddress(address)}
               >
-                <AccountAvatar address={address} size={24} />
+                <AccountAvatar address={address} size={32} />
                 <Flex direction="column" flex={1} minWidth={0}>
-                  {contact?.name && <Text fs="p4">{contact.name}</Text>}
+                  {contact?.name && (
+                    <Flex gap="s" align="center">
+                      <XcLogo
+                        src={destChain.logo}
+                        size="extra-small"
+                        alt={destChain.name}
+                      />
+                      <Text fs="p4" fw={500}>
+                        {contact.name}
+                      </Text>
+                    </Flex>
+                  )}
                   <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
                     {address}
                   </TextMiddleTruncate>
@@ -250,7 +261,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
               </InputSuggestionsOption>
             )
           })}
-          <Separator />
+          <Separator my="s" />
           <InputSuggestionsOption
             sx={{
               gap: "base",

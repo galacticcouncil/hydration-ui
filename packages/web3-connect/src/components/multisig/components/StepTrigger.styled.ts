@@ -43,7 +43,7 @@ export const SStepTrigger = styled.button<{ isInteractive?: boolean }>(
       gap: ${theme.space.m};
       width: 100%;
       padding-block: ${theme.space.l};
-      padding-inline: ${theme.space.xl};
+      padding-inline: ${theme.space.s};
 
       & > * {
         position: relative;
@@ -57,6 +57,12 @@ export const SStepTrigger = styled.button<{ isInteractive?: boolean }>(
         background-color: ${theme.details.separators};
         opacity: 0;
         transition: ${theme.transitions.opacity};
+      }
+
+      &:focus-visible {
+        outline: 2px solid ${theme.buttons.secondary.accent.outline};
+        outline-offset: -2px;
+        border-radius: ${theme.radii.l};
       }
     `,
     isInteractive &&

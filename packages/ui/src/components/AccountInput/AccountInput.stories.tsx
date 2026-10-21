@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-vite"
+import { ArrowRight } from "lucide-react"
 import { useState } from "react"
 
 import { BookOpen } from "@/assets/icons"
-import { ButtonIcon, Icon, Paper, Tooltip } from "@/components"
+import { Button, Paper, Tooltip } from "@/components"
 
 import { AccountInput } from "./AccountInput"
 
@@ -61,10 +62,27 @@ export const WithContacts: Story = {
         alignOffset={0}
         asChild
       >
-        <ButtonIcon aria-label="My Contacts">
-          <Icon component={BookOpen} size="m" />
-        </ButtonIcon>
+        <Button icon={BookOpen} variant="ghost" aria-label="My Contacts" />
       </Tooltip>
     ),
+  },
+}
+
+export const WithTrailingElement: Story = {
+  render: Template,
+  args: {
+    value: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    placeholder: "Paste address here...",
+    trailingElement: (
+      <Button type="submit" icon={ArrowRight} variant="accent" size="small" />
+    ),
+  },
+}
+
+export const Standalone: Story = {
+  render: Template,
+  args: {
+    variant: "standalone",
+    placeholder: "Paste address here...",
   },
 }

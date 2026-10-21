@@ -1,0 +1,206 @@
+import { CheckIcon, CopyIcon } from "@galacticcouncil/ui/assets/icons"
+import {
+  AccountAvatar,
+  Box,
+  Chip,
+  Flex,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useCopy } from "@galacticcouncil/utils"
+import { useTranslation } from "react-i18next"
+
+import { ShortAddress } from "@/components/account/ShortAddress"
+import {
+  SAccountTile,
+  SAccountTileCopyButton,
+  SChangeAccountButton,
+  SSectionLabel,
+} from "@/components/content/WalletManagementAccounts.styled"
+import { RoundLogo } from "@/components/RoundLogo"
+import { getWalletChainModes, getWalletModeIcon } from "@/config/wallet"
+import { useReorderAnimation } from "@/hooks/useReorderAnimation"
+import { isEip1193Provider, requestAccounts, toAccount } from "@/utils"
+import { isAccountSelected } from "@/utils/accountFilter"
+import { getWallet, MetaMask } from "@/wallets"
+
+export type WalletAccount = ReturnType<typeof toAccount> & {
+  balance?: number
+  balanceSymbol?: string
+  isActive?: boolean
+}
+
+export const WalletAccountSection: React.FC<{
+  readonly title: string
+  readonly logo?: string
+  readonly accounts: WalletAccount[]
+  readonly currentAccount: WalletAccount | null
+  readonly isBalanceLoading: boolean
+  readonly onAccountSelect: (account: WalletAccount) => void
+}> = ({
+  title,
+  logo,
+  accounts,
+  currentAccount,
+  isBalanceLoading,
+  onAccountSelect,
+}) => (
+  <Flex direction="column">
+    <SSectionLabel gap="xs">
+      {logo && <RoundLogo src={logo} size="m" />}
+      <Text fs="p4" fw={500} color={getToken("text.high")} truncate>
+        {title}
+      </Text>
+    </SSectionLabel>
+    <WalletAccountList
+      accounts={accounts}
+      currentAccount={currentAccount}
+      isBalanceLoading={isBalanceLoading}
+      onAccountSelect={onAccountSelect}
+    />
+  </Flex>
+)
+
+const getAccountKey = (account: WalletAccount) =>
+  `${account.publicKey}-${account.provider}`
+
+export const WalletAccountList: React.FC<{
+  readonly accounts: WalletAccount[]
+  readonly currentAccount: WalletAccount | null
+  readonly isBalanceLoading: boolean
+  readonly onAccountSelect: (account: WalletAccount) => void
+}> = ({ accounts, currentAccount, isBalanceLoading, onAccountSelect }) => {
+  const ref = useReorderAnimation<HTMLDivElement>(
+    accounts.map(getAccountKey).join(),
+  )
+
+  return (
+    <Flex ref={ref} direction="column" gap="base" position="relative">
+      {accounts.map((account) => (
+        <WalletAccountTile
+          key={getAccountKey(account)}
+          account={account}
+          isActive={isAccountSelected(currentAccount, account)}
+          isBalanceLoading={isBalanceLoading}
+          onClick={() => onAccountSelect(account)}
+        />
+      ))}
+    </Flex>
+  )
+}
+
+export const WalletAccountTile: React.FC<{
+  readonly account: WalletAccount
+  readonly isActive: boolean
+  readonly isBalanceLoading: boolean
+  readonly onClick: () => void
+}> = ({ account, isActive, isBalanceLoading, onClick }) => {
+  const { t } = useTranslation()
+  const [mode] = getWalletChainModes(account.provider)
+  const modeIcon = mode ? getWalletModeIcon(mode) : ""
+  const wallet = getWallet(account.provider)
+  const metaMaskExtension =
+    wallet instanceof MetaMask && isEip1193Provider(wallet.extension)
+      ? wallet.extension
+      : undefined
+
+  const balanceLabel =
+    account.balance === undefined
+      ? ""
+      : account.balanceSymbol
+        ? t("account.balance", {
+            value: account.balance,
+            symbol: account.balanceSymbol,
+          })
+        : t("account.balanceValue", { value: account.balance })
+
+  return (
+    <Box>
+      <SAccountTile
+        data-active={isActive}
+        data-has-change-account={!!metaMaskExtension || undefined}
+        onSelect={onClick}
+      >
+        <AccountAvatar address={account.displayAddress} size={38} />
+        <Flex direction="column" minWidth={0} flex={1}>
+          <Flex align="center" justify="space-between" gap="base" minWidth={0}>
+            <Flex align="center" width="100%" minWidth={0} gap="xs">
+              {modeIcon && <RoundLogo src={modeIcon} size="xs" />}
+              <Text fs="p4" fw={500} color={getToken("text.high")} truncate>
+                {account.name}
+              </Text>
+              {isActive && (
+                <Chip
+                  size="small"
+                  rounded
+                  variant="green"
+                  sx={{ textTransform: "uppercase" }}
+                >
+                  {t("account.active")}
+                </Chip>
+              )}
+            </Flex>
+            <Text fs="p4" fw={500} color={getToken("text.high")} flexShrink={0}>
+              {isBalanceLoading && account.balance === undefined
+                ? ""
+                : balanceLabel}
+            </Text>
+          </Flex>
+          <Flex
+            align="center"
+            width="100%"
+            minWidth={0}
+            gap="base"
+            justify="space-between"
+          >
+            <Text
+              minWidth={0}
+              fs="p5"
+              color={getToken("text.medium")}
+              fw={500}
+              truncate
+            >
+              <ShortAddress address={account.displayAddress} length={12} />
+            </Text>
+            <AccountTileCopyButton text={account.displayAddress} />
+          </Flex>
+        </Flex>
+      </SAccountTile>
+      {metaMaskExtension && (
+        <SChangeAccountButton
+          isActive={isActive}
+          variant="muted"
+          size="small"
+          onClick={(event) => {
+            event.stopPropagation()
+            requestAccounts(metaMaskExtension)
+          }}
+        >
+          {t("account.changeAccount")}
+        </SChangeAccountButton>
+      )}
+    </Box>
+  )
+}
+
+const AccountTileCopyButton: React.FC<{ readonly text: string }> = ({
+  text,
+}) => {
+  const { t } = useTranslation()
+  const { copied, copy } = useCopy(5000)
+
+  return (
+    <SAccountTileCopyButton
+      variant="ghost"
+      size="micro"
+      icon={copied ? CheckIcon : CopyIcon}
+      data-copied={copied}
+      aria-label={t("addressBook.copyAddress")}
+      onClick={(event) => {
+        event.stopPropagation()
+        copy(text)
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
+    />
+  )
+}

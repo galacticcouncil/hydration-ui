@@ -1,5 +1,6 @@
 import React, { FC, ReactNode, Ref, useId } from "react"
 
+import { Box } from "@/components/Box"
 import { Label } from "@/components/Label"
 import { getToken } from "@/utils"
 
@@ -52,6 +53,7 @@ export const Input: FC<InputProps> = ({
   ref,
   id,
   width,
+  isError,
   autoComplete = "off",
   ...props
 }) => {
@@ -65,12 +67,14 @@ export const Input: FC<InputProps> = ({
       className={className}
       sx={{ width }}
     >
-      {leadingElement}
-      {IconStart && <IconStart />}
+      {leadingElement && <Box ml="-m">{leadingElement}</Box>}
+      {IconStart && <IconStart data-icon="start" />}
       <SInput
         ref={ref}
         id={usedInputId}
         autoComplete={autoComplete}
+        isError={isError}
+        aria-invalid={isError || undefined}
         {...props}
       />
       {unit && (
@@ -85,7 +89,7 @@ export const Input: FC<InputProps> = ({
           {unit}
         </Label>
       )}
-      {IconEnd && <IconEnd />}
+      {IconEnd && <IconEnd data-icon="end" />}
       {trailingElement}
     </SInputContainer>
   )
