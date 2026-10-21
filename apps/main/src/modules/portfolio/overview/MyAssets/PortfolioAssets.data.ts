@@ -16,8 +16,10 @@ export const mergePortfolioAssets = (
   const representedShareAssets = new Set(
     positions.flatMap((position) => {
       if (position.strategy === "juicer") {
+        // match by position id: assetId is the DISPLAY asset (ETH or GETH,
+        // denomination-dependent), never a reliable vault key
         const vault = PROPELLER_VAULTS.find(
-          (vault) => vault.assetId === position.assetId,
+          (vault) => position.id === `juicer:${vault.vaultAddress}`,
         )
         return vault ? [vault.shareAssetId] : []
       }
