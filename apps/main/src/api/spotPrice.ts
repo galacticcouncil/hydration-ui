@@ -1,7 +1,14 @@
 import {
-  UiIncentiveDataProvider,
-  UiPoolDataProvider,
-} from "@galacticcouncil/money-market/utils"
+  markets,
+  readReserves,
+  summarizeReserves,
+} from "@galacticcouncil/money-market/core"
+import {
+  MoneyMarketConnection,
+  moneyMarketKeys,
+  RESERVES_STALE_TIME,
+  useMoneyMarket,
+} from "@galacticcouncil/money-market/react"
 import {
   bigShift,
   getAddressFromAssetId,
@@ -20,12 +27,6 @@ import Big from "big.js"
 import { isNonNullish, isNullish, prop, unique, zipWith } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import {
-  borrowReserveQuery,
-  lendingPoolAddressProvider,
-  useBorrowIncentivesContract,
-  useBorrowPoolDataContract,
-} from "@/api/borrow"
 import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -165,29 +166,33 @@ export const spotPriceKeyQuery = (
 
 export const scSpotPriceKeyQuery = (
   rpc: TProviderContext,
-  poolDataContract: UiPoolDataProvider | null,
-  incentivesContract: UiIncentiveDataProvider | null,
+  config: MoneyMarketConnection["config"],
   assetId: AssetId,
   reserveId: string,
 ) => {
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
   const { isReady } = rpc
   const id = String(assetId)
+  const market = markets.hydration_v3
 
   return queryOptions({
     queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
-      const reserve = await rpc.queryClient.ensureQueryData(
-        borrowReserveQuery(
-          rpc,
-          lendingPoolAddressProvider,
-          poolDataContract,
-          incentivesContract,
-          reserveId,
-        ),
+      const reserves = await rpc.queryClient.ensureQueryData({
+        queryKey: moneyMarketKeys.reserves(market.market),
+        queryFn: () => readReserves(config, market),
+        staleTime: RESERVES_STALE_TIME,
+      })
+
+      const reserve = summarizeReserves({
+        ...reserves,
+        currentTimestamp: Math.floor(Date.now() / 1000),
+      }).find(
+        ({ underlyingAsset }) =>
+          underlyingAsset.toLowerCase() === reserveId.toLowerCase(),
       )
 
-      const price = reserve?.priceInUSD ?? null
+      const price = reserve?.priceInUsd ?? null
 
       setAssets([{ id, price }])
 
@@ -205,21 +210,14 @@ const SC_ASSETS = new Map<string, string>([
 export const useSubscribedPriceKeys = (assetIds: AssetId[]) => {
   const stableAssetIds = useStableArray(unique(assetIds.map(String)))
   const rpc = useRpcProvider()
-  const poolDataContract = useBorrowPoolDataContract()
-  const incentivesContract = useBorrowIncentivesContract()
+  const { config } = useMoneyMarket()
 
   return useQueries({
     queries: stableAssetIds.map((assetId) => {
       const reserveId = SC_ASSETS.get(assetId)
 
       if (reserveId) {
-        return scSpotPriceKeyQuery(
-          rpc,
-          poolDataContract,
-          incentivesContract,
-          assetId,
-          reserveId,
-        )
+        return scSpotPriceKeyQuery(rpc, config, assetId, reserveId)
       }
       return spotPriceKeyQuery(rpc, assetId)
     }),

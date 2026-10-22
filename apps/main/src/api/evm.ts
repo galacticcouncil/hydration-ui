@@ -19,13 +19,14 @@ import {
 } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
-import type { SizedHex } from "polkadot-api"
+import type { FixedSizeArray, SizedHex } from "polkadot-api"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 import { formatEther, getContract, Hex } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { TProviderData } from "@/api/rpcClient"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -33,6 +34,38 @@ import { useTransactionsStore } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 const { isEvmAccount, isEvmAddress } = h160
+
+const EVM_DEFAULT_GAS_LIMIT = "210000"
+const EVM_ACTION_GAS_LIMIT = "1000000"
+const EVM_GAS_LIMITS: Record<string, string | undefined> = {
+  borrow: "1300000",
+}
+
+export const estimateGasLimit = async ({
+  evm,
+  gasLimit,
+  action,
+}: {
+  gasLimit?: string
+  evm: TProviderData["evm"]
+  action?: string
+}) => {
+  const gasPriceBase = await evm.getGasPrice()
+  const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
+  const gasPrice = gasPriceBase + gasPriceSurplus
+
+  const feePerGas = [gasPrice, 0n, 0n, 0n] as FixedSizeArray<4, bigint>
+
+  return {
+    gasLimit: BigInt(
+      action
+        ? (EVM_GAS_LIMITS[action] ?? EVM_ACTION_GAS_LIMIT)
+        : (gasLimit ?? EVM_DEFAULT_GAS_LIMIT),
+    ),
+    maxFeePerGas: feePerGas,
+    maxPriorityFeePerGas: feePerGas,
+  }
+}
 
 export const evmAccountBindingQuery = (
   { papi, isReady }: TProviderContext,

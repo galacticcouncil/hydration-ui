@@ -7,7 +7,7 @@ import { neckworkClient } from "@/api/neckwork"
 import {
   borrowHistoryFilters,
   BorrowHistoryFilterType,
-} from "@/modules/borrow/history/BorrowHistoryFilter.utils"
+} from "@/modules/money-market/history/BorrowHistoryFilter.utils"
 
 export const moneyMarketEventNames = [
   "Supply",

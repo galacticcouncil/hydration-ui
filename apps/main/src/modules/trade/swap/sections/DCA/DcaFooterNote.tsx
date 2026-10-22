@@ -1,10 +1,10 @@
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { Grid, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { DcaTradeMeta } from "@/modules/trade/swap/sections/DCA/DcaTradeMeta"
 
 type Props = {

@@ -1,7 +1,15 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { LINKS } from "@/config/navigation"
+import { getPageMeta } from "@/config/navigation"
+import { MoneyMarketDashboard } from "@/modules/money-market/MoneyMarketDashboard"
 
 export const Route = createFileRoute("/borrow/")({
-  component: () => Navigate({ to: LINKS.borrowDashboard }),
+  component: MoneyMarketDashboard,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("borrowDashboard", i18n.t),
+  }),
 })

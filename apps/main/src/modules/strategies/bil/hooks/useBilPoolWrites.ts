@@ -1,114 +1,93 @@
-import { ProtocolAction } from "@aave/contract-helpers"
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
-import { CallType } from "@galacticcouncil/xc-core"
+import {
+  buildBorrow,
+  buildRepay,
+  markets,
+  MAX_UINT_AMOUNT,
+} from "@galacticcouncil/money-market/core"
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
+import type { ActionPlan } from "@galacticcouncil/money-market/types"
 import { useMutation } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { encodeFunctionData, type Hex, maxUint256, parseUnits } from "viem"
+import { parseUnits } from "viem"
 
-import { estimateGasLimit } from "@/api/borrow"
-import { BIL_POOL_ABI } from "@/modules/strategies/bil/config/abi"
 import {
-  AAVE_INTEREST_RATE_MODE_VARIABLE,
-  BIL_POOL_ADDRESS,
-  HOLLAR_ADDRESS,
-} from "@/modules/strategies/bil/config/constants"
+  fetchFeePerGas,
+  planToTransaction,
+} from "@/modules/money-market/actions/planToTransaction"
+import { useUserAddress } from "@/modules/money-market/hooks"
+import { HOLLAR_ADDRESS } from "@/modules/strategies/bil/config/constants"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
+const BIL_MARKET = markets.bil_v3
+
 type BilPoolWriteOptions = {
   onClose?: () => void
 }
 
-type PoolWriteFunction = "borrow" | "repay"
-
-const getPoolFunctionAbi = (functionName: PoolWriteFunction) =>
-  JSON.stringify(
-    BIL_POOL_ABI.filter(
-      (item) => item.type === "function" && item.name === functionName,
-    ),
-  )
-
-function useBilPoolEvmCall({ onClose }: BilPoolWriteOptions = {}) {
+function useBilPoolPlanSubmit({ onClose }: BilPoolWriteOptions = {}) {
   const rpc = useRpcProvider()
-  const { account } = useAccount()
+  const user = useUserAddress()
   const { createTransaction } = useTransactionsStore()
 
-  const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
-
-  const submitTx = useCallback(
+  const submitPlan = useCallback(
     async (
-      data: Hex,
-      protocolAction: ProtocolAction,
-      functionName: PoolWriteFunction,
+      plan: ActionPlan,
       toasts: { submitted: string; success: string },
     ) => {
-      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-        await estimateGasLimit({
-          evm: rpc.evm,
-          action: protocolAction,
-        })
+      if (!user) return
 
-      const evmCall: ExtendedEvmCall = {
-        from: evmAddress,
-        to: BIL_POOL_ADDRESS,
-        data,
-        type: CallType.Evm,
-        dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit,
-        maxFeePerGas: maxFeePerGas[0],
-        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
-        abi: getPoolFunctionAbi(functionName),
-      }
+      const feePerGas = await fetchFeePerGas(rpc.evm)
 
       return createTransaction(
         {
-          tx: evmCall,
+          tx: planToTransaction(plan, {
+            papi: rpc.papi,
+            from: user,
+            feePerGas,
+          }),
           toasts,
-          invalidateQueries: [[BIL_QUERY_KEY_PREFIX]],
+          invalidateQueries: [
+            [BIL_QUERY_KEY_PREFIX],
+            [...moneyMarketKeys.market(BIL_MARKET.market)],
+          ],
         },
         {
           onSubmitted: onClose,
         },
       )
     },
-    [createTransaction, evmAddress, onClose, rpc.evm],
+    [createTransaction, onClose, rpc.evm, rpc.papi, user],
   )
 
-  return { evmAddress, submitTx }
+  return { user, submitPlan }
 }
 
 /**
  * Borrow HOLLAR against the user's BIL collateral on the BIL Aave pool.
  *
- * Uses interestRateMode=2 (variable) — the GhoAToken facilitator rejects
- * stable-rate borrows, and stable-rate has been deprecated across Aave V3
- * generally.
+ * Variable rate only: the GhoAToken facilitator rejects stable-rate borrows.
  */
 export function useBorrowHollar({ onClose }: BilPoolWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
-  const { evmAddress, submitTx } = useBilPoolEvmCall({ onClose })
+  const { user, submitPlan } = useBilPoolPlanSubmit({ onClose })
 
   return useMutation({
-    mutationFn: (hollarAmount: string) => {
-      const data = encodeFunctionData({
-        abi: BIL_POOL_ABI,
-        functionName: "borrow",
-        args: [
-          HOLLAR_ADDRESS,
-          parseUnits(hollarAmount, hollar.decimals),
-          AAVE_INTEREST_RATE_MODE_VARIABLE,
-          0, // referralCode
-          evmAddress,
-        ],
+    mutationFn: async (hollarAmount: string) => {
+      if (!user) return
+
+      const plan = buildBorrow({
+        market: BIL_MARKET,
+        asset: HOLLAR_ADDRESS,
+        amount: parseUnits(hollarAmount, hollar.decimals),
+        onBehalfOf: user,
       })
 
-      return submitTx(data, ProtocolAction.borrow, "borrow", {
+      return submitPlan(plan, {
         submitted: t("bil.borrow.toast.submitted", {
           amount: hollarAmount,
           symbol: hollar.symbol,
@@ -125,37 +104,35 @@ export function useBorrowHollar({ onClose }: BilPoolWriteOptions = {}) {
 /**
  * Repay HOLLAR debt on the BIL Aave pool.
  *
- * Mirrors `useBorrowHollar` — single `pool.repay(asset, amount, mode, onBehalfOf)`
- * EVM call routed through the project's transaction store. Uses variable rate
- * mode (=2) to match the borrow side. When repaying the full debt, pass
- * `repayAll: true` so the call uses `maxUint256` (Aave's "repay everything"
- * sentinel) instead of a fixed wei amount that may drift with accrued interest.
+ * When repaying the full debt, pass `repayAll: true` so the call uses
+ * `MAX_UINT_AMOUNT` (Aave's "repay everything" sentinel) instead of a fixed
+ * amount that may drift with accrued interest.
  */
 export function useRepayHollar({ onClose }: BilPoolWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { hollar } = useBilStrategy()
-  const { evmAddress, submitTx } = useBilPoolEvmCall({ onClose })
+  const { user, submitPlan } = useBilPoolPlanSubmit({ onClose })
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       amount,
       repayAll,
     }: {
       amount: string
       repayAll?: boolean
     }) => {
-      const data = encodeFunctionData({
-        abi: BIL_POOL_ABI,
-        functionName: "repay",
-        args: [
-          HOLLAR_ADDRESS,
-          repayAll ? maxUint256 : parseUnits(amount, hollar.decimals),
-          AAVE_INTEREST_RATE_MODE_VARIABLE,
-          evmAddress,
-        ],
+      if (!user) return
+
+      const plan = buildRepay({
+        market: BIL_MARKET,
+        asset: HOLLAR_ADDRESS,
+        amount: repayAll
+          ? MAX_UINT_AMOUNT
+          : parseUnits(amount, hollar.decimals),
+        onBehalfOf: user,
       })
 
-      return submitTx(data, ProtocolAction.repay, "repay", {
+      return submitPlan(plan, {
         submitted: t("bil.repay.toast.submitted", {
           amount,
           symbol: hollar.symbol,

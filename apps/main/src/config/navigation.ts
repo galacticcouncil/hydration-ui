@@ -56,17 +56,12 @@ export const LINKS = {
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
-  borrowDashboard: "/borrow/dashboard",
+  borrowDashboard: "/borrow",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
-  moneyMarket: "/money-market",
-  moneyMarketDashboard: "/money-market",
-  moneyMarketMarkets: "/money-market/markets",
-  moneyMarketHistory: "/money-market/history",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsTreasury: "/stats/treasury",
-  statsMoneyMarket: "/stats/money-market",
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
@@ -147,35 +142,16 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "borrow",
     to: LINKS.borrow,
-    defaultChild: LINKS.borrowDashboard,
-    icon: BanknoteIcon,
-    children: [
-      { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
-      { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
-      { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
-    ],
-  },
-  {
-    key: "moneyMarket",
-    to: LINKS.moneyMarket,
     icon: BanknoteIcon,
     children: [
       {
-        key: "moneyMarketDashboard",
-        to: LINKS.moneyMarketDashboard,
+        key: "borrowDashboard",
+        to: LINKS.borrowDashboard,
         exact: true,
         icon: ChartPieIcon,
       },
-      {
-        key: "moneyMarketMarkets",
-        to: LINKS.moneyMarketMarkets,
-        icon: Grid2X2Icon,
-      },
-      {
-        key: "moneyMarketHistory",
-        to: LINKS.moneyMarketHistory,
-        icon: HistoryIcon,
-      },
+      { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
+      { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
     ],
   },
   {
@@ -249,7 +225,6 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       // { key: "statsOverview", to: LINKS.statsOverview },
       // { key: "statsTreasury", to: LINKS.statsTreasury },
-      // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
       // { key: "statsHollar", to: LINKS.statsHollar },
       // { key: "statsAmm", to: LINKS.statsAmm },
       { key: "statsFees", to: LINKS.statsFees },
@@ -377,22 +352,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.borrowHistory.title"),
       description: t("navigation.borrowHistory.description"),
     },
-    moneyMarket: {
-      title: t("navigation.moneyMarket.title"),
-      description: "",
-    },
-    moneyMarketDashboard: {
-      title: t("navigation.moneyMarketDashboard.title"),
-      description: t("navigation.moneyMarketDashboard.description"),
-    },
-    moneyMarketMarkets: {
-      title: t("navigation.moneyMarketMarkets.title"),
-      description: t("navigation.moneyMarketMarkets.description"),
-    },
-    moneyMarketHistory: {
-      title: t("navigation.moneyMarketHistory.title"),
-      description: t("navigation.moneyMarketHistory.description"),
-    },
     stats: {
       title: t("navigation.stats.title"),
       description: "",
@@ -403,10 +362,6 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     statsTreasury: {
       title: t("navigation.statsTreasury.title"),
-      description: "",
-    },
-    statsMoneyMarket: {
-      title: t("navigation.statsMoneyMarket.title"),
       description: "",
     },
     statsHollar: {
@@ -480,7 +435,6 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
-  "moneyMarket",
   "strategies",
   "liquidity",
   "portfolio",
@@ -494,7 +448,6 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "liquidity",
   "borrow",
-  "moneyMarket",
   "strategies",
   "crossChain",
   "stats",

@@ -3,8 +3,8 @@ import * as z from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
-import { borrowHistoryFilters } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
-import { BorrowHistoryPage } from "@/modules/borrow/history/BorrowHistoryPage"
+import { borrowHistoryFilters } from "@/modules/money-market/history/BorrowHistoryFilter.utils"
+import { BorrowHistoryPage } from "@/modules/money-market/history/BorrowHistoryPage"
 
 const filterTypeSchema = z
   .array(z.enum(borrowHistoryFilters))
@@ -21,6 +21,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/borrow/history")({
   component: BorrowHistoryPage,
   validateSearch: searchSchema,
+  staticData: { crumb: true },
   head: ({
     match: {
       context: { i18n },

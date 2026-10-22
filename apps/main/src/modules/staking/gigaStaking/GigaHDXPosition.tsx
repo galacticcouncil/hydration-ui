@@ -1,6 +1,3 @@
-import { MAX_DISPLAY_HF } from "@galacticcouncil/money-market/components"
-import { useFormattedHealthFactor } from "@galacticcouncil/money-market/hooks"
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { InfinityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -14,6 +11,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -21,7 +19,6 @@ import Big from "big.js"
 import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
@@ -30,12 +27,15 @@ import {
 import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { MAX_DISPLAY_HF } from "@/modules/money-market/constants"
+import { useFormattedHealthFactor } from "@/modules/money-market/useFormattedHealthFactor"
 import { GigaHDXBorrowModal } from "@/modules/staking/gigaStaking/borrow/GigaHDXBorrowModal"
 import { GigaHDXDocLink } from "@/modules/staking/gigaStaking/GigaHDXDocLink"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
 import { SChartLegendContainer } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { GigaHDXRepayModal } from "@/modules/staking/gigaStaking/repay/GigaHDXRepayModal"
 import { GigaHDXSupplyInfo } from "@/modules/staking/gigaStaking/supplyInfo/GigaHDXSupplyInfo"
+import { useGigaBorrowSummary } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -52,26 +52,28 @@ export const GigaHDXPosition = () => {
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
   const { data: exchangeRate } = useGigaStakeExchangeRate()
 
-  const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
+  const { data: gigaBorrowSummary, isLoading } = useGigaBorrowSummary()
   const {
     borrowableHollar,
     maxBorrowableHollar,
-    userSummary,
+    account,
     hdxReserve,
     hollarReserve,
+    hdxPosition,
+    hollarPosition,
   } = gigaBorrowSummary ?? {}
 
-  const debt = hollarReserve?.totalBorrows || "0"
+  const debt = hollarPosition?.variableBorrows || "0"
   const totalBorrowCapacity = Big(debt).plus(borrowableHollar || "0")
   const usedBorrowingPower = totalBorrowCapacity.gt(0)
     ? Big(debt).div(totalBorrowCapacity).times(100).toNumber()
     : 0
 
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(
-    userSummary?.healthFactor || "-1",
+    account?.healthFactor || "-1",
   )
 
-  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const gigaHdxBalanceHuman = hdxPosition?.underlyingBalance ?? "0"
   const gigaHdxBalance = Big(gigaHdxBalanceHuman)
     .times(exchangeRate?.toString() || "0")
     .toString()
@@ -79,22 +81,21 @@ export const GigaHDXPosition = () => {
   const [gigaHdxBalanceUsd] = useDisplayAssetPrice(native.id, gigaHdxBalance)
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
-    if (!userSummary || !hdxReserve || !hollarReserve) return null
+    if (!account || !hdxReserve) return null
 
-    const debtHollar = Big(hollarReserve.variableBorrows || "0")
+    const debtHollar = Big(debt)
     if (debtHollar.lte(0)) return null
 
     const qtyCollateral = Big(gigaHdxBalanceHuman)
     if (qtyCollateral.lte(0)) return null
 
-    const reserve = hdxReserve.reserve
-    if (reserve.reserveLiquidationThreshold === "0") return null
+    if (Big(hdxReserve.liquidationThreshold).eq(0)) return null
 
     const lt =
-      userSummary.isInEmode &&
-      userSummary.userEmodeCategoryId === reserve.eModeCategoryId
-        ? reserve.formattedEModeLiquidationThreshold
-        : reserve.formattedReserveLiquidationThreshold
+      account.eModeCategoryId !== 0 &&
+      account.eModeCategoryId === hdxReserve.eModeCategoryId
+        ? hdxReserve.eModeLiquidationThreshold
+        : hdxReserve.liquidationThreshold
 
     const ltNum = Big(lt || "0")
     if (ltNum.lte(0)) return null
@@ -105,13 +106,7 @@ export const GigaHDXPosition = () => {
     if (rate.lte(0)) return null
 
     return liqPxHollarPerGhdx.div(rate)
-  }, [
-    userSummary,
-    hdxReserve,
-    hollarReserve,
-    gigaHdxBalanceHuman,
-    exchangeRate,
-  ])
+  }, [account, hdxReserve, debt, gigaHdxBalanceHuman, exchangeRate])
   const hasDebt = Big(debt).gt(0)
 
   return (
@@ -212,7 +207,7 @@ export const GigaHDXPosition = () => {
                   liquidationPriceHollarPerHdx={liquidationPriceHollarPerHdx}
                   hollarAssetId={HOLLAR_ASSET_ID}
                   nativeAssetId={native.id}
-                  symbol={`${hollarReserve?.reserve.symbol ?? ""}/${native.symbol}`}
+                  symbol={`${hollarReserve?.symbol ?? ""}/${native.symbol}`}
                 />
               )}
             </Stack>
@@ -245,9 +240,7 @@ export const GigaHDXPosition = () => {
                   t={t}
                   i18nKey="gigaStaking.position.borrow.apy"
                   values={{
-                    value:
-                      Number(hollarReserve?.reserve.variableBorrowAPY ?? 0) *
-                      100,
+                    value: Number(hollarReserve?.variableBorrowApy ?? 0) * 100,
                   }}
                 >
                   <Text as="span" color={getToken("text.high")} />
@@ -287,12 +280,12 @@ export const GigaHDXPosition = () => {
                         >
                           {t("common:currency", {
                             value: debt,
-                            symbol: hollarReserve?.reserve.symbol,
+                            symbol: hollarReserve?.symbol,
                           })}
                         </Text>
                       }
                       displayValue={t("common:currency", {
-                        value: hollarReserve?.totalBorrowsUSD || "0",
+                        value: hollarPosition?.variableBorrowsUsd || "0",
                       })}
                     />
                     <Text fs="p6" fw={400} color={getToken("text.high")}>
@@ -329,13 +322,13 @@ export const GigaHDXPosition = () => {
                     >
                       {t("common:currency", {
                         value: maxBorrowableHollar || "0",
-                        symbol: hollarReserve?.reserve.symbol,
+                        symbol: hollarReserve?.symbol,
                       })}
                     </Text>
                   }
                   displayValue={t("common:currency", {
                     value: Big(maxBorrowableHollar || "0")
-                      .times(hollarReserve?.reserve.priceInUSD || "0")
+                      .times(hollarReserve?.priceInUsd || "0")
                       .toString(),
                   })}
                 />

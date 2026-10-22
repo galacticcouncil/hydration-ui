@@ -1,9 +1,4 @@
 import {
-  HealthFactorChange,
-  HealthFactorRiskWarning,
-} from "@galacticcouncil/money-market/components"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import {
   Flex,
   LoadingButton,
   ModalBody,
@@ -22,6 +17,7 @@ import { useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -38,6 +34,8 @@ import {
   TStablepoolDetails,
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { ReceiveAssets } from "./ReceiveAssets"
@@ -206,9 +204,9 @@ const RemoveMoneyMarketLiquidityForm = (
                       label={t("common:healthFactor")}
                       content={
                         <HealthFactorChange
-                          {...healthFactor}
+                          current={healthFactor.current}
                           intermediate={intermediateHealthFactor?.future}
-                          decimals={4}
+                          projected={healthFactor.future}
                         />
                       }
                     />
@@ -328,9 +326,9 @@ const TradeSummary = ({
                   label: t("healthFactor"),
                   content: (
                     <HealthFactorChange
-                      {...healthFactor}
+                      current={healthFactor.current}
                       intermediate={intermediateHealthFactor?.future}
-                      decimals={4}
+                      projected={healthFactor.future}
                     />
                   ),
                 },

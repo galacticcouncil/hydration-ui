@@ -1,3 +1,4 @@
+import { EvmCall } from "@galacticcouncil/xc-sdk"
 import { EIP1193Provider } from "viem"
 
 export interface EIP6963ProviderInfo {
@@ -17,4 +18,11 @@ export type EIP6963AnnounceProviderEvent = {
     info: EIP6963ProviderInfo
     provider: Readonly<EIP1193Provider>
   }
+}
+
+export interface ExtendedEvmCall extends EvmCall {
+  nonce?: bigint
+  gasLimit?: bigint
+  maxFeePerGas?: bigint
+  maxPriorityFeePerGas?: bigint
 }

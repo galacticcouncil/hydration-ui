@@ -1,29 +1,14 @@
-import {
-  calculateMaxWithdrawAmount,
-  formatHealthFactorResult,
-  GhoService,
-  UiIncentiveDataProvider,
-  UiPoolDataProvider,
-} from "@galacticcouncil/money-market/utils"
 import { aave } from "@galacticcouncil/sdk-next"
-import {
-  getAddressFromAssetId,
-  safeConvertAnyToH160,
-} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query"
-import Big from "big.js"
+import Big, { BigSource } from "big.js"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import {
-  borrowReserveQuery,
-  lendingPoolAddressProvider,
-  useBorrowIncentivesContract,
-  useBorrowPoolDataContract,
-  useGhoServiceContract,
-  userBorrowSummaryQuery,
-} from "@/api/borrow"
+  HEALTH_FACTOR_RISK_THRESHOLD,
+  MAX_DISPLAY_HF,
+} from "@/modules/money-market/constants"
 import { isErc20AToken } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -55,6 +40,45 @@ type HealthFactorQueryArgs = Pick<
 }
 
 export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
+
+export type HealthFactorResult = {
+  readonly current: string
+  readonly future: string
+  readonly isBelowRiskThreshold: boolean
+  readonly hasChanged: boolean
+  readonly isSignificantChange: boolean
+  readonly isUserConsentRequired: boolean
+}
+
+const toDisplayedHf = (hf: Big) =>
+  hf.eq(-1) || hf.gt(MAX_DISPLAY_HF) ? Big(-1) : hf.round(2, Big.roundDown)
+
+export const formatHealthFactorResult = ({
+  currentHF,
+  futureHF,
+}: {
+  currentHF: BigSource
+  futureHF: BigSource
+}): HealthFactorResult => {
+  const current = Big(currentHF)
+  const future = Big(futureHF)
+
+  const isBelowRiskThreshold =
+    !future.eq(-1) && future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  const hasChanged = !future
+    .round(2, Big.roundDown)
+    .eq(current.round(2, Big.roundDown))
+  const isSignificantChange = !toDisplayedHf(future).eq(toDisplayedHf(current))
+
+  return {
+    current: current.toString(),
+    future: future.toString(),
+    isBelowRiskThreshold,
+    hasChanged,
+    isSignificantChange,
+    isUserConsentRequired: isSignificantChange && isBelowRiskThreshold,
+  }
+}
 
 export const TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY = [
   "transfarebleATokenBalance",
@@ -245,71 +269,6 @@ export const maxWithdrawQuery = (
 // with no credit for collateral the same batch supplies back afterwards
 // (the stableswap withdrawal / the second leg of a router swap both land
 // after that check). So the cap is always the plain withdraw one.
-export const getTransfarebleATokenBalance = (
-  rpc: TProviderContext,
-  address: string,
-  balanceShifted: string,
-  assetIn: TAssetData,
-  poolDataContract: UiPoolDataProvider | null,
-  ghoServiceContract: GhoService | null,
-  incentivesContract: UiIncentiveDataProvider | null,
-) =>
-  queryOptions({
-    queryKey: [
-      ...TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY,
-      address,
-      balanceShifted,
-      assetIn.id,
-    ],
-    queryFn: async () => {
-      let maxBalance = balanceShifted
-
-      if (isErc20AToken(assetIn)) {
-        const evmAddress = safeConvertAnyToH160(address)
-        const underlyingAsset = getAddressFromAssetId(assetIn.underlyingAssetId)
-
-        const userSummaryQuery = userBorrowSummaryQuery(
-          evmAddress,
-          rpc,
-          lendingPoolAddressProvider,
-          poolDataContract,
-          ghoServiceContract,
-          incentivesContract,
-        )
-
-        const [user, poolReserve] = await Promise.all([
-          // Always refetch: user summary has a 30s staleTime and may still
-          // hold pre-withdraw HF when this query runs after another asset exit.
-          rpc.queryClient.fetchQuery({ ...userSummaryQuery, staleTime: 0 }),
-          rpc.queryClient.ensureQueryData(
-            borrowReserveQuery(
-              rpc,
-              lendingPoolAddressProvider,
-              poolDataContract,
-              incentivesContract,
-              underlyingAsset,
-            ),
-          ),
-        ])
-
-        const userReserveIn = user.userReservesData.find(
-          (reserve) => reserve.underlyingAsset === underlyingAsset,
-        )
-
-        if (userReserveIn && poolReserve) {
-          maxBalance = calculateMaxWithdrawAmount(
-            user,
-            userReserveIn,
-            poolReserve,
-          ).toString()
-        }
-      }
-
-      return maxBalance
-    },
-    enabled: rpc.isReady && !!address,
-  })
-
 export const useTransfarebleATokenBalance = ({
   assetIn,
 }: {
@@ -318,23 +277,18 @@ export const useTransfarebleATokenBalance = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
-  const poolDataContract = useBorrowPoolDataContract()
-  const ghoServiceContract = useGhoServiceContract()
-  const incentivesContract = useBorrowIncentivesContract()
   const address = account?.address ?? ""
 
   const balance = getTransferableBalance(assetIn.id)
   const balanceShifted = scaleHuman(balance.toString(), assetIn.decimals)
 
-  return useQuery(
-    getTransfarebleATokenBalance(
+  return useQuery({
+    ...maxWithdrawQuery(
       rpc,
       address,
+      isErc20AToken(assetIn) ? assetIn.underlyingAssetId : "",
       balanceShifted,
-      assetIn,
-      poolDataContract,
-      ghoServiceContract,
-      incentivesContract,
     ),
-  )
+    select: (max) => Big.min(balanceShifted, max).toString(),
+  })
 }

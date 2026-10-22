@@ -1,5 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
@@ -28,6 +26,7 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { useBorrowAssetsApy } from "@/api/borrow"
@@ -58,6 +57,7 @@ import {
   TStablepoolDetails,
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
@@ -544,7 +544,12 @@ const AddStablepoolLiquiditySummary = ({
           ? [
               {
                 label: t("common:healthFactor"),
-                content: <HealthFactorChange {...healthFactor} fontSize="p5" />,
+                content: (
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                ),
               },
             ]
           : []),

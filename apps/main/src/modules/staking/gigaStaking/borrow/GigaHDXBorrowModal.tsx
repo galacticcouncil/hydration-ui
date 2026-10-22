@@ -1,8 +1,4 @@
 import {
-  HealthFactorChange,
-  HealthFactorRiskWarning,
-} from "@galacticcouncil/money-market/components"
-import {
   Box,
   Button,
   Modal,
@@ -19,6 +15,8 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
 
 import { useGigaHDXBorrow } from "./GigaHDXBorrow.utils"
 
@@ -87,7 +85,12 @@ export const GigaHDXBorrowForm = ({
             rows={[
               {
                 label: t("borrow:healthFactor"),
-                content: <HealthFactorChange {...healthFactor} />,
+                content: (
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                ),
               },
               {
                 label: t("borrow:apy.variable"),
