@@ -8,6 +8,7 @@ const origin = process.env.UI_URL || "http://127.0.0.1:4178"
 const expectedVaults = PROPELLER_VAULTS.map(({ vaultAddress }) =>
   vaultAddress.toLowerCase(),
 )
+const LARK_RPC_HOST = "node0.lark.hydration.cloud"
 const { default: playwright } = await import(
   process.env.PLAYWRIGHT_MODULE || "playwright"
 )
@@ -29,8 +30,11 @@ try {
         try {
           const message = JSON.parse(String(payload))
           for (const call of Array.isArray(message) ? message : [message]) {
-            if (call.method === "eth_call" && call.params?.[0]?.to)
-              readTargets.add(call.params[0].to.toLowerCase())
+            if (call.method !== "eth_call") continue
+            // reads may be batched through multicall, so look inside the calldata
+            const request = JSON.stringify(call.params?.[0] ?? {}).toLowerCase()
+            for (const address of expectedVaults)
+              if (request.includes(address.slice(2))) readTargets.add(address)
           }
         } catch {
           /* Non-JSON websocket frames are unrelated to EVM reads. */
@@ -42,12 +46,12 @@ try {
       waitUntil: "domcontentloaded",
     })
     await page.waitForFunction(
-      () => document.body.textContent.includes("Est. APR"),
+      () => document.body.textContent.includes("Est. APY"),
       undefined,
       { timeout: 45_000, polling: 100 },
     )
     let text = await page.locator("body").innerText()
-    assert.ok(text.includes("Est. APR"))
+    assert.ok(text.includes("Est. APY"))
     assert.ok(
       !/<0\s+tBTC\./.test(text),
       "Small tBTC amounts must retain token precision and symbol order",
@@ -78,12 +82,12 @@ try {
       await page.keyboard.press("Escape")
       await content.waitFor({ state: "hidden" })
     }
-    await disclosure("Gradual", ["your deposit transaction makes no swap"])
+    await disclosure("Gradual", ["your deposit makes no strategy trade"])
     await disclosure("Awaiting deployment", [
       "pooled within each vault",
       "not a personal queue or a completion estimate",
     ])
-    await disclosure("Est. APR", ["unconverted yield is not funded crypto"])
+    await disclosure("Est. APY", ["unconverted yield is not funded crypto"])
     if (requireReady) {
       await page.waitForFunction(
         () => {
@@ -119,12 +123,21 @@ try {
         expectedVaults.every((address) => readTargets.has(address)),
         "Browser must read both configured vaults",
       )
-      assert.ok(
-        [...rpcEndpoints].some(
-          (url) => new URL(url).hostname === "4.lark.hydration.cloud",
-        ),
-        "Browser must connect to selected Lark RPC",
+      assert.deepEqual(
+        [...new Set([...rpcEndpoints].map((url) => new URL(url).hostname))],
+        [LARK_RPC_HOST],
+        "Browser must talk to the Lark RPC only",
       )
+      for (const { shareName } of PROPELLER_VAULTS) {
+        const row = text.slice(
+          text.indexOf(shareName),
+          text.indexOf(shareName) + 200,
+        )
+        assert.ok(
+          text.includes(shareName) && /\$[\d.,]+/.test(row) && /\d%/.test(row),
+          `${shareName} must show live TVL and APY`,
+        )
+      }
     }
     assert.deepEqual(errors, [])
     console.log(
