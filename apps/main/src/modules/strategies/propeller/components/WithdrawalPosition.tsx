@@ -118,7 +118,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
               // the chip already says Settling and the row's amount is the
               // total owed; a compact settled-so-far is all this line adds
               label: t("withdrawals.settledLabel"),
-              value: `${t("withdrawals.settledProgress", {
+              value: t("withdrawals.settledProgress", {
                 settled: t("common:currency", {
                   value: row.settledSoFar ?? 0,
                   symbol,
@@ -128,19 +128,20 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
                   ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
                   100
                 ).toFixed(1),
-                // the pace is measured from recent tranches and decays through
-                // stalls, so this is "at the current pace", never a promise
-              })}${
+              }),
+              // its own small line: appended to the value it overflowed the
+              // narrow card. The pace is measured from recent tranches and
+              // decays through stalls — "at the current pace", never a promise
+              bottomLabel:
                 row.etaSeconds !== null
-                  ? ` · ${t("withdrawals.etaAtPace", {
+                  ? t("withdrawals.etaAtPace", {
                       eta: formatEta(row.etaSeconds),
-                    })}`
+                    })
                   : row.typicalSettleSeconds !== null
-                    ? ` · ${t("withdrawals.etaTypical", {
+                    ? t("withdrawals.etaTypical", {
                         eta: formatEta(row.typicalSettleSeconds),
-                      })}`
-                    : ""
-              }`,
+                      })
+                    : undefined,
             },
           ]
         : undefined

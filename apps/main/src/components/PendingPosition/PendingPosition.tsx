@@ -23,6 +23,8 @@ import {
 export type PendingPositionStat = {
   label: string
   value: ReactNode
+  /** small secondary line under the value */
+  bottomLabel?: string
   tooltip?: string
 }
 
@@ -62,6 +64,7 @@ export const PendingPosition: FC<PendingPositionProps> = ({
             <SStat key={stat.label}>
               <ValueStats
                 label={stat.label}
+                bottomLabel={stat.bottomLabel}
                 customValue={
                   <Flex align="center" gap="s">
                     <Text
