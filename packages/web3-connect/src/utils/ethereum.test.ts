@@ -28,7 +28,10 @@ vi.mock("@galacticcouncil/xc-cfg", () => ({
 
 describe("Selected wallet RPC", () => {
   it("does not offer mainnet fallbacks for a selected testnet fork", async () => {
-    const request = vi.fn(async () => null)
+    const request = vi.fn(async ({ method }: { method: string }) => {
+      if (method === "wallet_switchEthereumChain") throw { code: 4902 }
+      return "0x3640e"
+    })
     await requestNetworkSwitch({ request } as unknown as EIP1193Provider, {
       chain: "hydration",
       priorityRpcUrl: "wss://lark.invalid",
@@ -40,7 +43,10 @@ describe("Selected wallet RPC", () => {
   })
 
   it("retains the normal chain defaults without an override", async () => {
-    const request = vi.fn(async () => null)
+    const request = vi.fn(async ({ method }: { method: string }) => {
+      if (method === "wallet_switchEthereumChain") throw { code: 4902 }
+      return "0x3640e"
+    })
     await requestNetworkSwitch({ request } as unknown as EIP1193Provider, {
       chain: "hydration",
     })

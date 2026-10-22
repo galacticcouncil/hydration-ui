@@ -1,4 +1,4 @@
-import { NearAddr, ZecAddr } from "@galacticcouncil/utils"
+import { NearAddr, toNearAccountId, ZecAddr } from "@galacticcouncil/utils"
 import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 
 export const addressValidatorForPlatform = (
@@ -13,3 +13,8 @@ export const addressValidatorForPlatform = (
       return () => true
   }
 }
+
+export const normalizeAddressForPlatform = (
+  platform: XcSwapPlatform,
+  addr: string,
+): string => (platform === "near" ? toNearAccountId(addr) : addr)

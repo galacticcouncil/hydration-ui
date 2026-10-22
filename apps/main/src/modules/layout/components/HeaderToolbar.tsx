@@ -1,5 +1,5 @@
 import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
-import { ButtonIcon, ExternalLink, Icon } from "@galacticcouncil/ui/components"
+import { Button, ExternalLink } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, lazy } from "react"
 
@@ -25,11 +25,14 @@ export const HeaderToolbar: FC = () => {
   return (
     <SHeaderToolbar>
       {hasTopNavbar && (
-        <ButtonIcon asChild>
-          <ExternalLink href={HYDRATION_DOCS_LINK}>
-            <Icon component={QuestionCircleRegular} size="l" />
-          </ExternalLink>
-        </ButtonIcon>
+        <Button
+          icon={QuestionCircleRegular}
+          variant="ghost"
+          size="medium"
+          asChild
+        >
+          <ExternalLink href={HYDRATION_DOCS_LINK} />
+        </Button>
       )}
       <NotificationCenter />
       {hasTopNavbar && <Settings />}

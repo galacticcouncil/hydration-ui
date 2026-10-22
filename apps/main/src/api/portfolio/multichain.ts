@@ -30,6 +30,10 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
+// The NEAR chain now carries wNEAR and ZEC too; only the native token and its
+// wrap take the NEAR spot price when the registry has none.
+const NEAR_SPOT_PRICED_ASSET_KEYS = ["near", "wnear"]
+
 export type MultichainValuedBalance = {
   balance: AssetAmount
   assetId: string | null
@@ -222,7 +226,9 @@ export const useMultichainPortfolio = (
             const registryPrice = assetId ? getAssetPrice(assetId) : null
             const spotPrice = registryPrice?.isValid
               ? registryPrice.price
-              : chainKey === "near" && nearSpotPrice !== undefined
+              : chainKey === "near" &&
+                  NEAR_SPOT_PRICED_ASSET_KEYS.includes(balance.key) &&
+                  nearSpotPrice !== undefined
                 ? nearSpotPrice.toString()
                 : null
 
@@ -243,8 +249,23 @@ export const useMultichainPortfolio = (
           Big(balance.amount.toString()).gt(0),
         )
 
+        const isOnlyChainForAnyAddress = stableAddresses.some((address) => {
+          const chainsForAddress = wallet.getChainsForAddress(
+            address,
+            stableChains,
+          )
+          return (
+            chainsForAddress.length === 1 &&
+            chainsForAddress[0]?.key === chainKey
+          )
+        })
+
         // hide chains with nothing to show; keep errors visible for retry
-        if (!isError && !isLoading && !hasAssets) return []
+        // keep a wallet's sole native chain visible so single-chain wallets
+        // (Solana, Sui, …) don't collapse to an empty portfolio shell
+        if (!isError && !isLoading && !hasAssets && !isOnlyChainForAnyAddress) {
+          return []
+        }
 
         return [
           {
@@ -269,7 +290,9 @@ export const useMultichainPortfolio = (
       nearSpotPrice,
       refetchChain,
       resolved,
+      stableAddresses,
       stableChains,
+      wallet,
     ],
   )
 

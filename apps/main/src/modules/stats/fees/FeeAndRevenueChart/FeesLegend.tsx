@@ -71,8 +71,7 @@ export const FeesLegend = ({
             key={key}
             size="small"
             sx={{ px: "m" }}
-            variant={isActive ? "secondary" : "restSubtle"}
-            outline={!isActive}
+            variant={isActive ? "secondary" : "ghost"}
             onClick={() => setActiveFilter(key)}
           >
             {color && (

@@ -91,7 +91,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         bridgeProvider ?? undefined,
       )
 
-      const { origin } = destPair.build(validDstAsset, tag)
+      const route = destPair.build(validDstAsset, tag).origin.route
 
       const calls = await transfer.buildCalls(srcAmount)
       const transferCall = calls.at(-1)
@@ -174,7 +174,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             dstChainKey: destChain.key,
             dstChainFee: destFee.toDecimal(),
             dstChainFeeSymbol: destFee.symbol,
-            tags: (origin.route.tags as XcmTags) || [],
+            tags: (route.tags as XcmTags) || [],
           },
         }
       }

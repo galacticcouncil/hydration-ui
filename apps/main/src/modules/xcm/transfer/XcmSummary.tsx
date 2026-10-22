@@ -16,7 +16,10 @@ import { useEvmApprovalFee } from "@/modules/xcm/transfer/hooks/useEvmApprovalFe
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
-import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
+import {
+  isOmniRoute,
+  isSnowbridgeRoute,
+} from "@/modules/xcm/transfer/utils/bridge"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
@@ -47,17 +50,24 @@ export const XcmSummary = () => {
   const { origin } = config ?? {}
 
   const isSnowbridge = !!origin?.route && isSnowbridgeRoute(origin.route)
-  const { data: snowbridgeDestFee } = useQuery(
+  // Omni's cut of a withdrawal to Zcash, out of what lands
+  const isOmniWithdrawal =
+    !!origin?.route && isOmniRoute(origin.route) && !!destChain?.isZec()
+  const isDestFeeAmountBound = isSnowbridge || isOmniWithdrawal
+
+  const { data: amountDestFee } = useQuery(
     xcmDestinationFeeQuery(
-      isSnowbridge ? transfer : null,
+      isDestFeeAmountBound ? transfer : null,
       srcAmount,
       transferArgs,
     ),
   )
 
-  // For Snowbridge V2 the destination fee is volume-based — read the
+  // Snowbridge V2 and Omni withdrawal fees are volume-based — read the
   // amount-aware value from the query instead of the build-time snapshot.
-  const effectiveDestFee = isSnowbridge ? snowbridgeDestFee : destination?.fee
+  const effectiveDestFee = isDestFeeAmountBound
+    ? amountDestFee
+    : destination?.fee
 
   const sourceFeeValue = (() => {
     if (!source) return null
@@ -70,6 +80,7 @@ export const XcmSummary = () => {
   })()
 
   const destFeeLabel = (() => {
+    if (isOmniWithdrawal) return t("xcm:summary.withdrawalFee")
     if (!origin?.route) return t("xcm:summary.destinationFee")
     if (isSnowbridge) return t("xcm:summary.bridgeFee")
     return t("xcm:summary.destinationFee")

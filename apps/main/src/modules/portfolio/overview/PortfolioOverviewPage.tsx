@@ -7,6 +7,7 @@ import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { MyBonds } from "@/modules/portfolio/overview/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidity"
 import { PortfolioOverview } from "@/modules/portfolio/overview/PortfolioOverview"
+import { useIsPortfolioEmpty } from "@/modules/portfolio/overview/PortfolioOverview.data"
 import { PortfolioEmptyState } from "@/modules/portfolio/PortfolioEmptyState"
 import { TrackedWallets } from "@/modules/portfolio/tracked/TrackedWallets"
 
@@ -53,37 +54,42 @@ export const PortfolioOverviewPage = () => {
     liquidityPagination.onPageClick(1)
   }
 
+  const isPortfolioEmpty = useIsPortfolioEmpty()
+
   if (!account) {
     return <PortfolioEmptyState />
   }
 
   return (
     <Flex direction="column" gap="xxxl">
-      <PortfolioOverview
-        key={account.address + "_assets"}
-        searchPhrase={searchPhrase}
-        onSearchPhraseChange={changeSearch}
-        sortingProps={assetsSorting}
-        bondsContent={
-          <MyBonds
-            key={account.address + "_bonds"}
-            searchPhrase={searchPhrase}
-            paginationProps={bondsPagination}
-            sortingProps={bondsSorting}
-          />
-        }
-        liquidityContent={
-          <MyLiquidity
-            key={account.address + "_liquidity"}
-            searchPhrase={searchPhrase}
-            paginationProps={liquidityPagination}
-            sortingProps={liquiditySorting}
-          />
-        }
-      />
+      {!isPortfolioEmpty && (
+        <PortfolioOverview
+          key={account.address + "_assets"}
+          searchPhrase={searchPhrase}
+          onSearchPhraseChange={changeSearch}
+          sortingProps={assetsSorting}
+          liquidityContent={
+            <MyLiquidity
+              key={account.address + "_liquidity"}
+              searchPhrase={searchPhrase}
+              paginationProps={liquidityPagination}
+              sortingProps={liquiditySorting}
+            />
+          }
+          bondsContent={
+            <MyBonds
+              key={account.address + "_bonds"}
+              searchPhrase={searchPhrase}
+              paginationProps={bondsPagination}
+              sortingProps={bondsSorting}
+            />
+          }
+        />
+      )}
       <TrackedWallets
         key={account.address + "_tracked"}
         searchPhrase={searchPhrase}
+        onSearchPhraseChange={isPortfolioEmpty ? changeSearch : undefined}
         sortingProps={assetsSorting}
       />
     </Flex>

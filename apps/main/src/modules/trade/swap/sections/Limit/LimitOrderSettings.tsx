@@ -1,8 +1,8 @@
 import { CircleInfo } from "@galacticcouncil/ui/assets/icons"
 import {
+  Button,
   Flex,
   Icon,
-  MicroButton,
   Text,
   Toggle,
   ToggleLabel,
@@ -39,10 +39,13 @@ export const LimitOrderSettings: FC = () => {
         </Text>
         <Flex gap="s" justify="flex-end" width={["100%", "auto"]}>
           {EXPIRY_OPTIONS.map((option) => (
-            <MicroButton
+            <Button
+              size="micro"
+              uppercase
+              outline
               key={option}
               onClick={() => setValue("expiry", option)}
-              variant={expiry === option ? "emphasis" : "low"}
+              variant={expiry === option ? "accent" : "muted"}
               sx={{ flex: [1, "auto"] }}
             >
               <Text
@@ -53,7 +56,7 @@ export const LimitOrderSettings: FC = () => {
               >
                 {t(`trade:limit.expiry.${option}`)}
               </Text>
-            </MicroButton>
+            </Button>
           ))}
         </Flex>
       </Flex>

@@ -19,6 +19,7 @@ export const NearIdenticon: React.FC<NearIdenticonProps> = ({
     align="center"
     justify="center"
     sx={{ overflow: "hidden" }}
+    flexShrink={0}
     {...props}
   >
     <Image src={ICON_URL} alt="NEAR" width={size} height={size} />

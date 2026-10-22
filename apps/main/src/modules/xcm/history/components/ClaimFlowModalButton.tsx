@@ -2,8 +2,6 @@ import { CheckIcon, CopyIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CopyButton,
-  Icon,
-  MicroButton,
   Modal,
   ModalBody,
   ModalHeader,
@@ -11,6 +9,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   useAccount,
+  useWeb3Connect,
   WalletMode,
   Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
@@ -25,7 +24,10 @@ import { useDepositClaim } from "@/modules/xcm/history/hooks/useDepositClaim"
 import { useWithdrawClaim } from "@/modules/xcm/history/hooks/useWithdrawClaim"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
-import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import {
+  getWalletModeByChain,
+  isAccountValidOnChain,
+} from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type DepositMutation = ReturnType<typeof useDepositClaim>
@@ -52,6 +54,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
   const { papi } = useRpcProvider()
   const [modalOpen, setModalOpen] = useState(false)
   const { account } = useAccount()
+  const setAccount = useWeb3Connect((state) => state.setAccount)
 
   const chain = resolveChainFromUrn(journey.destination)
   const walletMode = chain ? getWalletModeByChain(chain) : WalletMode.EVM
@@ -62,8 +65,15 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
 
   if (!account) return null
 
-  const onClick =
-    type === "withdraw" ? () => setModalOpen(true) : () => mutate(account)
+  // A deposit is claimed on hydration by the active wallet, since the review
+  // modal signs with it. An account that can't sign there, e.g. the NEAR
+  // sender of an inbound transfer, picks a hydration account first.
+  const canClaimWithActiveAccount =
+    type === "deposit" && !!chain && isAccountValidOnChain(account, chain)
+
+  const onClick = canClaimWithActiveAccount
+    ? () => mutate(account)
+    : () => setModalOpen(true)
 
   return (
     <>
@@ -81,9 +91,12 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
         open={modalOpen}
         mode={walletMode}
         onOpenChange={setModalOpen}
-        onAccountSelect={(account) => {
+        onAccountSelect={(selected) => {
           setModalOpen(false)
-          mutate(account)
+          // A withdraw signs with the picked wallet directly; a deposit goes
+          // through the active one, so the pick becomes the active account.
+          if (type === "deposit") setAccount(selected)
+          mutate(selected)
         }}
       />
       <Modal
@@ -105,18 +118,19 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
               errorActions={
                 <CopyButton text={error.message}>
                   {({ copied }) => (
-                    <MicroButton
+                    <Button
+                      size="micro"
+                      uppercase
+                      variant="muted"
+                      outline
                       as="div"
+                      iconStart={copied ? CheckIcon : CopyIcon}
                       sx={{
                         color: copied && getToken("accents.success.emphasis"),
                       }}
                     >
-                      <Icon
-                        size="xs"
-                        component={copied ? CheckIcon : CopyIcon}
-                      />
                       {copied ? t("copied") : t("copyError")}
-                    </MicroButton>
+                    </Button>
                   )}
                 </CopyButton>
               }

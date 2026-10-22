@@ -11,6 +11,7 @@ import { bestBuyQuery, bestSellQuery, TradeType } from "@/api/trade"
 import { SellAllAlert } from "@/modules/trade/swap/sections/XcSwap/components/SellAllAlert"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { SwapSubmitValues } from "@/modules/trade/swap/sections/XcSwap/types"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -29,6 +30,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
   const rpc = useRpcProvider()
   const { sdk } = rpc
   const isIceEnabled = useIsIceEnabled()
+  const { getErc20AToken } = useAssets()
 
   const {
     swap: {
@@ -93,7 +95,13 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
         }
       })()
 
-      if (isIceEnabled) {
+      // An aToken and its underlying are always 1:1, so the router swaps them
+      // directly instead of going through ICE
+      const isATokenPair =
+        getErc20AToken(sellAsset.id)?.underlyingAssetId === buyAsset.id ||
+        getErc20AToken(buyAsset.id)?.underlyingAssetId === sellAsset.id
+
+      if (isIceEnabled && !isATokenPair) {
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
 
         // Swap intents are exact-in: amount_in is always spent, amount_out is
