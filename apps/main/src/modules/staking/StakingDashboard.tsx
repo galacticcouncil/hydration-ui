@@ -6,6 +6,7 @@ import Big from "big.js"
 import { FC } from "react"
 
 import { TokenLockType, useNativeTokenLocks } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -19,7 +20,6 @@ import { OngoingReferenda } from "@/modules/staking/OngoingReferenda"
 import { Stake } from "@/modules/staking/Stake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { toDecimal } from "@/utils/formatting"
 
 export const StakingDashboard: FC = () => {

@@ -9,10 +9,11 @@ export const SSwapFormContainer = styled(Paper)(
 
     padding: 0 var(--swap-section-padding-inline);
 
-    overflow-x: hidden;
+    overflow: hidden;
   `,
 )
 
 export const SwapSectionSeparator = styled(Separator)`
   margin-inline: var(--swap-section-inset-inline);
+  flex-shrink: 0;
 `

@@ -23,7 +23,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
     >
-      <Text>
+      <Text fs="p4" color={getToken("text.high")}>
         <Trans
           t={t}
           i18nKey="borrow:history.table.collateralization"
@@ -31,6 +31,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
         >
           <Text
             as="span"
+            fw={500}
             color={getToken(
               enabled ? "accents.success.emphasis" : "accents.danger.emphasis",
             )}
@@ -38,7 +39,15 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
         </Trans>
       </Text>
       <Flex align="center" gap="s">
-        {assetId && <AssetLogo size="small" id={assetId} />} {asset.symbol}
+        {assetId && <AssetLogo size="small" id={assetId} />}{" "}
+        <Text
+          fs="p4"
+          fw={500}
+          whiteSpace="nowrap"
+          color={getToken("text.high")}
+        >
+          {asset.symbol}
+        </Text>
       </Flex>
     </Flex>
   )

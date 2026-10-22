@@ -4,7 +4,6 @@ import {
   Box,
   Flex,
   Image,
-  Pie,
   PieChart,
   Separator,
   Skeleton,
@@ -67,19 +66,19 @@ export const DashboardStats: FC<Props> = ({
             justify="center"
             align="center"
           >
-            <PieChart height={90} width={90} sx={{ pointerEvents: "none" }}>
-              <Pie
-                data={[{ value: 1 }]}
-                innerRadius={25}
-                outerRadius={45}
-                startAngle={PIE_START_ANGLE}
-                endAngle={
-                  PIE_START_ANGLE - (360 * Number(supplyStakedPercent)) / 100
-                }
-                stroke="none"
-                fill={themeProps.controls.solid.activeHover}
-              />
-            </PieChart>
+            <PieChart
+              size={90}
+              total={100}
+              segments={[
+                {
+                  value: Number(supplyStakedPercent),
+                  color: themeProps.controls.solid.activeHover,
+                },
+              ]}
+              ariaLabel={t("staking:dashboard.supplyStaked.title", {
+                symbol: native.symbol,
+              })}
+            />
           </Flex>
           <Flex direction="column" gap="m" maxWidth="min-content">
             <Text
@@ -202,5 +201,3 @@ export const DashboardStats: FC<Props> = ({
     </SDashboardStats>
   )
 }
-
-const PIE_START_ANGLE = 90

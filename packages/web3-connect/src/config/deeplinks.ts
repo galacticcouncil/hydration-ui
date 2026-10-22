@@ -1,4 +1,9 @@
-import { createQueryString, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  createQueryString,
+  HYDRATION_CHAIN_KEY,
+  isAndroid,
+  isMobileDevice,
+} from "@galacticcouncil/utils"
 
 import { WalletProviderType } from "@/config/providers"
 
@@ -32,6 +37,19 @@ export const WALLET_DEEPLINKS: Partial<
     android: `solflare://v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
     universal: `https://solflare.com/ul/v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
   },
+  [WalletProviderType.TrustWalletSol]: {
+    android: `trust://open_url?coin_id=501&url=${ENCODED_SOLANA_TARGET_URL}`,
+    universal: `https://link.trustwallet.com/open_url?coin_id=501&url=${ENCODED_SOLANA_TARGET_URL}`,
+  },
+  [WalletProviderType.BackpackSol]: {
+    universal: `https://backpack.app/ul/v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
+  },
+}
+
+export const getWalletDeeplink = (provider: WalletProviderType) => {
+  const config = WALLET_DEEPLINKS[provider]
+  if (!config || !isMobileDevice()) return undefined
+  return config.android && isAndroid() ? config.android : config.universal
 }
 
 function encodeXcmTargetUrl(srcChain: string, asset: string) {

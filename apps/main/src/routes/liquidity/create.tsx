@@ -5,6 +5,7 @@ import { CreateIsolatedPool } from "@/modules/liquidity/components/CreateIsolate
 import { useNavigateLiquidityBack } from "@/modules/liquidity/Liquidity.utils"
 
 export const Route = createFileRoute("/liquidity/create")({
+  staticData: { crumb: "liquidity:createPool", showSubNav: false },
   component: RouteComponent,
 })
 

@@ -27,8 +27,8 @@ export const BorrowMarketsPage = () => {
               value={searchPhrase}
               placeholder={t("search.placeholder.assets")}
               iconStart={Search}
+              width={["100%", null, "4xl"]}
               onChange={(e) => setSearchPhrase(e.target.value)}
-              sx={{ minWidth: ["100%", 250] }}
             />
           }
           sx={{

@@ -1,23 +1,24 @@
 import {
   Button,
   Flex,
+  LogoSkeleton,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
+  Separator,
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { AssetLogo } from "@/components/AssetLogo"
-
 export const RemoveLiquiditySkeleton = ({
   onBack,
 }: {
   onBack?: () => void
 }) => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
 
   return (
     <>
@@ -27,19 +28,56 @@ export const RemoveLiquiditySkeleton = ({
         onBack={onBack}
       />
       <ModalBody>
-        <Flex align="center" justify="space-between" gap="base" pb="xxl">
-          <AssetLogo id={""} size="large" isLoading />
-          <Text fs="h5" fw={500} color={getToken("text.high")} font="primary">
-            <Skeleton width={50} height="100%" />
+        <Flex direction="column" gap="l">
+          <Flex align="center" gap="base">
+            <LogoSkeleton size="large" />
+            <Skeleton width={120} height={24} />
+          </Flex>
+
+          <ModalContentDivider />
+
+          <Text>
+            <Skeleton width={120} height="1em" />
           </Text>
+          <Flex
+            direction="column"
+            gap="m"
+            p="m"
+            sx={{
+              borderRadius: "m",
+              backgroundColor: getToken("surfaces.containers.dim.dimOnHigh"),
+            }}
+          >
+            <ReceiveAssetSkeleton />
+            <Separator />
+            <ReceiveAssetSkeleton />
+          </Flex>
         </Flex>
-
-        <ModalContentDivider />
-
-        <Button type="button" size="large" width="100%" mt="xxl" disabled>
+      </ModalBody>
+      <ModalFooter>
+        <Button
+          type="button"
+          size="large"
+          variant="muted"
+          width="100%"
+          disabled
+        >
           {t("removeLiquidity")}
         </Button>
-      </ModalBody>
+      </ModalFooter>
     </>
   )
 }
+
+const ReceiveAssetSkeleton = () => (
+  <Flex gap="m" justify="space-between" align="center">
+    <Flex align="center" gap="base">
+      <LogoSkeleton size="small" />
+      <Skeleton width={48} height={14} />
+    </Flex>
+    <Flex direction="column" align="flex-end" gap="xs">
+      <Skeleton width={72} height={16} />
+      <Skeleton width={56} height={12} />
+    </Flex>
+  </Flex>
+)

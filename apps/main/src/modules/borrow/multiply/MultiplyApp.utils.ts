@@ -19,6 +19,7 @@ import z from "zod"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   getStrategyPositionsQueryKey,
   useBorrowPoolBundleContract,
@@ -49,7 +50,6 @@ import {
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   isSubstrateTxResult,

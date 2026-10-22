@@ -1,9 +1,10 @@
+import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItemDescription,
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
-  MenuSelectionItemArrow,
+  MenuSelectionItemIcon,
   Skeleton,
   Spinner,
 } from "@galacticcouncil/ui/components"
@@ -44,7 +45,7 @@ export const PaymentAsset: FC<PaymentAssetProps> = ({ onClick }) => {
           </MenuItemDescription>
         </>
       )}
-      <MenuSelectionItemArrow />
+      <MenuSelectionItemIcon component={ArrowRight} />
     </MenuSelectionItem>
   )
 }

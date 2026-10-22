@@ -2,11 +2,8 @@ import { GraphQLClient } from "graphql-request"
 
 import { getSdk } from "@/indexer/__generated__/sdk"
 
-export * from "./extrinsics"
 export * from "./farms"
-export * from "./otc"
 export * from "./proxy"
-export * from "./trade-orders"
 export * from "@/indexer/__generated__/operations"
 export * from "@/indexer/__generated__/types"
 

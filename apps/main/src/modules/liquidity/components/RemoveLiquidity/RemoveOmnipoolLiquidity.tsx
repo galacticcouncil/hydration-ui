@@ -1,12 +1,13 @@
 import {
+  Box,
   Button,
   Checkbox,
   Flex,
   ModalBody,
   ModalContentDivider,
   ModalHeader,
-  Stack,
   Text,
+  VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
@@ -58,12 +59,17 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
     })
   }
 
-  if (confirmedSelection) {
+  // nothing to pick from with a single position, go straight to the form
+  const onlyPosition = positions.length === 1 ? positions : undefined
+
+  if (confirmedSelection || onlyPosition) {
     return (
       <RemoveMultipleOmnipoolLiquidity
         {...props}
-        positions={selectedPositions}
-        onBack={() => setConfirmedSelection(false)}
+        positions={onlyPosition ?? selectedPositions}
+        onBack={
+          onlyPosition ? props.onBack : () => setConfirmedSelection(false)
+        }
       />
     )
   }
@@ -104,25 +110,31 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
             </Text>
           </Flex>
 
-          <Stack separated sx={{ maxHeight: 250, overflowY: "auto", mx: -20 }}>
-            {positions.map((position) => (
-              <PositionToRemove
-                key={position.positionId}
-                position={position}
-                value={format(position.data)}
-                displayValue={position.data.currentTotalDisplay}
-                activeFarms={activeFarms}
-                selected={position.isSelected}
-                onClick={() =>
-                  position.isSelected
-                    ? onUnselectPosition(position)
-                    : onSelectPosition(position)
-                }
-              />
-            ))}
-          </Stack>
-
-          <ModalContentDivider />
+          <Box mx="var(--modal-content-inset)">
+            <ModalContentDivider />
+            <VirtualizedList
+              items={positions}
+              maxVisibleItems={5}
+              itemSize={45}
+              separated
+              getItemKey={(index) => positions[index]?.positionId ?? index}
+              renderItem={(position) => (
+                <PositionToRemove
+                  position={position}
+                  value={format(position.data)}
+                  displayValue={position.data.currentTotalDisplay}
+                  activeFarms={activeFarms}
+                  selected={position.isSelected}
+                  onClick={() =>
+                    position.isSelected
+                      ? onUnselectPosition(position)
+                      : onSelectPosition(position)
+                  }
+                />
+              )}
+            />
+            <ModalContentDivider />
+          </Box>
 
           <AmountToRemove
             assets={removableValues}

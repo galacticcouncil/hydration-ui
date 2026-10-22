@@ -8,13 +8,15 @@ import {
 } from "@galacticcouncil/money-market/hooks"
 import {
   Alert,
-  Button,
+  Box,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
   Skeleton,
   Stack,
+  Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
@@ -114,9 +116,11 @@ const SupplyIsolatedLiquidityBody = ({
   const { t } = useTranslation(["common", "liquidity", "borrow", "trade"])
   const {
     form,
+    maxBalance,
     onSubmit,
     collateralType,
     healthFactor,
+    isHealthFactorLoading,
     isBlockedByBorrowedAssets,
     isEnablingIsolatedModeWarning,
     isolationWarning,
@@ -127,6 +131,7 @@ const SupplyIsolatedLiquidityBody = ({
     apys,
     spotPriceData,
     isPriceLoading,
+    isTradeLoading,
     isAaveSupply,
     swap,
   } = useSupplyIsolatedLiquidity({
@@ -148,54 +153,53 @@ const SupplyIsolatedLiquidityBody = ({
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
-            label={t("amount")}
-            assetFieldName="asset"
-            amountFieldName="amount"
-            sortedAssets={selectabledAssets}
-            assets={[]}
-            sx={{ pt: 0 }}
-          />
+          <Box pb="l">
+            <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
+              label={t("amount")}
+              assetFieldName="asset"
+              amountFieldName="amount"
+              sortedAssets={selectabledAssets}
+              assets={[]}
+              balance={{ value: maxBalance }}
+            />
+          </Box>
 
           <ModalContentDivider />
 
-          <Stack gap="m" py="m" separated separator={<ModalContentDivider />}>
+          <Summary separator={<ModalContentDivider />}>
             {apys.map((apy, index) => (
               <SummaryRow
                 key={index}
                 label={getApyLabel(apy.apyType, true)}
                 content={formatApyPercent(t, apy.apy)}
-                sx={{ my: 0 }}
               />
             ))}
             {!isBlockedByBorrowedAssets && (
               <SummaryRow
                 label={t("minimumReceived")}
+                loading={isTradeLoading}
                 content={t("common:currency", {
                   value: minReceiveAmountShifted,
                   symbol: aToken.symbol,
                 })}
-                sx={{ my: 0 }}
               />
             )}
 
             <SummaryRow
               label={t("tradeLimit")}
               content={<TradeLimit type={TradeLimitType.Trade} />}
-              sx={{ my: 0 }}
             />
 
-            {swap && (
+            {(swap || isTradeLoading) && (
               <SummaryRow
                 label={t("trade:market.summary.estTradeFees")}
                 content={
                   <TradeFee
                     swap={swap}
                     receiveAsset={aToken}
-                    isLoading={false}
+                    isLoading={isTradeLoading}
                   />
                 }
-                sx={{ my: 0 }}
               />
             )}
 
@@ -213,7 +217,6 @@ const SupplyIsolatedLiquidityBody = ({
                     })
                   )
                 }
-                sx={{ my: 0 }}
               />
             )}
 
@@ -221,57 +224,74 @@ const SupplyIsolatedLiquidityBody = ({
               <SummaryRow
                 label={t("borrow:collateral")}
                 content={<CollateralState collateralType={collateralType} />}
-                sx={{ my: 0 }}
               />
             )}
-            {healthFactor && (
+            {(healthFactor || isHealthFactorLoading) && (
               <SummaryRow
                 label={t("healthFactor")}
-                content={<HealthFactorChange {...healthFactor} fontSize="p5" />}
-                sx={{ my: 0 }}
+                content={
+                  healthFactor ? (
+                    <HealthFactorChange
+                      {...healthFactor}
+                      loading={isHealthFactorLoading}
+                      fontSize="p5"
+                    />
+                  ) : (
+                    <Skeleton width={80} height="1em" />
+                  )
+                }
               />
             )}
-            {isolationWarning && (
-              <Alert
-                title={t("borrow:alert.enableIsolatedMode.title")}
-                description={t("borrow:alert.enableIsolatedMode.desc", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
+            {(isolationWarning ||
+              supplyCapWarning ||
+              debtCeilingWarning ||
+              isBlockedByBorrowedAssets ||
+              isEnablingIsolatedModeWarning) && (
+              <Stack gap="s" py="l">
+                {isolationWarning && (
+                  <Alert
+                    title={t("borrow:alert.enableIsolatedMode.title")}
+                    description={t("borrow:alert.enableIsolatedMode.desc", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+                {supplyCapWarning}
+                {debtCeilingWarning}
+                {isBlockedByBorrowedAssets && (
+                  <Alert
+                    variant="warning"
+                    description={t("borrow:alert.borrowIsolated", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+                {isEnablingIsolatedModeWarning && (
+                  <Alert
+                    variant="warning"
+                    description={t("borrow:alert.supplyIsolated", {
+                      symbol: userReserve.reserve.symbol,
+                    })}
+                  />
+                )}
+              </Stack>
             )}
-            {supplyCapWarning}
-            {debtCeilingWarning}
-            {isBlockedByBorrowedAssets && (
-              <Alert
-                variant="warning"
-                description={t("borrow:alert.borrowIsolated", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
-            )}
-            {isEnablingIsolatedModeWarning && (
-              <Alert
-                variant="warning"
-                description={t("borrow:alert.supplyIsolated", {
-                  symbol: userReserve.reserve.symbol,
-                })}
-              />
-            )}
-          </Stack>
+          </Summary>
 
           <ModalContentDivider />
         </ModalBody>
         <ModalFooter sx={{ pt: 0 }}>
-          <Button
+          <LoadingButton
             type="submit"
             size="large"
             width="100%"
+            isLoading={isTradeLoading}
             disabled={isBlockedSupply || !form.formState.isValid}
           >
             {t("borrow:supply.withSymbol", {
               symbol: userReserve.reserve.symbol,
             })}
-          </Button>
+          </LoadingButton>
         </ModalFooter>
       </form>
     </FormProvider>

@@ -37,12 +37,16 @@ export function containerQuery(
   `
 }
 
+function isScreenBreakpoint(size: string): size is ScreenBreakpoint {
+  return size in breakpointsMap
+}
+
 export function containerSize(
-  size: ScreenBreakpoint,
+  size: ScreenBreakpoint | `${number}rem`,
   styles: SerializedStyles | string,
   type: ContainerQueryType = "inline-size",
 ): SerializedStyles {
-  const value = breakpointsMap[size]
+  const value = isScreenBreakpoint(size) ? breakpointsMap[size] : size
 
   return containerQuery(
     {

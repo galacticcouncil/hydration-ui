@@ -28,3 +28,23 @@ export class UserRejectedError extends BaseWalletError {
   readonly name = "UserRejectedError"
   readonly message = `${this.wallet.title} was rejected by the user.`
 }
+
+export class StaleAttemptError extends BaseWalletError {
+  readonly name = "StaleAttemptError"
+  readonly message = `${this.wallet.title} connection attempt was superseded.`
+}
+
+// Wallets reject with their own value, often a string rather than an Error
+export const getWalletErrorMessage = (err: unknown): string => {
+  if (err instanceof Error) return err.message
+  if (typeof err === "string") return err
+  if (
+    err &&
+    typeof err === "object" &&
+    "message" in err &&
+    typeof err.message === "string"
+  ) {
+    return err.message
+  }
+  return ""
+}

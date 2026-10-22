@@ -1,6 +1,8 @@
 import type { PingResponse } from "@galacticcouncil/utils"
 import { expose } from "comlink"
 
+import { type BestRpcs, keepFreshRpcs, STRAGGLER_GRACE_MS } from "./ping.utils"
+
 function wsToHttp(url: string) {
   return url.replace(/^(ws)(s)?:\/\//, (_, _insecure, secure) =>
     secure ? "https://" : "http://",
@@ -51,6 +53,19 @@ function decodeCompactNumber(bytes: Uint8Array): number {
   return Number(result)
 }
 
+const BLOCK_ID = 1
+const GENESIS_HASH_ID = 2
+
+type JsonRpcResponse = {
+  id?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  result?: any
+}
+
+function findResultById(responses: JsonRpcResponse[], id: number) {
+  return responses.find((response) => response?.id === id)?.result
+}
+
 const getBlock = async (
   wsUrl: string,
   timeoutMs = 5000,
@@ -61,6 +76,7 @@ const getBlock = async (
     ping: Infinity,
     timestamp: 0,
     blockNumber: null,
+    genesisHash: null,
   }
 
   if (signal?.aborted) return defaultResponse
@@ -80,23 +96,47 @@ const getBlock = async (
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            id: 1,
-            jsonrpc: "2.0",
-            method: "chain_getBlock",
-            params: [],
-          }),
+          body: JSON.stringify([
+            {
+              id: BLOCK_ID,
+              jsonrpc: "2.0",
+              method: "chain_getBlock",
+              params: [],
+            },
+            {
+              id: GENESIS_HASH_ID,
+              jsonrpc: "2.0",
+              method: "chain_getBlockHash",
+              params: [0],
+            },
+          ]),
         })
         const ping = performance.now() - start
 
         const data = await res.json()
 
-        const blockNumber = Number(data.result.block.header.number)
-        const tsExtinsic = data.result.block.extrinsics[0] as string
+        if (!Array.isArray(data)) return defaultResponse
+
+        const block = findResultById(data, BLOCK_ID)
+        const genesisHash = findResultById(data, GENESIS_HASH_ID)
+
+        const blockNumber = Number(block?.block?.header?.number)
+        const tsExtinsic = block?.block?.extrinsics?.[0]
+
+        if (!Number.isFinite(blockNumber) || typeof tsExtinsic !== "string") {
+          return defaultResponse
+        }
+
         const tsBytes = hexToBytes(tsExtinsic)
         const timestamp = decodeCompactNumber(tsBytes.subarray(4))
 
-        return { url: wsUrl, ping, blockNumber, timestamp }
+        return {
+          url: wsUrl,
+          ping,
+          blockNumber,
+          timestamp,
+          genesisHash: typeof genesisHash === "string" ? genesisHash : null,
+        }
       })(),
       new Promise<PingResponse>(
         (resolve) =>
@@ -119,33 +159,45 @@ export const worker = {
   getBestRpcs: async (
     wsUrls: string[],
     timeoutMs = 5000,
-  ): Promise<PingResponse[]> => {
+  ): Promise<BestRpcs> => {
     const controller = new AbortController()
     const signal = controller.signal
 
-    const results: PingResponse[] = []
+    const responded: PingResponse[] = []
+    let results: PingResponse[] = []
+    let graceId: ReturnType<typeof setTimeout> | undefined
 
     const promises = wsUrls.map(async (url) => {
       if (signal.aborted) return
       const res = await getBlock(url, timeoutMs, signal)
       if (res.ping === Infinity || signal.aborted) return
 
-      results.push(res)
-      results.sort((a, b) => b.timestamp - a.timestamp)
+      responded.push(res)
+      results = keepFreshRpcs(responded)
 
-      // Wait for up to 3 results, then abort
+      if (responded.length === 1) {
+        graceId = setTimeout(() => controller.abort(), STRAGGLER_GRACE_MS)
+      }
+
+      // Wait for up to 3 fresh results, then abort
       if (results.length === 3 || results.length === wsUrls.length) {
         controller.abort()
       }
     })
 
     await Promise.all(promises)
+    clearTimeout(graceId)
 
     if (results.length === 0) {
       throw new Error("All RPC providers failed or timed out")
     }
 
-    return results
+    return {
+      best: results,
+      staleUrls: responded
+        .filter((res) => !results.includes(res))
+        .map((res) => res.url),
+    }
   },
 }
 

@@ -1,10 +1,10 @@
 import {
-  omnipoolVolumeQuery,
-  omnipoolYieldMetricsQuery,
-  stablepoolVolumeQuery,
-  stablepoolYieldMetricsQuery,
-  xykVolumeQuery,
-} from "@galacticcouncil/indexer/squid"
+  omnipoolVolumeQuery as neckworkOmnipoolVolumeQuery,
+  omnipoolYieldMetricsQuery as neckworkOmnipoolYieldMetricsQuery,
+  stablepoolVolumeQuery as neckworkStablepoolVolumeQuery,
+  stablepoolYieldMetricsQuery as neckworkStablepoolYieldMetricsQuery,
+  xykVolumeQuery as neckworkXykVolumeQuery,
+} from "@galacticcouncil/indexer/neckwork"
 import {
   is_add_liquidity_allowed,
   is_buy_allowed,
@@ -27,8 +27,10 @@ import { useShallow } from "zustand/shallow"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
+import { neckworkClient } from "@/api/neckwork"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
   OmniPoolToken,
@@ -40,7 +42,6 @@ import {
   useStablepoolIds,
   useXykPools,
 } from "@/api/pools"
-import { useSquidClient } from "@/api/provider"
 import type { TReserve } from "@/api/stableswap"
 import {
   stablepoolReservesQuery,
@@ -51,14 +52,13 @@ import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
-  useAccountBalances,
-  useAccountData,
   useAccountOmnipoolPositionsData,
   useAccountPositions,
 } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { setOmnipoolAssets, setXYKPools } from "@/states/liquidity"
 import { useTradeSettings } from "@/states/tradeSettings"
+import { isBlacklistedAsset } from "@/utils/assets"
 import { scaleHuman } from "@/utils/formatting"
 
 export type OmnipoolAssetTable = {
@@ -136,29 +136,36 @@ const isStablepoolData = (
 ): pool is TStablepoolData => !!(pool as TStablepoolData).isStablepool
 
 export const useStablepools = () => {
-  const squidClient = useSquidClient()
-
   const { data: stablepoolIds } = useStablepoolIds()
   const { data: pools, isLoading: isPoolsLoading } = useStablepoolsReserves(
     stablepoolIds ?? [],
   )
 
   const { data: volumes, isLoading: isVolumeLoading } = useQuery(
-    stablepoolVolumeQuery(squidClient),
+    neckworkStablepoolVolumeQuery(neckworkClient),
   )
+
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
-    stablepoolYieldMetricsQuery(squidClient),
+    neckworkStablepoolYieldMetricsQuery(neckworkClient),
   )
+
   const { getRelatedAToken, isErc20AToken } = useAssets()
 
   const volumeByAsset = useMemo(
-    () => new Map((volumes ?? []).map((v) => [v.poolId, v.poolVolNorm])),
+    () =>
+      new Map<string, string>(
+        (volumes ?? []).map((v) => [v.poolId, v.poolVolNorm]),
+      ),
     [volumes],
   )
 
+  // The stablepool table consumes the APY. Neckwork returns null when a pool
+  // had no in-window sample; that stays unknown rather than becoming a rate.
   const feeByAsset = useMemo(
     () =>
-      new Map((yieldMetrics ?? []).map((m) => [m.poolId, m.projectedApyPerc])),
+      new Map<string, string | undefined>(
+        (yieldMetrics ?? []).map((m) => [m.poolId, m.feeApyPerc ?? undefined]),
+      ),
     [yieldMetrics],
   )
 
@@ -237,7 +244,6 @@ export const useStablepools = () => {
 }
 
 export const useOmnipoolStablepools = () => {
-  const squidClient = useSquidClient()
   const {
     getAssetWithFallback,
     native: { id: nativeId },
@@ -254,21 +260,29 @@ export const useOmnipoolStablepools = () => {
   const { data: stablepools, isLoading: isStablepoolsLoading } =
     useStablepools()
 
-  const { data: omnipoolVolumes, isLoading: isVolumeLoading } = useQuery(
-    omnipoolVolumeQuery(squidClient),
+  const { data: volumes, isLoading: isVolumeLoading } = useQuery(
+    neckworkOmnipoolVolumeQuery(neckworkClient),
   )
 
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
-    omnipoolYieldMetricsQuery(squidClient),
+    neckworkOmnipoolYieldMetricsQuery(neckworkClient),
   )
 
   const volumeByAsset = useMemo(
     () =>
-      new Map((omnipoolVolumes ?? []).map((v) => [v.assetId, v.assetVolNorm])),
-    [omnipoolVolumes],
+      new Map<string, string>(
+        (volumes ?? []).map((v) => [v.assetId, v.assetVolNorm]),
+      ),
+    [volumes],
   )
+
+  // The omnipool table reads the APR. It is null when a pool had no sample in
+  // the window.
   const feeByAsset = useMemo(
-    () => new Map((yieldMetrics ?? []).map((m) => [m.assetId, m.fee])),
+    () =>
+      new Map<string, string | undefined>(
+        (yieldMetrics ?? []).map((m) => [m.assetId, m.fee ?? undefined]),
+      ),
     [yieldMetrics],
   )
 
@@ -443,7 +457,7 @@ export const useOmnipoolStablepools = () => {
       }
     })
 
-    return omnipoolData
+    return omnipoolData.filter((pool) => !isBlacklistedAsset(pool.id))
   }, [
     getAssetWithFallback,
     getAssetPrice,
@@ -467,12 +481,12 @@ export const useOmnipoolStablepools = () => {
 }
 
 export const useIsolatedPools = () => {
-  const squidClient = useSquidClient()
   const { data: pools, isLoading: isPoolsLoading } = useXykPools()
   const { getShareTokenByAddress } = useAssets()
   const { getPositions } = useAccountPositions()
+
   const { data: xykVolumes, isLoading: isVolumeLoading } = useQuery(
-    xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
+    neckworkXykVolumeQuery(neckworkClient),
   )
   const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
   const { getTransferableBalance } = useAccountBalances()
@@ -487,6 +501,16 @@ export const useIsolatedPools = () => {
 
     for (const pool of pools ?? []) {
       const { tokens } = pool
+      const [tokenA, tokenB] = tokens
+
+      if (
+        !tokenA ||
+        !tokenB ||
+        isBlacklistedAsset(tokenA.id) ||
+        isBlacklistedAsset(tokenB.id)
+      ) {
+        continue
+      }
 
       let knownAssetPrice: (typeof tokens)[number] | undefined
 
@@ -559,6 +583,8 @@ export const useIsolatedPools = () => {
         if (!meta || !tokenA || !tokenB) return acc
 
         const shareTokenId = meta.id
+
+        if (isBlacklistedAsset(shareTokenId)) return acc
         const { xykMiningPositions } = getPositions(address)
 
         const volumeDisplay = xykVolumes?.find(
@@ -794,7 +820,7 @@ export const convertXYKSharesToValues = (
 
 export const useIsLiquidityProvided = () => {
   const { getAsset, getShareToken } = useAssets()
-  const balances = useAccountData(useShallow(prop("balances")))
+  const { balances } = useAccountBalances()
   const { positionsAmount } = useAccountPositions()
 
   return useMemo(() => {

@@ -1,10 +1,10 @@
 import {
   Alert,
   Box,
-  Button,
+  LoadingButton,
   Separator,
   Summary,
-  Text,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
@@ -40,6 +40,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   const {
     form,
     onSubmit,
+    isSubmitting,
     maxUnstake,
     displayAmount,
     amountInHdx,
@@ -56,41 +57,32 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
-        <Box px="l" asChild>
+        <Box p="l">
           <AssetSelectFormField
             assetFieldName="asset"
             amountFieldName="amount"
             label={t("gigaStaking.gigaUnstake.input.label")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={maxUnstake}
+            balance={{ value: maxUnstake, label: t("common:available") }}
             displayValue={t("common:currency", {
               value: displayAmount,
             })}
-            balanceLabel={t("common:available")}
           />
         </Box>
 
         <Separator />
 
-        <Box px="l" asChild>
-          <Summary
-            rows={[
-              {
-                label: t("gigaStaking.gigaUnstake.receive.label"),
-                content: (
-                  <Text>
-                    {t("common:currency", {
-                      prefix: "≈",
-                      value: amountInHdx,
-                      symbol: native.symbol,
-                    })}
-                  </Text>
-                ),
-              },
-            ]}
+        <Summary px="l" separator={<Separator sx={{ mx: "-l" }} />}>
+          <SummaryRow
+            label={t("gigaStaking.gigaUnstake.receive.label")}
+            content={t("common:currency", {
+              prefix: "≈",
+              value: amountInHdx,
+              symbol: native.symbol,
+            })}
           />
-        </Box>
+        </Summary>
 
         <Separator />
 
@@ -99,7 +91,7 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
             <Alert
               sx={{ m: "l" }}
               variant="warning"
-              title={
+              description={
                 showFrozenLockAlert
                   ? t("gigaStaking.gigaUnstake.frozen.alert", {
                       value: frozenInGigaHdx,
@@ -115,14 +107,15 @@ const GigaUnstakeForm: FC<GigaUnstakeProps> = ({ userBorrowSummary }) => {
         )}
 
         <Box p="l">
-          <Button
+          <LoadingButton
+            isLoading={isSubmitting}
             type="submit"
             size="large"
             width="100%"
             disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaUnstake.cta")}
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </FormProvider>

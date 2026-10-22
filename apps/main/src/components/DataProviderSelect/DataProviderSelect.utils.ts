@@ -1,4 +1,4 @@
-import { latestBlockHeightQuery } from "@galacticcouncil/indexer/squid"
+import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import {
   DataProviderStatus,
@@ -6,16 +6,16 @@ import {
   getDataProviderStatus,
 } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
-import { isNumber, prop, uniqueBy } from "remeda"
+import { isNumber } from "remeda"
 
 import { useBestNumber } from "@/api/chain"
-import { useSquidClient, useSquidUrl } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import { getIndexerStatus } from "@/components/DataProviderSelect/DataProviderResolver.utils"
-import { SQUID_URLS } from "@/config/rpc"
-import { useSquidListStore } from "@/states/provider"
+import { ENV } from "@/config/env"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 const STATUS_COLOR_MAP: Record<DataProviderStatus, ThemeToken> = {
   [DataProviderStatus.HEALTHY]: "accents.success.emphasis",
@@ -92,45 +92,26 @@ export const useBlockHeightStatus = (blockHeight: number | null) => {
   }
 }
 
-export const useActiveIndexerStatus = () => {
-  const url = useSquidUrl()
-  const squidSdk = useSquidClient()
+export const useNeckworkIndexerStatus = () => {
+  const neckworkEnabled = useNeckworkEnabled()
 
   const {
-    data: blockHeight,
+    data: status,
     isLoading,
     isError,
-  } = useQuery(latestBlockHeightQuery(squidSdk, url))
+  } = useQuery({
+    ...neckworkStatusQuery(neckworkClient),
+    enabled: neckworkEnabled,
+  })
 
-  const blockHeightStatus = useBlockHeightStatus(blockHeight ?? null)
+  const blockHeightStatus = useBlockHeightStatus(status?.blockHeight ?? null)
 
   return {
-    url,
-    blockHeight: blockHeight ?? null,
+    name: "Neckwork",
+    url: ENV.VITE_NECKWORK_URL,
+    blockHeight: status?.blockHeight ?? null,
     isLoading,
     isError,
     ...blockHeightStatus,
   }
-}
-
-export const useFullSquidUrlList = () => {
-  const { t } = useTranslation()
-  const { squidList } = useSquidListStore()
-  return useMemo(() => {
-    const list = [
-      ...SQUID_URLS.map(({ name, graphqlUrl }) => ({
-        name,
-        url: graphqlUrl,
-        isCustom: false,
-      })),
-      ...squidList.map((squid, index) => ({
-        ...squid,
-        name:
-          squid.name ?? t("rpc.change.modal.name.label", { index: index + 1 }),
-        isCustom: true,
-      })),
-    ]
-
-    return uniqueBy(list, prop("url"))
-  }, [squidList, t])
 }

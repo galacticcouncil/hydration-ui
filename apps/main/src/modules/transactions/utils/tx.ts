@@ -1,15 +1,17 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, neckwork } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, SizedHex } from "polkadot-api"
-import { first, isObjectType } from "remeda"
+import { first, isBigInt, isNumber, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
+import { Papi } from "@/api/rpcClient"
 import { paymentInfoQuery } from "@/api/transaction"
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import {
   AnyPapiTx,
   AnyTransaction,
+  DecodedCallEnum,
   TxOptions,
 } from "@/modules/transactions/types"
 import {
@@ -17,8 +19,15 @@ import {
   isDecodedCallEnum,
   isPapiTransaction,
 } from "@/modules/transactions/utils/polkadot"
-import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import {
+  isEvmCall,
+  isNearCall,
+  isSolanaCall,
+  isSuiCall,
+  isZecCall,
+} from "@/modules/transactions/utils/xcm"
+import { TProviderContext } from "@/providers/rpcProvider"
+import { TransactionMeta } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
@@ -88,6 +97,52 @@ export function containsEvmCall(tx: AnyTransaction): boolean {
   return false
 }
 
+const getEvmCallFeeFromDecoded = (decoded: DecodedCallEnum): bigint => {
+  if (!isDecodedCallEnum(decoded) || decoded.type !== "EVM") return 0n
+
+  const evmVariant = decoded.value
+  if (
+    !isObjectType(evmVariant) ||
+    !("type" in evmVariant) ||
+    evmVariant.type !== "call" ||
+    !("value" in evmVariant) ||
+    !isObjectType(evmVariant.value)
+  ) {
+    return 0n
+  }
+
+  const callValue = evmVariant.value as Record<string, unknown>
+  const gasLimit = callValue.gas_limit
+  const maxFeePerGas = callValue.max_fee_per_gas
+
+  if (!isBigInt(gasLimit) || !Array.isArray(maxFeePerGas)) return 0n
+
+  return gasLimit * BigInt(maxFeePerGas[0])
+}
+
+const collectNestedEvmCallFees = (decoded: DecodedCallEnum): bigint => {
+  if (!isDecodedCallEnum(decoded)) return 0n
+
+  if (decoded.type === "EVM") {
+    return getEvmCallFeeFromDecoded(decoded)
+  }
+
+  if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
+    return decoded.value.value.calls.reduce(
+      (sum, call) => sum + collectNestedEvmCallFees(call),
+      0n,
+    )
+  }
+
+  return 0n
+}
+
+export const getNestedEvmCallsFeeWei = (tx: AnyTransaction): bigint => {
+  if (!isPapiTransaction(tx)) return 0n
+
+  return collectNestedEvmCallFees(tx.decodedCall)
+}
+
 export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
   const bindTx = papi.tx.EVMAccounts.bind_evm_address()
   const decoded = tx.decodedCall
@@ -136,6 +191,24 @@ export const getPapiTransactionCallData = async (
   }
 }
 
+export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
+  if (isPapiTransaction(tx)) {
+    return getPapiTransactionCallData(tx)
+  }
+
+  if (
+    isEvmCall(tx) ||
+    isSolanaCall(tx) ||
+    isSuiCall(tx) ||
+    isNearCall(tx) ||
+    isZecCall(tx)
+  ) {
+    return tx.data
+  }
+
+  return ""
+}
+
 export const getExtraTxFeeByWeight = async (
   rpc: TProviderContext,
   address: string,
@@ -153,6 +226,33 @@ export const getExtraTxFeeByWeight = async (
   return queryClient.ensureQueryData(
     weightToEvmFeeQuery(rpc, weight, assetOutId),
   )
+}
+
+export const getExplorerTxLink = (
+  meta: Pick<TransactionMeta, "srcChainKey" | "activity">,
+  blockNumber: number,
+  extrinsicIndex: number,
+) => {
+  if (meta.srcChainKey !== HYDRATION_CHAIN_KEY) return
+
+  return meta.activity
+    ? neckwork.activityExtrinsic(meta.activity, blockNumber, extrinsicIndex)
+    : neckwork.extrinsic(blockNumber, extrinsicIndex)
+}
+
+export const getDcaScheduleIdFromEvents = (
+  events: ReadonlyArray<{ type: string; value: unknown }>,
+): number | null => {
+  for (const event of events) {
+    if (event.type !== "DCA" || !isObjectType(event.value)) continue
+    if (!("type" in event.value) || event.value.type !== "Scheduled") continue
+    if (!("value" in event.value) || !isObjectType(event.value.value)) continue
+    if (!("id" in event.value.value) || !isNumber(event.value.value.id)) {
+      continue
+    }
+    return event.value.value.id
+  }
+  return null
 }
 
 export const parseTxMethodName = (

@@ -1,10 +1,11 @@
 import {
   Box,
+  Button,
   Flex,
   FlexProps,
   FormError,
   FormLabel,
-  MicroButton,
+  PercentageButton,
   Skeleton,
   Stack,
   Text,
@@ -20,7 +21,7 @@ import {
   XcmFormFieldName,
   XcmFormValues,
 } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { toDecimal } from "@/utils/formatting"
+import { percentageOf, toDecimal } from "@/utils/formatting"
 
 import { SNumberInput, SNumberInputAddon } from "./AmountFormField.styled"
 
@@ -31,7 +32,9 @@ type AmountFormFieldProps = FlexProps & {
   disabled?: boolean
   className?: string
   isLoading?: boolean
+  isBalanceLoading?: boolean
   withMaxButton?: boolean
+  withPercentageButton?: boolean
   assetPrice?: string
 }
 
@@ -42,7 +45,9 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   disabled = false,
   className,
   isLoading = false,
+  isBalanceLoading = false,
   withMaxButton = false,
+  withPercentageButton = false,
   assetPrice,
   ...props
 }) => {
@@ -54,6 +59,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   })
 
   const errorMessage = fieldState.error?.message
+  const showBalanceLoading = isBalanceLoading || isLoading
 
   const displayPrice =
     isValidBigSource(assetPrice) && isValidBigSource(field.value)
@@ -69,7 +75,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
       {...props}
     >
       <Flex ml="auto" align="center" gap="s">
-        {isLoading ? (
+        {showBalanceLoading ? (
           <Text fs="p6" lh={1.6}>
             <Skeleton sx={{ width: "2xl" }} />
           </Text>
@@ -84,7 +90,11 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 : "-"}
             </Text>{" "}
             {withMaxButton && (
-              <MicroButton
+              <Button
+                size="micro"
+                uppercase
+                variant="muted"
+                outline
                 onClick={() => {
                   const amount = balanceMax
                     ? toDecimal(balanceMax.amount, balanceMax.decimals)
@@ -94,8 +104,25 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 disabled={disabled || !balanceMax || balanceMax.toBig().lte(0)}
               >
                 {t("max")}
-              </MicroButton>
+              </Button>
             )}
+            {withMaxButton &&
+              withPercentageButton &&
+              !disabled &&
+              balanceMax &&
+              balanceMax.toBig().gt(0) && (
+                <PercentageButton
+                  onSelect={(percent) =>
+                    field.onChange(
+                      percentageOf(
+                        toDecimal(balanceMax.amount, balanceMax.decimals),
+                        percent,
+                        balanceMax.decimals,
+                      ),
+                    )
+                  }
+                />
+              )}
           </>
         )}
       </Flex>

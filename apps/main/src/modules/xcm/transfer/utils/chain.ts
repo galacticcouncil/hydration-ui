@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import {
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
@@ -12,13 +13,15 @@ import {
 } from "@galacticcouncil/web3-connect"
 import {
   EVM_PROVIDERS,
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@galacticcouncil/web3-connect/src/config/providers"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { chainsMap, routesMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
   Asset,
@@ -27,24 +30,44 @@ import {
 } from "@galacticcouncil/xc-core"
 import { filter, first, pipe, sortBy } from "remeda"
 
+import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+
+const { H160 } = h160
 
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
   "ethereum",
+  "robinhood",
   "base",
   "solana",
+  "hyperevm",
   "sui",
+  "near",
+  "zec",
   "assethub",
   "moonbeam",
   "assethub_kusama",
 ]
-const CHAINS_BLACKLIST = ["polkadot"]
+const CHAINS_BLACKLIST = ["polkadot", "interlay"]
+
+if (ENV.VITE_WORMHOLE_DISABLED) {
+  CHAINS_BLACKLIST.push("moonbeam")
+}
 
 export const getChainPriority = (key: string) => {
   const idx = CHAINS_PRIORITY.indexOf(key)
   return idx === -1 ? Number.POSITIVE_INFINITY : idx
 }
+
+// Routed by the sdk, as a source or as a destination
+const isRoutedChain = (key: string) =>
+  routesMap.has(key) ||
+  [...routesMap.values()].some((chainRoutes) =>
+    chainRoutes
+      .getRoutes()
+      .some((route) => route.destination.chain.key === key),
+  )
 
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
@@ -56,10 +79,18 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Polkadot ||
       c.ecosystem === ChainEcosystem.Solana ||
       c.ecosystem === ChainEcosystem.Sui ||
-      c.ecosystem === ChainEcosystem.Ethereum
+      c.ecosystem === ChainEcosystem.Ethereum ||
+      // NEAR and Zcash are listed once the sdk routes them, so they come with
+      // that release
+      ((c.ecosystem === ChainEcosystem.Near ||
+        c.ecosystem === ChainEcosystem.Zcash) &&
+        isRoutedChain(c.key))
     )
   }),
-  sortBy((c) => [getChainPriority(c.key), c.name]),
+  sortBy(
+    (c) => getChainPriority(c.key),
+    (c) => c.name,
+  ),
 )
 
 export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
@@ -80,6 +111,10 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
         return chainsMap.get("solana") || null
       case SUI_PROVIDERS.includes(provider):
         return chainsMap.get("sui") || null
+      case NEAR_PROVIDERS.includes(provider):
+        return chainsMap.get("near") || null
+      case ZCASH_PROVIDERS.includes(provider):
+        return chainsMap.get("zec") || null
       default:
         return chainsMap.get("assethub") || null
     }
@@ -94,15 +129,20 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
   const destChain = chainsMap.get(HYDRATION_CHAIN_KEY) || null
 
   const destAccount =
-    !!destChain && isAccountValidOnChain(account, destChain) ? account : null
+    !!destChain && canUseAccountAsDestination(account, destChain)
+      ? account
+      : null
 
   return {
     srcChain,
     srcAsset,
-    srcAmount: "",
+
     destChain,
     destAsset: srcAsset,
+
+    srcAmount: "",
     destAmount: "",
+
     destAddress: destAccount?.rawAddress ?? "",
     destAccount: destAccount,
     bridgeProvider: null,
@@ -134,6 +174,14 @@ export const getWalletModeByChain = (chain: AnyChain) => {
     return WalletMode.Sui
   }
 
+  if (chain.isNear()) {
+    return WalletMode.Near
+  }
+
+  if (chain.isZec()) {
+    return WalletMode.Zcash
+  }
+
   return WalletMode.Default
 }
 
@@ -146,6 +194,25 @@ export const isAccountValidOnChain = (
 
   const walletMode = getWalletModeByChain(chain)
   return PROVIDERS_BY_WALLET_MODE[walletMode].includes(account.provider)
+}
+
+export const canUseAccountAsDestination = (
+  account: Account | null,
+  chain: AnyChain,
+): account is Account => {
+  if (!account) return false
+  if (account.provider === WalletProviderType.ExternalWallet) return false
+  return isAccountValidOnChain(account, chain)
+}
+
+export const withPermissiveEvmResolver = (
+  chain: EvmParachain,
+): EvmParachain => {
+  // @ts-expect-error - mutating readonly property
+  chain.evmResolver = {
+    toH160: async (address: string) => H160.fromAny(address),
+  }
+  return chain
 }
 
 export const withCustomChainRpcUrls = (

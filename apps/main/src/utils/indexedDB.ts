@@ -6,12 +6,14 @@ import {
   StorageValue,
 } from "zustand/middleware"
 
-const DB_VERSION = 1
+const DB_VERSION = 2
 const DB_NAME = "hydration-db"
 const KEY_PATH = "key" as const
 
 export enum IndexedDBStores {
   AssetRegistry = "asset-registry",
+  PortfolioBalances = "portfolio-balances",
+  AccountBalances = "account-balances",
 }
 
 export type IndexedDBConfig = {
@@ -105,6 +107,25 @@ export const removeItemFromStore = async (
     request.onerror = () => {
       console.error("Error removing item from IndexedDB", { storeName, key })
       reject()
+    }
+  })
+}
+
+export const clearIndexedDBStore = async (
+  storeName: IndexedDBStores,
+): Promise<void> => {
+  const db = await IndexedDBManager.getInstance()
+  if (!db) return
+
+  return new Promise((resolve) => {
+    const tx = db.transaction(storeName, "readwrite")
+    const store = tx.objectStore(storeName)
+    const request = store.clear()
+
+    request.onsuccess = () => resolve()
+    request.onerror = () => {
+      console.error("Error clearing IndexedDB store", { storeName })
+      resolve()
     }
   })
 }

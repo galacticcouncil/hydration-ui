@@ -124,12 +124,32 @@ export const SIconVariant = styled(Icon)<{ variant: ToastVariant }>(
   ],
 )
 
-export const SCloseIcon = styled(Icon)(
+export const SCloseButton = styled("button")(
   ({ theme }) => css`
     position: absolute;
-    top: -${theme.space.s};
-    right: -${theme.space.s};
+    top: calc(-1 * ${theme.space.m} / 2);
+    right: calc(-1 * ${theme.space.m} / 2);
 
-    color: ${theme.icons.onContainer};
+    width: ${theme.sizes.l};
+    height: ${theme.sizes.l};
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: ${theme.radii.full};
+
+    background: ${theme.colors.darkBlue[200]};
+    color: ${theme.colors.darkBlue[900]};
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: ${theme.transitions.colors};
+
+    &:hover {
+      background: ${theme.icons.onSurfaceHover};
+    }
   `,
 )

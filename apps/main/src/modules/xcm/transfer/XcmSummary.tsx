@@ -1,28 +1,25 @@
 import {
   CollapsibleContent,
   CollapsibleRoot,
-  Flex,
   Separator,
   Summary,
   SummaryRow,
-  Tooltip,
-  TooltipIcon,
 } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
+import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { xcmDestinationFeeQuery } from "@/api/xcm"
-import { useCrossChainDepositLimit } from "@/api/xcm"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
-import { DepositLimitSummary } from "@/modules/xcm/transfer/components/DepositLimitSummary"
 import { useEvmApprovalFee } from "@/modules/xcm/transfer/hooks/useEvmApprovalFee"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
-import { isSnowbridgeRoute } from "@/modules/xcm/transfer/utils/bridge"
-import { XcmTag } from "@/states/transactions"
+import {
+  isOmniRoute,
+  isSnowbridgeRoute,
+} from "@/modules/xcm/transfer/utils/bridge"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
@@ -43,9 +40,6 @@ export const XcmSummary = () => {
       "srcAmount",
     ])
 
-  const { data: depositLimit, isLoading: isLoadingDepositLimit } =
-    useCrossChainDepositLimit(destAsset)
-
   const config = useXcmTransferConfigs(
     srcAsset,
     srcChain,
@@ -56,17 +50,24 @@ export const XcmSummary = () => {
   const { origin } = config ?? {}
 
   const isSnowbridge = !!origin?.route && isSnowbridgeRoute(origin.route)
-  const { data: snowbridgeDestFee } = useQuery(
+  // Omni's cut of a withdrawal to Zcash, out of what lands
+  const isOmniWithdrawal =
+    !!origin?.route && isOmniRoute(origin.route) && !!destChain?.isZec()
+  const isDestFeeAmountBound = isSnowbridge || isOmniWithdrawal
+
+  const { data: amountDestFee } = useQuery(
     xcmDestinationFeeQuery(
-      isSnowbridge ? transfer : null,
+      isDestFeeAmountBound ? transfer : null,
       srcAmount,
       transferArgs,
     ),
   )
 
-  // For Snowbridge V2 the destination fee is volume-based — read the
+  // Snowbridge V2 and Omni withdrawal fees are volume-based — read the
   // amount-aware value from the query instead of the build-time snapshot.
-  const effectiveDestFee = isSnowbridge ? snowbridgeDestFee : destination?.fee
+  const effectiveDestFee = isDestFeeAmountBound
+    ? amountDestFee
+    : destination?.fee
 
   const sourceFeeValue = (() => {
     if (!source) return null
@@ -79,9 +80,8 @@ export const XcmSummary = () => {
   })()
 
   const destFeeLabel = (() => {
+    if (isOmniWithdrawal) return t("xcm:summary.withdrawalFee")
     if (!origin?.route) return t("xcm:summary.destinationFee")
-    if (origin.route.tags?.includes(XcmTag.Mrl))
-      return t("xcm:summary.relayerFee")
     if (isSnowbridge) return t("xcm:summary.bridgeFee")
     return t("xcm:summary.destinationFee")
   })()
@@ -111,7 +111,6 @@ export const XcmSummary = () => {
 
   const hasErrorAlerts = alerts.some((a) => a.severity === "error")
   const isTransferValid = !!transfer && formState.isValid && !hasErrorAlerts
-  const isDeposit = destChain?.key === HYDRATION_CHAIN_KEY
 
   return (
     <CollapsibleRoot open={isTransferValid}>
@@ -121,29 +120,6 @@ export const XcmSummary = () => {
           px="xl"
           withLeadingSeparator
         >
-          {isDeposit && depositLimit && depositLimit.headroom !== null && (
-            <SummaryRow
-              label={t("xcm:summary.remainingLimit")}
-              loading={isLoading || isLoadingDepositLimit}
-              content={
-                <Tooltip
-                  text={<DepositLimitSummary depositLimit={depositLimit} />}
-                  asChild
-                >
-                  <Flex align="center" gap="xs">
-                    {t("currency", {
-                      value: toDecimal(
-                        depositLimit.headroom,
-                        depositLimit.decimals,
-                      ),
-                      symbol: depositLimit.symbol,
-                    })}
-                    <TooltipIcon />
-                  </Flex>
-                </Tooltip>
-              }
-            />
-          )}
           {call && isEvmSourceChain && isEvmApproveCall(call) && (
             <SummaryRow
               label={t("xcm:summary.approvalFee")}

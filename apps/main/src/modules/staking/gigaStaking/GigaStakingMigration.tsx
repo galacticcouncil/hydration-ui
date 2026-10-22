@@ -10,10 +10,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { FC, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useBlockTime } from "@/api/chain"
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
@@ -34,12 +35,14 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
   const { t } = useTranslation("staking")
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs } = useBlockTime()
 
   const { data: gigaStakeConstants } = useQuery(gigaStakeConstantsQuery(rpc))
   const cooldownPeriod = gigaStakeConstants?.cooldownPeriod
-  const cooldownPeriodDays = cooldownPeriod
-    ? millisecondsToHours(cooldownPeriod * rpc.slotDurationMs) / 24
-    : undefined
+  const cooldownPeriodDays =
+    cooldownPeriod && blockTimeMs
+      ? Math.round((cooldownPeriod * blockTimeMs) / millisecondsInDay)
+      : undefined
 
   const { data: stakingRewards } = useStakingRewards()
 

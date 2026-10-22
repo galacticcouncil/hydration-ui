@@ -1,10 +1,7 @@
-import { MoneyMarketEventsQuery } from "@galacticcouncil/indexer/squid"
 import { getToken } from "@galacticcouncil/ui/utils"
 
-import {
-  BorrowHistoryRow,
-  MoneyMarketEventWithDate,
-} from "@/modules/borrow/history/BorrowHistoryTable.columns"
+import { MoneyMarketEvent } from "@/api/borrow"
+import { BorrowHistoryRow } from "@/modules/borrow/history/BorrowHistoryTable.columns"
 
 export const getOnUpdatePendingStyles = (isUpdating: boolean) => ({
   opacity: isUpdating ? 0.5 : 1,
@@ -13,19 +10,11 @@ export const getOnUpdatePendingStyles = (isUpdating: boolean) => ({
 })
 
 export const mapMoneyMarketEvents = (
-  data: MoneyMarketEventsQuery | undefined,
+  events: ReadonlyArray<MoneyMarketEvent> | undefined,
 ): Array<BorrowHistoryRow> => {
-  const events =
-    data?.moneyMarketEvents?.nodes
-      .filter((event) => !!event)
-      .map<MoneyMarketEventWithDate>((event) => ({
-        ...event,
-        date: new Date(event.event?.block?.timestamp ?? 0),
-      })) ?? []
-
   return Array.from(
     Map.groupBy(
-      events,
+      events ?? [],
       (event) =>
         /* remove timezone offset to get date time in user's timezone that acts as UTC so it can be grouped by it*/
         new Date(

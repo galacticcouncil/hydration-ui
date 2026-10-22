@@ -1,8 +1,8 @@
-import { AccountAvatarTheme } from "@galacticcouncil/ui/components"
 import {
   EvmAddr,
   isEvmParachainAccount,
   isH160Address,
+  NearAddr,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
   safeConvertSolanaAddressToSS58,
@@ -12,24 +12,30 @@ import {
   SolanaAddr,
   Ss58Addr,
   stringEquals,
+  SuiAddr,
+  ZecAddr,
 } from "@galacticcouncil/utils"
 
 import {
-  AccountFilterOption,
-  allAccountFilterOptions,
-} from "@/components/account/AccountFilter"
-import {
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@/config/providers"
+import { WalletMode } from "@/config/wallet"
+
+/** Re-exported from the registry so `@/utils` importers keep working. */
+export {
+  getWalletModeIcon,
+  getWalletModeName,
+  getWalletModesByProviderType,
+} from "@/config/wallet"
 import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
-  PROVIDERS_BY_WALLET_MODE,
   StoredAccount,
   useWeb3Connect,
-  WalletMode,
 } from "@/hooks/useWeb3Connect"
 import { Wallet, WalletAccount } from "@/types/wallet"
 
@@ -63,6 +69,34 @@ const toStoredSuiAccount = ({
   }
 }
 
+// A NEAR account id (named, implicit hex or NEP-518 0x…) has no SS58 form,
+// so it is kept as is; the account never signs on Hydration.
+const toStoredNearAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => ({
+  publicKey: address,
+  address,
+  rawAddress: address,
+  name: name ?? "",
+  provider,
+})
+
+// A Zcash transparent address (t1/t3) has no SS58 form either, so it is kept
+// as is; the account only receives swap payouts.
+const toStoredZcashAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => ({
+  publicKey: address,
+  address,
+  rawAddress: address,
+  name: name ?? "",
+  provider,
+})
+
 const toStoredDefaultAccount = ({
   address,
   name,
@@ -95,6 +129,10 @@ export const toStoredAccount = ({
       return toStoredSolanaAccount({ address, name, provider })
     case SUI_PROVIDERS.includes(provider):
       return toStoredSuiAccount({ address, name, provider })
+    case NEAR_PROVIDERS.includes(provider):
+      return toStoredNearAccount({ address, name, provider })
+    case ZCASH_PROVIDERS.includes(provider):
+      return toStoredZcashAccount({ address, name, provider })
     default:
       return toStoredDefaultAccount({ address, name, provider })
   }
@@ -106,22 +144,19 @@ export const toAccount = (account: StoredAccount): Account => {
     displayAddress: isEvmParachainAccount(account.address)
       ? safeConvertSS58toH160(account.address)
       : account.rawAddress,
-    isIncompatible:
-      !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) &&
-      account.provider !== WalletProviderType.ExternalWallet,
+    /**
+     * Whether Hydration can represent this account's address at all. Solana
+     * and Sui addresses cannot be, so those accounts connect and display
+     * everywhere but cannot drive a Hydration action.
+     *
+     * Watched addresses pass: the user pasted an address Hydration accepts.
+     * They still cannot sign - `ReviewTransactionSubmitButton` blocks that
+     * separately, on the provider rather than on this flag.
+     */
+    canUseOnHydration:
+      COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) ||
+      account.provider === WalletProviderType.ExternalWallet,
   }
-}
-
-export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
-  if (
-    account.provider === WalletProviderType.Talisman ||
-    account.provider === WalletProviderType.TalismanEvm ||
-    account.provider === WalletProviderType.TalismanH160
-  ) {
-    return "talisman"
-  }
-
-  return "auto"
 }
 
 export const getWalletModeByAddress = (address: string) => {
@@ -132,20 +167,15 @@ export const getWalletModeByAddress = (address: string) => {
       return WalletMode.Substrate
     case SolanaAddr.isValid(address):
       return WalletMode.Solana
+    case SuiAddr.isValid(address):
+      return WalletMode.Sui
+    case NearAddr.isValid(address):
+      return WalletMode.Near
+    case ZecAddr.isValid(address):
+      return WalletMode.Zcash
     default:
       return null
   }
-}
-
-export const getDefaultAccountFilterByMode = (
-  mode: WalletMode,
-): AccountFilterOption => {
-  if (mode !== WalletMode.Default)
-    return (
-      allAccountFilterOptions.find((option) => option === mode) ||
-      WalletMode.Default
-    )
-  return WalletMode.Default
 }
 
 export type AccountsSubscribeOptions = {
@@ -189,29 +219,9 @@ export function subscribeWalletAccounts(
   return unsubscribe
 }
 
-export function getWalletModeIcon(mode: WalletMode) {
-  switch (mode) {
-    case WalletMode.EVM:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
-    case WalletMode.Substrate:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
-    case WalletMode.Solana:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
-    case WalletMode.Sui:
-      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
-    default:
-      return ""
-  }
-}
-
-export function getWalletModesByProviderType(
-  walletType: WalletProviderType,
-): WalletMode[] {
-  return Object.entries(PROVIDERS_BY_WALLET_MODE)
-    .filter(([_, providers]) => providers.includes(walletType))
-    .map(([mode, _]) => mode as WalletMode)
-}
-
-export function getUniqueAccountKey(account: StoredAccount) {
+export function getUniqueAccountKey(account: {
+  provider: string
+  publicKey: string
+}) {
   return `${account.provider}-${account.publicKey}`
 }

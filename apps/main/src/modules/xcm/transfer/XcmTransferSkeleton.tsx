@@ -1,7 +1,6 @@
 import {
   Box,
   Flex,
-  LoadingButton,
   Paper,
   Separator,
   Skeleton,
@@ -68,11 +67,9 @@ export const XcmTransferSkeleton = () => {
         <XcmSectionSkeleton />
         <Separator />
         <Box p="xl">
-          <LoadingButton
-            isLoading
-            size="large"
-            loadingVariant="muted"
-            width="100%"
+          <Skeleton
+            height="3.125rem"
+            sx={{ display: "flex", borderRadius: "full" }}
           />
         </Box>
       </Paper>

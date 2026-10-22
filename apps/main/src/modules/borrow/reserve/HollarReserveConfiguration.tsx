@@ -1,7 +1,6 @@
 import {
   ComputedReserveData,
   getBorrowCapData,
-  useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -20,7 +19,6 @@ export const HollarReserveConfiguration: React.FC<
   HollarReserveConfigurationProps
 > = ({ reserve }) => {
   const { t } = useTranslation(["borrow"])
-  const { ghoReserveData } = useMoneyMarketData()
 
   const shouldRenderEModeInfo = reserve.eModeCategoryId !== 0
 
@@ -48,7 +46,6 @@ export const HollarReserveConfiguration: React.FC<
       </Text>
       <HollarBorrowInfo
         reserve={reserve}
-        ghoReserveData={ghoReserveData}
         totalBorrowed={totalBorrowed.toString()}
         totalBorrowedUSD={totalBorrowedUSD.toString()}
         maxAvailableToBorrow={maxAvailableToBorrow.toString()}

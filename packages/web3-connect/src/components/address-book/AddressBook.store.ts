@@ -1,13 +1,42 @@
 import {
   createZustandStorage,
+  EvmAddr,
   isH160Address,
+  parseNearAccountName,
   safeConvertSS58toPublicKey,
+  stringEquals,
 } from "@galacticcouncil/utils"
+import { useMemo } from "react"
 import { z } from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { isWalletProviderType, WalletProviderType } from "@/config/providers"
+import { WalletMode } from "@/config/wallet"
+import { useWeb3Connect } from "@/hooks/useWeb3Connect"
+import { addressToPublicKey } from "@/utils/publicKey"
+import { getWalletModeByAddress } from "@/utils/wallet"
+
+import {
+  type AddressFilter,
+  buildAddresses,
+  dedupeAddresses,
+  getAllAddresses,
+  isVisibleToWallet,
+  normalizeStoredAddress,
+  selectAddresses,
+  touchAddress,
+} from "./AddressBook.utils"
+
+export const modeSchema = z.enum([
+  WalletMode.Substrate,
+  WalletMode.SubstrateH160,
+  WalletMode.EVM,
+  WalletMode.Solana,
+  WalletMode.Sui,
+  WalletMode.Near,
+  WalletMode.Zcash,
+])
 
 const addressSchemaV2 = z.object({
   id: z.string().optional(),
@@ -21,7 +50,7 @@ const stateSchemaV2 = z.object({
   addresses: z.array(addressSchemaV2),
 })
 
-const addressSchema = z.object({
+const addressSchemaV3 = z.object({
   publicKey: z.string(),
   name: z.string(),
   address: z.string(),
@@ -29,7 +58,55 @@ const addressSchema = z.object({
   isCustom: z.boolean().optional(),
 })
 
+const stateSchemaV3 = z.object({
+  addresses: z.array(addressSchemaV3),
+})
+
+const addressSchema = z.object({
+  publicKey: z.string(),
+  name: z.string(),
+  address: z.string(),
+  provider: z.enum(WalletProviderType).optional(),
+  mode: modeSchema,
+  savedBy: z.array(z.string()).default([]),
+  isCustom: z.boolean().optional(),
+  lastUsedAt: z.number().optional(),
+})
+
 export type Address = z.infer<typeof addressSchema>
+
+export type AddressInput = Omit<Address, "mode" | "savedBy" | "publicKey"> & {
+  savedBy?: string[]
+  mode?: z.infer<typeof modeSchema>
+  isGlobal?: boolean
+}
+
+export type NormalizedAddress = Address & { isGlobal?: boolean }
+
+function normalizeAddress(input: AddressInput): NormalizedAddress | null {
+  const { isGlobal, ...rest } = input
+  const address = EvmAddr.isValid(input.address)
+    ? input.address.toLowerCase()
+    : input.address
+  const publicKey = addressToPublicKey(address)
+  if (!publicKey) return null
+
+  const mode = input.mode ?? getWalletModeByAddress(address)
+  if (!mode) return null
+
+  const parsedMode = modeSchema.safeParse(mode)
+  if (!parsedMode.success) return null
+
+  return {
+    ...rest,
+    address,
+    name: input.name || parseNearAccountName(address),
+    publicKey,
+    mode: parsedMode.data,
+    savedBy: input.savedBy ?? [],
+    ...(isGlobal !== undefined ? { isGlobal } : {}),
+  }
+}
 
 const stateSchema = z.object({
   addresses: z.array(addressSchema),
@@ -42,45 +119,78 @@ const defaultState: State = {
 }
 
 export type AddressStore = State & {
-  readonly add: (address: Address | Address[]) => void
+  readonly add: (address: AddressInput | AddressInput[]) => void
   readonly edit: (address: Address) => void
   readonly remove: (publicKey: string) => void
+  readonly touch: (address: string) => void
+  readonly selectAddresses: (filter?: AddressFilter) => Address[]
 }
 
 export const useAddressStore = create<AddressStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...defaultState,
+
+      selectAddresses: (filter = {}) =>
+        selectAddresses(
+          get().addresses,
+          filter,
+          useWeb3Connect.getState().account?.publicKey ?? null,
+        ),
 
       add: (address) =>
         set((state) => ({
-          addresses: mergeAddresses(
+          addresses: buildAddresses(
             state.addresses,
-            Array.isArray(address) ? address : [address],
+            (Array.isArray(address) ? address : [address])
+              .map(normalizeAddress)
+              .filter((a) => a !== null),
+            useWeb3Connect.getState().account?.publicKey ?? null,
           ),
         })),
 
       edit: (address) =>
-        set((state) => ({
-          addresses: state.addresses.map((a) =>
-            a.publicKey === address.publicKey ? address : a,
-          ),
-        })),
+        set((state) => {
+          const normalized = normalizeStoredAddress(address)
+
+          return {
+            addresses: dedupeAddresses(
+              state.addresses.map((a) =>
+                stringEquals(a.publicKey, normalized.publicKey)
+                  ? normalized
+                  : a,
+              ),
+            ),
+          }
+        }),
 
       remove: (publicKey) =>
         set((state) => ({
-          addresses: state.addresses.filter((a) => a.publicKey !== publicKey),
+          addresses: state.addresses.filter(
+            (a) => !stringEquals(a.publicKey, publicKey),
+          ),
+        })),
+
+      touch: (address) =>
+        set((state) => ({
+          addresses: touchAddress(
+            state.addresses,
+            addressToPublicKey(address),
+            Date.now(),
+          ),
         })),
     }),
     createZustandStorage({
       name: "address-book",
-      version: 3,
+      version: 4,
       schema: stateSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
         switch (storedVersion) {
           case 2:
             return migrateLegacyAddressBookV2(persistedState)
+          case 3:
+            return migrateAddressBookV3toV4(persistedState)
           default:
             return persistedState as State
         }
@@ -89,27 +199,54 @@ export const useAddressStore = create<AddressStore>()(
   ),
 )
 
-function mergeAddresses(existing: Address[], incoming: Address[]): Address[] {
-  const incomingByKey = new Map(incoming.map((a) => [a.publicKey, a]))
-  const existingKeys = new Set(existing.map((a) => a.publicKey))
+export type { AddressFilter }
 
-  const updated = existing.map((entry) => {
-    const match = incomingByKey.get(entry.publicKey)
-    const shouldUpdateName =
-      match && !entry.isCustom && entry.name !== match.name
+export function useAddresses(
+  filter: AddressFilter = {},
+  { autoName = true }: { autoName?: boolean } = {},
+): Address[] {
+  const addresses = useAddressStore((state) => state.addresses)
+  const publicKey = useWeb3Connect((state) => state.account?.publicKey ?? null)
+  return useMemo(() => {
+    const selected = selectAddresses(
+      addresses.filter((a) => isVisibleToWallet(a, publicKey)),
+      filter,
+      publicKey,
+    )
+    return autoName ? getAllAddresses(selected) : selected
+  }, [addresses, filter, publicKey, autoName])
+}
 
-    if (shouldUpdateName) return { ...entry, name: match.name }
-    return entry
-  })
+function migrateAddressBookV3toV4(persistedState: unknown): State {
+  const parsed = stateSchemaV3.safeParse(persistedState)
 
-  const added = [...incomingByKey.values()].filter(
-    (a) => !existingKeys.has(a.publicKey),
-  )
+  if (!parsed.success) return defaultState
 
-  const hasChanges =
-    added.length > 0 || updated.some((a, i) => a !== existing[i])
+  return {
+    addresses: dedupeAddresses(
+      parsed.data.addresses
+        .map<Address | null>((entry) => {
+          const address = EvmAddr.isValid(entry.address)
+            ? entry.address.toLowerCase()
+            : entry.address
+          const publicKey =
+            entry.publicKey.trim() || addressToPublicKey(address)
+          if (!publicKey) return null
 
-  return hasChanges ? [...updated, ...added] : existing
+          const mode = modeSchema.safeParse(getWalletModeByAddress(address))
+          if (!mode.success) return null
+
+          return {
+            ...entry,
+            address,
+            publicKey,
+            mode: mode.data,
+            savedBy: [],
+          }
+        })
+        .filter((address) => address !== null),
+    ),
+  }
 }
 
 function migrateLegacyAddressBookV2(persistedState: unknown): State {
@@ -128,12 +265,19 @@ function migrateLegacyAddressBookV2(persistedState: unknown): State {
 
         if (!publicKey || !isWalletProviderType(address.provider)) return null
 
+        const mode = modeSchema.safeParse(
+          getWalletModeByAddress(address.address),
+        )
+        if (!mode.success) return null
+
         return {
           address: address.address,
           name: address.name,
           provider: address.provider,
           isCustom: address.isCustom,
           publicKey,
+          mode: mode.data,
+          savedBy: [],
         }
       })
       .filter((address) => address !== null),

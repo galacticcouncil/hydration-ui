@@ -1,18 +1,18 @@
+import { updateQueryString } from "@galacticcouncil/utils"
 import { produce } from "immer"
 import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import { Web3ConnectModalPage } from "@/config/modal"
+import { WalletProviderType } from "@/config/providers"
 import {
-  EVM_PROVIDERS,
-  SOLANA_PROVIDERS,
-  SUBSTRATE_H160_PROVIDERS,
-  SUBSTRATE_PROVIDERS,
-  SUI_PROVIDERS,
-  WalletProviderType,
-} from "@/config/providers"
-import { getUniqueAccountKey } from "@/utils"
-import { getWallet } from "@/wallets"
+  COMPATIBLE_WALLET_PROVIDERS,
+  PROVIDERS_BY_WALLET_MODE,
+  WalletMode,
+} from "@/config/wallet"
+import { getUniqueAccountKey } from "@/utils/wallet"
+import { ExternalWallet, getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {
@@ -22,35 +22,14 @@ export enum WalletProviderStatus {
   Error = "error",
 }
 
-export enum WalletMode {
-  Default = "default",
-  EVM = "evm",
-  Substrate = "substrate",
-  SubstrateEVM = "substrate-evm",
-  SubstrateH160 = "substrate-h160",
-  Solana = "solana",
-  Sui = "sui",
-  Unknown = "unknown",
+export enum WalletRestoreState {
+  Restoring = "restoring",
+  Unavailable = "unavailable",
 }
 
-export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
-  ...SUBSTRATE_PROVIDERS,
-  ...EVM_PROVIDERS,
-]
+export { WalletMode } from "@/config/wallet"
 
-export const PROVIDERS_BY_WALLET_MODE: Record<
-  WalletMode,
-  WalletProviderType[]
-> = {
-  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
-  [WalletMode.EVM]: EVM_PROVIDERS,
-  [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
-  [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
-  [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
-  [WalletMode.Solana]: SOLANA_PROVIDERS,
-  [WalletMode.Sui]: SUI_PROVIDERS,
-  [WalletMode.Unknown]: [],
-}
+export { COMPATIBLE_WALLET_PROVIDERS, PROVIDERS_BY_WALLET_MODE }
 
 export type StoredAccount = {
   name: string
@@ -67,12 +46,15 @@ export type StoredAccount = {
 
 export type Account = StoredAccount & {
   displayAddress: string
-  isIncompatible?: boolean
+  canUseOnHydration: boolean
 }
 
-type Web3ConnectModalMeta = {
+export type Web3ConnectModalMeta = {
   title?: string
   description?: string
+  hideExternalWallet?: boolean
+  initialPage?: Web3ConnectModalPage
+  initialProvider?: WalletProviderType
 }
 
 export type WalletProviderEntry = {
@@ -80,15 +62,20 @@ export type WalletProviderEntry = {
   status: WalletProviderStatus
 }
 
+// Providers, not brands. Talisman alone is four entries.
+const RECENT_PROVIDERS_LIMIT = 8
+
 export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
+  recentlyUsedProviders: WalletProviderType[]
   account: StoredAccount | null
   accounts: StoredAccount[]
   mode: WalletMode
   error?: string
   meta?: Web3ConnectModalMeta | null
+  restoreStates: Partial<Record<WalletProviderType, WalletRestoreState>>
 }
 
 export type WalletProviderStore = WalletProviderState & {
@@ -101,9 +88,15 @@ export type WalletProviderStore = WalletProviderState & {
     status: WalletProviderStatus,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
+  markRecent: (provider: WalletProviderType) => void
   getProviders: (mode: WalletMode) => WalletProviderEntry[]
   getConnectedProviders: (mode: WalletMode) => WalletProviderEntry[]
   setError: (error: string) => void
+  setRestoreState: (
+    provider: WalletProviderType,
+    restoreState: WalletRestoreState,
+  ) => void
+  clearRestoreState: (provider: WalletProviderType) => void
   disconnect: (provider?: WalletProviderType) => void
 }
 
@@ -111,11 +104,13 @@ const initialState: WalletProviderState = {
   open: false,
   providers: [],
   recentProvider: null,
+  recentlyUsedProviders: [],
   account: null,
   accounts: [],
   mode: WalletMode.Default,
   error: "",
   meta: null,
+  restoreStates: {},
 }
 
 export const useWeb3Connect = create<WalletProviderStore>()(
@@ -149,6 +144,9 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           }
         }),
       setAccount: (account) => {
+        const shouldDeactivateExternal =
+          !account || account.provider !== WalletProviderType.ExternalWallet
+
         if (account) {
           const wallet = getWallet(account.provider)
           if (wallet instanceof BaseSubstrateWallet) {
@@ -159,7 +157,29 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             wallet.setSigner(signerAddress)
           }
         }
-        return set((state) => ({ ...state, account }))
+
+        if (shouldDeactivateExternal) {
+          updateQueryString("account", undefined)
+          const externalWallet = getWallet(WalletProviderType.ExternalWallet)
+          if (externalWallet instanceof ExternalWallet) {
+            externalWallet.disconnect()
+          }
+        }
+
+        return set((state) => ({
+          ...state,
+          account,
+          ...(shouldDeactivateExternal
+            ? {
+                providers: state.providers.filter(
+                  (p) => p.type !== WalletProviderType.ExternalWallet,
+                ),
+                accounts: state.accounts.filter(
+                  (a) => a.provider !== WalletProviderType.ExternalWallet,
+                ),
+              }
+            : {}),
+        }))
       },
       setBalances: (balances) => {
         return set((state) =>
@@ -185,7 +205,10 @@ export const useWeb3Connect = create<WalletProviderStore>()(
               ]
             : state.providers,
           recentProvider: provider,
-          account: isError ? null : state.account,
+          account:
+            isError && state.account?.provider === provider
+              ? null
+              : state.account,
           error: isError ? state.error : "",
         }))
       },
@@ -193,6 +216,14 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         const foundProvider = get().providers.find((p) => p.type === provider)
         return foundProvider?.status ?? WalletProviderStatus.Disconnected
       },
+      markRecent: (provider) =>
+        set((state) => ({
+          ...state,
+          recentlyUsedProviders: uniqueBy(
+            [provider, ...state.recentlyUsedProviders],
+            (type) => type,
+          ).slice(0, RECENT_PROVIDERS_LIMIT),
+        })),
       getProviders: (mode: WalletMode) => {
         const { providers } = get()
         const providersByMode = PROVIDERS_BY_WALLET_MODE[mode]
@@ -209,34 +240,92 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         )
       },
       setError: (error) => set((state) => ({ ...state, error })),
+      setRestoreState: (provider, restoreState) =>
+        set((state) => ({
+          ...state,
+          restoreStates: { ...state.restoreStates, [provider]: restoreState },
+        })),
+      clearRestoreState: (provider) =>
+        set((state) => ({
+          ...state,
+          restoreStates: omit(state.restoreStates, [provider]),
+        })),
       disconnect: (givenProvider) => {
         const provider = Object.values(WalletProviderType).find(
           (type) => type === givenProvider,
         )
 
-        set((state) => ({
-          ...state,
-          ...initialState,
-          account:
+        set((state) => {
+          const isDisconnectingActive =
             !provider || provider === state.account?.provider
-              ? null
-              : state.account,
-          accounts: provider
+          const remainingAccounts = provider
             ? state.accounts.filter((a) => a.provider !== provider)
-            : [],
-          providers: provider
+            : []
+          const remainingProviders = provider
             ? state.providers.filter((p) => p.type !== provider)
-            : [],
-          recentProvider: null,
-          mode: state.mode,
-          open: state.open,
-        }))
+            : []
+          const nextAccount = isDisconnectingActive
+            ? (remainingAccounts[0] ?? null)
+            : state.account
+
+          if (nextAccount) {
+            const wallet = getWallet(nextAccount.provider)
+            if (wallet instanceof BaseSubstrateWallet) {
+              const signerAddress = nextAccount.isMultisig
+                ? (nextAccount.multisigSignerAddress ?? nextAccount.address)
+                : nextAccount.address
+              wallet.setSigner(signerAddress)
+            }
+          }
+
+          return {
+            ...state,
+            ...initialState,
+            account: nextAccount,
+            accounts: remainingAccounts,
+            providers: remainingProviders,
+            restoreStates: provider
+              ? omit(state.restoreStates, [provider])
+              : {},
+            recentProvider: null,
+            recentlyUsedProviders: state.recentlyUsedProviders,
+            mode: state.mode,
+            open: state.open,
+          }
+        })
       },
     }),
     {
       name: "web3-connect",
-      partialize: omit(["open", "error", "accounts"]),
-      version: 10,
+      partialize: omit([
+        "open",
+        "error",
+        "accounts",
+        "mode",
+        "meta",
+        "restoreStates",
+      ]),
+      version: 11,
+      // v11: seed MRU from recentProvider + recentlyDisconnectedProviders.
+      migrate: (persisted, version) => {
+        if (version >= 11) return persisted as WalletProviderStore
+
+        const { recentlyDisconnectedProviders, ...state } = (persisted ??
+          {}) as WalletProviderStore & {
+          recentlyDisconnectedProviders?: WalletProviderType[]
+        }
+
+        return {
+          ...state,
+          recentlyUsedProviders: uniqueBy(
+            [
+              ...(state.recentProvider ? [state.recentProvider] : []),
+              ...(recentlyDisconnectedProviders ?? []),
+            ],
+            (type) => type,
+          ).slice(0, RECENT_PROVIDERS_LIMIT),
+        }
+      },
     },
   ),
 )

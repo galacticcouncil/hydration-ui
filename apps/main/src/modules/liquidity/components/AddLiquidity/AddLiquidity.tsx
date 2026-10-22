@@ -2,6 +2,7 @@ import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
+  Box,
   Button,
   ModalBody,
   ModalContentDivider,
@@ -10,7 +11,6 @@ import {
   Skeleton,
   Summary,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -47,6 +47,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
 
   const {
     form,
+    getMaxBalance,
     liquidityShares,
     poolMeta,
     activeFarms,
@@ -58,7 +59,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     healthFactor,
   } = useAddLiquidity({ poolId: id, onSubmitted })
 
-  const { formState, handleSubmit } = form
+  const { formState, handleSubmit, watch } = form
   const customErrors = getCustomErrors(formState.errors.amount)
 
   return (
@@ -70,14 +71,18 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
       />
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <AssetSelectFormField<TAddLiquidityFormValues>
-            label={t("liquidity.add.modal.selectAsset")}
-            assetFieldName="asset"
-            amountFieldName="amount"
-            assets={underlyingAssetMeta ? [underlyingAssetMeta, poolMeta] : []}
-            sx={{ pt: 0 }}
-            disabledAssetSelector={!underlyingAssetMeta}
-          />
+          <Box pb="l">
+            <AssetSelectFormField<TAddLiquidityFormValues>
+              label={t("liquidity.add.modal.selectAsset")}
+              assetFieldName="asset"
+              amountFieldName="amount"
+              assets={
+                underlyingAssetMeta ? [underlyingAssetMeta, poolMeta] : []
+              }
+              balance={{ value: getMaxBalance(watch("asset")) }}
+              disabledAssetSelector={!underlyingAssetMeta}
+            />
+          </Box>
 
           <ModalContentDivider />
 
@@ -154,8 +159,6 @@ export const AddLiquiditySummary = ({
 }) => {
   const { t } = useTranslation(["liquidity", "common", "trade"])
   const { native } = useAssets()
-  const { isMobile } = useBreakpoints()
-
   const { price, isLoading: isPriceLoading } = useAssetPrice(meta.id)
 
   return (
@@ -163,9 +166,7 @@ export const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: isMobile
-            ? t("liquidity.add.modal.sharesToGet.label.mob")
-            : t("liquidity.add.modal.sharesToGet.label"),
+          label: t("liquidity.add.modal.sharesToGet.label"),
           content: poolShare
             ? t("liquidity.add.modal.sharesToGet", {
                 percentage: poolShare,

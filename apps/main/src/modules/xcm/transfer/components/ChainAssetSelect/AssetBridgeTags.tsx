@@ -2,7 +2,11 @@ import { Chip, Flex } from "@galacticcouncil/ui/components"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useTranslation } from "react-i18next"
 
-import { XcmTag, XcmTags } from "@/states/transactions"
+import {
+  getPrimaryBridgeTag,
+  isSnowbridgeRoute,
+  isWormholeFamilyTag,
+} from "@/modules/xcm/transfer/utils/bridge"
 
 export type AssetBridgeTagsProps = {
   route: AssetRoute
@@ -11,18 +15,20 @@ export type AssetBridgeTagsProps = {
 export const AssetBridgeTags: React.FC<AssetBridgeTagsProps> = ({ route }) => {
   const { t } = useTranslation(["xcm"])
 
-  const tags = (route?.tags ?? []) as XcmTags
+  const primaryTag = getPrimaryBridgeTag(route)
+  const showSnowbridge = isSnowbridgeRoute(route)
+  const showWormhole = !showSnowbridge && isWormholeFamilyTag(primaryTag)
 
-  if (!tags.length) return null
+  if (!showSnowbridge && !showWormhole) return null
 
   return (
     <Flex align="center" gap="s" mt="xs">
-      {tags.includes(XcmTag.Wormhole) && (
+      {showWormhole && (
         <Chip variant="info" size="small">
           {t("xcm:bridge.wormhole")}
         </Chip>
       )}
-      {tags.includes(XcmTag.Snowbridge) && (
+      {showSnowbridge && (
         <Chip variant="info" size="small">
           {t("xcm:bridge.snowbridge")}
         </Chip>

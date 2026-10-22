@@ -1,4 +1,5 @@
 import "@galacticcouncil/ui/fonts.css"
+import "@/utils/appUpdate"
 
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
@@ -12,10 +13,13 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
+import { setupPortfolioPersistence } from "@/api/portfolio"
 import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
+import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
+import { applyResetTutorialsParam } from "@/modules/tutorials/utils/resetTutorials"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -31,6 +35,11 @@ const queryClient = new QueryClient({
     },
   }),
 })
+
+setupPortfolioPersistence(queryClient)
+
+applyResetTutorialsParam()
+
 export interface RouterContext {
   queryClient: QueryClient
   i18n: typeof i18n
@@ -60,12 +69,14 @@ declare module "@tanstack/react-router" {
 }
 
 export const App = () => {
+  useRemoveInitialLoader()
+
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
         <DataProviderResolver>
           <ThemeProvider>
-            <TooltipProvider delayDuration={0}>
+            <TooltipProvider>
               <RouterProvider router={router} />
               <Toaster />
             </TooltipProvider>

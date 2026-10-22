@@ -21,6 +21,7 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
@@ -35,13 +36,12 @@ import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/hoo
 import {
   getOtcBuyAmountFromSellAmount,
   getOtcFeeAmount,
+  getOtcMaxFillAmount,
 } from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { isBond, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 export type StableBondsDepositProps = {
   orders: OtcOffer[]
@@ -60,7 +60,10 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
   )
-  const form = useStableBondsForm(orders)
+  const { data: edMultiplier = 0 } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
+  )
+  const { form, getMaxBalance } = useStableBondsForm(orders)
 
   const depositAssets = useMemo(() => {
     return [
@@ -83,21 +86,21 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
   const isSelectedOrderFillable =
     !!selectedOrder?.id && Big(selectedOrder.assetAmountIn).gt(0)
 
-  const depositAssetId = selectedOrder?.assetIn.id ?? ""
   const receiveAsset = selectedOrder?.assetOut ?? null
 
   const underlyingAssetId =
     receiveAsset && isBond(receiveAsset) ? receiveAsset.underlyingAssetId : ""
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
 
-  const depositBalance = useAccountBalance(depositAssetId)
-  const depositAssetBalance =
-    selectedOrder && depositBalance
-      ? scaleHuman(depositBalance.transferable, selectedOrder.assetIn.decimals)
-      : "0"
+  const depositAssetBalance = selectedOrder ? getMaxBalance(depositAsset) : "0"
 
   const assetInMax = selectedOrder
-    ? Big.min(selectedOrder.assetAmountIn, depositAssetBalance).toString()
+    ? getOtcMaxFillAmount(
+        selectedOrder,
+        depositAssetBalance,
+        edMultiplier,
+        feePct,
+      )
     : "0"
 
   const receiveAmount = getOtcBuyAmountFromSellAmount(
@@ -115,36 +118,38 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
           (values) =>
             isSelectedOrderFillable &&
             selectedOrder &&
-            submit.mutate({ values, order: selectedOrder, receiveAmount }),
+            submit.mutate({ values, order: selectedOrder }),
         )}
       >
         <Paper px="xl" position="relative">
           <Box>
-            <AssetSelectFormField<StableBondsFormValues>
-              label={t("strategies:bonds.deposit.yourDeposit")}
-              assetFieldName="depositAsset"
-              amountFieldName="depositAmount"
-              assets={depositAssets}
-              disabled={!isSelectedOrderFillable}
-              maxButtonBalance={assetInMax}
-            />
+            <Box py="l" width="100%">
+              <AssetSelectFormField<StableBondsFormValues>
+                label={t("strategies:bonds.deposit.yourDeposit")}
+                assetFieldName="depositAsset"
+                amountFieldName="depositAmount"
+                assets={depositAssets}
+                isDisabled={!isSelectedOrderFillable}
+                balance={{ value: depositAssetBalance, max: assetInMax }}
+              />
+            </Box>
 
             <StableBondsExchangeRate order={selectedOrder} />
 
-            <AssetInput
-              label={t("strategies:bonds.deposit.receiveAtMaturity")}
-              symbol={underlyingAsset.symbol}
-              selectedAssetIcon={
-                <AssetLogo id={underlyingAsset.id} size="medium" />
-              }
-              modalDisabled
-              disabledInput
-              ignoreBalance
-              value={receiveAmount}
-              displayValue={t("currency", {
-                value: receiveAmount,
-              })}
-            />
+            <Box py="l" width="100%">
+              <AssetInput
+                label={t("strategies:bonds.deposit.receiveAtMaturity")}
+                asset={{
+                  symbol: underlyingAsset.symbol,
+                  icon: <AssetLogo id={underlyingAsset.id} size="medium" />,
+                }}
+                isReadOnly
+                value={receiveAmount}
+                displayValue={
+                  receiveAmount && t("currency", { value: receiveAmount })
+                }
+              />
+            </Box>
           </Box>
 
           <Separator mx="-xl" />
@@ -181,8 +186,7 @@ export const StableBondsDeposit: React.FC<StableBondsDepositProps> = ({
                 disabled={
                   !form.formState.isValid ||
                   !isSelectedOrderFillable ||
-                  isFeePending ||
-                  submit.isPending
+                  isFeePending
                 }
               >
                 {t("confirm")}

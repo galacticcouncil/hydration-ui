@@ -15,7 +15,6 @@ import { TAccountVote } from "@/api/democracy"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ClaimStakingRemainder } from "@/modules/staking/ClaimStakingRemainder"
 import { ClaimStakingWarning } from "@/modules/staking/ClaimStakingWarning"
-import { RewardsCurve } from "@/modules/staking/RewardsCurve"
 import {
   SRemainderContainer,
   SRewardsListChartContainer,
@@ -110,7 +109,6 @@ export const RewardsList: FC<Props> = ({
             </Flex>
           </Flex>
         </Flex>
-        <RewardsCurve />
       </SRewardsListChartContainer>
       <SRemainderContainer>
         <ClaimStakingRemainder

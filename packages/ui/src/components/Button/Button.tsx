@@ -1,40 +1,64 @@
+import { Slottable } from "@radix-ui/react-slot"
 import React, { FC } from "react"
 
 import { BoxProps } from "@/components/Box"
-import { Spinner } from "@/components/Spinner"
+import { Icon } from "@/components/Icon"
+import { SpinnerIcon } from "@/components/Spinner"
 
 import {
-  MicroButtonVariant,
+  LoadingMode,
   SButton,
-  SButtonIcon,
   SButtonProps,
   SButtonTransparent,
-  SMicroButton,
+  SLoadingButton,
+  SLoadingLabel,
 } from "./Button.styled"
+import { useLoadingState } from "./useLoadingState"
+
+type ButtonIconProps = {
+  /** Renders a square button holding only this icon. */
+  icon?: React.ComponentType
+  iconStart?: React.ComponentType
+  iconEnd?: React.ComponentType
+}
 
 export type ButtonProps = BoxProps &
   SButtonProps &
+  ButtonIconProps &
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     ref?: React.Ref<HTMLButtonElement>
   }
 
-export type MicroButtonProps = BoxProps & {
-  variant?: MicroButtonVariant
-  ref?: React.Ref<HTMLButtonElement>
-} & React.ButtonHTMLAttributes<HTMLButtonElement>
+const buttonIcon = (
+  component: React.ComponentType | undefined,
+  side?: "start" | "end",
+) => component && <Icon component={component} data-icon={side} />
 
-export const Button: FC<ButtonProps> = ({ children, ...props }) => {
+export const Button: FC<ButtonProps> = ({
+  icon,
+  iconStart,
+  iconEnd,
+  children,
+  ...props
+}) => {
+  const sButtonProps = {
+    as: "button",
+    type: "button",
+    "data-icon-only": icon ? "" : undefined,
+    ...props,
+  } as const
+
+  if (!icon && !iconStart && !iconEnd) {
+    return <SButton {...sButtonProps}>{children}</SButton>
+  }
+
+  const hasLabel = !icon && React.Children.count(children) > 0
+
   return (
-    <SButton
-      as="button"
-      type="button"
-      {...props}
-      outline={
-        props.variant === "sliderTabInactive" ||
-        (props.variant !== "sliderTabActive" && !!props.outline)
-      }
-    >
-      {children}
+    <SButton {...sButtonProps}>
+      {buttonIcon(icon ?? iconStart, hasLabel ? "start" : undefined)}
+      <Slottable>{children}</Slottable>
+      {!icon && buttonIcon(iconEnd, hasLabel ? "end" : undefined)}
     </SButton>
   )
 }
@@ -43,26 +67,57 @@ export const ButtonTransparent: FC<ButtonProps> = (props) => {
   return <SButtonTransparent type="button" {...props} />
 }
 
-export const MicroButton: FC<MicroButtonProps> = (props) => (
-  <SMicroButton as="button" type="button" {...props} />
-)
-
-export const ButtonIcon: FC<ButtonProps> = (props) => {
-  return <SButtonIcon as="button" type="button" {...props} />
+export type LoadingButtonProps = Omit<ButtonProps, "icon"> & {
+  isLoading: boolean
+  loadingVariant?: ButtonProps["variant"]
+  disabledVariant?: ButtonProps["variant"]
+  loadingMode?: LoadingMode
+  loadingDelay?: number
+  loadingFade?: boolean
 }
 
-export const LoadingButton: FC<
-  ButtonProps & { isLoading: boolean; loadingVariant?: ButtonProps["variant"] }
-> = ({ variant, loadingVariant = "tertiary", isLoading, ...props }) => {
+export const LoadingButton: FC<LoadingButtonProps> = ({
+  variant = "primary",
+  loadingVariant = "muted",
+  disabledVariant,
+  loadingMode = "inline",
+  loadingDelay,
+  loadingFade = false,
+  isLoading,
+  onClick,
+  iconStart,
+  iconEnd,
+  children,
+  ...props
+}) => {
+  const isBusy = useLoadingState(isLoading, loadingDelay)
+  const restVariant =
+    props.disabled && disabledVariant ? disabledVariant : variant
+
   return (
-    <SButton
+    <SLoadingButton
       as="button"
       type="button"
-      variant={isLoading && loadingVariant ? loadingVariant : variant}
+      aria-busy={isBusy}
+      loadingFade={loadingFade}
+      disabledFade={!disabledVariant || disabledVariant === variant}
+      variant={isBusy && loadingVariant ? loadingVariant : restVariant}
+      onClick={(e) => {
+        if (isLoading || isBusy) return e.preventDefault()
+        onClick?.(e)
+      }}
       {...props}
     >
-      {isLoading && <Spinner sx={{ mr: 4 }} />}
-      {props.children}
-    </SButton>
+      <SLoadingLabel loadingMode={loadingMode}>
+        <span data-loading-spinner>
+          <SpinnerIcon size="1em" aria-hidden />
+        </span>
+        <span data-loading-content>
+          {buttonIcon(iconStart, "start")}
+          {children}
+          {buttonIcon(iconEnd, "end")}
+        </span>
+      </SLoadingLabel>
+    </SLoadingButton>
   )
 }

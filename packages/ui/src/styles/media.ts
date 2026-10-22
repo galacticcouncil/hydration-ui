@@ -1,13 +1,25 @@
 import { ResponsiveStyleValue } from "@theme-ui/css"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { useMedia } from "react-use"
 
 export type ScreenBreakpoint = "xs" | "sm" | "md" | "lg" | "xl"
-export type ScreenType = "mobile" | "tablet" | "laptop" | "desktop"
+export type ScreenType =
+  | "mobile"
+  | "tablet"
+  | "laptop"
+  | "desktop"
+  | "large-desktop"
 
 export const BREAKPOINTS_TYPES = ["xs", "sm", "md", "lg", "xl"]
 export const BREAKPOINTS_VALUES = [
-  "30rem", // 480px
+  "32.5rem", // 520px
   "48rem", // 768px
   "64rem", // 1024px
   "80rem", // 1280px
@@ -41,7 +53,21 @@ export const mediaQueries = breakpointsEntries.reduce(
 
 export const mq = (bp: ExtendedBreakpoint) => mediaQueries[bp]
 
-export const useBreakpoints = () => {
+export type BreakpointsValue = {
+  screen: ScreenType | null
+  isMobile: boolean
+  isTablet: boolean
+  isLaptop: boolean
+  isDesktop: boolean
+  isLargeDesktop: boolean
+  matches: ScreenBreakpoint[]
+  breakpoint: ScreenBreakpoint
+  gte: (givenBp: ScreenBreakpoint) => boolean
+}
+
+export const BreakpointsContext = createContext<BreakpointsValue | null>(null)
+
+export const useBreakpointsState = (): BreakpointsValue => {
   const xs = useMedia(`(min-width: ${breakpointsMap.xs})`)
   const sm = useMedia(`(min-width: ${breakpointsMap.sm})`)
   const md = useMedia(`(min-width: ${breakpointsMap.md})`)
@@ -70,15 +96,17 @@ export const useBreakpoints = () => {
   )
 
   const screen = useMemo<ScreenType | null>(() => {
-    return gte("lg")
-      ? "desktop"
-      : gte("md")
-        ? "laptop"
-        : gte("sm")
-          ? "tablet"
-          : gte("xs")
-            ? "mobile"
-            : null
+    return gte("xl")
+      ? "large-desktop"
+      : gte("lg")
+        ? "desktop"
+        : gte("md")
+          ? "laptop"
+          : gte("sm")
+            ? "tablet"
+            : gte("xs")
+              ? "mobile"
+              : null
   }, [gte])
 
   return {
@@ -87,10 +115,20 @@ export const useBreakpoints = () => {
     isTablet: screen === "tablet",
     isLaptop: screen === "laptop",
     isDesktop: screen === "desktop",
-    matches: match.matches,
+    isLargeDesktop: screen === "large-desktop",
+    matches: match.matches as ScreenBreakpoint[],
     breakpoint: match.current,
     gte,
   }
+}
+
+export const useBreakpoints = (): BreakpointsValue => {
+  const context = useContext(BreakpointsContext)
+  if (!context) {
+    throw new Error("useBreakpoints must be used within ThemeProvider")
+  }
+
+  return context
 }
 export function useResponsiveValue<T>(
   value: ResponsiveStyleValue<T>,

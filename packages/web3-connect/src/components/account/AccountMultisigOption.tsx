@@ -1,4 +1,4 @@
-import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
+import { accountsBalancesQuery } from "@galacticcouncil/indexer/neckwork"
 import { Chip } from "@galacticcouncil/ui/components"
 import {
   safeConvertAddressSS58,
@@ -29,20 +29,14 @@ export const AccountMultisigOption: React.FC<Props> = ({
   onDelete,
 }) => {
   const { t } = useTranslation()
-  const { squidSdk } = useWeb3ConnectContext()
+  const { neckwork } = useWeb3ConnectContext()
   const publicKey = safeConvertSS58toPublicKey(config.address)
 
-  const { data: balanceData, isLoading: isBalanceLoading } = useQuery(
-    latestAccountBalanceQuery(squidSdk, publicKey),
+  const { data, isLoading: isBalanceLoading } = useQuery(
+    accountsBalancesQuery(neckwork, [publicKey]),
   )
 
-  const balance = (() => {
-    const node = balanceData?.accountTotalBalanceHistoricalData?.nodes.at(0)
-    if (!node) return undefined
-    const transferable = Number(node.totalTransferableNorm) || 0
-    const locked = Number(node.totalLockedNorm) || 0
-    return transferable + locked
-  })()
+  const balance = data ? (data.at(0)?.balance ?? 0) : undefined
 
   return (
     <AccountOption

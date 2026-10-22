@@ -1,0 +1,83 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { safeConvertAnyToH160, safeStringify } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { CallType } from "@galacticcouncil/xc-core"
+import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { encodeFunctionData, Hex, parseAbi } from "viem"
+
+import { estimateGasLimit } from "@/api/borrow"
+import {
+  estimateVaultCallGas,
+  VaultState,
+  vaultTxInvalidation,
+} from "@/api/gamma/vaults"
+import { V3PoolBase } from "@/api/pools"
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
+
+export const HYPERVISOR_WITHDRAW_ABI = parseAbi([
+  "function withdraw(uint256 shares, address to, address from, uint256[4] minAmounts) returns (uint256 amount0, uint256 amount1)",
+])
+
+// Direct hypervisor withdraw; minAmounts cover rebalance slippage.
+export const useVaultWithdraw = () => {
+  const { t } = useTranslation("liquidity")
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+
+  const evmAddress = safeConvertAnyToH160(account?.address ?? "") as Hex
+
+  return useCallback(
+    async ({
+      pool,
+      vault,
+      shares,
+      minAmounts,
+    }: {
+      pool: V3PoolBase
+      vault: VaultState
+      shares: bigint
+      minAmounts: [bigint, bigint, bigint, bigint]
+    }) => {
+      const data = encodeFunctionData({
+        abi: HYPERVISOR_WITHDRAW_ABI,
+        functionName: "withdraw",
+        args: [shares, evmAddress, evmAddress, minAmounts],
+      })
+
+      const [{ maxFeePerGas, maxPriorityFeePerGas }, gasLimit] =
+        await Promise.all([
+          estimateGasLimit({ evm: rpc.evm }),
+          estimateVaultCallGas(rpc.evm, evmAddress, {
+            to: vault.address,
+            data,
+          }),
+        ])
+
+      const evmCall: ExtendedEvmCall = {
+        from: evmAddress,
+        to: vault.address,
+        data,
+        type: CallType.Evm,
+        dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
+        gasLimit,
+        maxFeePerGas: maxFeePerGas[0],
+        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
+        abi: safeStringify([...HYPERVISOR_WITHDRAW_ABI]),
+      }
+
+      return createTransaction({
+        tx: transformEvmCallToPapiTx(rpc.papi, evmCall),
+        toasts: {
+          submitted: t("vaults.remove.toast.submitted"),
+          success: t("vaults.remove.toast.success"),
+        },
+        invalidateQueries: vaultTxInvalidation(pool),
+      })
+    },
+    [evmAddress, rpc, createTransaction, t],
+  )
+}

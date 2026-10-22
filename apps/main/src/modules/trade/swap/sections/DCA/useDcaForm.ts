@@ -12,24 +12,42 @@ import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { useEffect } from "react"
-import { FieldPath, useForm } from "react-hook-form"
+import { FieldPath } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import i18n from "@/i18n"
+import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 import {
+  maxBalanceError,
   positiveOptional,
   requiredObject,
-  useValidateFormMaxBalance,
+  validateMaxBalance,
   validNumber,
 } from "@/utils/validators"
 
 export const MIN_DCA_ORDERS = 3
+
+export const isOpenBudgetMinTradesExceeded = (
+  sellAmount: string,
+  transferableBalance: bigint | string,
+  decimals: number,
+): boolean => {
+  if (!sellAmount) return false
+
+  const minAmountHuman = scaleHuman(
+    Big(transferableBalance.toString()).div(MIN_DCA_ORDERS).toString(),
+    decimals,
+  )
+
+  return Big(sellAmount).gt(minAmountHuman)
+}
+
 // once per block (600) and accounted for a buffer
 const MAX_DCA_ORDERS_PER_HOUR = 540
 
@@ -76,6 +94,8 @@ const schemaBase = z.object({
   buyAsset: requiredObject<TAsset>(),
   duration: getTimeFrameSchema(dcaTimeFrameTypes),
   orders: ordersSchema,
+  limitEnabled: z.boolean(),
+  limitPrice: positiveOptional,
 })
 
 const MAX_OPEN_BUDGET_YEAR_FRAME = 1
@@ -131,23 +151,45 @@ const schema = schemaBase
       })
     }
   })
+  .superRefine(({ limitEnabled, limitPrice }, { addIssue }) => {
+    if (limitEnabled && (!limitPrice || Big(limitPrice).lte(0))) {
+      addIssue({
+        code: "custom",
+        path: ["limitPrice" satisfies FieldPath<DcaFormValues>],
+        message: i18n.t("trade:dca.errors.limitPriceRequired"),
+      })
+    }
+  })
 
-const useSchema = (account: Account | null) => {
+const useSchema = (
+  account: Account | null,
+  limitOrderMaxBalance: string,
+  openBudgetOrderMaxBalance: string,
+) => {
   const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
-  const refineMaxBalance = useValidateFormMaxBalance()
-  const { getBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
+
+  if (!account) {
+    return schema
+  }
 
   const minBudgetSchema = schema
-    .check(
-      account
-        ? refineMaxBalance("sellAmount", (form) => [
-            form.sellAsset,
-            form.sellAmount,
-          ])
-        : z.refine(() => true),
+    .refine(
+      (form) => {
+        return validateMaxBalance(
+          form.orders.type === DcaOrdersMode.OpenBudget
+            ? openBudgetOrderMaxBalance
+            : limitOrderMaxBalance,
+          form.sellAmount,
+        )
+      },
+      {
+        error: maxBalanceError,
+        path: ["sellAmount"],
+      },
     )
     .check(async (ctx) => {
       const { sellAsset, sellAmount, orders } = ctx.value
@@ -190,20 +232,13 @@ const useSchema = (account: Account | null) => {
         return
       }
 
-      const balance = getBalance(sellAsset.id)
-
-      const minAmount = Big(balance?.transferable.toString() || "0")
-        .div(MIN_DCA_ORDERS)
-        .toString()
-
-      const minAmountHuman = scaleHuman(
-        minAmount.toString(),
-        sellAsset.decimals,
-      )
-
-      const isValid = Big(sellAmount).lte(minAmountHuman)
-
-      if (isValid) {
+      if (
+        !isOpenBudgetMinTradesExceeded(
+          sellAmount,
+          getTransferableBalance(sellAsset.id),
+          sellAsset.decimals,
+        )
+      ) {
         return
       }
 
@@ -211,7 +246,7 @@ const useSchema = (account: Account | null) => {
         code: "custom",
         input: sellAmount,
         path: ["sellAmount" satisfies keyof DcaFormValues],
-        message: t("trade:dca.errors.minTrades"),
+        message: t("trade:dca.errors.minTrades", { count: MIN_DCA_ORDERS }),
       })
     })
 
@@ -221,12 +256,19 @@ const useSchema = (account: Account | null) => {
 type Args = {
   readonly assetIn: string
   readonly assetOut: string
+  readonly limitOrderMaxBalance: string
+  readonly openBudgetOrderMaxBalance: string
 }
 
-export const useDcaForm = ({ assetIn, assetOut }: Args) => {
+export const useDcaForm = ({
+  assetIn,
+  assetOut,
+  limitOrderMaxBalance,
+  openBudgetOrderMaxBalance,
+}: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
+  const { isBalanceLoading } = useAccountBalances()
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -236,12 +278,16 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     orders: {
       type: DcaOrdersMode.Auto,
     },
+    limitEnabled: false,
+    limitPrice: "",
   }
 
-  const form = useForm<DcaFormValues>({
+  const form = useTradeForm<DcaFormValues>({
     mode: "onChange",
     defaultValues,
-    resolver: standardSchemaResolver(useSchema(account)),
+    resolver: standardSchemaResolver(
+      useSchema(account, limitOrderMaxBalance, openBudgetOrderMaxBalance),
+    ),
   })
 
   const { trigger, getValues } = form
@@ -253,10 +299,17 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
       return
     }
 
-    if (isBalanceLoaded(sellAsset.id) || !isBalanceLoading) {
+    if (!isBalanceLoading) {
       trigger("sellAmount")
     }
-  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
+  }, [
+    account,
+    isBalanceLoading,
+    limitOrderMaxBalance,
+    openBudgetOrderMaxBalance,
+    trigger,
+    getValues,
+  ])
 
   return form
 }

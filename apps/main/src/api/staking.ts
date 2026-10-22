@@ -1,4 +1,3 @@
-import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { HDX_SUPPLY_URL } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
@@ -17,7 +16,7 @@ export const stakingRewardsQuery = (
   address: string,
   openGovReferendaIds: Array<string>,
 ) => {
-  const { queryClient, sdk, isApiLoaded } = rpc
+  const { queryClient, sdk, isReady } = rpc
 
   return queryOptions({
     queryKey: ["staking", "rewards", address, openGovReferendaIds],
@@ -33,17 +32,17 @@ export const stakingRewardsQuery = (
         )
         .then((r) => r ?? null)
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
 export const StakeQueryKey = ["staking", "stake"]
 
-export const stakeQuery = ({ papi, isApiLoaded }: TProviderContext) =>
+export const stakeQuery = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: StakeQueryKey,
     queryFn: () => papi.query.Staking.Staking.getValue(),
-    enabled: isApiLoaded,
+    enabled: isReady,
   })
 
 const hdxSupplySchema = z.object({
@@ -79,7 +78,7 @@ export const stakingPositionsQuery = (
   rpc: TProviderContext,
   address: string,
 ) => {
-  const { queryClient, isApiLoaded, papi } = rpc
+  const { queryClient, isReady, papi } = rpc
 
   return queryOptions({
     queryKey: StakingPositionsQueryKey(address),
@@ -107,7 +106,7 @@ export const stakingPositionsQuery = (
         ...positions,
       }
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
   })
 }
 
@@ -132,7 +131,7 @@ export const useInvalidateStakeData = () => {
 }
 
 export const processedVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
   enabled: boolean,
 ) =>
@@ -149,11 +148,11 @@ export const processedVotesQuery = (
         oldProcessedVotes,
       }
     },
-    enabled: enabled && isApiLoaded && !!address,
+    enabled: enabled && isReady && !!address,
   })
 
 export const pendingVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   positionId: bigint,
   enabled: boolean,
 ) =>
@@ -170,52 +169,12 @@ export const pendingVotesQuery = (
         oldPendingVotes,
       }
     },
-    enabled: enabled && isApiLoaded,
+    enabled: enabled && isReady,
   })
 
-const stakeEventBase = z.object({
-  block: z.object({
-    height: z.number(),
-  }),
-})
-
-const stakeEventInitialized = stakeEventBase.extend({
-  name: z.literal("Staking.StakingInitialized"),
-})
-
-const stakeEventAccumulatedRps = stakeEventBase.extend({
-  name: z.literal("Staking.AccumulatedRpsUpdated"),
-  args: z.object({
-    accumulatedRps: z.string(),
-    totalStake: z.string(),
-  }),
-})
-
-export type StakeEventAccumulatedRps = z.infer<typeof stakeEventAccumulatedRps>
-
-export const accumulatedRpsUpdatedEventsQuery = (indexerSdk: IndexerSdk) =>
-  queryOptions({
-    queryKey: ["staking", "events", "accumulatedRps"],
-    queryFn: async () => {
-      const { events } = await indexerSdk.AccumulatedRpsUpdatedEvents()
-
-      return events.map((event) => stakeEventAccumulatedRps.parse(event))
-    },
-  })
-
-export const stakingInitializedEventsQuery = (indexerSdk: IndexerSdk) =>
-  queryOptions({
-    queryKey: ["staking", "events", "initialized"],
-    queryFn: async () => {
-      const { events } = await indexerSdk.StakingInitializedEvents()
-
-      return events.map((event) => stakeEventInitialized.parse(event))
-    },
-  })
-
-export const potBalanceQuery = ({ sdk, isApiLoaded }: TProviderContext) =>
+export const potBalanceQuery = ({ sdk, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["potBalance"],
     queryFn: () => sdk.api.staking.getPotBalance(),
-    enabled: isApiLoaded,
+    enabled: isReady,
   })

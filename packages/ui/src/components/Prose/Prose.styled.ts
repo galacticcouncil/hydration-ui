@@ -13,7 +13,7 @@ export type ProseStyleProps = {
 
 const sizeVariants = createVariants<ProseSize>((theme) => ({
   small: css`
-    font-size: ${theme.fontSizes.p5};
+    font-size: ${theme.fontSizes.p4};
     line-height: 1.4;
   `,
   medium: css`

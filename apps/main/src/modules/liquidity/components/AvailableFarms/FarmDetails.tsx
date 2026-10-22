@@ -70,11 +70,9 @@ export const FarmDetails = ({
       direction="column"
       gap="m"
       px="xl"
-      py="xxl"
-      sx={{
-        backgroundColor: getToken("surfaces.containers.mid.primary"),
-        borderRadius: "xl",
-      }}
+      pt="l"
+      bg={getToken("surfaces.containers.mid.primary")}
+      borderRadius="xl"
     >
       <Flex align="center" gap="base" justify="space-between">
         <Flex align="center" gap="base">

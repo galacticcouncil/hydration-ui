@@ -1,6 +1,7 @@
 import "@tanstack/react-table"
 
 import { ThemeUIStyleObject } from "@theme-ui/css"
+import { ReactNode } from "react"
 
 import { ScreenBreakpoint, ScreenType } from "@/theme"
 
@@ -15,6 +16,7 @@ declare module "@tanstack/react-table" {
     readonly sxFn?: ContextSxFunction<TData>
     readonly visibility?: ScreenType[] | boolean
     readonly gteBp?: ScreenBreakpoint
+    readonly skeletonCell?: () => ReactNode
   }
 
   interface TableMeta {

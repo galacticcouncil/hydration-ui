@@ -1,7 +1,9 @@
 import { Meta, StoryObj } from "@storybook/react-vite"
+import { ArrowRight } from "lucide-react"
 import { useState } from "react"
 
-import { Paper } from "@/components"
+import { BookOpen } from "@/assets/icons"
+import { Button, Paper, Tooltip } from "@/components"
 
 import { AccountInput } from "./AccountInput"
 
@@ -44,5 +46,43 @@ export const WithError: Story = {
     value: "0x19912230039c10861946dF36CDe0eFeF09C3894A",
     placeholder: "Paste address here...",
     isError: true,
+  },
+}
+
+export const WithContacts: Story = {
+  render: Template,
+  args: {
+    placeholder: "Paste address here...",
+    endAdornment: (
+      <Tooltip
+        text="My Contacts"
+        size="small"
+        delayDuration={0}
+        side="bottom"
+        alignOffset={0}
+        asChild
+      >
+        <Button icon={BookOpen} variant="ghost" aria-label="My Contacts" />
+      </Tooltip>
+    ),
+  },
+}
+
+export const WithTrailingElement: Story = {
+  render: Template,
+  args: {
+    value: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    placeholder: "Paste address here...",
+    trailingElement: (
+      <Button type="submit" icon={ArrowRight} variant="accent" size="small" />
+    ),
+  },
+}
+
+export const Standalone: Story = {
+  render: Template,
+  args: {
+    variant: "standalone",
+    placeholder: "Paste address here...",
   },
 }

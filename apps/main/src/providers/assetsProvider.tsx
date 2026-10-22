@@ -19,10 +19,10 @@ import {
   TToken,
 } from "@/api/assets"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
+import { isBlacklistedAsset } from "@/utils/assets"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
 
-const bannedAssets = ["1000042"]
 const blacklistedErc20AssetIds = new Set([HDX_ERC20_ASSET_ID])
 
 type TAssetsState = {
@@ -31,7 +31,6 @@ type TAssetsState = {
   stableswap: TStableswap[]
   bonds: TBond[]
   external: TExternal[]
-  externalInvalid: TExternal[]
   erc20: TErc20[]
   tradable: TAsset[]
   native: TAsset
@@ -138,7 +137,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     stableswap,
     bonds,
     external,
-    externalInvalid,
     erc20,
     tradable,
     native,
@@ -147,7 +145,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   } = useMemo(() => {
     return assets.reduce<TAssetsState>(
       (acc, asset) => {
-        if (bannedAssets.includes(asset.id)) return acc
+        if (isBlacklistedAsset(asset.id)) return acc
 
         if (
           isExternal(asset) &&
@@ -164,17 +162,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         } else if (isBond(asset)) {
           acc.bonds.push(asset)
         } else if (isExternal(asset)) {
-          //   const externalId = externalTokens[dataEnv].find(
-          //     (token) => token.internalId === asset.id,
-          //   )?.id
-
-          //const externalId = undefined
-
-          //if (externalId) {
           acc.external.push({ ...asset })
-          // } else if (asset.externalId) {
-          //   acc.externalInvalid.push(asset)
-          // }
         } else if (isErc20(asset) && !blacklistedErc20AssetIds.has(asset.id)) {
           acc.erc20.push(asset)
         }
@@ -202,7 +190,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         stableswap: [],
         bonds: [],
         external: [],
-        externalInvalid: [],
         erc20: [],
         native: {} as TAsset,
         hub: {} as TAsset,
@@ -265,10 +252,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getExternalByExternalId = useCallback(
     (externalId: AssetId) =>
-      [...external, ...externalInvalid].find(
-        (token) => token.externalId === externalId.toString(),
-      ),
-    [external, externalInvalid],
+      external.find((token) => token.externalId === externalId.toString()),
+    [external],
   )
   const getBond = useCallback(
     (id: AssetId) => bonds.find((token) => token.id === id.toString()),
@@ -324,7 +309,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         stableswap,
         bonds,
         external,
-        externalInvalid,
         erc20,
         tradable,
         native,

@@ -17,6 +17,7 @@ const RemoveLiquiditySchema = z.object({
 export type RemoveLiquidityType = z.infer<typeof RemoveLiquiditySchema>
 
 export const Route = createFileRoute("/liquidity/$id/remove")({
+  staticData: { crumb: "liquidity:removeLiquidity" },
   component: RouteComponent,
   validateSearch: RemoveLiquiditySchema,
   pendingComponent: () => (

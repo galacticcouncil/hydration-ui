@@ -17,6 +17,7 @@ import {
   xykMiningPositionsKey,
 } from "@/api/account"
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { Farm, LoyaltyCurve, useIsolatedPoolFarms } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
 import { PoolToken, useXykPool } from "@/api/pools"
@@ -29,7 +30,6 @@ import {
   AccountOmnipoolPosition,
   isDepositPosition,
   isOmnipoolDepositPosition,
-  useAccountBalances,
 } from "@/states/account"
 import {
   TransactionOptions,

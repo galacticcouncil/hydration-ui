@@ -31,7 +31,7 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
     <Link to={to} search={search}>
       {IconComponent && (
         <Icon
-          size="m"
+          size="l"
           component={IconComponent}
           color={getToken("icons.onContainer")}
         />

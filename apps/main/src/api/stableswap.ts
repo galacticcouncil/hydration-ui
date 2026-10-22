@@ -7,8 +7,7 @@ import { TAssetData } from "@/api/assets"
 import { stablePoolsQuery, StableSwapBase } from "@/api/pools"
 import { spotPriceKeyQuery } from "@/api/spotPrice"
 import { TAssetsContext } from "@/providers/assetsProvider"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { TProviderContext } from "@/providers/rpcProvider"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { toDecimal } from "@/utils/formatting"
 
 export type TStableswapPool = Awaited<
@@ -16,25 +15,25 @@ export type TStableswapPool = Awaited<
 >
 
 export const useStableswap = (poolId: string) => {
-  const { isLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
 
   return useQuery({
     queryKey: ["stableswap", poolId],
     queryFn: (): Promise<TStableswapPool> =>
       papi.query.Stableswap.Pools.getValue(Number(poolId)),
     staleTime: millisecondsInHour,
-    enabled: isLoaded,
+    enabled: isReady,
   })
 }
 
 export const useStableSwapTradability = () => {
-  const { isLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
 
   return useQuery({
     queryKey: ["stableswap", "tradability"],
     queryFn: () => papi.query.Stableswap.AssetTradability.getEntries(),
     staleTime: Infinity,
-    enabled: isLoaded,
+    enabled: isReady,
   })
 }
 
@@ -116,5 +115,5 @@ export const stablepoolReservesQuery = (
     },
     staleTime: millisecondsInMinute,
     gcTime: millisecondsInMinute,
-    enabled: rpc.isApiLoaded,
+    enabled: rpc.isReady,
   })

@@ -1,18 +1,31 @@
+import { subscribeScanEvents } from "@galacticcouncil/indexer/scan"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { queryOptions, useQueries } from "@tanstack/react-query"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { queryOptions, useQueries, useQueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
+import { intentsScanClient } from "@/api/scan"
+import { xcDestBalanceQueryKey } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestBalance"
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { ToastData, useToasts, useToastsStore } from "@/states/toasts"
-import { TransactionType, useTransactionsStore } from "@/states/transactions"
+import {
+  TransactionToastData,
+  useToasts,
+  useToastsStore,
+} from "@/states/toasts"
+import {
+  TransactionType,
+  TransactionXcSwapMeta,
+  useTransactionsStore,
+} from "@/states/transactions"
 
 const TOAST_STALE_AFTER_MINUTES = 60
 
-const isPendingOnChainToast = (toast: ToastData) => {
+const isPendingOnChainToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "pending" &&
     toast.meta.type === TransactionType.Onchain &&
@@ -20,17 +33,30 @@ const isPendingOnChainToast = (toast: ToastData) => {
   )
 }
 
-const isSubmittedXcmToast = (toast: ToastData) => {
+const isSubmittedXcmToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "submitted" && toast.meta.type === TransactionType.Xcm
   )
 }
 
-const isValidToastForProcessing = (toast: ToastData) => {
-  return isPendingOnChainToast(toast) || isSubmittedXcmToast(toast)
+// Deliberately not gated on meta.sequence: a submitted toast is neither
+// stale-swept nor retried, so one that never got a sequence has to enter the
+// processing set for the processor to resolve it.
+const isSubmittedXcSwapToast = (toast: TransactionToastData) => {
+  return (
+    toast.variant === "submitted" && toast.meta.type === TransactionType.XcSwap
+  )
 }
 
-const isStaleToast = (toast: ToastData) => {
+const isValidToastForProcessing = (toast: TransactionToastData) => {
+  return (
+    isPendingOnChainToast(toast) ||
+    isSubmittedXcmToast(toast) ||
+    isSubmittedXcSwapToast(toast)
+  )
+}
+
+const isStaleToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "pending" &&
     !isValidToastForProcessing(toast) &&
@@ -39,18 +65,22 @@ const isStaleToast = (toast: ToastData) => {
   )
 }
 
-const getToastProcessingRefetchInterval = (toast: ToastData) => {
+const getToastProcessingRefetchInterval = (toast: TransactionToastData) => {
   const diffInMin = differenceInMinutes(new Date(), new Date(toast.dateCreated))
   // Process older toasts less frequently
   return diffInMin >= 5 ? 60_000 : 10_000
 }
 
-export const useProcessTransactionToasts = (toasts: ToastData[]) => {
-  const { isLoaded } = useRpcProvider()
+type XcSwapToastStatus = "success" | "error" | "warning" | "unknown"
+
+export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
+  const { t } = useTranslation(["common", "trade"])
+  const { isReady } = useRpcProvider()
   const { edit } = useToasts()
   const { update } = useToastsStore()
   const { account } = useAccount()
   const transactions = useTransactionsStore(prop("transactions"))
+  const queryClient = useQueryClient()
 
   const toastsToMarkAsUnknown = toasts.filter(isStaleToast)
   useEffect(() => {
@@ -75,11 +105,57 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
 
   const processToast = useTransactionToastProcessorFn()
 
+  const xcSwapToastIds = toastsToProcess
+    .filter((toast) => toast.meta.type === TransactionType.XcSwap)
+    .map(prop("id"))
+    .join()
+
+  // A swap's order changing re-checks it at once rather than at its next poll,
+  // which stays the fallback for a dropped stream
+  useEffect(() => {
+    if (!xcSwapToastIds) return
+
+    const ids = xcSwapToastIds.split(",")
+    return subscribeScanEvents(intentsScanClient, ["orders"], {
+      onChange: () => {
+        for (const id of ids) {
+          queryClient.invalidateQueries({ queryKey: ["toast", "status", id] })
+        }
+      },
+    })
+  }, [queryClient, xcSwapToastIds])
+
+  const getXcSwapCopy = useCallback(
+    (
+      meta: TransactionXcSwapMeta,
+      status: XcSwapToastStatus,
+    ): { title?: string } => {
+      const vars = {
+        amount: meta.srcAmount,
+        symbol: meta.srcAssetSymbol,
+        dstSymbol: meta.dstAssetSymbol,
+        dstChain: chainsMap.get(meta.dstChainKey)?.name ?? meta.dstChainKey,
+      }
+
+      switch (status) {
+        case "success":
+          return { title: t("trade:xc.swap.toast.success", vars) }
+        case "warning":
+          return { title: t("trade:xc.swap.toast.refunded", vars) }
+        case "error":
+          return { title: t("trade:xc.swap.toast.error", vars) }
+        case "unknown":
+          return {}
+      }
+    },
+    [t],
+  )
+
   useQueries({
     queries: toastsToProcess.map((toast) =>
       queryOptions({
         retry: false,
-        enabled: isLoaded,
+        enabled: isReady,
         notifyOnChangeProps: [],
         refetchInterval: getToastProcessingRefetchInterval(toast),
         queryKey: ["toast", "status", toast.id],
@@ -88,11 +164,29 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
 
           if (!result.processed) return result
 
+          const copy =
+            toast.meta.type === TransactionType.XcSwap
+              ? getXcSwapCopy(toast.meta, result.status)
+              : {}
+
           edit(toast.id, {
             variant: result.status,
             link: result.link || toast.link,
             dateCreated: result.dateUpdated,
+            ...copy,
           })
+
+          if (
+            toast.meta.type === TransactionType.XcSwap &&
+            result.status === "success"
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: xcDestBalanceQueryKey(
+                toast.meta.dstChainKey,
+                toast.meta.dstAddress.trim(),
+              ),
+            })
+          }
 
           return result
         },

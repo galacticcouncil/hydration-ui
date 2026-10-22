@@ -1,8 +1,10 @@
 import {
   isEthereumSigner,
+  isNearSigner,
   isPolkadotSigner,
   isSolanaSigner,
   isSuiSigner,
+  isZecSigner,
   useWallet,
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
@@ -16,6 +18,7 @@ import {
   signAndSubmitEvmDispatchTx,
   signAndSubmitEvmTx,
 } from "@/modules/transactions/utils/ethereum"
+import { signAndSubmitNearTx } from "@/modules/transactions/utils/near"
 import {
   isPapiTransaction,
   signAndSubmitPolkadotTx,
@@ -35,9 +38,12 @@ import {
 } from "@/modules/transactions/utils/tx"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
+  isZecCall,
 } from "@/modules/transactions/utils/xcm"
+import { signAndSubmitZecTx } from "@/modules/transactions/utils/zec"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
 
@@ -110,6 +116,14 @@ export const useSignAndSubmit = (
 
       if (isSuiCall(tx) && isSuiSigner(signer)) {
         return signAndSubmitSuiTx(tx, signer, txOptions)
+      }
+
+      if (isNearCall(tx) && isNearSigner(signer)) {
+        return signAndSubmitNearTx(tx, signer, txOptions)
+      }
+
+      if (isZecCall(tx) && isZecSigner(signer)) {
+        return signAndSubmitZecTx(tx, signer, txOptions)
       }
 
       const err = new Error(t("transaction.error.unsupportedTransaction"))

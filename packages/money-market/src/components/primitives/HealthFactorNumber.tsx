@@ -5,13 +5,15 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 
 import { useFormattedHealthFactor } from "@/hooks"
+import { MAX_DISPLAY_HF } from "@/ui-config/misc"
 
 export type HealthFactorNumberProps = {
   value: string
   fontSize?: ThemeUICSSProperties["fontSize"]
+  decimals?: number
 }
 
-export const MAX_DISPLAY_HF = 1000
+export { MAX_DISPLAY_HF }
 
 export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   value,
@@ -20,15 +22,10 @@ export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(value)
 
   return (
-    <Flex>
+    <Flex align="center">
       {value === "-1" || Big(value).gt(MAX_DISPLAY_HF) ? (
-        <Text
-          fw={500}
-          fs={fontSize}
-          lh={1.5}
-          color={getToken("accents.success.emphasis")}
-        >
-          <InfinityIcon />
+        <Text lh={1} fs={fontSize} color={getToken("accents.success.emphasis")}>
+          <InfinityIcon sx={{ size: "1em", scale: 1.25 }} />
         </Text>
       ) : (
         <Text fw={700} fs={fontSize} lh={1.5} sx={{ color: healthFactorColor }}>

@@ -2,19 +2,22 @@ import {
   ArrowRightLeftIcon,
   BanknoteIcon,
   BlendIcon,
+  BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
   DropletIcon,
   DropletsIcon,
   GemIcon,
+  GlassesIcon,
   GoalIcon,
   Grid2X2Icon,
   HDXClassic,
   HistoryIcon,
   Repeat2Icon,
-  WalletCardsIcon,
+  WalletIcon,
   WavesIcon,
 } from "@galacticcouncil/ui/assets/icons"
+import { neckwork } from "@galacticcouncil/utils"
 import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
@@ -22,17 +25,26 @@ import { getDeployPreviewId } from "@/utils/deploy"
 
 type Route = FileRouteTypes["to"]
 
+export type SwapTabParam = "market" | "limit" | "twap"
+
+export const swapTabLink = (tab: SwapTabParam) =>
+  ({
+    to: "/trade/swap/$tab",
+    params: { tab },
+  }) as const
+
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
   myLiquidity: "/liquidity",
   pools: "/liquidity",
   swap: "/trade/swap",
-  swapMarket: "/trade/swap/market",
-  swapDca: "/trade/swap/dca",
-  wallet: "/wallet",
-  walletAssets: "/wallet/assets",
-  walletTransactions: "/wallet/transactions",
+  swapMarket: "/trade/swap/$tab",
+  swapLimit: "/trade/swap/$tab",
+  swapTwap: "/trade/swap/$tab",
+  portfolio: "/portfolio",
+  portfolioOverview: "/portfolio",
+  portfolioTracked: "/portfolio/tracked",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
@@ -56,28 +68,53 @@ export const LINKS = {
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
+  strategies: "/strategies",
+  strategiesBil: "/strategies/bil-vault",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
-export type NavigationKey = keyof typeof LINKS
+export const EXTERNAL_LINKS = {
+  explorer: neckwork.base,
+} as const
 
-export type NavigationItem = {
-  key: NavigationKey
-  to: Route
+export type ExternalNavigationKey = keyof typeof EXTERNAL_LINKS
+export type NavigationKey = keyof typeof LINKS | ExternalNavigationKey
+
+type NavigationItemCommon = {
   icon?: React.ComponentType
   enabled?: boolean
-  children?: NavigationItem[]
   defaultChild?: Route
+  params?: Record<string, string>
   search?: Record<string, string | boolean>
+  exact?: boolean
 }
+
+export type InternalNavigationItem = NavigationItemCommon & {
+  key: Exclude<NavigationKey, ExternalNavigationKey>
+  to: Route
+  href?: never
+  children?: InternalNavigationItem[]
+}
+
+export type ExternalNavigationItem = NavigationItemCommon & {
+  key: ExternalNavigationKey
+  href: string
+  to?: never
+  children?: never
+}
+
+export type NavigationItem = InternalNavigationItem | ExternalNavigationItem
 
 export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
     to: LINKS.trade,
     defaultChild: LINKS.swapMarket,
+    params: { tab: "market" },
     icon: Repeat2Icon,
     children: [
       {
@@ -85,8 +122,21 @@ export const NAVIGATION: NavigationItem[] = [
         to: LINKS.swap,
         icon: Repeat2Icon,
         children: [
-          { key: "swapMarket", to: LINKS.swapMarket },
-          { key: "swapDca", to: LINKS.swapDca },
+          {
+            key: "swapMarket",
+            to: LINKS.swapMarket,
+            params: { tab: "market" },
+          },
+          {
+            key: "swapLimit",
+            to: LINKS.swapLimit,
+            params: { tab: "limit" },
+          },
+          {
+            key: "swapTwap",
+            to: LINKS.swapTwap,
+            params: { tab: "twap" },
+          },
         ],
       },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
@@ -102,6 +152,19 @@ export const NAVIGATION: NavigationItem[] = [
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowMultiply", to: LINKS.borrowMultiply, icon: BlendIcon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
+    ],
+  },
+  {
+    key: "strategies",
+    to: LINKS.strategies,
+    icon: CoinsIcon,
+    children: [
+      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
+      {
+        key: "strategiesHollarBonds",
+        to: LINKS.strategiesHollarBonds,
+        icon: GoalIcon,
+      },
     ],
   },
   {
@@ -124,13 +187,22 @@ export const NAVIGATION: NavigationItem[] = [
     ],
   },
   {
-    key: "wallet",
-    to: LINKS.wallet,
-    icon: WalletCardsIcon,
-    defaultChild: LINKS.walletAssets,
+    key: "portfolio",
+    to: LINKS.portfolio,
+    icon: WalletIcon,
+    defaultChild: LINKS.portfolio,
     children: [
-      { key: "walletAssets", to: LINKS.walletAssets },
-      // { key: "walletTransactions", to: LINKS.walletTransactions },
+      {
+        key: "portfolioOverview",
+        to: LINKS.portfolioOverview,
+        exact: true,
+        icon: WalletIcon,
+      },
+      {
+        key: "portfolioTracked",
+        to: LINKS.portfolioTracked,
+        icon: GlassesIcon,
+      },
     ],
   },
   {
@@ -173,23 +245,10 @@ export const NAVIGATION: NavigationItem[] = [
     ],
   },
   {
-    key: "strategiesHollarBonds",
-    to: LINKS.strategiesHollarBonds,
-    icon: GoalIcon,
+    key: "explorer",
+    href: EXTERNAL_LINKS.explorer,
+    icon: BlocksIcon,
   },
-  // {
-  //   key: "governance",
-  //   to: LINKS.governance,
-  //   icon: LandmarkIcon,
-  // },
-  // {
-  //   key: "referrals",
-  //   to: LINKS.referrals,
-  // },
-  // {
-  //   key: "memepad",
-  //   to: LINKS.memepad,
-  // },
 ]
 
 export const getMenuTranslations = (t: TFunction) =>
@@ -210,17 +269,17 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.pools.title"),
       description: "",
     },
-    wallet: {
-      title: t("navigation.wallet.title"),
+    portfolio: {
+      title: t("navigation.portfolio.title"),
       description: "",
     },
-    walletAssets: {
-      title: t("navigation.walletAssets.title"),
-      description: "",
+    portfolioOverview: {
+      title: t("navigation.portfolioOverview.title"),
+      description: t("navigation.portfolioOverview.description"),
     },
-    walletTransactions: {
-      title: t("navigation.walletTransactions.title"),
-      description: "",
+    portfolioTracked: {
+      title: t("navigation.portfolioTracked.title"),
+      description: t("navigation.portfolioTracked.description"),
     },
     crossChain: {
       title: t("navigation.crossChain.title"),
@@ -230,10 +289,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.crossChainHistory.title"),
       description: t("navigation.crossChainHistory.description"),
     },
-    // bridge: {
-    //   title: t("navigation.bridge.title"),
-    //   description: "",
-    // },
     trade: {
       title: t("navigation.trade.title"),
       description: "",
@@ -246,8 +301,12 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.swapMarket.title"),
       description: "",
     },
-    swapDca: {
-      title: t("navigation.swapDca.title"),
+    swapTwap: {
+      title: t("navigation.swapTwap.title"),
+      description: "",
+    },
+    swapLimit: {
+      title: t("navigation.swapLimit.title"),
       description: "",
     },
     otc: {
@@ -278,18 +337,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.stakingGigaStake.title"),
       description: t("navigation.staking.description"),
     },
-    // governance: {
-    //   title: t("navigation.governance.title"),
-    //   description: t("navigation.governance.description"),
-    // },
-    // stakingGovernance: {
-    //   title: t("navigation.stakingGovernance.title"),
-    //   description: "",
-    // },
-    // referrals: {
-    //   title: t("navigation.referrals.title"),
-    //   description: "",
-    // },
     borrow: {
       title: t("navigation.borrow.title"),
       description: "",
@@ -300,7 +347,7 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     borrowMarkets: {
       title: t("navigation.borrowMarkets.title"),
-      description: "",
+      description: t("navigation.borrowMarkets.description"),
     },
     borrowMultiply: {
       title: t("navigation.borrowMultiply.title"),
@@ -338,16 +385,32 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
-    strategiesHollarBonds: {
-      title: t("navigation.strategiesHollarBonds.title"),
+    strategies: {
+      title: t("navigation.strategies.title"),
       description: "",
     },
-    // memepad: {
-    //   title: t("navigation.memepad.title"),
-    //   description: "",
-    // },
+    strategiesBil: {
+      title: t("navigation.strategiesBil.title"),
+      description: t("navigation.strategiesBil.description"),
+    },
+    strategiesHollarBonds: {
+      title: t("navigation.strategiesHollarBonds.title"),
+      description: t("navigation.strategiesHollarBonds.description"),
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
+    },
     submitTransaction: {
       title: t("navigation.submitTransaction.title"),
+      description: "",
+    },
+    explorer: {
+      title: t("navigation.explorer.title"),
       description: "",
     },
   }) satisfies Record<NavigationKey, { title: string; description: string }>
@@ -381,26 +444,24 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "strategies",
   "liquidity",
-  "wallet",
+  "portfolio",
   "crossChain",
   "stats",
   "staking",
-  //"governance",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
-  "wallet",
+  "portfolio",
   "trade",
   "liquidity",
   "borrow",
+  "strategies",
   "crossChain",
   "stats",
   "staking",
-  //"governance",
-  // "referrals",
-  // "memepad",
+  "explorer",
 ]
 
 export const NAV_ITEMS_SHOWN_MOBILE = 4

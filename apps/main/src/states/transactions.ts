@@ -1,8 +1,11 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { ZecTxStatus } from "@galacticcouncil/web3-connect/src/signers/ZecSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
+import { Asset } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
@@ -16,8 +19,13 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
+// Order matters - getPrimaryBridgeTag takes the first match, and an executor
+// route carries Wormhole too. NttExecutor has to win, or both Wormhole
+// variants collapse to one indistinguishable option and the executor route
+// becomes unreachable.
 export const BRIDGE_PROVIDER_TAGS: XcmTags = [
   XcmTag.Basejump,
+  XcmTag.NttExecutor,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ]
@@ -26,6 +34,7 @@ export enum TransactionType {
   Onchain = "Onchain",
   Xcm = "Xcm",
   EvmApprove = "EvmApprove",
+  XcSwap = "XcSwap",
 }
 
 export type TransactionAlert = Pick<
@@ -46,12 +55,16 @@ export type TransactionCommon = {
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  signerFeeAsset?: Asset
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
   successMode?: "best" | "finalized"
   executedAmount?: TExecutedAmount
+  activity?: ActivityType
+  /** When set, the review modal opens directly in the error state (no tx to sign). */
+  initialError?: string
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -72,6 +85,12 @@ export type MultiTransactionConfig = (
   pendingComponent?: ComponentType
   //@TODO consider separate all transaction actions per tx
   onSubmitted?: (txHash: string) => void
+  /**
+   * Awaited after this step succeeds, before the stepper advances. For work
+   * that belongs to this step but outlives its receipt — waiting on state the
+   * next step reads. Rejecting aborts the whole sequence.
+   */
+  beforeNext?: () => Promise<void>
 }
 
 interface MultiTransactionInput {
@@ -99,10 +118,20 @@ type TransactionFee = {
 
 type TransactionMetaCommon = {
   srcChainKey: string
+  activity?: ActivityType
+}
+
+export type TransactionIntentMeta = {
+  id?: string
+  assetIn: string
+  assetOut: string
+  amountIn: string
+  minAmountOut: string
 }
 
 export type TransactionOnchainMeta = TransactionMetaCommon & {
   type: TransactionType.Onchain
+  intent?: TransactionIntentMeta
 }
 
 export type TransactionXcmMeta = TransactionMetaCommon & {
@@ -119,10 +148,28 @@ export type TransactionErc20ApproveMeta = TransactionMetaCommon & {
   type: TransactionType.EvmApprove
 }
 
+export type TransactionXcSwapMeta = TransactionMetaCommon & {
+  type: TransactionType.XcSwap
+  srcAssetSymbol: string
+  srcAmount: string
+  srcChainFee: string
+  srcChainFeeSymbol: string
+  dstChainKey: string
+  dstAssetSymbol: string
+  dstAmount: string
+  dstAddress: string
+  dstChainFee?: string
+  dstChainFeeSymbol?: string
+  sequence?: string
+  depositAddress?: string
+  correlationId?: string
+}
+
 export type TransactionMeta =
   | TransactionOnchainMeta
   | TransactionXcmMeta
   | TransactionErc20ApproveMeta
+  | TransactionXcSwapMeta
 
 export type TSuccessResult =
   | TxBestBlocksStateResult
@@ -130,12 +177,16 @@ export type TSuccessResult =
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
+  | ZecTxStatus
 
 export type TFinalizedResult =
   | TxFinalizedResult
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
+  | ZecTxStatus
 
 export type TTransactionResult = TSuccessResult | TFinalizedResult
 
@@ -148,6 +199,7 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
+  resolveOn?: "submitted" | "success"
 }
 
 export type SingleTransaction = SingleTransactionInput &
@@ -185,6 +237,28 @@ export const isSubstrateTxResult = (
   )
 }
 
+/**
+ * Hydration block the tx landed in, for the substrate and EVM paths — the EVM
+ * runs on the same chain, so its receipt block number is directly comparable.
+ * Solana and Sui results are from other chains and yield null.
+ */
+export const getTxResultBlockHeight = (
+  result: TSuccessResult,
+): number | null => {
+  if (isSubstrateTxResult(result)) return result.block.number
+  if ("blockNumber" in result && typeof result.blockNumber === "bigint") {
+    return Number(result.blockNumber)
+  }
+  return null
+}
+
+export class TransactionClosedError extends Error {
+  constructor() {
+    super("Transaction closed")
+    this.name = "TransactionClosedError"
+  }
+}
+
 export const isBridgeTransaction = (meta: TransactionMeta) => {
   return (
     meta.type === TransactionType.Xcm &&
@@ -196,7 +270,15 @@ export type PendingTransaction = {
   id: string
   meta: TransactionMeta
   nonce: number
+  address: string
+  isPermit: boolean
 }
+
+const PendingTxChannel = new BroadcastChannel("hydration:pending-tx")
+
+type PendingTxMessage =
+  | { type: "add"; transaction: PendingTransaction }
+  | { type: "remove"; id: string }
 
 interface TransactionsStore {
   transactions: Transaction[]
@@ -204,13 +286,9 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TTransactionResult>
+  ) => Promise<TSuccessResult | void>
   cancelTransaction: (id: string) => void
-  addPendingTransaction: (
-    id: string,
-    nonce: number,
-    meta: TransactionMeta,
-  ) => void
+  addPendingTransaction: (transaction: PendingTransaction) => void
   removePendingTransaction: (id: string) => void
 }
 
@@ -218,20 +296,28 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TTransactionResult>((resolve, reject) => {
+    return new Promise<TSuccessResult | void>((resolve, reject) => {
       set((state) => {
-        const meta: TransactionMeta =
-          "meta" in transaction && transaction.meta
+        const meta: TransactionMeta = {
+          ...("meta" in transaction && transaction.meta
             ? transaction.meta
             : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              }
+              }),
+          ...("activity" in transaction &&
+            transaction.activity && { activity: transaction.activity }),
+        }
         const newTransaction: Transaction = {
           id: uuid(),
           ...transaction,
           meta,
-          onSubmitted: options?.onSubmitted,
+          onSubmitted: (txHash) => {
+            options?.onSubmitted?.(txHash)
+            if (!options?.resolveOn || options?.resolveOn === "submitted") {
+              resolve()
+            }
+          },
           onSuccess: (event) => {
             options?.onSuccess?.(event)
             resolve(event)
@@ -242,7 +328,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
           },
           onClose: () => {
             options?.onClose?.()
-            reject("Transaction closed")
+            reject(new TransactionClosedError())
           },
         }
         return {
@@ -258,14 +344,41 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
       ),
     }))
   },
-  addPendingTransaction: (id, nonce, meta) => {
+  addPendingTransaction: (transaction) => {
     set((state) => ({
-      pendingTransactions: [...state.pendingTransactions, { id, meta, nonce }],
+      pendingTransactions: [...state.pendingTransactions, transaction],
     }))
+    PendingTxChannel.postMessage({ type: "add", transaction })
   },
   removePendingTransaction: (id) => {
     set((state) => ({
       pendingTransactions: state.pendingTransactions.filter((p) => p.id !== id),
     }))
+    PendingTxChannel.postMessage({ type: "remove", id })
   },
 }))
+
+PendingTxChannel.onmessage = (event: MessageEvent<PendingTxMessage>) => {
+  const message = event.data
+  switch (message.type) {
+    case "add":
+      useTransactionsStore.setState((state) =>
+        state.pendingTransactions.some((p) => p.id === message.transaction.id)
+          ? state
+          : {
+              pendingTransactions: [
+                ...state.pendingTransactions,
+                message.transaction,
+              ],
+            },
+      )
+      break
+    case "remove":
+      useTransactionsStore.setState((state) => ({
+        pendingTransactions: state.pendingTransactions.filter(
+          (p) => p.id !== message.id,
+        ),
+      }))
+      break
+  }
+}

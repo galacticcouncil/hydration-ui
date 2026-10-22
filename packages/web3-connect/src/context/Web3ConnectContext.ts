@@ -1,19 +1,25 @@
 import { hydration } from "@galacticcouncil/descriptors"
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
+import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { TypedApi } from "polkadot-api"
 import { createContext, useContext } from "react"
 
 import { Web3ConnectModalPage } from "@/config/modal"
-import { Account, WalletMode } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  WalletMode,
+  Web3ConnectModalMeta,
+} from "@/hooks/useWeb3Connect"
 
 export type Web3ConnectContextType = {
   isControlled: boolean
   page: Web3ConnectModalPage
   setPage: (page: Web3ConnectModalPage) => void
-  squidSdk: SquidSdk
+  neckwork: NeckworkClient
   papi: TypedApi<typeof hydration>
   onAccountSelect: (account: Account) => void
   mode: WalletMode
+  meta?: Web3ConnectModalMeta | null
+  setModalContentWidth: (width: string) => void
 }
 
 const Web3ConnectContext = createContext<Web3ConnectContextType | null>(null)

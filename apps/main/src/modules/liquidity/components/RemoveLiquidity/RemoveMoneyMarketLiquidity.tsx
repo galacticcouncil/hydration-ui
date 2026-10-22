@@ -4,11 +4,13 @@ import {
 } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
-  Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
+  Separator,
   Skeleton,
   Summary,
   SummaryRow,
@@ -21,6 +23,7 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { spotPriceQuery } from "@/api/spotPrice"
 import type { TStablepoolDetails } from "@/api/stableswap"
 import { Trade } from "@/api/trade"
@@ -34,7 +37,6 @@ import {
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 
 import { ReceiveAssets } from "./ReceiveAssets"
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
@@ -86,7 +88,7 @@ const RemoveMoneyMarketLiquidityForm = (
   const { t } = useTranslation(["liquidity", "common"])
   const {
     form,
-    maxBalance,
+    maxBalanceWithFee,
     receiveAssetsProportionally,
     meta,
     tradeMinReceive,
@@ -94,6 +96,7 @@ const RemoveMoneyMarketLiquidityForm = (
     isTradePending,
     mutation,
     healthFactor,
+    intermediateHealthFactor,
     isLoadingMaxBalance,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
   const { closable, onBack, receiveAssets, title } = props
@@ -121,9 +124,10 @@ const RemoveMoneyMarketLiquidityForm = (
     }
   }, [watch])
 
-  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
-    ? healthFactorRiskAccepted
-    : true
+  const isHealthFactorCheckSatisfied =
+    intermediateHealthFactor?.isUserConsentRequired
+      ? healthFactorRiskAccepted
+      : true
 
   const onSubmit = () => {
     mutation.mutate()
@@ -136,17 +140,18 @@ const RemoveMoneyMarketLiquidityForm = (
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <Flex direction="column" gap="m" asChild>
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+        <ModalBody sx={{ pb: 0 }}>
+          <Flex direction="column" gap="m">
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
               label={t("common:amount")}
-              maxBalance={maxBalance}
-              maxBalanceLoading={isLoadingMaxBalance}
+              balance={{
+                value: maxBalanceWithFee,
+                isLoading: isLoadingMaxBalance,
+              }}
               assets={[]}
-              sx={{ py: 0 }}
               disabledAssetSelector
             />
 
@@ -176,12 +181,10 @@ const RemoveMoneyMarketLiquidityForm = (
                 label={t("common:get")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
-                maxBalance={maxBalance}
                 assets={[]}
                 sortedAssets={receiveAssets}
-                ignoreBalance
-                disabledInput
-                sx={{ p: 0 }}
+                balance={false}
+                isReadOnly
               />
             ) : (
               <Flex direction="column" gap="s">
@@ -199,7 +202,13 @@ const RemoveMoneyMarketLiquidityForm = (
                     <ModalContentDivider />
                     <SummaryRow
                       label={t("common:healthFactor")}
-                      content={<HealthFactorChange {...healthFactor} />}
+                      content={
+                        <HealthFactorChange
+                          {...healthFactor}
+                          intermediate={intermediateHealthFactor?.future}
+                          decimals={4}
+                        />
+                      }
                     />
                   </>
                 ) : null}
@@ -210,35 +219,44 @@ const RemoveMoneyMarketLiquidityForm = (
                 minReceive={tradeMinReceive}
                 erc20={meta}
                 healthFactor={healthFactor}
+                intermediateHealthFactor={intermediateHealthFactor}
                 swap={swap}
                 isTradePending={isTradePending}
               />
             )}
-
-            {healthFactor?.isUserConsentRequired && (
+          </Flex>
+        </ModalBody>
+        <Separator />
+        <ModalFooter>
+          <Flex direction="column" width="100%" gap="m">
+            {intermediateHealthFactor?.isUserConsentRequired && (
               <HealthFactorRiskWarning
                 message={t("common:healthFactor.warning")}
                 accepted={healthFactorRiskAccepted}
                 onAcceptedChange={setHealthFactorRiskAccepted}
-                isUserConsentRequired={healthFactor.isUserConsentRequired}
+                isUserConsentRequired={
+                  intermediateHealthFactor.isUserConsentRequired
+                }
               />
             )}
-
-            <ModalContentDivider />
-
-            <Button
+            <LoadingButton
               type="submit"
               size="large"
               width="100%"
+              isLoading={mutation.isPending}
               disabled={
-                !isValid || !isHealthFactorCheckSatisfied || isLoadingMaxBalance
+                !isValid ||
+                !isHealthFactorCheckSatisfied ||
+                isLoadingMaxBalance ||
+                isTradePending ||
+                mutation.isPending
               }
             >
               {title ?? t("removeLiquidity")}
-            </Button>
-          </form>
-        </Flex>
-      </ModalBody>
+            </LoadingButton>
+          </Flex>
+        </ModalFooter>
+      </form>
     </FormProvider>
   )
 }
@@ -248,6 +266,7 @@ const TradeSummary = ({
   minReceive,
   erc20,
   healthFactor,
+  intermediateHealthFactor,
   swap,
   isTradePending,
 }: {
@@ -255,6 +274,7 @@ const TradeSummary = ({
   minReceive: string
   erc20: TAssetData
   healthFactor: HealthFactorResult | undefined
+  intermediateHealthFactor: HealthFactorResult | undefined
   swap?: Trade
   isTradePending: boolean
 }) => {
@@ -304,7 +324,13 @@ const TradeSummary = ({
             ? [
                 {
                   label: t("healthFactor"),
-                  content: <HealthFactorChange {...healthFactor} />,
+                  content: (
+                    <HealthFactorChange
+                      {...healthFactor}
+                      intermediate={intermediateHealthFactor?.future}
+                      decimals={4}
+                    />
+                  ),
                 },
               ]
             : []),

@@ -27,13 +27,13 @@ export const filterAccountProxies = (
   })
 }
 
-export const getAllProxies = ({ papi, isApiLoaded }: TProviderContext) =>
+export const getAllProxies = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["allProxies"],
     queryFn: async () => {
       return await papi.query.Proxy.Proxies.getEntries({ at: "best" })
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
   })
 
 export const getAccountProxiesQueryKey = (accountAddress: string) => [
@@ -80,7 +80,7 @@ export const getAccountProxies = (
         )
       }
     },
-    enabled: context.isApiLoaded && !!accountAddress,
+    enabled: context.isReady && !!accountAddress,
     gcTime: millisecondsInMinute,
     staleTime: millisecondsInMinute,
   })
@@ -95,7 +95,7 @@ export const useAccountProxies = () => {
   )
 }
 
-export const createProxyFeesQuery = ({ papi, isApiLoaded }: TProviderContext) =>
+export const createProxyFeesQuery = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["createProxyFees"],
     queryFn: async () => {
@@ -109,7 +109,7 @@ export const createProxyFeesQuery = ({ papi, isApiLoaded }: TProviderContext) =>
         proxyDepositFactor,
       }
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     gcTime: Infinity,
     staleTime: Infinity,
   })

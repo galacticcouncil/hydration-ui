@@ -13,6 +13,7 @@ import {
   TokenLockType,
   useNativeTokenLocks,
 } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { gigaQueryKey, useGigaStakeExchangeRate } from "@/api/gigaStake"
@@ -20,7 +21,6 @@ import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
 import { positive } from "@/utils/validators"
@@ -230,5 +230,6 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
     maxStakeHuman: maxBalanceWithFee,
     gigaHdxMeta: getAssetWithFallback(HDX_ERC20_ASSET_ID),
     onSubmit,
+    isSubmitting: mutation.isPending,
   }
 }

@@ -1,22 +1,5 @@
 import * as Types from '@/indexer/__generated__/types';
 
-export type ExtrinsicFragment = { __typename?: 'Extrinsic', hash: string, indexInBlock: number, success: boolean, error?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } };
-
-export type ExtrinsicByHashQueryVariables = Types.Exact<{
-  hash: Types.Scalars['String']['input'];
-}>;
-
-
-export type ExtrinsicByHashQuery = { __typename?: 'Query', extrinsics: Array<{ __typename?: 'Extrinsic', hash: string, indexInBlock: number, success: boolean, error?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } }> };
-
-export type ExtrinsicByBlockAndIndexQueryVariables = Types.Exact<{
-  blockNumber: Types.Scalars['Int']['input'];
-  index: Types.Scalars['Int']['input'];
-}>;
-
-
-export type ExtrinsicByBlockAndIndexQuery = { __typename?: 'Query', extrinsics: Array<{ __typename?: 'Extrinsic', hash: string, indexInBlock: number, success: boolean, error?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } }> };
-
 export type YieldFarmCreatedQueryVariables = Types.Exact<{
   blockNumber: Types.Scalars['Int']['input'];
 }>;
@@ -24,54 +7,9 @@ export type YieldFarmCreatedQueryVariables = Types.Exact<{
 
 export type YieldFarmCreatedQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null }> };
 
-export type OtcOrderStatusQueryVariables = Types.Exact<{
-  orderId: Types.Scalars['Int']['input'];
-}>;
-
-
-export type OtcOrderStatusQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null }> };
-
 export type PureCreatedEventsQueryVariables = Types.Exact<{
   purePublicKey: Types.Scalars['String']['input'];
 }>;
 
 
 export type PureCreatedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', block: { __typename?: 'Block', height: number }, extrinsic?: { __typename?: 'Extrinsic', indexInBlock: number } | null }> };
-
-export type AccumulatedRpsUpdatedEventsQueryVariables = Types.Exact<{ [key: string]: never; }>;
-
-
-export type AccumulatedRpsUpdatedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null, name: string, block: { __typename?: 'Block', height: number } }> };
-
-export type StakingInitializedEventsQueryVariables = Types.Exact<{ [key: string]: never; }>;
-
-
-export type StakingInitializedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, block: { __typename?: 'Block', height: number } }> };
-
-export type ScheduledOrdersQueryVariables = Types.Exact<{
-  who: Types.Scalars['String']['input'];
-}>;
-
-
-export type ScheduledOrdersQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null, call?: { __typename?: 'Call', args?: any | null } | null, block: { __typename?: 'Block', height: number, hash: string } }> };
-
-export type OrdersStatusQueryVariables = Types.Exact<{
-  who: Types.Scalars['String']['input'];
-}>;
-
-
-export type OrdersStatusQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null }> };
-
-export type OrderTradesQueryVariables = Types.Exact<{
-  id: Types.Scalars['Int']['input'];
-}>;
-
-
-export type OrderTradesQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null, block: { __typename?: 'Block', height: number, timestamp: string } }> };
-
-export type OrderPlannedExecutionQueryVariables = Types.Exact<{
-  id: Types.Scalars['Int']['input'];
-}>;
-
-
-export type OrderPlannedExecutionQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, args?: any | null }> };

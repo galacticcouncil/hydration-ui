@@ -5,8 +5,6 @@ import { useTranslation } from "react-i18next"
 import { AuthorizedActionForChain } from "@/modules/xcm/transfer/components/AuthorizedActionForChain"
 import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
 
-import { SSubmitButton } from "./SubmitButton.styled"
-
 type SubmitButtonProps = React.ComponentPropsWithoutRef<
   typeof LoadingButton
 > & {
@@ -40,9 +38,15 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
 
   return (
     <AuthorizedActionForChain chain={chain} size="large" width="100%">
-      <SSubmitButton {...props} size="large" type="submit" width="100%">
-        {!props.isLoading && getSubmitButtonText()}
-      </SSubmitButton>
+      <LoadingButton
+        {...props}
+        size="large"
+        type="submit"
+        width="100%"
+        loadingMode="replace"
+      >
+        {getSubmitButtonText()}
+      </LoadingButton>
     </AuthorizedActionForChain>
   )
 }

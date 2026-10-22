@@ -2,10 +2,10 @@ import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Box,
-  Button,
+  LoadingButton,
   Separator,
   Summary,
-  Text,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -14,6 +14,7 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useNativeTokenLocks } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   borrowReservesQuery,
   gigaLendingPoolAddressProvider,
@@ -24,7 +25,6 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useGigaStake } from "@/modules/staking/gigaStaking/stake/GigaStake.utils"
 import { GigaStakeSkeleton } from "@/modules/staking/gigaStaking/stake/GigaStakeSkeleton"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 
 export type GigaStakeProps = {
   minStake: bigint
@@ -73,6 +73,7 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
     minStakeHuman,
     meta,
     onSubmit,
+    isSubmitting,
     maxStakeHuman,
     amountInGigaHdx,
     gigaHdxMeta,
@@ -84,60 +85,49 @@ const GigaStakeForm: FC<GigaStakeProps> = ({ minStake, hdxReserve }) => {
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
-        <Box px="l" asChild>
+        <Box p="l">
           <AssetSelectFormField
             assetFieldName="asset"
             amountFieldName="amount"
             label={t("gigaStaking.gigaStake.input.label")}
             assets={[]}
             disabledAssetSelector
-            maxBalance={maxStakeHuman}
+            balance={{ value: maxStakeHuman }}
           />
         </Box>
 
         <Separator />
 
-        <Box px="l" asChild>
-          <Summary
-            rows={[
-              {
-                label: t("gigaStaking.gigaStake.minStake.label"),
-                content: (
-                  <Text>
-                    {t("common:currency", {
-                      value: minStakeHuman,
-                      symbol: meta.symbol,
-                    })}
-                  </Text>
-                ),
-              },
-              {
-                label: t("gigaStaking.gigaStake.receive.label"),
-                content: (
-                  <Text>
-                    {t("common:currency", {
-                      prefix: "≈",
-                      value: amountInGigaHdx,
-                      symbol: gigaHdxMeta.symbol,
-                    })}
-                  </Text>
-                ),
-              },
-            ]}
+        <Summary px="l" separator={<Separator sx={{ mx: "-l" }} />}>
+          <SummaryRow
+            label={t("gigaStaking.gigaStake.minStake.label")}
+            content={t("common:currency", {
+              value: minStakeHuman,
+              symbol: meta.symbol,
+            })}
           />
-        </Box>
+          <SummaryRow
+            label={t("gigaStaking.gigaStake.receive.label")}
+            content={t("common:currency", {
+              prefix: "≈",
+              value: amountInGigaHdx,
+              symbol: gigaHdxMeta.symbol,
+            })}
+          />
+        </Summary>
 
         <Separator />
 
         <Box p="l">
-          <Button
+          <LoadingButton
+            isLoading={isSubmitting}
             type="submit"
             size="large"
             width="100%"
             disabled={!form.formState.isValid}
           >
             {t("gigaStaking.gigaStake.cta")}
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </FormProvider>

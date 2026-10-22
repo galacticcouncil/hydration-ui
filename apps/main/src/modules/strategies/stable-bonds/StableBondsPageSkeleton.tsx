@@ -6,7 +6,10 @@ import {
   Stack,
 } from "@galacticcouncil/ui/components"
 
-import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
+import {
+  AppSkeleton,
+  ProseSkeleton,
+} from "@/modules/layout/components/LayoutSkeleton"
 import { AssetHeaderSkeleton } from "@/modules/layout/components/LayoutSkeleton/AssetHeaderSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 
@@ -36,15 +39,7 @@ const StableBondsAboutSkeleton = () => (
   <Paper p="xl">
     <Skeleton sx={{ width: "4xl" }} />
     <Separator mx="-xl" my="xl" />
-    <Stack>
-      {Array.from({ length: 10 }, (_, i) => (
-        <Skeleton
-          key={i}
-          width={`${Math.floor(Math.random() * 51 + 50)}%`}
-          height="1em"
-        />
-      ))}
-    </Stack>
+    <ProseSkeleton />
   </Paper>
 )
 

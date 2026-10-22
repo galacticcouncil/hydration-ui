@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 2500 2500">
+  <path d="M0 0h20v20H0z" style="fill:none"/>
+  <path d="M1250 1937.5c-379.7 0-687.5-307.8-687.5-687.5S870.3 562.5 1250 562.5V0C559.6 0 0 559.6 0 1250c0 690.3 559.6 1250 1250 1250 690.3 0 1250-559.6 1250-1250h-562.5c0 379.7-307.8 687.5-687.5 687.5" style="fill-rule:evenodd;clip-rule:evenodd;fill:#2354e6"/>
+  <path d="M1250 1250h687.5V562.5H1250z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#17e6a1"/>
+</svg>

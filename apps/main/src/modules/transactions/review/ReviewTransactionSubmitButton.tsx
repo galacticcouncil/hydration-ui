@@ -3,6 +3,7 @@ import {
   ExternalLink,
   LoadingButton,
 } from "@galacticcouncil/ui/components"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { useTranslation } from "react-i18next"
@@ -30,21 +31,24 @@ export const ReviewTransactionSubmitButton = ({
     meta,
     isSigning,
     signAndSubmit,
-    isLoadingFeeEstimate,
     isChangingFeePaymentAsset,
     setFeePaymentModalOpen,
   } = useTransaction()
 
   const { flags, hasAlerts } = useTransactionAlerts()
 
-  const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
-
   const isExternalWallet =
     account?.provider === WalletProviderType.ExternalWallet
-  const isIncompatibleOnChain =
-    meta.type === TransactionType.Onchain && !!account?.isIncompatible
+  const isUnusableOnChain =
+    meta.type === TransactionType.Onchain && !account?.canUseOnHydration
 
-  const isSigningBlocked = isExternalWallet || isIncompatibleOnChain
+  const isSigningBlocked = isExternalWallet || isUnusableOnChain
+
+  const pjsUrl = usePolkadotJSExtrinsicUrl(
+    tx,
+    HYDRATION_CHAIN_KEY,
+    isSigningBlocked,
+  )
 
   if (isSigningBlocked && pjsUrl) {
     return (
@@ -66,16 +70,15 @@ export const ReviewTransactionSubmitButton = ({
         size="large"
         onClick={() => setFeePaymentModalOpen(true)}
         isLoading={isChangingFeePaymentAsset}
-        disabled={isChangingFeePaymentAsset}
+        loadingDelay={0}
       >
         {t("transaction.sign.changeFeePaymentAsset")}
       </LoadingButton>
     )
   }
 
-  const isLoading =
-    isSigning || isLoadingFeeEstimate || isChangingFeePaymentAsset
-  const isDisabled = disabled || isSigningBlocked || hasAlerts || isLoading
+  const isLoading = isSigning || isChangingFeePaymentAsset
+  const isDisabled = disabled || isSigningBlocked || hasAlerts
 
   return (
     <LoadingButton
@@ -83,6 +86,9 @@ export const ReviewTransactionSubmitButton = ({
       onClick={signAndSubmit}
       disabled={isDisabled}
       isLoading={isLoading}
+      loadingVariant="tertiary"
+      loadingDelay={0}
+      loadingFade
     >
       {t("transaction.sign")}
     </LoadingButton>

@@ -19,7 +19,8 @@
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "test": "vitest run"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.12.0",
@@ -31,18 +32,21 @@
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",
     "@hookform/resolvers": "^5.0.1",
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/query-persist-client-core": "5.101.4",
+    "@tanstack/charts": "0.14.0",
+    "@tanstack/react-query": "5.101.4",
     "@tanstack/react-router": "^1.170.10",
     "@tanstack/router-plugin": "^1.168.13",
     "big.js": "^6.2.2",
     "comlink": "^4.4.2",
     "i18next": "^23.16.4",
+    "lightweight-charts": "^5.0.8",
     "papaparse": "^5.5.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^15.7.3",
     "sonner": "^2.0.1",
-    "viem": "^2.38.3"
+    "viem": "^2.55.4"
   },
   "devDependencies": {
     "@galacticcouncil/eslint-config": "*",
@@ -51,7 +55,7 @@
     "@rolldown/plugin-babel": "^0.2.0",
     "@tanstack/devtools-vite": "0.7.0",
     "@tanstack/react-devtools": "0.10.5",
-    "@tanstack/react-query-devtools": "^5.100.14",
+    "@tanstack/react-query-devtools": "5.101.4",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@types/big.js": "^6.2.2",
     "@types/papaparse": "^5.3.15",
@@ -61,6 +65,7 @@
     "remark-gfm": "4.0.1",
     "vite": "^8.0.10",
     "vite-plugin-html": "^3.2.2",
-    "vite-plugin-wasm": "^3.6.0"
+    "vite-plugin-wasm": "^3.6.0",
+    "vitest": "^3.2.7"
   }
 }

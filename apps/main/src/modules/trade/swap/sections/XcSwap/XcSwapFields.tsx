@@ -1,0 +1,290 @@
+import {
+  Box,
+  Flex,
+  FormLabel,
+  Separator,
+  Stack,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useNavigate } from "@tanstack/react-router"
+import Big from "big.js"
+import { useCallback } from "react"
+import { useFormContext } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
+
+import { useAccountBalances } from "@/api/balances"
+import { TradeType } from "@/api/trade"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
+import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
+import { XcSrcAssetSelectField } from "@/modules/trade/swap/sections/XcSwap/components/XcSrcAssetSelectField"
+import { XcSwapRecipientButton } from "@/modules/trade/swap/sections/XcSwap/components/XcSwapRecipientButton"
+import { useSwitchXcAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwitchXcAssets"
+import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
+import { useXcSwapFormReset } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapFormReset"
+import {
+  getXcAssetId,
+  isSameXcAsset,
+} from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import {
+  XcChain,
+  XcChainAssetPair,
+} from "@/modules/trade/swap/sections/XcSwap/types"
+import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
+import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
+import { scaleHuman } from "@/utils/formatting"
+
+type Props = {
+  readonly destChainAssetPairs: XcChainAssetPair[]
+}
+
+const ChainBadge: React.FC<{ chain: XcChain | null; tooltip: string }> = ({
+  chain,
+  tooltip,
+}) =>
+  chain ? (
+    <Tooltip text={tooltip} asChild>
+      <Flex as="span" inline align="center" gap="s" tabIndex={0}>
+        <XcLogo src={chain.logo} size="extra-small" />
+        <FormLabel fw={600} color={getToken("text.high")}>
+          {chain.name}
+        </FormLabel>
+      </Flex>
+    </Tooltip>
+  ) : null
+
+export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
+  const { t } = useTranslation(["common", "trade"])
+  const navigate = useNavigate()
+  const { watch, setValue, getValues, trigger } =
+    useFormContext<XcSwapFormValues>()
+  const {
+    isCrossChain,
+    isSelectionLoading,
+    isQuoteLoading,
+    maxSwapSellBalance,
+    maxTwapSellBalance,
+    isMaxSwapSellBalanceLoading,
+    isMaxTwapSellBalanceLoading,
+    destBalance,
+    isDestBalanceLoading,
+    destSpotPrice,
+    isDestSpotPriceLoading,
+  } = useXcSwap()
+  const switchAssets = useSwitchXcAssets()
+  const resetForm = useXcSwapFormReset()
+  const { getTransferableBalance } = useAccountBalances()
+
+  const handleSellAssetChange = useCallback(
+    (
+      sellAsset: NonNullable<XcSwapFormValues["sellAsset"]>,
+      previousSellAsset: XcSwapFormValues["sellAsset"],
+    ) => {
+      const { buyAsset } = getValues()
+      const isSwitch =
+        buyAsset?.id !== undefined && sellAsset.id === String(buyAsset.id)
+
+      if (isSwitch) {
+        setValue("sellAsset", previousSellAsset)
+        if (!isCrossChain) {
+          switchAssets()
+        }
+        return
+      }
+
+      if (getValues("type") === TradeType.Sell) {
+        resetForm()
+      }
+
+      navigate({
+        to: ".",
+        search: (search) => ({
+          ...search,
+          assetIn: sellAsset.id,
+          assetOut: getXcAssetId(buyAsset) ?? search.assetOut,
+        }),
+        resetScroll: false,
+      })
+    },
+    [getValues, isCrossChain, navigate, resetForm, setValue, switchAssets],
+  )
+
+  const handleBuySelectionChange = useCallback(
+    (selection: XcChainAssetPair, previousSelection: XcChainAssetPair) => {
+      const { sellAsset } = getValues()
+      const isSwitch =
+        sellAsset &&
+        selection.asset.id !== undefined &&
+        sellAsset.id === String(selection.asset.id)
+
+      if (isSwitch) {
+        setValue("destChain", previousSelection.chain)
+        setValue("buyAsset", previousSelection.asset)
+        if (!isCrossChain) {
+          switchAssets()
+        }
+        return
+      }
+
+      const chainChanged = selection.chain.key !== previousSelection.chain.key
+      const assetChanged = !isSameXcAsset(
+        selection.asset,
+        previousSelection.asset,
+      )
+
+      if (chainChanged) {
+        resetForm({ clearDestAddress: true })
+      } else if (getValues("type") === TradeType.Buy && assetChanged) {
+        resetForm()
+      }
+
+      navigate({
+        to: ".",
+        search: (search) => ({
+          ...search,
+          assetIn: sellAsset?.id,
+          assetOut: getXcAssetId(selection.asset) ?? search.assetOut,
+          destPlatform: selection.chain.platform,
+        }),
+        resetScroll: false,
+      })
+    },
+    [getValues, isCrossChain, navigate, resetForm, setValue, switchAssets],
+  )
+
+  const [
+    srcChain,
+    destChain,
+    buyAsset,
+    buyAmount,
+    type,
+    isSingleTrade,
+    destAddress,
+  ] = watch([
+    "srcChain",
+    "destChain",
+    "buyAsset",
+    "buyAmount",
+    "type",
+    "isSingleTrade",
+    "destAddress",
+  ])
+  const isSell = type === TradeType.Sell
+  const onChainDestAssetId =
+    !isCrossChain && isNumber(buyAsset?.id) ? String(buyAsset.id) : ""
+  const [
+    onChainDestDisplayValue,
+    { isLoading: isOnChainDestDisplayValueLoading },
+  ] = useDisplayAssetPrice(onChainDestAssetId, buyAmount || "0")
+  const crossChainDestDisplayValue =
+    isCrossChain && destSpotPrice
+      ? t("currency", {
+          value: Big(buyAmount || "0")
+            .mul(destSpotPrice)
+            .toString(),
+        })
+      : undefined
+  const destDisplayValue = isCrossChain
+    ? crossChainDestDisplayValue
+    : onChainDestDisplayValue
+  const destMaxBalance =
+    onChainDestAssetId && buyAsset
+      ? scaleHuman(
+          getTransferableBalance(onChainDestAssetId),
+          buyAsset.decimals,
+        )
+      : undefined
+
+  const showDestBalance =
+    destChain?.platform === "near" &&
+    destChain.addressValidator(destAddress.trim()) &&
+    (isDestBalanceLoading || destBalance !== undefined)
+
+  return (
+    <Stack>
+      <Box py="l" width="100%">
+        <XcSrcAssetSelectField
+          label={isCrossChain ? t("from") : t("sell")}
+          labelAdornment={
+            <ChainBadge
+              chain={isCrossChain ? srcChain : null}
+              tooltip={t("trade:xc.swap.field.sourceChainTooltip")}
+            />
+          }
+          isLoading={isSelectionLoading}
+          maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
+          isMaxBalanceLoading={
+            isSingleTrade
+              ? isMaxSwapSellBalanceLoading
+              : isMaxTwapSellBalanceLoading
+          }
+          onAssetChange={handleSellAssetChange}
+          onAmountChange={() => {
+            if (!isSell) {
+              setValue("type", TradeType.Sell)
+              void trigger("sellAmount")
+            }
+          }}
+        />
+      </Box>
+
+      <XcSwapSwitcher />
+
+      <Box py="l" width="100%">
+        <XcChainAssetSelectFormField<XcSwapFormValues>
+          chainFieldName="destChain"
+          assetFieldName="buyAsset"
+          amountFieldName="buyAmount"
+          label={isCrossChain ? t("to") : t("buy")}
+          labelAdornment={
+            <ChainBadge
+              chain={isCrossChain ? destChain : null}
+              tooltip={t("trade:xc.swap.field.destChainTooltip")}
+            />
+          }
+          chainAssetPairs={destChainAssetPairs}
+          modalTitle={t("trade:xc.swap.field.destTitle")}
+          balance={
+            isCrossChain && !showDestBalance
+              ? undefined
+              : {
+                  label: t("common:balance"),
+                  value: t("common:number", {
+                    value:
+                      (showDestBalance ? destBalance : destMaxBalance) || "0",
+                  }),
+                  isLoading: isDestBalanceLoading,
+                }
+          }
+          ignoreErrors={isCrossChain}
+          displayValue={
+            isCrossChain && !destSpotPrice ? undefined : destDisplayValue
+          }
+          isReadOnly={isCrossChain}
+          isLoading={isSelectionLoading}
+          isValueLoading={isSell && isQuoteLoading}
+          isDisplayValueLoading={
+            isCrossChain
+              ? isDestSpotPriceLoading || (isSell && isQuoteLoading)
+              : isQuoteLoading || isOnChainDestDisplayValueLoading
+          }
+          onSelectionChange={handleBuySelectionChange}
+          onAmountChange={() => {
+            if (isSell) {
+              setValue("type", TradeType.Buy)
+            }
+          }}
+        />
+      </Box>
+
+      {isCrossChain && destChain && (
+        <>
+          <Separator mx="-xl" />
+          <XcSwapRecipientButton key={destChain.key} destChain={destChain} />
+        </>
+      )}
+    </Stack>
+  )
+}

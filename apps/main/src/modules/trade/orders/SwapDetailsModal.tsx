@@ -1,4 +1,4 @@
-import { SubScan } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
@@ -17,9 +17,12 @@ import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
-import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
-import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
-import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
+import {
+  MarketDcaStatus,
+  SwapStatus,
+} from "@/modules/trade/orders/columns/SwapStatus"
+import { toOrderStatusFromSchedule } from "@/modules/trade/orders/lib/orderData"
+import { RoutedTradeData, SwapData } from "@/modules/trade/orders/lib/types"
 
 type Props = {
   readonly details: SwapData | RoutedTradeData
@@ -43,13 +46,16 @@ export const SwapDetailsModal = ({ details }: Props) => {
             to={details.to}
             showLogo
           />
-          {details.status?.kind === "market" ? (
-            <SwapStatus />
-          ) : (
+          {details.status?.kind === "market" && <SwapStatus />}
+          {details.status?.kind === "marketDca" && <MarketDcaStatus />}
+          {details.status?.kind !== "market" &&
+            details.status?.kind !== "marketDca" &&
             details.status?.status && (
-              <DcaOrderStatus status={details.status.status} isDcaSwap />
-            )
-          )}
+              <DcaOrderStatus
+                status={toOrderStatusFromSchedule(details.status.status)}
+                isDcaSwap
+              />
+            )}
         </Flex>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
@@ -63,9 +69,10 @@ export const SwapDetailsModal = ({ details }: Props) => {
           <Separator orientation="vertical" />
           <Amount
             label={t("price")}
-            value={t("currency", {
+            value={t("trade:trade.orders.pricePair", {
               value: details.fillPrice,
-              symbol: `${details.from.symbol} / ${details.to.symbol}`,
+              leftSymbol: details.from.symbol,
+              rightSymbol: details.to.symbol,
             })}
           />
         </Grid>
@@ -81,12 +88,12 @@ export const SwapDetailsModal = ({ details }: Props) => {
         {"link" in details && details.link && (
           <>
             <ModalContentDivider />
-            <Flex justify="flex-end" pt="l" pb="xl">
+            <Flex pt="l" pb="xl">
               <Button variant="tertiary" outline asChild>
                 <ExternalLink href={details.link}>
-                  <Icon component={SubScan} size="xs" />
+                  <Icon component={SquareArrowOutUpRight} size="xs" />
                   <Text fw={500} fs="p6" lh={1.4}>
-                    {t("trade:trade.orders.swapDetail.openOnSubscan")}
+                    {t("openInExplorer")}
                   </Text>
                 </ExternalLink>
               </Button>

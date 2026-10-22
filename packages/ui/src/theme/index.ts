@@ -5,6 +5,7 @@ import { animations } from "@/styles/animations"
 import { easings } from "@/styles/easings"
 import { BREAKPOINTS_VALUES } from "@/styles/media"
 import { transitions } from "@/styles/transitions"
+import { getAssetColors } from "@/theme/assets/assetColors.utils"
 import { TokenProps, tokens } from "@/theme/tokens"
 import { Join, Paths } from "@/types"
 import { pxToRem } from "@/utils"
@@ -69,6 +70,7 @@ const base = makeTheme({
   fontWeights: {},
   lineHeights,
   colors: {},
+  assets: {} as Record<string, string>,
   transitions,
   animations,
   easings,
@@ -84,11 +86,13 @@ const base = makeTheme({
 const light = {
   ...base,
   ...tokens.light,
+  assets: getAssetColors("light"),
 } as unknown as ThemeProps
 
 const dark = {
   ...base,
   ...tokens.dark,
+  assets: getAssetColors("dark"),
 } as unknown as ThemeProps
 
 export const themes = {
@@ -107,4 +111,5 @@ export {
   type ScreenType,
   useBreakpoints,
   useResponsiveValue,
+  useUiScale,
 } from "@/styles/media"

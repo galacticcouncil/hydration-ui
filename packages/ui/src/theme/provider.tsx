@@ -10,6 +10,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { GlobalStyles } from "@/styles"
+import { BreakpointsContext, useBreakpointsState } from "@/styles/media"
 import {
   ThemeName,
   ThemePreference,
@@ -91,6 +92,7 @@ const getCurrentTheme = (theme: ThemeName) =>
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { themePreference, setThemePreference } = useThemeStore()
   const [systemTheme, setSystemTheme] = useState<ThemeName>(getSystemTheme)
+  const breakpoints = useBreakpointsState()
 
   const resolvedTheme =
     themePreference === "system" ? systemTheme : themePreference
@@ -121,8 +123,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       value={{ theme: resolvedTheme, themePreference, setThemePreference }}
     >
       <ThemeUIProvider theme={getCurrentTheme(resolvedTheme)}>
-        <GlobalStyles />
-        {children}
+        <BreakpointsContext.Provider value={breakpoints}>
+          <GlobalStyles />
+          {children}
+        </BreakpointsContext.Provider>
       </ThemeUIProvider>
     </ThemeContext.Provider>
   )

@@ -1,13 +1,23 @@
 import { Asset, Bond } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
+  BIL_ASSET_ID,
+  BIL_ERC20_ID,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish, zip } from "remeda"
+import { PublicClient } from "viem"
 
+import { HYPERVISOR_ABI } from "@/api/gamma/abi"
+import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
+import { vaultIdentityQuery } from "@/api/gamma/vaults"
+import { allPools, V3PoolBase } from "@/api/pools"
+import { TDataEnv } from "@/config/rpc"
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
+  TAssetStored,
   TATokenPairStored,
   TShareTokenStored,
   useAssetRegistryStore,
@@ -29,9 +39,12 @@ export enum AssetType {
   XYK = "XYK",
 }
 
-import { ChainEcosystem } from "@galacticcouncil/xc-core"
-
-import { allPools } from "./pools"
+/**
+ * Assets that predate the direct NTT route still resolve to moonbeam by xcm
+ * location, so the metadata cdn would badge them with a chain the app no
+ * longer routes through. The badge is dropped for those.
+ */
+const MOONBEAM_PARACHAIN_ID = "2004"
 
 type TCommonAssetData = {
   id: string
@@ -89,14 +102,43 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
+const fetchGammaVaultShareSymbols = async (
+  evm: PublicClient,
+  queryClient: QueryClient,
+  pools: V3PoolBase[],
+): Promise<Set<string>> => {
+  const [identities, bootstrapSymbol] = await Promise.all([
+    Promise.all(
+      pools.map((pool) =>
+        queryClient.fetchQuery(vaultIdentityQuery(evm, pool)).catch(() => null),
+      ),
+    ),
+    evm
+      .readContract({
+        abi: HYPERVISOR_ABI,
+        address: GAMMA_BOOTSTRAP_HYPERVISOR,
+        functionName: "symbol",
+      })
+      .catch(() => null),
+  ])
+
+  return new Set(
+    [bootstrapSymbol, ...identities.map((identity) => identity?.shareSymbol)]
+      .filter(isNonNullish)
+      .map((symbol) => symbol.toLowerCase()),
+  )
+}
+
+export const assetsQueryKey = (dataEnv: TDataEnv) => ["assets", dataEnv]
+
 export const assetsQuery = (
   context: TProviderContext,
   queryClient: QueryClient,
 ) => {
-  const { sdk, papi, isApiLoaded, dataEnv, metadata } = context
+  const { sdk, papi, evm, isEndpointSettled, dataEnv, genesisHash } = context
 
   return queryOptions({
-    queryKey: ["assets", dataEnv],
+    queryKey: assetsQueryKey(dataEnv),
     queryFn: async () => {
       const { syncAssets, syncATokenPairs, syncShareTokens } =
         useAssetRegistryStore.getState()
@@ -104,9 +146,14 @@ export const assetsQuery = (
       const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
-        sdk.client.asset.getSupported(true),
+        sdk.client.asset.getSupported(false),
       ])
       const tradeAssetsMap = new Set(tradeAssets)
+      const gammaVaultShareSymbols = await fetchGammaVaultShareSymbols(
+        evm,
+        queryClient,
+        pools.v3Pools,
+      )
 
       const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])
       const xykPoolsShareTokens =
@@ -128,7 +175,7 @@ export const assetsQuery = (
         }
       }
 
-      const aTokenPairs: TATokenPairStored[] = pools.aavePools
+      const routerATokenPairs: TATokenPairStored[] = pools.aavePools
         .map((p) => {
           const [reserve, atoken] = p.tokens
 
@@ -138,51 +185,92 @@ export const assetsQuery = (
         })
         .filter(isNonNullish)
 
-      const aTokenMap = new Map(aTokenPairs)
+      // The router only lists main market pairs. aBIL lives in the BIL market
+      // and trades through stableswap, so it is paired by hand.
+      const aTokenMap = new Map(routerATokenPairs)
+      const assetIds = new Set(assets.map(({ id }) => id.toString()))
+      if (assetIds.has(BIL_ERC20_ID) && assetIds.has(BIL_ASSET_ID)) {
+        aTokenMap.set(BIL_ERC20_ID, BIL_ASSET_ID)
+      }
+
+      const aTokenPairs: TATokenPairStored[] = [...aTokenMap]
 
       syncATokenPairs(aTokenPairs)
 
-      const assetsData = assets.map((asset): TAssetData => {
-        const isTradable = tradeAssetsMap.has(asset.id)
+      const metadata = AssetMetadataFactory.getInstance()
+      const isMetadataLoaded = metadata.isLoaded
+      const stored = useAssetRegistryStore.getState()
+      const storedAssets = new Map(
+        !isMetadataLoaded && stored.genesisHash === genesisHash
+          ? stored.assets.map((asset) => [asset.id, asset])
+          : [],
+      )
 
-        const commonAssetData: TCommonAssetData = {
-          id: asset.id.toString(),
-          existentialDeposit: asset.existentialDeposit.toString(),
-          symbol: asset.symbol ?? "",
-          decimals: asset.decimals ?? 0,
-          name: asset.name ?? "",
-          isTradable,
-          isSufficient: asset.isSufficient,
-        }
+      const assetsData = assets
+        .filter(
+          (asset) =>
+            asset.type !== AssetType.ERC20 ||
+            !gammaVaultShareSymbols.has((asset.symbol ?? "").toLowerCase()),
+        )
+        .map((asset): TAssetData => {
+          const isTradable = tradeAssetsMap.has(asset.id)
+          const id = asset.id.toString()
 
-        if (asset.type === AssetType.TOKEN) {
-          return assetToTokenType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.ERC20) {
-          return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
-        } else if (asset.type === AssetType.BOND) {
-          return assetToBondType(asset, commonAssetData, metadata)
-        } else if (asset.type === AssetType.STABLESWAP) {
-          return assetToStableSwapType(asset, commonAssetData)
-        } else if (asset.type === AssetType.External) {
-          return assetToExternalType(asset, commonAssetData)
-        } else {
-          return {
-            ...commonAssetData,
-            type: AssetType.Unknown,
+          const commonAssetData: TCommonAssetData = {
+            id,
+            existentialDeposit: asset.existentialDeposit.toString(),
+            symbol: asset.symbol ?? "",
+            decimals: asset.decimals ?? 0,
+            name: asset.name ?? "",
+            isTradable,
+            isSufficient: asset.isSufficient,
           }
-        }
-      })
 
-      syncAssets(assetsData)
+          if (asset.type === AssetType.TOKEN) {
+            return assetToTokenType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.ERC20) {
+            return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
+          } else if (asset.type === AssetType.BOND) {
+            return assetToBondType(asset, commonAssetData, metadata)
+          } else if (asset.type === AssetType.STABLESWAP) {
+            return assetToStableSwapType(asset, commonAssetData)
+          } else if (asset.type === AssetType.External) {
+            return assetToExternalType(asset, commonAssetData)
+          } else {
+            return {
+              ...commonAssetData,
+              type: AssetType.Unknown,
+            }
+          }
+        })
+        .map((asset) => withStoredIcons(asset, storedAssets.get(asset.id)))
+
+      syncAssets(assetsData, genesisHash)
       syncShareTokens(shareTokens)
 
-      return []
+      return { isMetadataLoaded }
     },
-    enabled: isApiLoaded,
+    enabled: isEndpointSettled,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   })
+}
+
+function withStoredIcons(
+  asset: TAssetData,
+  stored: TAssetStored | undefined,
+): TAssetData {
+  if (!stored) return asset
+
+  const iconSrc = asset.iconSrc || stored.iconSrc
+  const chainSrc = asset.chainSrc || stored.chainSrc
+
+  return {
+    ...asset,
+    ...(iconSrc && { iconSrc }),
+    ...(chainSrc && { chainSrc }),
+  }
 }
 
 function assetToTokenType(
@@ -216,9 +304,10 @@ function assetToTokenType(
       parachainId,
       ecosystem,
       iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
-      chainSrc: parachainId
-        ? metadata.getChainLogoSrc(parachainId, ecosystem)
-        : undefined,
+      chainSrc:
+        parachainId && parachainId !== MOONBEAM_PARACHAIN_ID
+          ? metadata.getChainLogoSrc(parachainId, ecosystem)
+          : undefined,
     }
   }
 }

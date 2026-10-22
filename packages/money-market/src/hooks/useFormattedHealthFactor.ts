@@ -3,7 +3,7 @@ import Big from "big.js"
 
 type HealthFactorLevel = "none" | "good" | "warning" | "danger"
 
-export const useFormattedHealthFactor = (value: string) => {
+export const useFormattedHealthFactor = (value: string, decimals = 2) => {
   const { getToken } = useTheme()
 
   const healthFactor = Big(value)
@@ -11,7 +11,7 @@ export const useFormattedHealthFactor = (value: string) => {
   const isHealthFactorValid = !healthFactor.eq("-1")
 
   const formattedHealthFactor = isHealthFactorValid
-    ? healthFactor.toFixed(2, Big.roundDown)
+    ? healthFactor.toFixed(decimals, Big.roundHalfUp)
     : "-1"
 
   const level: HealthFactorLevel = !isHealthFactorValid

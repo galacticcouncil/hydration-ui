@@ -93,17 +93,27 @@ const formatFractionDigits = (
       value: "<",
     })
 
-    if (!newParts.some(({ type }) => type === "decimal")) {
-      newParts.push({
-        type: "decimal",
-        value: decimalSeparator,
-      })
+    // Splice the threshold fraction in right after the integer part - trailing
+    // parts (a currency symbol appended by formatCurrency) must stay last.
+    const integerIndex = newParts.findLastIndex(
+      ({ type }) => type === "integer",
+    )
+    const decimalIndex = newParts.findIndex(({ type }) => type === "decimal")
+    const fraction: Intl.NumberFormatPart = {
+      type: "fraction",
+      value: minValue.toString().split(".")[1] ?? "",
     }
 
-    newParts.push({
-      type: "fraction",
-      value: minValue.toString().split(".")[1],
-    })
+    if (decimalIndex !== -1) {
+      newParts.splice(decimalIndex + 1, 0, fraction)
+    } else {
+      newParts.splice(
+        integerIndex + 1,
+        0,
+        { type: "decimal", value: decimalSeparator },
+        fraction,
+      )
+    }
 
     return newParts.map(formatNumberParts).join("")
   }
@@ -147,17 +157,32 @@ export const formatNumber = (
   }
 
   const numericValue = bigSourceToNumber(value)
+  const { threshold, thresholdMaximumFractionDigits, ...intlOptions } = options
+  const maxFractionDigits = intlOptions.maximumFractionDigits
 
-  return new Intl.NumberFormat(lng, {
+  const parts = new Intl.NumberFormat(lng, {
     maximumSignificantDigits:
-      options.maximumSignificantDigits || options.maximumFractionDigits
+      intlOptions.maximumSignificantDigits || maxFractionDigits
         ? undefined
-        : getMaxSignificantDigits(value, options),
-    ...options,
-  })
-    .formatToParts(numericValue)
-    .map(formatNumberParts)
-    .join("")
+        : getMaxSignificantDigits(value, intlOptions),
+    ...intlOptions,
+  }).formatToParts(numericValue)
+
+  if (
+    threshold === true &&
+    thresholdMaximumFractionDigits !== undefined &&
+    thresholdMaximumFractionDigits !== null &&
+    numericValue > 0
+  ) {
+    return formatFractionDigits(
+      numericValue,
+      Number(thresholdMaximumFractionDigits),
+      parts,
+      getDecimalSeparator(lng),
+    )
+  }
+
+  return parts.map(formatNumberParts).join("")
 }
 
 export const formatPercent = (
@@ -169,9 +194,11 @@ export const formatPercent = (
     return NA_VALUE
   }
 
+  const { threshold = true, ...intlOptions } = options
+
   const percentage = Big(value)
-  const isBelowThreshold =
-    percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+  const isBelowMin = percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+  const isBelowThreshold = threshold !== false && isBelowMin
 
   const percentageAdjusted = isBelowThreshold
     ? MIN_PERCENTAGE_THRESHOLD.div(100)
@@ -180,7 +207,8 @@ export const formatPercent = (
   const formattedValue = Intl.NumberFormat(lng, {
     style: "percent",
     maximumFractionDigits: 2,
-    ...options,
+    ...(isBelowMin && !isBelowThreshold && { maximumSignificantDigits: 1 }),
+    ...intlOptions,
   })
     .formatToParts(percentageAdjusted.toNumber())
     .map(formatNumberParts)

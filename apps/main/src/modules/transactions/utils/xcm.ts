@@ -1,7 +1,14 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HexString } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xc-core"
-import { Call, SolanaCall, SuiCall } from "@galacticcouncil/xc-sdk"
+import {
+  Call,
+  NearCall,
+  SolanaCall,
+  SubstrateCall,
+  SuiCall,
+  ZecCall,
+} from "@galacticcouncil/xc-sdk"
 import { isObjectType } from "remeda"
 import { decodeFunctionData } from "viem"
 
@@ -27,7 +34,7 @@ export function isCall(x: AnyTransaction): x is Call {
   return isObjectType(x) && "type" in x
 }
 
-export function isSubstrateCall(x: AnyTransaction): x is Call {
+export function isSubstrateCall(x: AnyTransaction): x is SubstrateCall {
   return isCall(x) && x.type === CallType.Substrate
 }
 
@@ -41,4 +48,12 @@ export function isSolanaCall(x: AnyTransaction): x is SolanaCall {
 
 export function isSuiCall(x: AnyTransaction): x is SuiCall {
   return isCall(x) && x.type === CallType.Sui
+}
+
+export function isNearCall(x: AnyTransaction): x is NearCall {
+  return isCall(x) && x.type === CallType.Near
+}
+
+export function isZecCall(x: AnyTransaction): x is ZecCall {
+  return isCall(x) && x.type === CallType.Zec
 }

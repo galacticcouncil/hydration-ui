@@ -13,6 +13,7 @@ import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useAccountBalances } from "@/api/balances"
 import type { TStablepoolDetails } from "@/api/stableswap"
 import { AssetLogo } from "@/components/AssetLogo"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
@@ -24,7 +25,6 @@ import {
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
-import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
@@ -135,9 +135,7 @@ const RemoveStablepoolLiquidityJSX = ({
                 assetFieldName="asset"
                 amountFieldName="amount"
                 label={t("common:amount")}
-                maxBalance={balance}
                 assets={[]}
-                sx={{ py: 0 }}
                 disabledAssetSelector
               />
             )}
@@ -168,12 +166,10 @@ const RemoveStablepoolLiquidityJSX = ({
                 label={t("common:minimumReceived")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
-                maxBalance={balance}
                 assets={[]}
                 sortedAssets={receiveAssets}
-                ignoreBalance
-                disabledInput
-                sx={{ p: 0 }}
+                balance={false}
+                isReadOnly
               />
             ) : (
               <Flex direction="column" gap="s">

@@ -41,6 +41,7 @@ export const SNavigationMenuTrigger = styled(NavigationMenuPrimitive.Trigger)(
     &[data-status="active"],
     &:hover {
       color: ${theme.text.high};
+      text-decoration: none;
     }
   `,
 )

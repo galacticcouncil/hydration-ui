@@ -147,80 +147,96 @@ export const formatReserveIncentives = (
   })
 }
 
-export const selectFormattedReserves = (
-  state: RootStore,
-  currentTimestamp: number,
-  externalApyData: ExternalApyData,
-) => {
-  const reserves = selectCurrentReserves(state)
-  const baseCurrencyData = selectCurrentBaseCurrencyData(state)
-
-  const reserveIncentives = formatReserveIncentives(
-    state.reserveIncentiveData || [],
-  )
-
-  const formattedPoolReserves = formatReservesAndIncentives({
-    reserves,
-    currentTimestamp,
-    marketReferenceCurrencyDecimals:
-      baseCurrencyData.marketReferenceCurrencyDecimals,
-    marketReferencePriceInUsd:
-      baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-    reserveIncentives: reserveIncentives,
-  })
-    .map((r) => ({
-      ...r,
-      iconSymbol: r.symbol,
-      isEmodeEnabled: r.eModeCategoryId !== 0,
-      isWrappedBaseAsset: false,
-    }))
-    .sort(reserveSortFn)
-
-  if (externalApyData.size === 0) return formattedPoolReserves
-
-  return produce(formattedPoolReserves, (draft) => {
-    const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
-
-    // override the APY values from external source if available
-    for (const [assetId, data] of externalApyData.entries()) {
-      const reserve = reserveMap.get(getAddressFromAssetId(assetId))
-      if (reserve) {
-        reserve.supplyAPY = data.supplyApy ?? "0"
-        reserve.variableBorrowAPY = data.borrowApy ?? "0"
-      }
+const memoByArgs = <A extends unknown[], R>(fn: (...args: A) => R) => {
+  let last: { args: A; result: R } | undefined
+  return (...args: A): R => {
+    if (last?.args.every((arg, i) => Object.is(arg, args[i]))) {
+      return last.result
     }
-  })
+    const result = fn(...args)
+    last = { args, result }
+    return result
+  }
 }
 
-export const selectUserSummaryAndIncentives = (
-  state: RootStore,
-  currentTimestamp: number,
-  externalApyData: ExternalApyData,
-) => {
-  const baseCurrencyData = selectCurrentBaseCurrencyData(state)
-  const userReserves = selectCurrentUserReserves(state)
-  const formattedPoolReserves = selectFormattedReserves(
-    state,
-    currentTimestamp,
-    externalApyData,
-  )
-  const userEmodeCategoryId = selectCurrentUserEmodeCategoryId(state)
-  const reserveIncentiveData = state.reserveIncentiveData
-  const userIncentiveData = state.userIncentiveData
+export const selectFormattedReserves = memoByArgs(
+  (
+    state: RootStore,
+    currentTimestamp: number,
+    externalApyData: ExternalApyData,
+  ) => {
+    const reserves = selectCurrentReserves(state)
+    const baseCurrencyData = selectCurrentBaseCurrencyData(state)
 
-  return formatUserSummaryAndIncentives({
-    currentTimestamp,
-    marketReferencePriceInUsd:
-      baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-    marketReferenceCurrencyDecimals:
-      baseCurrencyData.marketReferenceCurrencyDecimals,
-    userReserves,
-    formattedReserves: formattedPoolReserves,
-    userEmodeCategoryId: userEmodeCategoryId,
-    reserveIncentives: reserveIncentiveData || [],
-    userIncentives: userIncentiveData || [],
-  })
-}
+    const reserveIncentives = formatReserveIncentives(
+      state.reserveIncentiveData || [],
+    )
+
+    const formattedPoolReserves = formatReservesAndIncentives({
+      reserves,
+      currentTimestamp,
+      marketReferenceCurrencyDecimals:
+        baseCurrencyData.marketReferenceCurrencyDecimals,
+      marketReferencePriceInUsd:
+        baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+      reserveIncentives: reserveIncentives,
+    })
+      .map((r) => ({
+        ...r,
+        iconSymbol: r.symbol,
+        isEmodeEnabled: r.eModeCategoryId !== 0,
+        isWrappedBaseAsset: false,
+      }))
+      .sort(reserveSortFn)
+
+    if (externalApyData.size === 0) return formattedPoolReserves
+
+    return produce(formattedPoolReserves, (draft) => {
+      const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+      // override the APY values from external source if available
+      for (const [assetId, data] of externalApyData.entries()) {
+        const reserve = reserveMap.get(getAddressFromAssetId(assetId))
+        if (reserve) {
+          reserve.supplyAPY = data.supplyApy ?? "0"
+          reserve.variableBorrowAPY = data.borrowApy ?? "0"
+        }
+      }
+    })
+  },
+)
+
+export const selectUserSummaryAndIncentives = memoByArgs(
+  (
+    state: RootStore,
+    currentTimestamp: number,
+    externalApyData: ExternalApyData,
+  ) => {
+    const baseCurrencyData = selectCurrentBaseCurrencyData(state)
+    const userReserves = selectCurrentUserReserves(state)
+    const formattedPoolReserves = selectFormattedReserves(
+      state,
+      currentTimestamp,
+      externalApyData,
+    )
+    const userEmodeCategoryId = selectCurrentUserEmodeCategoryId(state)
+    const reserveIncentiveData = state.reserveIncentiveData
+    const userIncentiveData = state.userIncentiveData
+
+    return formatUserSummaryAndIncentives({
+      currentTimestamp,
+      marketReferencePriceInUsd:
+        baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+      marketReferenceCurrencyDecimals:
+        baseCurrencyData.marketReferenceCurrencyDecimals,
+      userReserves,
+      formattedReserves: formattedPoolReserves,
+      userEmodeCategoryId: userEmodeCategoryId,
+      reserveIncentives: reserveIncentiveData || [],
+      userIncentives: userIncentiveData || [],
+    })
+  },
+)
 
 export const selectUserNonEmtpySummaryAndIncentive = (
   state: RootStore,

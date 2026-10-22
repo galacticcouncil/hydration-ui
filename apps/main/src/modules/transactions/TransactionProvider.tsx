@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  useAfterFirstRender,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
@@ -6,6 +9,7 @@ import Big from "big.js"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
+import { MAX_WITHDRAW_ALL_QUERY_KEY } from "@/api/balances"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useNonce } from "@/modules/transactions/hooks/useNonce"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
@@ -27,8 +31,14 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
-import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
+import {
+  getTxResultBlockHeight,
+  SingleTransaction,
+  useTransactionsStore,
+} from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = SingleTransaction &
@@ -77,26 +87,44 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const { isFork } = useRpcProvider()
+  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
   const { account } = useAccount()
 
+  const hasInitialError = !!config.initialError
   const transaction = useWrapTransaction(config)
   const successMode = transaction.successMode ?? "best"
 
-  const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
+  const [state, dispatch] = useReducer(
+    transactionStatusReducer,
+    config.initialError
+      ? {
+          ...INITIAL_STATUS,
+          status: "error",
+          error: config.initialError,
+        }
+      : INITIAL_STATUS,
+  )
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
+  const hasRendered = useAfterFirstRender()
+
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
-    transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+    hasRendered &&
+      !hasInitialError &&
+      transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
       ? transaction.tx
       : null,
     transaction?.fee?.feePaymentAssetId,
   )
 
   const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
-    useTransactionPaymentInfo(transaction.tx)
+    useTransactionPaymentInfo(
+      !hasRendered || hasInitialError ? undefined : transaction.tx,
+    )
 
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
@@ -165,6 +193,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const signAndSubmit = () => {
     signAndSubmitMutation.mutate({
       chainKey: transaction.meta.srcChainKey,
+      signerFeeAsset: transaction.signerFeeAsset,
       feeAssetId,
       tip,
       weight: paymentInfo?.weight?.ref_time,
@@ -182,7 +211,15 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
-        addPendingTransaction(transaction.id, nonce, transaction.meta)
+        if (account) {
+          addPendingTransaction({
+            id: transaction.id,
+            nonce,
+            meta: transaction.meta,
+            address: account.address,
+            isPermit: isUsingPermit,
+          })
+        }
       },
       onSuccess: (event) => {
         if (successMode !== "best") return
@@ -192,6 +229,12 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.invalidateQueries?.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         )
+
+        const blockHeight = getTxResultBlockHeight(event)
+        if (blockHeight !== null && !isFork) armNeckworkSync(blockHeight)
+        queryClient.invalidateQueries({
+          queryKey: MAX_WITHDRAW_ALL_QUERY_KEY,
+        })
         toasts.onSuccess?.(event)
         removePendingTransaction(transaction.id)
       },
@@ -222,7 +265,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   }
 
   const isLoading =
-    isLoadingNonce || isLoadingFeeEstimate || isLoadingPaymentInfo
+    !hasRendered ||
+    isLoadingNonce ||
+    isLoadingFeeEstimate ||
+    isLoadingPaymentInfo
 
   return (
     <TransactionContext.Provider

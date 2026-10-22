@@ -1,24 +1,20 @@
+import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountInput,
   Box,
   Button,
   FormError,
+  Icon,
   Label,
   ModalContentDivider,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { arraySearch, preventDefault } from "@galacticcouncil/utils"
 import {
-  arraySearch,
-  isAddressValidOnChain,
-  preventDefault,
-  safeConvertSS58toPublicKey,
-} from "@galacticcouncil/utils"
-import {
-  getWalletModeByAddress,
-  PROVIDERS_BY_WALLET_MODE,
+  sortByLastUsed,
+  useAddresses,
+  useAddressStore,
 } from "@galacticcouncil/web3-connect"
-import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
-import { AnyChain } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -28,46 +24,54 @@ import { z } from "zod/v4"
 
 import { EmptyState } from "@/components/EmptyState"
 import { RecipientAddressBook } from "@/modules/xcm/transfer/components/Recipient"
-import { validateAddressOnChain } from "@/utils/validators"
+import { validateChainAddress } from "@/utils/validators"
 
-export const createSchema = (destChain: AnyChain) => {
+export const createSchema = (
+  chainName: string,
+  isValidAddress: (address: string) => boolean,
+) => {
   return z.object({
-    customAddress: validateAddressOnChain(destChain),
+    customAddress: validateChainAddress(chainName, isValidAddress),
   })
 }
 
 export type CustomAddressFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export type RecipientCustomAddressFormProps = {
-  destChain: AnyChain
+  chainName: string
+  isValidAddress: (address: string) => boolean
   onSubmit: (address: string) => void
   onChange: (address: string) => void
 }
 
 export const RecipientCustomAddressForm: React.FC<
   RecipientCustomAddressFormProps
-> = ({ destChain, onSubmit, onChange }) => {
+> = ({ chainName, isValidAddress, onSubmit, onChange }) => {
   const { t } = useTranslation("xcm")
 
   useUnmount(() => onChange(""))
   const form = useForm<CustomAddressFormValues>({
-    resolver: standardSchemaResolver(createSchema(destChain)),
+    resolver: standardSchemaResolver(createSchema(chainName, isValidAddress)),
     mode: "onChange",
     defaultValues: {
       customAddress: "",
     },
   })
 
-  const { addresses, add: addAddressToAddressBook } = useAddressStore()
+  const { add: addAddressToAddressBook, touch: touchAddress } =
+    useAddressStore()
+  const addresses = useAddresses({
+    related: true,
+  })
 
   const customAddress = form.watch("customAddress")
 
   const customAddressesOnChain = useMemo(
     () =>
-      addresses.filter(
-        (a) => a.isCustom && isAddressValidOnChain(a.address, destChain),
+      sortByLastUsed(
+        addresses.filter((a) => a.isCustom && isValidAddress(a.address)),
       ),
-    [addresses, destChain],
+    [addresses, isValidAddress],
   )
 
   const addressBookAddresses = arraySearch(
@@ -78,26 +82,19 @@ export const RecipientCustomAddressForm: React.FC<
 
   const isSearchMode = !!customAddress.trim() && addressBookAddresses.length > 0
 
+  const selectAddress = (address: string) => {
+    touchAddress(address)
+    onSubmit(address)
+  }
+
   const onSubmitHandler = (values: CustomAddressFormValues) => {
     const address = values.customAddress.trim()
-    const addressPublicKey = safeConvertSS58toPublicKey(address)
-    const addressProvider = getWalletModeByAddress(address)
-    const walletProvider = addressProvider
-      ? PROVIDERS_BY_WALLET_MODE[addressProvider][0]
-      : null
-    const canAdd =
-      !!walletProvider &&
-      !addresses.find((address) => address.publicKey === addressPublicKey)
-    if (canAdd) {
-      addAddressToAddressBook({
-        address,
-        publicKey: safeConvertSS58toPublicKey(address),
-        name: "",
-        provider: walletProvider,
-        isCustom: true,
-      })
-    }
-    onSubmit(address)
+    addAddressToAddressBook({
+      address,
+      name: "",
+      isCustom: true,
+    })
+    selectAddress(address)
   }
 
   return (
@@ -137,11 +134,12 @@ export const RecipientCustomAddressForm: React.FC<
       {addressBookAddresses.length > 0 ? (
         <RecipientAddressBook
           addresses={addressBookAddresses}
-          onSelectAddress={onSubmit}
+          onSelectAddress={selectAddress}
         />
       ) : (
         <EmptyState
           header=""
+          icon={<Icon component={BookOpen} size="xl" />}
           description={t("recipient.modal.empty.description")}
         />
       )}

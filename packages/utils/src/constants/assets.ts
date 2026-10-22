@@ -1,3 +1,4 @@
+export const HDX_ASSET_ID = "0"
 export const HOLLAR_ASSET_ID = "222"
 export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
@@ -17,6 +18,8 @@ export const SUSDE_ASSET_ID = "1000625"
 export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 export const WETH_POOL_ASSET_ID = "104"
+export const BIL_ERC20_ID = "55"
+export const BIL_ASSET_ID = "550"
 
 export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"
@@ -32,6 +35,7 @@ export const APYUSD_ASSET_ID = "46"
 export const HEURC_ASSET_ID = "10044"
 
 export const HOLLAR_BOND_25_08_26_ID = "1001351"
+export const HOLLAR_BOND_24_11_26_ID = "1001353"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
@@ -43,6 +47,10 @@ export const HOLLAR_ASSETS = [
 
 export const GIGA_ASSETS = [GDOT_ASSET_ID, GETH_ASSET_ID, GSOL_ASSET_ID]
 export const GIGA_ERC20 = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
+
+/** Stableswap pool ids Neckwork prices under the receipt ERC-20, not the pool share. */
+export const GIGA_STABLESWAP_TO_ERC20: Record<string, string> =
+  Object.fromEntries(GIGA_ASSETS.map((id, index) => [id, GIGA_ERC20[index]!]))
 
 export const EXTERNAL_APY_ASSET_IDS = [
   APYUSD_ASSET_ID,

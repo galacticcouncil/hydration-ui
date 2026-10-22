@@ -12,7 +12,7 @@ import {
   SProviderButton,
   SProviderLink,
 } from "@/components/provider/ProviderButton.styled"
-import { WalletMode } from "@/hooks/useWeb3Connect"
+import { WalletMode } from "@/config/wallet"
 import { WalletData } from "@/types/wallet"
 import { getWalletModeIcon, getWalletModesByProviderType } from "@/utils/wallet"
 
@@ -41,6 +41,8 @@ const modesWithIconsConfig = {
   [WalletMode.EVM]: true,
   [WalletMode.Solana]: true,
   [WalletMode.Sui]: true,
+  [WalletMode.Near]: true,
+  [WalletMode.Zcash]: true,
 } as const
 
 function hasModeIcon(
@@ -75,7 +77,10 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
               bg={getToken("surfaces.themeBasePalette.background")}
               key={mode}
             >
-              <img sx={{ size: "xs" }} src={getWalletModeIcon(mode)} />
+              <img
+                sx={{ size: "xs", display: "block", borderRadius: "full" }}
+                src={getWalletModeIcon(mode)}
+              />
             </Box>
           ))}
       </Box>

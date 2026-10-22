@@ -1,6 +1,6 @@
 import {
+  Button,
   Flex,
-  MicroButton,
   Modal,
   ModalBody,
   ModalHeader,
@@ -62,13 +62,16 @@ export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
         <Text fs="p5" fw={500} color={getToken("text.high")}>
           {t("percent", { value })}
         </Text>
-        <MicroButton
-          variant="emphasis"
+        <Button
+          size="micro"
+          uppercase
+          outline
+          variant="accent"
           onClick={() => setIsEditing(true)}
           disabled={disabled}
         >
           {t("edit")}
-        </MicroButton>
+        </Button>
       </Flex>
 
       <Modal open={isEditing} onOpenChange={setIsEditing}>
@@ -93,9 +96,7 @@ export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
                   description={
                     isLiquidity
                       ? t("liquidity:liquidity.tradeLimit.description")
-                      : t(
-                          "trade:swap.settings.modal.single.slippage.description",
-                        )
+                      : undefined
                   }
                   error={error?.message}
                 />

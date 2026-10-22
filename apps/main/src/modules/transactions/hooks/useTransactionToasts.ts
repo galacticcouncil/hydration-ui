@@ -1,13 +1,20 @@
-import { etherscan, subscan } from "@galacticcouncil/utils"
+import {
+  etherscan,
+  intentscan,
+  nearblocks,
+  neckwork,
+  zcashexplorer,
+} from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
 } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
+import { getSuccessToastUpdate } from "@/modules/transactions/utils/toasts/successToastUpdate"
 import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 import { useToasts } from "@/states/toasts"
 import {
@@ -28,13 +35,18 @@ export const useTransactionToasts = (
   const { id, toasts, meta } = transaction
 
   const isMultisig = !!multisigConfig && !!account?.isMultisig
-  const isXcm = meta.type === TransactionType.Xcm
 
   const method = parseTxMethodName(transaction.tx, "value.value.call")
+
+  // PAPI re-emits found:true on parachain re-orgs; show toast at most once
+  const hasShownToastRef = useRef(false)
+  const txHashRef = useRef<string | undefined>(undefined)
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
+        hasShownToastRef.current = false
+        txHashRef.current = txHash
         if (isMultisig) {
           pending({
             id,
@@ -61,24 +73,36 @@ export const useTransactionToasts = (
           },
         })
       },
-      onSuccess: () => {
+      onSuccess: (result) => {
         if (isMultisig) {
           return remove(id)
         }
-        if (isXcm) {
-          return edit(id, {
-            variant: "submitted",
-            dateCreated: new Date().toISOString(),
-          })
-        }
 
+        const update = getSuccessToastUpdate(
+          meta,
+          result,
+          toasts?.success ?? t("transaction.status.success.title"),
+        )
+
+        if (hasShownToastRef.current) {
+          if (update.link) edit(id, { link: update.link })
+          return
+        }
+        hasShownToastRef.current = true
+
+        const txHash = txHashRef.current
         edit(id, {
-          variant: "success",
-          title: toasts?.success ?? t("transaction.status.success.title"),
+          variant: update.variant,
+          ...(update.title && { title: update.title }),
           dateCreated: new Date().toISOString(),
+          ...(update.link && { link: update.link }),
+          ...(update.meta &&
+            txHash && { meta: { ...update.meta, txHash, ecosystem } }),
         })
       },
       onError: (message) => {
+        if (hasShownToastRef.current) return
+        hasShownToastRef.current = true
         edit(id, {
           variant: "error",
           title:
@@ -95,7 +119,6 @@ export const useTransactionToasts = (
     edit,
     id,
     isMultisig,
-    isXcm,
     meta,
     method,
     pending,
@@ -112,6 +135,19 @@ function getTransactionLink(
   meta: TransactionMeta,
   txHash: string,
 ) {
+  if (meta.type === TransactionType.XcSwap && meta.sequence) {
+    return intentscan.order(meta.sequence)
+  }
+
+  // Ahead of the approve check, as NEAR prerequisites carry its meta too
+  if (ecosystem === CallType.Near) {
+    return nearblocks.tx(meta.srcChainKey, txHash)
+  }
+
+  if (ecosystem === CallType.Zec) {
+    return zcashexplorer.tx(meta.srcChainKey, txHash)
+  }
+
   if (
     meta.type === TransactionType.EvmApprove ||
     (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)
@@ -119,5 +155,5 @@ function getTransactionLink(
     return etherscan.tx(meta.srcChainKey, txHash)
   }
 
-  return subscan.tx(meta.srcChainKey, txHash)
+  return neckwork.extrinsicHash(txHash)
 }

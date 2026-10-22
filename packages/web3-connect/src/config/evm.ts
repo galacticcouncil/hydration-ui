@@ -1,6 +1,7 @@
 export const EVM_GAS_TO_WEIGHT = 25_000n
 export const EVM_MIN_GAS_LIMIT = 100_000n
 export const EVM_MAX_GAS_LIMIT = 15_000_000n
+export const EVM_DECIMALS = 18
 
 export const EVM_DEFAULT_CHAIN_KEY = "hydration"
 export const EVM_DISPATCH_ADDRESS = "0x0000000000000000000000000000000000000401"

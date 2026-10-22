@@ -4,7 +4,7 @@ import styled from "@emotion/styled"
 import { Content, Overlay } from "@radix-ui/react-dialog"
 
 import { Box } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
+import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"
 import { Paper } from "@/components/Paper"
 import { Separator } from "@/components/Separator"
@@ -16,9 +16,11 @@ const DEFAULT_ANIMATION_DURATION = 200
 const shouldForwardProp = (prop: string) =>
   isPropValid(prop) &&
   prop !== "animationDurationMs" &&
+  prop !== "contentWidth" &&
   prop !== "hasTopContent" &&
   prop !== "noPadding" &&
-  prop !== "isBlurred"
+  prop !== "isBlurred" &&
+  prop !== "centered"
 
 export const SModalOverlay = styled(Overlay, {
   shouldForwardProp,
@@ -55,6 +57,7 @@ export const SModalOverlay = styled(Overlay, {
 
 export const SModalWrapper = styled(Overlay, { shouldForwardProp })<{
   animationDurationMs?: number
+  centered?: boolean
 }>`
   --modal-block-offset: 10vh;
   --modal-animation-duration: ${({
@@ -63,11 +66,13 @@ export const SModalWrapper = styled(Overlay, { shouldForwardProp })<{
 
   position: fixed;
   inset: 0;
-  padding-block: var(--modal-block-offset);
+  padding-block: ${({ centered, theme }) =>
+    centered ? theme.space.xl : "var(--modal-block-offset)"};
 
   display: grid;
   gap: ${({ theme }) => theme.space.s};
   justify-items: center;
+  align-items: ${({ centered }) => (centered ? "center" : "start")};
 
   overflow-y: auto;
 
@@ -82,11 +87,14 @@ export const SModalWrapper = styled(Overlay, { shouldForwardProp })<{
 export const SModalContent = styled(Content, {
   shouldForwardProp,
 })<{
+  contentWidth?: string
   hasTopContent?: boolean
+  centered?: boolean
 }>(
-  ({ theme, hasTopContent }) => css`
+  ({ theme, contentWidth, hasTopContent, centered }) => css`
     --modal-content-padding: ${theme.space.xl};
     --modal-content-inset: calc(var(--modal-content-padding) * -1);
+    --modal-content-width: ${contentWidth ?? theme.sizes["6xl"]};
     --modal-top-content-height: ${hasTopContent ? theme.sizes["2xl"] : "0px"};
 
     position: fixed;
@@ -115,16 +123,35 @@ export const SModalContent = styled(Content, {
       position: relative;
       inset: auto;
 
-      max-width: ${theme.sizes["6xl"]};
+      width: min(
+        var(--modal-content-width),
+        calc(100vw - 2 * ${theme.space.l})
+      );
+      max-width: min(
+        var(--modal-content-width),
+        calc(100vw - 2 * ${theme.space.l})
+      );
       height: auto;
 
+      @media (prefers-reduced-motion: no-preference) {
+        &[data-settled] {
+          transition:
+            width 320ms ${theme.easings.outExpo},
+            max-width 320ms ${theme.easings.outExpo};
+        }
+      }
+
       &[data-state="open"] {
-        animation: ${theme.animations.scaleInTop};
+        animation: ${centered
+          ? theme.animations.scaleInCenter
+          : theme.animations.scaleInTop};
         animation-duration: var(--modal-animation-duration);
       }
 
       &[data-state="closed"] {
-        animation: ${theme.animations.scaleOutTop};
+        animation: ${centered
+          ? theme.animations.scaleOutCenter
+          : theme.animations.scaleOutTop};
         animation-duration: var(--modal-animation-duration);
       }
     }
@@ -135,7 +162,8 @@ export const SModalPaper = styled(Paper)`
   display: flex;
   flex-direction: column;
 
-  max-width: ${({ theme }) => theme.sizes["6xl"]};
+  width: 100%;
+  max-width: 100%;
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {
@@ -163,7 +191,7 @@ export const SModalHeader = styled(Flex)`
   }
 `
 
-export const SModalHeaderButton = styled(ButtonIcon)<{
+export const SModalHeaderButton = styled(Button)<{
   align?: "left" | "right"
 }>`
   flex-grow: 0;
@@ -175,7 +203,7 @@ export const SModalHeaderButton = styled(ButtonIcon)<{
 
   position: absolute;
   top: 0;
-  ${({ align }) => `${align}: 0`};
+  ${({ align, theme }) => `${align}: -${theme.space.base}`};
 `
 
 export const SModalTitleContainer = styled(Flex)`
@@ -211,6 +239,7 @@ export const SModalFooter = styled(Flex)(
 
     ${mq("md")} {
       flex-direction: row;
+      gap: ${theme.space.xl};
     }
   `,
 )

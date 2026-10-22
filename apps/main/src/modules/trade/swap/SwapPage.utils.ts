@@ -1,20 +1,31 @@
-import {
-  BaselineChartData,
-  OhlcData,
-} from "@galacticcouncil/ui/components/TradingViewChart/utils"
+import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useCallback, useMemo, useState } from "react"
 import { funnel, last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 
+type CrosshairData = BaselineChartData & {
+  open?: number
+  high?: number
+  low?: number
+}
+
 type UseTradeChartValuesArgs = {
-  prices: OhlcData[]
+  prices: ReadonlyArray<{
+    close: number
+    volume?: number
+    open?: number
+    high?: number
+    low?: number
+  }>
   priceAssetId: string
   isEmpty: boolean
   isError: boolean
   isLoading: boolean
 }
+
+const priceOptions = { maximumFractionDigits: null }
 
 export const useTradeChartValues = ({
   prices,
@@ -23,25 +34,25 @@ export const useTradeChartValues = ({
   isError,
   isLoading,
 }: UseTradeChartValuesArgs) => {
-  const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
+  const [crosshair, setCrosshair] = useState<CrosshairData | null>(null)
   const { call: setCrosshairThrottled, cancel: cancelCrosshairThrottle } =
     useMemo(
       () =>
         funnel(
-          (nextCrosshair: BaselineChartData | null) => {
+          (nextCrosshair: CrosshairData | null) => {
             setCrosshair(nextCrosshair)
           },
           {
-            minGapMs: 200,
-            triggerAt: "start",
-            reducer: (_, next: BaselineChartData | null) => next,
+            minGapMs: 150,
+            triggerAt: "both",
+            reducer: (_, next: CrosshairData | null) => next,
           },
         ),
       [],
     )
 
   const onCrosshairMove = useCallback(
-    (nextCrosshair: BaselineChartData | null) => {
+    (nextCrosshair: CrosshairData | null) => {
       if (nextCrosshair === null) {
         cancelCrosshairThrottle()
         setCrosshair(null)
@@ -54,13 +65,20 @@ export const useTradeChartValues = ({
 
   const lastDataPoint = last(prices)
   const value = crosshair?.value ?? lastDataPoint?.close ?? 0
+  const open = crosshair?.open ?? lastDataPoint?.open ?? 0
+  const high = crosshair?.high ?? lastDataPoint?.high ?? 0
+  const low = crosshair?.low ?? lastDataPoint?.low ?? 0
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
-  const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(priceAssetId, value, { maximumFractionDigits: null })
+  const [
+    formattedAssetPrice,
+    { isLoading: isAssetPriceLoading, isValid: isAssetPriceValid },
+  ] = useDisplayAssetPrice(priceAssetId, value, priceOptions)
 
-  const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
-    useDisplayAssetPrice(USDT_ASSET_ID, volume)
+  const [
+    formattedVolumePrice,
+    { isLoading: isVolumePriceLoading, isValid: isVolumePriceValid },
+  ] = useDisplayAssetPrice(USDT_ASSET_ID, volume)
 
   const shouldShowValues = !isEmpty && !isError
 
@@ -70,10 +88,16 @@ export const useTradeChartValues = ({
   return {
     onCrosshairMove,
     value,
+    open,
+    high,
+    low,
     volume,
     formattedAssetPrice,
     formattedVolumePrice,
+    isAssetPriceValid,
+    isVolumePriceValid,
     shouldShowValues,
     isLoadingValues,
+    isLiveValue: crosshair === null,
   }
 }

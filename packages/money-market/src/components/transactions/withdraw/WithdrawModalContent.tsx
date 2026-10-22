@@ -1,4 +1,5 @@
 import { Separator, Stack, SummaryRow } from "@galacticcouncil/ui/components"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useRef, useState } from "react"
 
@@ -9,6 +10,8 @@ import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrap
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useModalContext } from "@/hooks/useModal"
+import { useWithdrawEstimationTx } from "@/hooks/useWithdrawEstimationTx"
+import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
 import { calculateMaxWithdrawAmount, formatHealthFactorResult } from "@/utils"
 import { calculateHFAfterWithdraw } from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
@@ -43,25 +46,49 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     userReserve,
     poolReserve,
   )
+
+  const { useMaxBalance, getRelatedATokenId } = useSharedDependencies()
+
+  const withdrawAssetId = getAssetIdFromAddress(poolReserve.underlyingAsset)
+  const relatedATokenId = getRelatedATokenId(withdrawAssetId)
+
+  const { data: withdrawEstimationTx } = useWithdrawEstimationTx({
+    poolAddress: poolReserve.underlyingAsset,
+    aTokenAddress: poolReserve.aTokenAddress,
+    amount: maxAmountToWithdraw.toString(),
+  })
+  const maxBalance = useMaxBalance({
+    tx: withdrawEstimationTx ?? null,
+    assetId: relatedATokenId,
+    feePctBuffer: 0.5,
+  })
+  const maxAmountToWithdrawWithFee =
+    maxBalance?.maxBalanceHuman ?? maxAmountToWithdraw.toString()
+
   const underlyingBalance = Big(userReserve?.underlyingBalance || "0")
   const isMaxSelected =
-    !!_amount && Big(_amount).gte(maxAmountToWithdraw.toString())
-  const withdrawAmount = isMaxSelected
+    !!_amount && Big(_amount).gte(maxAmountToWithdrawWithFee)
+  const isFullWithdraw =
+    isMaxSelected && maxAmountToWithdraw.eq(underlyingBalance)
+  const withdrawAmount = isMaxSelected ? maxAmountToWithdrawWithFee : _amount
+  const effectiveWithdrawAmount = isFullWithdraw
     ? maxAmountToWithdraw.toString()
-    : _amount
+    : withdrawAmount
 
   const isMaxExceeded =
-    !!withdrawAmount && Big(withdrawAmount).gt(maxAmountToWithdraw)
+    !isFullWithdraw &&
+    !!withdrawAmount &&
+    Big(withdrawAmount).gt(maxAmountToWithdrawWithFee)
 
   const handleChange = (value: string) => {
     const maxSelected =
-      !!value && Big(value).gte(maxAmountToWithdraw.toString())
-    amountRef.current = maxSelected ? maxAmountToWithdraw.toString() : value
+      !!value && Big(value).gte(maxAmountToWithdrawWithFee.toString())
+    amountRef.current = maxSelected ? maxAmountToWithdrawWithFee : value
     setAmount(value)
     if (maxSelected && maxAmountToWithdraw.eq(underlyingBalance)) {
       setWithdrawMax("-1")
     } else {
-      setWithdrawMax(maxAmountToWithdraw.toString())
+      setWithdrawMax(maxAmountToWithdrawWithFee)
     }
   }
 
@@ -71,14 +98,14 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     user,
     userReserve,
     poolReserve,
-    withdrawAmount,
+    withdrawAmount: effectiveWithdrawAmount,
   })
 
   const { blockingError, errorText } = useWithdrawError({
     assetsBlockingWithdraw,
     poolReserve,
     healthFactorAfterWithdraw,
-    withdrawAmount,
+    withdrawAmount: effectiveWithdrawAmount,
   })
 
   // calculating input usd value
@@ -106,14 +133,14 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
         symbol={symbol}
         assets={[
           {
-            balance: maxAmountToWithdraw.toString(),
+            balance: maxAmountToWithdrawWithFee,
             symbol: symbol,
             iconSymbol: poolReserve.iconSymbol,
             address: poolReserve.underlyingAsset,
           },
         ]}
-        disabled={withdrawTxState.loading}
-        maxButtonBalance={maxAmountToWithdraw.toString()}
+        isDisabled={withdrawTxState.loading}
+        maxButtonBalance={maxAmountToWithdrawWithFee}
         balanceLabel="Withdrawable balance"
         amountError={
           isMaxExceeded ? "Insufficient balance on your account." : errorText
@@ -132,7 +159,9 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
           content={
             <ValueDetail
               value={formatCurrency(
-                underlyingBalance.minus(withdrawAmount || "0").toString(),
+                underlyingBalance
+                  .minus(effectiveWithdrawAmount || "0")
+                  .toString(),
                 {
                   symbol,
                 },

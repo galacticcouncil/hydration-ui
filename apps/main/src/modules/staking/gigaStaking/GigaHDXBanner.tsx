@@ -1,13 +1,6 @@
 import { Close } from "@galacticcouncil/ui/assets/icons"
 import gigaHDXBannerCans from "@galacticcouncil/ui/assets/images/GigaHDXCans.webp"
-import {
-  Box,
-  Button,
-  ButtonIcon,
-  Flex,
-  Icon,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Box, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate } from "@tanstack/react-router"
@@ -18,7 +11,6 @@ import { LINKS } from "@/config/navigation"
 import { SGigaHDXBanner } from "@/modules/staking/gigaStaking/GigaStaking.styled"
 import { useGigaStakingMigration } from "@/modules/staking/gigaStaking/GigaStakingMigration.utils"
 import { MigrateConfirmationModal } from "@/modules/staking/gigaStaking/MigrateConfirmationModal"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useBannersStore } from "@/states/banners"
 
 export type GigaHDXBannerProps = {
@@ -32,7 +24,6 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
 }) => {
   const [isMigrateConfirmationModalOpen, setIsMigrateConfirmationModalOpen] =
     useState(false)
-  const { featureFlags } = useRpcProvider()
   const { t } = useTranslation("staking")
   const { isMobile, isTablet } = useBreakpoints()
   const navigate = useNavigate()
@@ -44,7 +35,7 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
 
   const mutation = useGigaStakingMigration()
 
-  if (banner.visible === false || !featureFlags.gigaStakingEnabled) return null
+  if (banner.visible === false) return null
 
   const isMobileView = isMobile || isTablet
 
@@ -83,7 +74,7 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
           <Text
             font="primary"
             fw={600}
-            color={getToken("text.high")}
+            color={getToken("buttons.primary.high.onButton")}
             fs={["p3", "p3", "p2"]}
           >
             {isMobileView
@@ -91,7 +82,11 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
               : t("gigaStaking.banner.title")}
           </Text>
 
-          <Text fs={["p5", "p5", "p4"]} lh="m" color={getToken("text.high")}>
+          <Text
+            fs={["p5", "p5", "p4"]}
+            lh="m"
+            color={getToken("buttons.primary.high.onButton")}
+          >
             {type === "stake"
               ? t("gigaStaking.banner.description.stake")
               : t("gigaStaking.banner.description.migrate")}
@@ -124,29 +119,26 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
         />
       </Flex>
 
-      <ButtonIcon
+      <Button
+        icon={Close}
+        size="micro"
+        uppercase
+        variant="transparent"
         sx={{
           position: "absolute",
           top: -5,
           right: -5,
-          p: "s",
           zIndex: 1,
           background: getToken("icons.onSurface"),
         }}
-      >
-        <Icon
-          component={Close}
-          size={12}
-          color={getToken("text.high")}
-          onClick={() =>
-            setBannerVisible(
-              type === "stake" ? "giga-stake" : "giga-migration",
-              false,
-              Date.now(),
-            )
-          }
-        />
-      </ButtonIcon>
+        onClick={() =>
+          setBannerVisible(
+            type === "stake" ? "giga-stake" : "giga-migration",
+            false,
+            Date.now(),
+          )
+        }
+      />
     </SGigaHDXBanner>
   )
 }

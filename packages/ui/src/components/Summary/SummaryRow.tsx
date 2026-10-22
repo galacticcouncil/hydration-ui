@@ -103,6 +103,7 @@ export const SummaryRowValue = (props: TextProps) => (
     fs="p5"
     fw={500}
     lh={1.2}
+    as="div"
     color={getToken("text.high")}
     sx={{ flexShrink: 0 }}
     {...props}
@@ -110,7 +111,7 @@ export const SummaryRowValue = (props: TextProps) => (
 )
 
 export const SummaryRowDisplayValue = (props: TextProps) => (
-  <Text fs="p6" fw={500} lh={1.2} color={getToken("text.medium")} {...props} />
+  <Text fs="p5" fw={500} lh={1.2} color={getToken("text.medium")} {...props} />
 )
 
 export const SummaryRowLabel = (props: TextProps) => (

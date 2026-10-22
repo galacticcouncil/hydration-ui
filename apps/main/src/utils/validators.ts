@@ -5,9 +5,9 @@ import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
 
+import { useAccountBalances } from "@/api/balances"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")
@@ -16,7 +16,7 @@ export const required = z.string().trim().min(1, requiredError)
 
 export const validNumber = z.number({ error: i18n.t("error.validNumber") })
 
-export const requiredObject = <T extends Record<string, unknown>>() =>
+export const requiredObject = <T extends object>() =>
   z.custom<T | null>().check(
     z.refine((value) => value !== null, {
       error: requiredError,
@@ -159,7 +159,16 @@ export const validateAssetSellOnly = z.refine<TAsset | null>(
 )
 
 export const validateAddressOnChain = (chain: AnyChain) => {
-  return required.refine((value) => isAddressValidOnChain(value, chain), {
-    error: i18n.t("error.validAddressOnChain", { chain: chain.name }),
+  return validateChainAddress(chain.name, (value) =>
+    isAddressValidOnChain(value, chain),
+  )
+}
+
+export const validateChainAddress = (
+  chainName: string,
+  isValidAddress: (address: string) => boolean,
+) => {
+  return required.refine(isValidAddress, {
+    error: i18n.t("error.validAddressOnChain", { chain: chainName }),
   })
 }

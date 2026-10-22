@@ -7,28 +7,60 @@ import { type infer as Infer, object, refine } from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
-import { getOtcBuyAmountAfterFee } from "@/modules/trade/otc/fill-order/FillOrder.utils"
+import {
+  getOtcBuyAmountAfterFee,
+  getOtcFillOrderTx,
+  getOtcMaxPartialFill,
+  isOtcFillAmountValid,
+} from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
+import {
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   positiveOptional,
-  useValidateFormMaxBalance,
   validateFieldExistentialDeposit,
 } from "@/utils/validators"
 
-const useSchema = (offer: OtcOfferTabular) => {
+const useSchema = (
+  offer: OtcOfferTabular,
+  feePct: string,
+  validateBalance: ValidateFormMaxBalanceWithFee,
+) => {
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
     otcExistentialDepositorMultiplierQuery(rpc),
   )
-
-  const refineMaxBalance = useValidateFormMaxBalance()
 
   return object({
     sellAmount: positiveOptional.check(
       refine(
         (value) => new Big(offer.assetAmountIn).gte(value || "0"),
         i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
+      ),
+      refine(
+        (value) =>
+          !value ||
+          !existentialDepositMultiplier ||
+          isOtcFillAmountValid(
+            offer,
+            value,
+            existentialDepositMultiplier,
+            feePct,
+          ),
+        {
+          error: () =>
+            i18n.t("trade:otc.fillOrder.validation.leftoverTooSmall", {
+              amount: getOtcMaxPartialFill(
+                offer,
+                existentialDepositMultiplier ?? 0,
+                feePct,
+              ).toFixed(),
+              symbol: offer.assetIn.symbol,
+            }),
+        },
       ),
       validateFieldExistentialDeposit(
         offer.assetIn,
@@ -42,7 +74,7 @@ const useSchema = (offer: OtcOfferTabular) => {
       ),
     ),
   }).check(
-    refineMaxBalance("sellAmount", (form) => [offer.assetIn, form.sellAmount]),
+    validateBalance("sellAmount", (form) => [offer.assetIn, form.sellAmount]),
   )
 }
 
@@ -53,6 +85,8 @@ export const useFillOrderForm = (
   isUsersOffer: boolean,
   feePrice: string,
 ) => {
+  const { papi } = useRpcProvider()
+
   const defaultValues: FillOrderFormValues =
     !isUsersOffer && otcOffer.isPartiallyFillable
       ? {
@@ -70,11 +104,20 @@ export const useFillOrderForm = (
           ),
         }
 
-  const schema = useSchema(otcOffer)
+  const { validateBalance, getMaxBalance } = useFormMaxBalanceWithFee(
+    getOtcFillOrderTx(papi, otcOffer, "1"),
+  )
 
-  return useForm<FillOrderFormValues>({
+  const schema = useSchema(otcOffer, feePrice, validateBalance)
+
+  const form = useForm<FillOrderFormValues>({
     defaultValues,
     resolver: isUsersOffer ? undefined : standardSchemaResolver(schema),
     mode: "onChange",
   })
+
+  return {
+    form,
+    getMaxBalance,
+  }
 }

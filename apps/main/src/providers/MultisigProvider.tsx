@@ -33,7 +33,7 @@ export const useMultisigContext = () => useContext(MultisigContext)
 export const MultisigProvider = ({ children }: { children: ReactNode }) => {
   const { data: accountMultisigs, isPending: isMultisigsLoading } =
     useAccountMultisigs()
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
   const queryClient = useQueryClient()
 
   const multisigAddresses = useMemo(() => {
@@ -45,7 +45,7 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
 
   const pendingTxQueries = useQueries({
     queries: multisigAddresses.map((address) => ({
-      enabled: isApiLoaded && !!address,
+      enabled: isReady && !!address,
       queryKey: ["multisig", "pendingTxs", address],
       staleTime: Infinity,
       queryFn: async () => {
@@ -61,7 +61,7 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
   const allSuccess = pendingTxQueries.every((q) => q.isSuccess)
 
   useEffect(() => {
-    if (!isApiLoaded || !allSuccess || multisigAddresses.length === 0) return
+    if (!isReady || !allSuccess || multisigAddresses.length === 0) return
 
     const subscription = merge(
       ...multisigAddresses.map((address) =>
@@ -89,7 +89,7 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
     })
 
     return () => subscription.unsubscribe()
-  }, [isApiLoaded, allSuccess, multisigAddresses, papi, queryClient])
+  }, [isReady, allSuccess, multisigAddresses, papi, queryClient])
 
   const { pendingTxsByMultisig, totalPendingTxCount, isPendingTxsLoading } =
     useMemo(() => {

@@ -1,5 +1,6 @@
 import React, { FC, ReactNode, Ref, useId } from "react"
 
+import { Box } from "@/components/Box"
 import { Label } from "@/components/Label"
 import { getToken } from "@/utils"
 
@@ -27,13 +28,17 @@ type TrailingElementProps =
       trailingElement?: ReactNode
     }
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
+export type InputProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "width"
+> &
   CustomInputProps &
   LeadingElementProps &
   TrailingElementProps & {
     isError?: boolean
     className?: string
     ref?: Ref<HTMLInputElement>
+    width?: string | number | Array<string | number | null>
   }
 
 export const Input: FC<InputProps> = ({
@@ -47,6 +52,8 @@ export const Input: FC<InputProps> = ({
   className,
   ref,
   id,
+  width,
+  isError,
   autoComplete = "off",
   ...props
 }) => {
@@ -58,13 +65,16 @@ export const Input: FC<InputProps> = ({
       variant={variant}
       customSize={customSize}
       className={className}
+      sx={{ width }}
     >
-      {leadingElement}
-      {IconStart && <IconStart />}
+      {leadingElement && <Box ml="-m">{leadingElement}</Box>}
+      {IconStart && <IconStart data-icon="start" />}
       <SInput
         ref={ref}
         id={usedInputId}
         autoComplete={autoComplete}
+        isError={isError}
+        aria-invalid={isError || undefined}
         {...props}
       />
       {unit && (
@@ -79,7 +89,7 @@ export const Input: FC<InputProps> = ({
           {unit}
         </Label>
       )}
-      {IconEnd && <IconEnd />}
+      {IconEnd && <IconEnd data-icon="end" />}
       {trailingElement}
     </SInputContainer>
   )

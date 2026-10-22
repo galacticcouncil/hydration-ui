@@ -1,4 +1,12 @@
+import { Buffer } from "buffer"
 import { AccountId } from "polkadot-api"
+
+const SUIVISION_URL = "https://suivision.xyz"
+
+export const suivision = {
+  account: (address: string) =>
+    `${SUIVISION_URL}/account/${encodeURIComponent(address)}`,
+}
 
 export const safeConvertSuiAddressToSS58 = (
   address: string,

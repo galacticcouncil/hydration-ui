@@ -1,7 +1,6 @@
 import { Settings as SettingsIcon } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonIcon,
-  Icon,
+  Button,
   ModalContent,
   ModalRoot,
   ModalTrigger,
@@ -9,17 +8,23 @@ import {
 import { FC } from "react"
 
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
+import { TutorialAnchor } from "@/modules/tutorials/TutorialAnchor"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const Settings: FC = () => {
-  const { isLoaded } = useRpcProvider()
+  const { isReady } = useRpcProvider()
   return (
     <ModalRoot>
-      <ModalTrigger asChild>
-        <ButtonIcon disabled={!isLoaded}>
-          <Icon component={SettingsIcon} size="l" />
-        </ButtonIcon>
-      </ModalTrigger>
+      <TutorialAnchor tutorial="settings-avatar" asChild>
+        <ModalTrigger asChild>
+          <Button
+            icon={SettingsIcon}
+            variant="ghost"
+            size="medium"
+            disabled={!isReady}
+          />
+        </ModalTrigger>
+      </TutorialAnchor>
       <ModalContent>
         <SettingsModal />
       </ModalContent>

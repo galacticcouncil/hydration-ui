@@ -20,7 +20,6 @@ import { isBigInt } from "remeda"
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
-import { useAssets } from "@/providers/assetsProvider"
 import { toDecimal } from "@/utils/formatting"
 
 import { SAssetListItem } from "./AssetListItem.styled"
@@ -28,41 +27,29 @@ import { SAssetListItem } from "./AssetListItem.styled"
 export type AssetListItemProps = {
   asset: Asset
   route: AssetRoute | null
+  symbol: string
+  name: string
   balance?: AssetAmount
   balanceDisplay?: string
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
-  registryChain: AnyChain
   onClick: () => void
 }
 
 export const AssetListItem: React.FC<AssetListItemProps> = ({
   asset,
   route,
+  symbol,
+  name,
   balance,
   balanceDisplay,
   chain,
   isLoading,
   isSelected,
-  registryChain,
   onClick,
 }) => {
   const { t } = useTranslation(["common"])
-  const { getAsset } = useAssets()
-
-  const registryId = registryChain.getBalanceAssetId(asset)
-  const registryAsset = getAsset(registryId.toString())
-
-  const meta = registryAsset
-    ? {
-        symbol: registryAsset.symbol,
-        name: registryAsset.name,
-      }
-    : {
-        symbol: asset.originSymbol,
-        name: asset.originSymbol,
-      }
 
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
@@ -70,7 +57,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 
         <Text truncate as="div">
-          <AssetLabel symbol={meta.symbol} name={meta.name} />
+          <AssetLabel symbol={symbol} name={name} />
           {route && isBridgeAssetRoute(route) && (
             <AssetBridgeTags route={route} />
           )}

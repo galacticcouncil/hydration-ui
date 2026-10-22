@@ -12,21 +12,23 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { arraySearch } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { map, pipe, zip } from "remeda"
 
+import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetList } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetList"
 import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { ConnectChainTile } from "@/modules/xcm/transfer/components/ConnectButton/ConnectChainTile"
-import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
   getWalletModeByChain,
   isAccountValidOnChain,
 } from "@/modules/xcm/transfer/utils/chain"
+import { useAssets } from "@/providers/assetsProvider"
 
 export type ChainAssetPair = {
   chain: AnyChain
@@ -93,7 +95,8 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   const { isMobile } = useBreakpoints()
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
-  const { registryChain } = useXcmProvider()
+  const { getAsset } = useAssets()
+  const getDisplayAssetId = useHydrationDisplayAssetId()
   const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
   const [pendingChain, setPendingChain] = useState<AnyChain | null>(
@@ -116,16 +119,29 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     const routes = selectedChainPair?.routes ?? []
 
     const assetsWithRoutes = routes.length
-      ? pipe(
-          zip(routes, assets),
-          map(([route, asset]) => ({ route, asset })),
-        )
+      ? selectedChainPair?.isTagSelect
+        ? pipe(
+            zip(routes, assets),
+            map(([route, asset]) => ({ route, asset })),
+          )
+        : assets.map((asset) => ({
+            asset,
+            route:
+              routes.find((r) => r.destination.asset.key === asset.key) ?? null,
+          }))
       : assets.map((asset) => ({ asset, route: null }))
 
-    return assetsWithRoutes.filter(({ asset }) =>
-      asset.originSymbol.toLowerCase().includes(assetSearch.toLowerCase()),
+    return arraySearch(
+      assetsWithRoutes.map((item) => {
+        const registryId = getDisplayAssetId(item.asset)
+        const symbol = item.asset.originSymbol
+        const name = (registryId && getAsset(registryId)?.name) || symbol
+        return { ...item, symbol, name }
+      }),
+      assetSearch,
+      ["symbol", "name"],
     )
-  }, [assetSearch, chainAssetPairs, pendingChain])
+  }, [assetSearch, chainAssetPairs, getAsset, getDisplayAssetId, pendingChain])
 
   const isCompatibleWalletMode =
     type === "source"
@@ -140,7 +156,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         p="base"
       >
         <Input
-          placeholder={t("xcm:chainAssetSelect.search.chains")}
+          placeholder={t("search.placeholder.chains")}
           iconStart={Search}
           value={chainSearch}
           onChange={(e) => setChainSearch(e.target.value)}
@@ -148,7 +164,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
           autoComplete="off"
         />
         <Input
-          placeholder={t("xcm:chainAssetSelect.search.assets")}
+          placeholder={t("search.placeholder.assets")}
           iconStart={Search}
           value={assetSearch}
           onChange={(e) => setAssetSearch(e.target.value)}
@@ -165,7 +181,6 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         <Flex direction="column">
           {pendingChain && isCompatibleWalletMode && (
             <AssetList
-              registryChain={registryChain}
               items={filteredAssetsWithRoutes}
               address={address}
               selectedAsset={currentSelection?.asset}
@@ -183,10 +198,10 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
               bg="transparent"
               onConnect={() =>
                 toggle(getWalletModeByChain(pendingChain), {
-                  title: t("xcm:connect.modal.title", {
+                  title: t("connectWallet.modal.title", {
                     chain: pendingChain.name,
                   }),
-                  description: t("xcm:connect.modal.description", {
+                  description: t("connectWallet.modal.description", {
                     chain: pendingChain.name,
                   }),
                 })

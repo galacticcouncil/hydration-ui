@@ -1,6 +1,7 @@
 import { SectionHeader } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
+import { useShallowCompareEffect } from "react-use"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
@@ -11,12 +12,17 @@ import { BorrowHistoryTable } from "@/modules/borrow/history/BorrowHistoryTable"
 export const BorrowHistoryPage = () => {
   const { t } = useTranslation(["borrow"])
   const { account } = useAccount()
+  const accountAddress = account?.address
 
   const paginationProps = useDataTableUrlPagination(
     "/borrow/history",
     "page",
-    10,
+    20,
   )
+
+  useShallowCompareEffect(() => {
+    paginationProps.onPageClick(1)
+  }, [accountAddress])
 
   const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
     "/borrow/history",

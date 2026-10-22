@@ -1,7 +1,16 @@
-import { AreaChart, Box, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  Chart,
+  ChartLegendTooltipBody,
+  Flex,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { areaY, defineChart, lineY, ruleY, text } from "@tanstack/charts"
+import { decorative } from "@tanstack/charts/mark/decorative"
+import { scaleLinear } from "@tanstack/charts/scales/linear"
+import { tooltip } from "@tanstack/charts/tooltip"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ReserveApyRate } from "@/api/grafana/reserveRate"
@@ -11,6 +20,11 @@ import {
   ApyChartTimeRangeOption,
   apyChartTimeRangeOptions,
 } from "@/modules/borrow/reserve/components/ApyChart.utils"
+
+const RATE_MARK_ID = "rate"
+const GRADIENT_ID = "apy-chart-gradient"
+const STROKE_WIDTH = 2
+const AVERAGE_LABEL_OFFSET = -8
 
 type Props = {
   readonly header: string
@@ -34,17 +48,104 @@ export const ApyChart: FC<Props> = ({
   const { t } = useTranslation()
   const { themeProps } = useTheme()
 
-  const average = data.reduce((acc, item) => acc + item.rate, 0) / data.length
+  const definition = useMemo(() => {
+    const average = data.reduce((acc, item) => acc + item.rate, 0) / data.length
+    // the line snaps to a half-percent step, the label keeps the exact value
+    const averageLine = Math.round(average * 2) / 2
+    const averageLabel = [
+      {
+        timestamp: data[0]?.timestamp ?? 0,
+        rate: averageLine,
+        label: `${t("avg")} ${t("percent", { value: average })}`,
+      },
+    ]
+
+    return defineChart({
+      marks: [
+        decorative(
+          areaY(data, {
+            x: "timestamp",
+            y: RATE_MARK_ID,
+            fill: `url(#${GRADIENT_ID})`,
+          }),
+        ),
+        lineY(data, {
+          id: RATE_MARK_ID,
+          x: "timestamp",
+          y: RATE_MARK_ID,
+          stroke: color,
+          strokeWidth: STROKE_WIDTH,
+        }),
+        decorative(
+          ruleY([averageLine], {
+            stroke: themeProps.text.medium,
+            strokeDasharray: "6 6",
+          }),
+        ),
+        decorative(
+          text(averageLabel, {
+            x: "timestamp",
+            y: RATE_MARK_ID,
+            fontSize: 14,
+            fontWeight: 600,
+            text: "label",
+            anchor: "start",
+            dy: AVERAGE_LABEL_OFFSET,
+            dx: 5,
+            fill: themeProps.text.high,
+          }),
+        ),
+      ],
+      gradients: [
+        {
+          id: GRADIENT_ID,
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+          stops: [
+            { offset: 0.05, color, opacity: 1 },
+            { offset: 0.95, color, opacity: 0 },
+          ],
+        },
+      ],
+      x: {
+        scale: scaleLinear,
+        axis: {
+          line: false,
+          ticks: {
+            size: 0,
+            padding: 8,
+            format: (value) => t("date.day", { value: new Date(value) }),
+          },
+        },
+      },
+      y: {
+        scale: scaleLinear,
+        grid: true,
+        axis: {
+          line: false,
+          ticks: {
+            size: 0,
+            padding: 8,
+            format: (value) => t("percent", { value }),
+          },
+        },
+      },
+      focus: "group-x",
+      tooltip: {
+        use: tooltip,
+        sticky: false,
+      },
+    })
+  }, [data, color, themeProps, t])
 
   return (
-    <Flex direction="column" gap="xl">
+    <Flex direction="column" gap="base">
       <Flex justify="space-between" align="center">
         <Flex align="center" gap="s">
-          <span
-            css={{ borderRadius: "100%" }}
-            sx={{ display: "block", width: 6, height: 6, bg: color }}
-          />
-          <Text fs="p3" fw={500} sx={{ color: getToken("text.medium") }}>
+          <Flex bg={color} size="2xs" borderRadius="full" />
+          <Text fs="p4" fw={500} sx={{ color: getToken("text.medium") }}>
             {header}
           </Text>
         </Flex>
@@ -60,88 +161,22 @@ export const ApyChart: FC<Props> = ({
         isLoading={isLoading}
         isEmpty={!data.length}
       >
-        <AreaChart
-          curveType="linear"
+        <Chart
+          definition={definition}
+          ariaLabel={header}
           height={[100, 250]}
-          withoutReferenceLine
-          verticalGridHidden
-          horizontalGridHidden={false}
-          data={data}
-          xAxisProps={{
-            interval: "preserveEnd",
-            minTickGap: 30,
-          }}
-          config={{
-            series: [
-              {
-                key: "rate",
-                color,
-              },
-            ],
-            xAxisKey: "timestamp",
-            xAxisFormatter: (value) =>
-              t("date.day", { value: new Date(value) }),
-            tooltipFormatter: (value) =>
-              t("date.daytime", { value: new Date(value) }),
-            yAxisFormatter: (value) => t("percent", { value }),
-          }}
-          referenceLines={[
-            {
-              y: Math.round(average * 2) / 2,
-              stroke: themeProps.text.medium,
-              strokeDasharray: "6 6",
-              shapeRendering: "crispEdges",
-              label: (props) => (
-                <ReferenceLineLabel
-                  {...props}
-                  value={average}
-                  xOffset={-5}
-                  yOffset={25}
-                  title={t("avg")}
-                />
-              ),
-            },
-          ]}
+          renderTooltipBody={({ points }) => (
+            <ChartLegendTooltipBody
+              points={points.filter(({ markId }) => markId === RATE_MARK_ID)}
+              formatLabel={(value) =>
+                t("date.daytime", { value: new Date(Number(value)) })
+              }
+              formatSeriesLabel={() => header}
+              formatValue={({ yValue }) => t("percent", { value: yValue })}
+            />
+          )}
         />
       </ChartState>
     </Flex>
-  )
-}
-
-const ReferenceLineLabel = (props: {
-  value: number
-  title: string
-  yOffset?: number
-  xOffset?: number
-  color: string
-  viewBox: {
-    x: number
-    y: number
-  }
-}) => {
-  const { t } = useTranslation()
-  const yOffset = props.yOffset ?? 0
-  const xOffset = props.xOffset ?? 0
-
-  return (
-    <foreignObject
-      sx={{ overflow: "visible" }}
-      height={1}
-      width={1}
-      x={props.viewBox.x - xOffset}
-      y={props.viewBox.y - yOffset}
-    >
-      <Box
-        bg={getToken("details.tooltips")}
-        color={getToken("text.high")}
-        p="s"
-        borderRadius="base"
-        width="min-content"
-      >
-        <Text fs="p5" fw={500} lh={1} whiteSpace="nowrap" align="center">
-          {props.title} {t("percent", { value: props.value })}
-        </Text>
-      </Box>
-    </foreignObject>
   )
 }

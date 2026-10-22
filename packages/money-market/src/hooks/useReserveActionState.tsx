@@ -50,7 +50,7 @@ export const useReserveActionState = ({
         <Alert
           key="empty-wallet"
           variant="info"
-          description="Your wallet is empty. Purchase or transfer assets."
+          description="My wallet is empty. Purchase or transfer assets."
         />
       ),
 

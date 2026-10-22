@@ -2,12 +2,13 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { TAccountVote } from "@/api/democracy"
+import { Papi } from "@/api/rpcClient"
 import { useInvalidateStakeData } from "@/api/staking"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
 import { NewVoteId, useProcessedVotes } from "@/modules/staking/Stake.data"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useClaimStaking = (
   positionId: bigint,

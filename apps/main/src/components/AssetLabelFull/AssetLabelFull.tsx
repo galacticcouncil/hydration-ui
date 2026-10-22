@@ -1,13 +1,16 @@
 import {
   AssetLabel,
   AssetLabelProps,
+  AssetLogo as AssetLogoPrimitive,
   Flex,
   Skeleton,
+  Stack,
 } from "@galacticcouncil/ui/components"
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
+import { AutoManagedBadge } from "@/modules/liquidity/components/AutoManagedBadge"
 import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
 
 export const AssetLabelFull = ({
@@ -39,12 +42,21 @@ export const AssetLabelFull = ({
 
   if (!asset) return null
 
+  const logoSize = size === "primary" ? "large" : size
+
   return (
     <AssetLabelFullContainer variant={variant}>
       {loading ? (
         <Skeleton circle width={24} height={24} />
+      ) : asset.iconSrc ? (
+        <AssetLogoPrimitive
+          src={asset.iconSrc}
+          chainSrc={asset.chainSrc}
+          alt={asset.symbol}
+          size={logoSize}
+        />
       ) : (
-        <AssetLogo id={asset.id} size={size === "primary" ? "large" : size} />
+        <AssetLogo id={asset.id} size={logoSize} />
       )}
       <AssetLabel
         symbol={asset.symbol}
@@ -60,6 +72,27 @@ export const AssetLabelXYK = ({
   iconIds,
   symbol,
   name,
+  badge,
+  size,
+}: {
+  iconIds: string[]
+  symbol: string
+  name?: string
+  badge?: ReactNode
+  size?: AssetLabelProps["size"]
+}) => {
+  return (
+    <AssetLabelFullContainer>
+      <AssetLogo id={iconIds} />
+      <AssetLabel symbol={symbol} name={name} badge={badge} size={size} />
+    </AssetLabelFullContainer>
+  )
+}
+
+export const AssetLabelUniV3 = ({
+  iconIds,
+  symbol,
+  name,
   size,
 }: {
   iconIds: string[]
@@ -70,7 +103,10 @@ export const AssetLabelXYK = ({
   return (
     <AssetLabelFullContainer>
       <AssetLogo id={iconIds} />
-      <AssetLabel symbol={symbol} name={name} size={size} />
+      <Stack gap="xs">
+        <AssetLabel symbol={symbol} name={name} size={size} />
+        <AutoManagedBadge />
+      </Stack>
     </AssetLabelFullContainer>
   )
 }

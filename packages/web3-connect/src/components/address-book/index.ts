@@ -1,2 +1,6 @@
 export * from "./AddressBook"
+export { useAddresses, useAddressStore } from "./AddressBook.store"
+export { sortByLastUsed } from "./AddressBook.utils"
+export * from "./AddressBookButton"
+export * from "./AddressBookEntry"
 export * from "./AddressBookModal"

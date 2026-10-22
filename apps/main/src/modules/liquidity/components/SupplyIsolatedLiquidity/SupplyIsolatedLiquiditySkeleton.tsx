@@ -1,10 +1,11 @@
 import {
+  Box,
   Button,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
-  Stack,
+  Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
@@ -22,41 +23,27 @@ export const SupplyIsolatedLiquiditySkeleton = () => {
     <>
       <ModalHeader title={t("borrow:supply")} closable />
       <ModalBody sx={{ py: 0 }}>
-        <AssetSelect
-          label={t("amount")}
-          disabled
-          loading
-          assets={[]}
-          selectedAsset={undefined}
-        />
+        <Box py="l" width="100%">
+          <AssetSelect
+            label={t("amount")}
+            isDisabled
+            isLoading
+            assets={[]}
+            selectedAsset={undefined}
+          />
+        </Box>
 
         <ModalContentDivider />
 
-        <Stack gap="m" py="m" separated separator={<ModalContentDivider />}>
-          <SummaryRow
-            label={t("supplyApy")}
-            content=""
-            loading
-            sx={{ my: 0 }}
-          />
+        <Summary separator={<ModalContentDivider />}>
+          <SummaryRow label={t("supplyApy")} content="" loading />
           <SummaryRow
             label={t("tradeLimit")}
             content={<TradeLimit type={TradeLimitType.Trade} disabled />}
-            sx={{ my: 0 }}
           />
-          <SummaryRow
-            label={t("minimumReceived")}
-            content=""
-            loading
-            sx={{ my: 0 }}
-          />
-          <SummaryRow
-            label={t("healthFactor")}
-            content=""
-            loading
-            sx={{ my: 0 }}
-          />
-        </Stack>
+          <SummaryRow label={t("minimumReceived")} content="" loading />
+          <SummaryRow label={t("healthFactor")} content="" loading />
+        </Summary>
       </ModalBody>
       <ModalFooter>
         <Button type="submit" size="large" width="100%" disabled>

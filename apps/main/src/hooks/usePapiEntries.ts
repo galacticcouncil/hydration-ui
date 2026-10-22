@@ -8,12 +8,19 @@ import {
 import { useEffect, useRef } from "react"
 import { distinctUntilChanged, Observable, skip, Subscription } from "rxjs"
 
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+type QuerySources = {
+  readonly typed: Papi["query"]
+}
 
 const QUERY_MAP = {
-  "OTC.Orders": (query) => query.OTC.Orders,
-  "Uniques.Account": (query) => query.Uniques.Account,
-} as const satisfies Record<string, (query: Papi["query"]) => unknown>
+  "DCA.ScheduleOwnership": ({ typed }) => typed.DCA.ScheduleOwnership,
+  "Intent.AccountIntents": ({ typed }) => typed.Intent.AccountIntents,
+  "OTC.Orders": ({ typed }) => typed.OTC.Orders,
+  "Uniques.Account": ({ typed }) => typed.Uniques.Account,
+} as const satisfies Record<string, (sources: QuerySources) => unknown>
 
 type QueryKey = keyof typeof QUERY_MAP
 type QueryFn<K extends QueryKey> = (typeof QUERY_MAP)[K]
@@ -75,8 +82,11 @@ export function usePapiEntries<
   options?: PapiEntriesQueryOptions<K, TMap, TSelect>,
 ): UseQueryResult<TSelect, Error> {
   const queryClient = useQueryClient()
-  const { papi, isApiLoaded } = useRpcProvider()
-  const isWatcherInitializedRef = useRef(false)
+  const { papi, isReady } = useRpcProvider()
+
+  const querySources = (): QuerySources => ({
+    typed: papi.query,
+  })
 
   const mapper =
     typeof mapperOrOptions === "function" ? mapperOrOptions : undefined
@@ -88,11 +98,11 @@ export function usePapiEntries<
 
   const query = useQuery({
     queryKey: [key],
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const query = QUERY_MAP[queryKey](papi.query)
+      const query = QUERY_MAP[queryKey](querySources())
       // @ts-expect-error Args vary by query type
       const entries = await query.getEntries(...args, { at: "best" })
 
@@ -109,37 +119,31 @@ export function usePapiEntries<
   const { isSuccess } = query
 
   useEffect(() => {
-    if (isWatcherInitializedRef.current || !isSuccess) {
-      return
-    }
+    if (!isSuccess) return
 
     subscribe(key, () =>
       (
-        QUERY_MAP[queryKey](papi.query)
+        QUERY_MAP[queryKey](querySources())
           // @ts-expect-error Args vary by query type
-          .watchEntries(...args, { at: "best" })
-          .pipe(
-            // @ts-expect-error skips finalized block
-            skip(1),
-            distinctUntilChanged(
-              (_, current: WatchEntriesData) => !current.deltas,
-            ),
-          ) as Observable<WatchEntriesData>
-      ).subscribe((data) => {
-        const unified = data.entries.map(({ args, value }) => ({
-          keyArgs: args,
-          value,
-        }))
+          .watchEntries(...args, { at: "best" }) as Observable<WatchEntriesData>
+      )
+        .pipe(
+          skip(1),
+          distinctUntilChanged((_, current) => !current.deltas),
+        )
+        .subscribe((data) => {
+          const unified = data.entries.map(({ args, value }) => ({
+            keyArgs: args,
+            value,
+          }))
 
-        const result = mapperRef.current
-          ? mapperRef.current(unified as TData)
-          : unified
+          const result = mapperRef.current
+            ? mapperRef.current(unified as TData)
+            : unified
 
-        queryClient.setQueryData([key], result)
-      }),
+          queryClient.setQueryData([key], result)
+        }),
     )
-
-    isWatcherInitializedRef.current = true
 
     return () => {
       unsubscribe(key)

@@ -14,7 +14,8 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod"
 
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { required } from "@/utils/validators"
 

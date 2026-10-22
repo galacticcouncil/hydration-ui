@@ -2,20 +2,22 @@ import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
-import { useInvalidateOnBlock } from "@/api/chain"
-import { useSquidClient } from "@/api/provider"
+import { useAccountBalances } from "@/api/balances"
+import { useInvalidateOnBlock, useReloadOnStaleBlocks } from "@/api/chain"
+import { neckworkClient } from "@/api/neckwork"
+import { useNeckworkSync } from "@/api/neckworkSync"
 import { usePriceSubscriber } from "@/api/spotPrice"
-import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
+import { AppUpdateBanner } from "@/components/AppUpdateBanner/AppUpdateBanner"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
-  useBasejumpScanSubscription,
+  useScanJourneysSubscription,
   useXcScanSubscription,
 } from "@/modules/xcm/history"
-import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
 import { AssetRegistryGate } from "@/providers/AssetRegistryGate"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
@@ -39,15 +41,27 @@ const Web3ConnectModal = lazy(async () => ({
   ),
 }))
 
+const Web3ConnectSession = lazy(async () => ({
+  default: await import("@galacticcouncil/web3-connect").then(
+    (m) => m.Web3ConnectSession,
+  ),
+}))
+
 const Devtools = import.meta.env.DEV
   ? lazy(async () => ({
       default: await import("@/components/Devtools").then((m) => m.Devtools),
     }))
   : lazy(async () => ({ default: () => null }))
 
+const RootPendingComponent = () => (
+  <AssetsProvider>
+    <LayoutSkeleton />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
-  pendingComponent: LayoutSkeleton,
+  pendingComponent: RootPendingComponent,
   head: ({
     match: {
       context: { i18n },
@@ -73,14 +87,21 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <MultisigProvider>
-            <AssetRegistryGate>
-              <MainLayout />
-              <Services />
-              <Footer />
-              {!hasTopNavbar && <MobileTabBar />}
-            </AssetRegistryGate>
-          </MultisigProvider>
+          <TutorialProvider>
+            <MultisigProvider>
+              <AssetRegistryGate>
+                <MainLayout />
+                <Services />
+                <Footer />
+                <AppUpdateBanner />
+                {!hasTopNavbar && (
+                  <Suspense>
+                    <MobileTabBar />
+                  </Suspense>
+                )}
+              </AssetRegistryGate>
+            </MultisigProvider>
+          </TutorialProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && (
@@ -94,7 +115,9 @@ function RootComponent() {
 
 function ApiSubscriptions() {
   useInvalidateOnBlock()
-  useAccountBalanceSubscription()
+  useReloadOnStaleBlocks()
+  useNeckworkSync()
+  useAccountBalances()
   usePriceSubscriber()
 
   return null
@@ -102,21 +125,22 @@ function ApiSubscriptions() {
 
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
-  useBasejumpScanSubscription(account.address)
-  useProcessBasejumpScanJourneys(account.address)
+  useScanJourneysSubscription(account.address)
 
   return null
 }
 
 function Services() {
-  const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isReady, papi } = useRpcProvider()
   return (
     <>
-      <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
-      {isApiLoaded && <ApiSubscriptions />}
+      <Suspense fallback={null}>
+        <TransactionManager />
+        <Web3ConnectSession />
+        <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
+      </Suspense>
+      {isReady && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>
   )

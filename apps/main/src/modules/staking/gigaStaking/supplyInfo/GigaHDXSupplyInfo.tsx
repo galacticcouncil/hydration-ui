@@ -2,12 +2,11 @@ import {
   Box,
   BoxProps,
   Flex,
-  Pie,
   PieChart,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
+import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -20,13 +19,10 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-export const PIE_START_ANGLE = 90
-
 export const GigaHDXSupplyInfo = () => {
   const { t } = useTranslation(["staking", "common"])
   const { native } = useAssets()
   const { themeProps } = useTheme()
-  const { isMobile, isTablet } = useBreakpoints()
 
   const {
     supplyStaked,
@@ -49,29 +45,17 @@ export const GigaHDXSupplyInfo = () => {
     .mul(100)
     .toNumber()
 
-  const totalShare = totalGigaSuppliedPercent + Number(supplyStakedPercent)
-  const remainingShare = Math.max(0, 100 - totalShare)
-
   const pieData = [
     {
-      name: "Legacy",
       value: Number(supplyStakedPercent),
-      fill: themeProps.controls.solid.activeHover,
+      label: t("gigaStaking.supply.legacy.label"),
+      color: themeProps.controls.solid.activeHover,
     },
     {
-      name: "GIGAHDX",
       value: totalGigaSuppliedPercent,
-      fill: themeProps.text.tint.primary,
+      label: t("gigaStaking.supply.gigaHdx.label"),
+      color: themeProps.text.tint.primary,
     },
-    ...(remainingShare > 0
-      ? [
-          {
-            name: "Remaining",
-            value: remainingShare,
-            fill: "transparent",
-          },
-        ]
-      : []),
   ]
 
   return (
@@ -97,21 +81,13 @@ export const GigaHDXSupplyInfo = () => {
           align="center"
         >
           <PieChart
-            height={isMobile || isTablet ? 35 : 90}
-            width={isMobile || isTablet ? 35 : 90}
-            sx={{ pointerEvents: "none" }}
-          >
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={isMobile || isTablet ? 7 : 25}
-              outerRadius={isMobile || isTablet ? 15 : 45}
-              startAngle={PIE_START_ANGLE}
-              endAngle={PIE_START_ANGLE - 360}
-              stroke="none"
-            />
-          </PieChart>
+            size={[35, 35, 90]}
+            total={100}
+            segments={pieData}
+            ariaLabel={t("gigaStaking.supply.label")}
+            tooltipLabel={t("gigaStaking.supply.label")}
+            formatValue={({ value }) => t("common:percent", { value })}
+          />
         </Flex>
 
         <Flex direction="column" gap="s" flex={1}>
@@ -134,20 +110,28 @@ export const GigaHDXSupplyInfo = () => {
 
               <Text
                 font="primary"
-                fs="h7"
-                fw={500}
+                fs={["h7", "h6"]}
+                fw={600}
                 lh={1}
                 color={getToken("text.high")}
               >
                 {t("common:percent", { value: supplyStakedPercent })}
               </Text>
 
-              <Text fs="p6" color={getToken("text.medium")}>
-                {t("common:currency", {
-                  value: supplyStaked,
-                  symbol: native.symbol,
-                })}
-              </Text>
+              <Box>
+                <Text fs="p6" lh={1.2} color={getToken("text.medium")}>
+                  {t("common:currency", {
+                    value: supplyStaked,
+                    symbol: native.symbol,
+                  })}
+                </Text>
+
+                <Text fs="p5" lh={1.2} color={getToken("text.medium")}>
+                  {t("gigaStaking.supply.liquidity.value", {
+                    value: circulatingSupply,
+                  })}
+                </Text>
+              </Box>
             </Flex>
 
             <Flex direction="column" gap="xs">
@@ -158,8 +142,8 @@ export const GigaHDXSupplyInfo = () => {
 
               <Text
                 font="primary"
-                fs="h7"
-                fw={500}
+                fs={["h7", "h6"]}
+                fw={600}
                 lh={1}
                 color={getToken("text.high")}
               >
@@ -174,12 +158,6 @@ export const GigaHDXSupplyInfo = () => {
               </Text>
             </Flex>
           </Stack>
-
-          <Text fs="p5" color={getToken("text.high")}>
-            {t("gigaStaking.supply.liquidity.value", {
-              value: circulatingSupply,
-            })}
-          </Text>
         </Flex>
       </Flex>
     </>
@@ -194,13 +172,8 @@ export const LegendItem = ({
   label: string
 }) => {
   return (
-    <Flex align="center" gap="xs">
-      <Box
-        bg={color}
-        width={pxToRem(10)}
-        height={pxToRem(10)}
-        borderRadius="50%"
-      />
+    <Flex align="center" gap="s">
+      <Box bg={color} width="2xs" height="2xs" borderRadius="50%" />
       <Text fs="p6" fw={500} color={getToken("text.high")}>
         {label}
       </Text>

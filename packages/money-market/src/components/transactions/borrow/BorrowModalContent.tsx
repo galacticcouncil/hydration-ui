@@ -194,8 +194,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         }
       case ErrorType.NOT_ENOUGH_LIQUIDITY:
         return {
-          amountError:
-            "There are not enough funds in the {poolReserve.symbol} reserve to borrow",
+          amountError: `There are not enough funds in the ${poolReserve.symbol} reserve to borrow`,
         }
       case ErrorType.STABLE_RATE_NOT_ENABLED:
         return {

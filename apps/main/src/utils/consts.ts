@@ -6,7 +6,6 @@ export const NATIVE_ASSET_DECIMALS = 12
 export const NATIVE_EVM_ASSET_ID = "20"
 export const HUB_ID = "1"
 
-export const PARACHAIN_BLOCK_TIME = 6_000
 export const RELAY_BLOCK_TIME = 6_000
 
 export const GC_TIME = millisecondsInDay

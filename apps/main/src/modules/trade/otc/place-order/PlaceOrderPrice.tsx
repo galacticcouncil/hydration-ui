@@ -1,11 +1,5 @@
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
-import {
-  ButtonIcon,
-  Flex,
-  Icon,
-  NumberInput,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Button, Flex, NumberInput, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getReversePrice } from "@galacticcouncil/utils"
@@ -79,12 +73,10 @@ export const PlaceOrderPrice: FC<Props> = ({
       </Flex>
       <Flex justify="space-between" align="center">
         <Flex py="s" pl="s" gap="s" align="center">
-          <ButtonIcon
-            sx={{
-              border: "1px solid",
-              borderColor: getToken("buttons.secondary.low.borderRest"),
-            }}
-            size="small"
+          <Button
+            icon={ArrowLeftRight}
+            variant="ghost"
+            outline
             onClick={() =>
               viewField.onChange(
                 (isOfferView
@@ -92,13 +84,7 @@ export const PlaceOrderPrice: FC<Props> = ({
                   : "offerPrice") satisfies PlaceOrderView,
               )
             }
-          >
-            <Icon
-              component={ArrowLeftRight}
-              size="s"
-              color={getToken("icons.onContainer")}
-            />
-          </ButtonIcon>
+          />
           <Text fw={600} fs="p3" lh="s" color={getToken("text.high")}>
             {isOfferView ? buyAsset.symbol : offerAsset.symbol}
           </Text>

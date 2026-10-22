@@ -7,7 +7,7 @@ import { devtools } from "@tanstack/devtools-vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
 import remarkGfm from "remark-gfm"
-import { defineConfig, loadEnv } from "vite"
+import { defineConfig, loadEnv, type Plugin } from "vite"
 import { createHtmlPlugin } from "vite-plugin-html"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
@@ -26,6 +26,36 @@ const loaderHtml = fs.readFileSync(
 
 const headCriticalCss = fs.readFileSync("./src/styles/critical.css", "utf-8")
 
+const PRELOADED_FONTS = /^(GeistRegular|GazpachoMedium)-[\w-]+\.woff2$/
+
+const fontPreload = (): Plugin => {
+  let base = "/"
+  return {
+    name: "font-preload",
+    apply: "build",
+    configResolved: (config) => {
+      base = config.base
+    },
+    transformIndexHtml: {
+      order: "post",
+      handler: (_html, { bundle }) =>
+        Object.keys(bundle ?? {})
+          .filter((file) => PRELOADED_FONTS.test(file.split("/").pop() ?? ""))
+          .map((file) => ({
+            tag: "link",
+            injectTo: "head-prepend" as const,
+            attrs: {
+              rel: "preload",
+              as: "font",
+              type: "font/woff2",
+              crossorigin: "",
+              href: base + file,
+            },
+          })),
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const rpcUrls = PROVIDERS.filter((provider) =>
@@ -37,6 +67,9 @@ export default defineConfig(({ mode }) => {
   )
 
   return {
+    server: {
+      host: "0.0.0.0",
+    },
     resolve: {
       tsconfigPaths: true,
     },
@@ -107,6 +140,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
       }),
+      fontPreload(),
     ],
   }
 })

@@ -64,13 +64,18 @@ export const SRemaining = styled(Box)`
   )}
 `
 
-export const SRemainingList = styled(Stack)`
-  width: 100%;
-  ${containerSize(
-    "md",
-    css`
-      width: auto;
-      flex-direction: row;
-    `,
-  )}
-`
+export const SRemainingList = styled(Box)(
+  ({ theme }) => css`
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: ${theme.space.xl};
+    width: 100%;
+
+    ${containerSize(
+      "md",
+      css`
+        width: auto;
+      `,
+    )}
+  `,
+)

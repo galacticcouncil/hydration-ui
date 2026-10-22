@@ -19,11 +19,14 @@ export const SViewport = styled(ScrollAreaPrimitive.Viewport)`
 
 export const SRoot = styled(ScrollAreaPrimitive.Root, {
   shouldForwardProp: (prop) =>
-    isPropValid(prop) && prop !== "horizontalEdgeOffset",
+    isPropValid(prop) &&
+    prop !== "horizontalEdgeOffset" &&
+    prop !== "hideScrollbar",
 })<{
   horizontalEdgeOffset?: number | string
+  hideScrollbar?: boolean
 }>(
-  ({ horizontalEdgeOffset }) => css`
+  ({ horizontalEdgeOffset, hideScrollbar }) => css`
     height: 100%;
     width: 100%;
     position: relative;
@@ -36,6 +39,13 @@ export const SRoot = styled(ScrollAreaPrimitive.Root, {
         padding-inline: ${horizontalEdgeOffset};
       }
     }
+
+    ${hideScrollbar &&
+    css`
+      ${SScrollbar} {
+        display: none;
+      }
+    `}
   `,
 )
 

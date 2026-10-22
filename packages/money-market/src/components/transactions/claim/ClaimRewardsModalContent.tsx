@@ -235,7 +235,7 @@ export const ClaimRewardsModalContent = () => {
           <Alert
             variant="error"
             sx={{ my: 14 }}
-            description="Your reward balance is 0"
+            description="My reward balance is 0"
           />
         )}
       </Stack>

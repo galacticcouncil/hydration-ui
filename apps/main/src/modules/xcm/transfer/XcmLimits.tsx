@@ -1,0 +1,203 @@
+import { Separator, Summary } from "@galacticcouncil/ui/components"
+import { Ntt } from "@galacticcouncil/xc-core"
+import Big from "big.js"
+import { useFormContext } from "react-hook-form"
+
+import {
+  useBasejumpPoolLiquidity,
+  useCrossChainDepositLimit,
+  useCrossChainGlobalWithdrawLimit,
+  useNttCustody,
+  useNttInboundLimit,
+  useNttOutboundLimit,
+} from "@/api/xcm"
+import {
+  BasejumpPoolSummaryRow,
+  CBreakerInboundLimitSummaryRow,
+  CBreakerOutboundLimitSummaryRow,
+  WormholeCustodySummaryRow,
+  WormholeLimitSummaryRow,
+} from "@/modules/xcm/transfer/components/LimitSummary"
+import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import {
+  BASEJUMP_POOL_ALERT_KEYS,
+  CBREAKER_INBOUND_LIMIT_ALERT_KEYS,
+  CBREAKER_OUTBOUND_LIMIT_ALERT_KEYS,
+  hasXcmLimitAlertKey,
+  isNttMetered,
+  WORMHOLE_CUSTODY_ALERT_KEYS,
+  WORMHOLE_LIMIT_ALERT_KEYS,
+  XcmLimitAlertKey,
+} from "@/modules/xcm/transfer/utils/limits"
+import { useAssets } from "@/providers/assetsProvider"
+import { useAssetPrice } from "@/states/displayAsset"
+import { toDecimal } from "@/utils/formatting"
+
+type XcmLimitsProps = {
+  alertKey: string
+}
+
+export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
+  const { isLoading } = useXcmProvider()
+  const { watch } = useFormContext<XcmFormValues>()
+  const { native } = useAssets()
+
+  const [srcAsset, destAsset, srcChain, destChain] = watch([
+    "srcAsset",
+    "destAsset",
+    "srcChain",
+    "destChain",
+  ])
+
+  const { data: depositLimit, isLoading: isLoadingDepositLimit } =
+    useCrossChainDepositLimit(destAsset)
+
+  const { data: globalWithdrawLimit, isLoading: isLoadingGlobalWithdrawLimit } =
+    useCrossChainGlobalWithdrawLimit()
+
+  const isNttRoute =
+    !!srcChain &&
+    !!srcAsset &&
+    !!destChain &&
+    !!destAsset &&
+    Ntt.isKnown(srcChain, srcAsset) &&
+    Ntt.isKnown(destChain, destAsset)
+
+  const { data: outbound, isLoading: isLoadingOutbound } = useNttOutboundLimit(
+    isNttRoute ? srcChain : null,
+    isNttRoute ? srcAsset : null,
+  )
+  const { data: inbound, isLoading: isLoadingInbound } = useNttInboundLimit(
+    isNttRoute ? destChain : null,
+    isNttRoute ? destAsset : null,
+    isNttRoute ? srcChain : null,
+  )
+  const { data: custody, isLoading: isLoadingCustody } = useNttCustody(
+    isNttRoute ? destChain : null,
+    isNttRoute ? destAsset : null,
+  )
+
+  const isBasejumpPool = hasXcmLimitAlertKey(alertKey, BASEJUMP_POOL_ALERT_KEYS)
+  const { data: pool, isLoading: isLoadingPool } = useBasejumpPoolLiquidity(
+    isBasejumpPool ? destChain : null,
+    isBasejumpPool ? destAsset : null,
+  )
+
+  const isInbound = hasXcmLimitAlertKey(
+    alertKey,
+    CBREAKER_INBOUND_LIMIT_ALERT_KEYS,
+  )
+  const isOutbound = hasXcmLimitAlertKey(
+    alertKey,
+    CBREAKER_OUTBOUND_LIMIT_ALERT_KEYS,
+  )
+  const isWormhole = hasXcmLimitAlertKey(alertKey, WORMHOLE_LIMIT_ALERT_KEYS)
+  const isWormholeCustody = hasXcmLimitAlertKey(
+    alertKey,
+    WORMHOLE_CUSTODY_ALERT_KEYS,
+  )
+
+  const headroomAmount =
+    globalWithdrawLimit?.headroom !== undefined
+      ? toDecimal(globalWithdrawLimit.headroom, native.decimals)
+      : ""
+
+  const {
+    price: nativePrice,
+    isValid: isNativePriceValid,
+    isLoading: isLoadingNativePrice,
+  } = useAssetPrice(native.id)
+
+  const headroomUsd = isNativePriceValid
+    ? Big(headroomAmount || "0")
+        .times(nativePrice)
+        .toString()
+    : null
+
+  const showDepositRow = isInbound && !!depositLimit
+  const showGlobalWithdrawRow =
+    isOutbound && !!globalWithdrawLimit && !!headroomUsd
+  const bindingLeg =
+    alertKey === XcmLimitAlertKey.WormholeInboundExceeded
+      ? "inbound"
+      : "outbound"
+  const bindingNttLimit = bindingLeg === "inbound" ? inbound : outbound
+
+  const showWormholeRow =
+    isWormhole &&
+    !!bindingNttLimit &&
+    isNttMetered(bindingNttLimit) &&
+    !!srcChain &&
+    !!destChain &&
+    !!srcAsset &&
+    !!destAsset
+
+  const showCustodyRow =
+    isWormholeCustody &&
+    custody !== undefined &&
+    custody !== null &&
+    !!destChain &&
+    !!destAsset
+
+  const showBasejumpPoolRow =
+    isBasejumpPool && !!pool && !!destChain && !!destAsset
+
+  if (
+    !showBasejumpPoolRow &&
+    !showDepositRow &&
+    !showGlobalWithdrawRow &&
+    !showWormholeRow &&
+    !showCustodyRow
+  ) {
+    return null
+  }
+
+  return (
+    <Summary separator={<Separator />} width="100%">
+      {showDepositRow && (
+        <CBreakerInboundLimitSummaryRow
+          depositLimit={depositLimit}
+          loading={isLoading || isLoadingDepositLimit}
+        />
+      )}
+      {showGlobalWithdrawRow && (
+        <CBreakerOutboundLimitSummaryRow
+          globalWithdrawLimit={globalWithdrawLimit}
+          headroomUsd={headroomUsd}
+          loading={
+            isLoading || isLoadingGlobalWithdrawLimit || isLoadingNativePrice
+          }
+        />
+      )}
+      {showWormholeRow && (
+        <WormholeLimitSummaryRow
+          outbound={outbound}
+          inbound={inbound}
+          bindingLeg={bindingLeg}
+          srcChain={srcChain}
+          destChain={destChain}
+          srcAsset={srcAsset}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingOutbound || isLoadingInbound}
+        />
+      )}
+      {showCustodyRow && (
+        <WormholeCustodySummaryRow
+          custody={custody}
+          destChain={destChain}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingCustody}
+        />
+      )}
+      {showBasejumpPoolRow && (
+        <BasejumpPoolSummaryRow
+          pool={pool}
+          destChain={destChain}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingPool}
+        />
+      )}
+    </Summary>
+  )
+}

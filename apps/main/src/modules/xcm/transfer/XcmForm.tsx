@@ -14,7 +14,7 @@ import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useCrossChainBalance } from "@/api/xcm"
+import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -49,9 +49,9 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
-    isLoading,
+    isLoadingSrcBalances,
+    isLoadingDestBalances,
     isConnectedAccountValid,
-    registryChain,
   } = useXcmProvider()
 
   const { watch, handleSubmit, reset, setValue } =
@@ -101,10 +101,10 @@ export const XcmForm = () => {
   function onConnect() {
     if (!srcChain) return toggle()
     toggle(getWalletModeByChain(srcChain), {
-      title: t("xcm:connect.modal.title", {
+      title: t("connectWallet.modal.title", {
         chain: srcChain.name,
       }),
-      description: t("xcm:connect.modal.description", {
+      description: t("connectWallet.modal.description", {
         chain: srcChain.name,
       }),
     })
@@ -155,8 +155,10 @@ export const XcmForm = () => {
 
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
+  const getHydrationAssetId = useHydrationAssetId()
+
   const spotPriceId = srcAsset
-    ? registryChain.getBalanceAssetId(srcAsset).toString()
+    ? (getHydrationAssetId(srcAsset, srcChainKey) ?? undefined)
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)
@@ -227,15 +229,21 @@ export const XcmForm = () => {
                 balance={srcBalances?.get(srcAsset?.key ?? "")}
                 balanceMax={transfer?.source.max}
                 withMaxButton
-                disabled={!srcAsset || !hasValidAccounts || isLoading}
-                isLoading={isLoading}
+                disabled={
+                  !srcAsset || !hasValidAccounts || isLoadingSrcBalances
+                }
+                isLoading={isLoadingSrcBalances}
+                isBalanceLoading={isLoadingSrcBalances}
                 assetPrice={price}
               />
             </Flex>
           </Stack>
         </Paper>
 
-        <ChainSwitch onClick={handleChainSwitch} />
+        <ChainSwitch
+          onClick={handleChainSwitch}
+          disabled={!!transfer && !transfer.reversible}
+        />
 
         <Paper>
           <Stack p={["l", "xl"]} gap="base">
@@ -283,7 +291,8 @@ export const XcmForm = () => {
                 fieldName="destAmount"
                 balance={destBalances?.get(destAsset?.key ?? "")}
                 disabled
-                isLoading={isLoading}
+                isLoading={isLoadingDestBalances}
+                isBalanceLoading={isLoadingDestBalances}
                 assetPrice={price}
               />
             </Flex>

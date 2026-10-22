@@ -10,6 +10,7 @@ import { Flex } from "@/components/Flex"
 import { Grid } from "@/components/Grid"
 import { Input } from "@/components/Input"
 import { Paper } from "@/components/Paper"
+import { Skeleton } from "@/components/Skeleton"
 import { TableContainer } from "@/components/Table"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
@@ -268,6 +269,37 @@ export const WithSkeletons: Story = {
     isLoading: true,
     skeletonRowCount: TABLE_DATA.length,
   },
+}
+
+export const WithCustomSkeletonCell: Story = {
+  render: () => (
+    <TableContainer as={Paper}>
+      <DataTable
+        fixedLayout
+        isLoading
+        skeletonRowCount={TABLE_DATA.length}
+        data={LARGE_TABLE_DATA.slice(0, 6)}
+        columns={[
+          columnHelper.accessor("symbol", {
+            header: "Symbol",
+            cell: ({ getValue }) => getValue(),
+            meta: {
+              skeletonCell: () => (
+                <Flex align="center" gap="base">
+                  <Skeleton width={30} height={30} circle />
+                  <Skeleton width="min(80px, 100%)" height="1em" />
+                </Flex>
+              ),
+            },
+          }),
+          columnHelper.accessor("price", {
+            header: "Price",
+            cell: ({ getValue }) => formatters.usd.format(getValue()),
+          }),
+        ]}
+      />
+    </TableContainer>
+  ),
 }
 
 export const WithSearch: Story = {

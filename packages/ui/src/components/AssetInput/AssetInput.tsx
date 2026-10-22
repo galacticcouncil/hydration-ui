@@ -1,283 +1,278 @@
-import { formatNumber } from "@galacticcouncil/utils"
-import Big from "big.js"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
-import { FormError } from "@/components/FormError"
-import { getToken, pxToRem } from "@/utils"
+import { Button } from "@/components/Button"
+import { Icon } from "@/components/Icon"
+import { LogoSkeleton } from "@/components/Logo"
+import { Skeleton } from "@/components/Skeleton"
+import { Tooltip } from "@/components/Tooltip"
+import { pxToRem } from "@/utils"
 
 import {
+  SAmount,
+  SAmountInput,
   SAssetButton,
-  SAssetButtonEmpty,
-  SAssetInput,
+  SAssetGroup,
+  SBalance,
+  SBalanceText,
+  SHeader,
+  SLabel,
+  SLockButton,
+  SOverlay,
+  SRoot,
+  SSubline,
 } from "./AssetInput.styled"
 import { defaultAssetValueFormatter } from "./AssetInput.utils"
+import { PercentageButton } from "./PercentageButton"
+
+export type AssetInputAsset = {
+  symbol: string
+  icon: ReactNode
+}
+
+export type AssetInputBalance = {
+  label: string
+  value: ReactNode
+  isLoading?: boolean
+  onMax?: (() => void) | null
+  onPercentage?: ((percent: number) => void) | null
+  withPercentageButton?: boolean
+  isMaxDisabled?: boolean
+}
 
 export type AssetInputProps = {
-  label?: string
-  balanceLabel?: string
-  symbol?: string
+  label?: ReactNode
+  labelAdornment?: ReactNode
+  asset?: AssetInputAsset | null
+  onAssetClick?: () => void
+  selectAssetLabel?: string
   value?: string
-  displayValue?: string
-  displayValueLoading?: boolean
-  maxBalance?: string
-  maxBalanceLoading?: boolean
-  maxButtonBalance?: string
-  ignoreBalance?: boolean
-  ignoreDisplayValue?: boolean
-  hideMaxBalanceAction?: boolean
+  onChange?: (value: string) => void
+  displayValue?: ReactNode
+  balance?: AssetInputBalance
   assetError?: string
   amountError?: string
-  disabled?: boolean
-  disabledInput?: boolean
-  hideInput?: boolean
-  modalDisabled?: boolean
-  loading?: boolean
-  selectedAssetIcon?: ReactNode
-  onChange?: (value: string) => void
-  onAsssetBtnClick?: () => void
-  onMaxButtonClick?: (value: string) => void
+  isLoading?: boolean
+  isValueLoading?: boolean
+  isDisplayValueLoading?: boolean
+  isDisabled?: boolean
+  isReadOnly?: boolean
+  isAmountHidden?: boolean
+  isLocked?: boolean
+  onLock?: () => void
+  lockLabel?: string
   className?: string
 }
 
 export const AssetInput = ({
-  symbol,
-  selectedAssetIcon,
-  value,
-  displayValue,
-  displayValueLoading,
   label,
-  balanceLabel,
-  maxBalance,
-  maxBalanceLoading,
-  maxButtonBalance,
-  onMaxButtonClick,
-  ignoreBalance,
-  ignoreDisplayValue,
-  hideMaxBalanceAction,
+  labelAdornment,
+  asset,
+  onAssetClick,
+  selectAssetLabel,
+  value,
   onChange,
+  displayValue,
+  balance,
   assetError,
   amountError,
-  disabled,
-  disabledInput,
-  hideInput,
-  modalDisabled,
-  loading,
-  onAsssetBtnClick,
+  isLoading = false,
+  isValueLoading = false,
+  isDisplayValueLoading = false,
+  isDisabled = false,
+  isReadOnly = false,
+  isAmountHidden = false,
+  isLocked = false,
+  onLock,
+  lockLabel,
   className,
 }: AssetInputProps) => {
-  const usedMaxBalance = maxButtonBalance || maxBalance
-
-  const handleMaxButtonClick = () => {
-    if (usedMaxBalance) {
-      onChange?.(usedMaxBalance)
-      onMaxButtonClick?.(usedMaxBalance)
-    }
-  }
-
-  const errorMessage = assetError ?? amountError
+  const isValueBusy = isLoading || isValueLoading
+  const error = isLoading
+    ? undefined
+    : isAmountHidden
+      ? assetError
+      : (amountError ?? assetError)
 
   return (
-    <Flex
-      direction="column"
-      gap="m"
-      py="l"
-      sx={{ position: "relative", overflow: "hidden" }}
-      className={className}
-    >
-      <Flex align="center" gap="s" justify="space-between">
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            sx={{
-              width: "fit-content",
-              lineHeight: "120%",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </Text>
-        )}
-        {!ignoreBalance && (
-          <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
-            <Text
-              as="div"
-              color={getToken("text.low")}
-              fs="p5"
-              fw={500}
-              sx={{
-                width: "fit-content",
-                lineHeight: "120%",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <span>{balanceLabel ?? "Balance"}: </span>
-              {loading || maxBalanceLoading ? (
-                <span sx={{ height: 12, lineHeight: 1 }}>
-                  <Skeleton width={48} height={12} />
-                </span>
-              ) : (
-                <span>{maxBalance ? formatNumber(maxBalance) : ""}</span>
-              )}
-            </Text>
-            {!hideMaxBalanceAction && (
-              <MicroButton
-                aria-label="Max balance button"
-                onClick={handleMaxButtonClick}
-                disabled={
-                  Big(usedMaxBalance || "0").lte(0) ||
-                  loading ||
-                  maxBalanceLoading ||
-                  !onChange ||
-                  !!disabled
-                }
-              >
-                max
-              </MicroButton>
-            )}
-          </Flex>
-        )}
-      </Flex>
-      <Flex direction="column">
-        <Flex
-          sx={{ overflowX: "hidden" }}
-          align="center"
-          justify="space-between"
-          gap="m"
-        >
-          <AssetButton
-            sx={{ ...(hideInput && { flex: 1 }) }}
-            symbol={symbol}
-            icon={selectedAssetIcon}
-            loading={loading}
-            error={!!assetError}
-            onAsssetBtnClick={onAsssetBtnClick}
-            disabled={!!modalDisabled || !!disabled}
-          />
-          {!hideInput && (
-            <Flex
-              direction="column"
-              height="2.375rem"
-              justify="space-evenly"
-              align="end"
-              flex={1}
-              sx={{ minWidth: 0, overflow: "hidden" }}
-            >
-              <SAssetInput
-                isError={!!amountError}
-                placeholder="0"
-                variant="embedded"
-                autoComplete="off"
-                inputMode="decimal"
-                disabled={disabled || loading || !onChange || disabledInput}
-                value={defaultAssetValueFormatter(value ?? "")}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  if (e.target.validity.valid) {
-                    const formattedValue = e.target.value
-                      .replace(/\s+/g, "")
-                      .replace(/,/g, ".")
-
-                    if (!isNaN(Number(formattedValue))) {
-                      onChange?.(formattedValue)
-                    }
-                  }
-                }}
-              />
-
-              {!ignoreDisplayValue && (
-                <Text
-                  color={getToken("text.low")}
-                  fs="p6"
-                  fw={400}
-                  truncate
-                  width="100%"
-                  align="right"
-                >
-                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-                </Text>
-              )}
-            </Flex>
+    <SRoot isAmountHidden={isAmountHidden} className={className}>
+      {(label || labelAdornment || balance) && (
+        <SHeader>
+          {label && <SLabel>{label}</SLabel>}
+          {labelAdornment}
+          {balance && (
+            <AssetInputBalanceView
+              {...balance}
+              isLoading={isLoading || balance.isLoading}
+              isDisabled={isDisabled}
+            />
           )}
-        </Flex>
-        {errorMessage && (
-          <FormError lh={1} ml="auto">
-            {errorMessage}
-          </FormError>
+        </SHeader>
+      )}
+
+      <SAssetGroup isFullWidth={isAmountHidden}>
+        <AssetButton
+          asset={asset}
+          onClick={onAssetClick}
+          selectAssetLabel={selectAssetLabel}
+          isLoading={isLoading}
+          isError={!!assetError && !isLoading}
+          isDisabled={isDisabled}
+          fullWidth={isAmountHidden}
+        />
+        {onLock && (
+          <Tooltip text={lockLabel} size="small" asChild>
+            <SLockButton
+              type="button"
+              isLocked={isLocked}
+              onClick={onLock}
+              aria-label={lockLabel}
+            >
+              <Icon
+                component={isLocked ? LockKeyhole : LockKeyholeOpen}
+                size="s"
+              />
+            </SLockButton>
+          </Tooltip>
         )}
-      </Flex>
-    </Flex>
+      </SAssetGroup>
+
+      {!isAmountHidden && (
+        <SAmount>
+          <SAmountInput
+            variant="embedded"
+            placeholder="0"
+            autoComplete="off"
+            inputMode="decimal"
+            aria-busy={isValueBusy}
+            isError={!!amountError && !isLoading}
+            disabled={isDisabled}
+            readOnly={isReadOnly || isValueBusy || !onChange}
+            value={defaultAssetValueFormatter(value ?? "")}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (!e.target.validity.valid) return
+
+              const formattedValue = e.target.value
+                .replace(/\s+/g, "")
+                .replace(/,/g, ".")
+
+              if (!isNaN(Number(formattedValue))) {
+                onChange?.(formattedValue)
+              }
+            }}
+          />
+          {isValueBusy && (
+            <SOverlay>
+              <Skeleton width={pxToRem(64)} height={pxToRem(16)} />
+            </SOverlay>
+          )}
+        </SAmount>
+      )}
+
+      <SSubline isError={!!error}>
+        {error ??
+          (!isAmountHidden &&
+            (isLoading || isDisplayValueLoading ? (
+              <Skeleton width={pxToRem(48)} height={pxToRem(8)} />
+            ) : (
+              displayValue
+            )))}
+      </SSubline>
+    </SRoot>
   )
 }
 
-export const AssetButton = ({
-  loading,
-  symbol,
-  error,
-  icon,
-  disabled,
-  className,
-  onAsssetBtnClick,
-}: {
-  loading?: boolean
-  symbol?: string
-  icon?: ReactNode
-  error: boolean
-  disabled?: boolean
-  className?: string
-  onAsssetBtnClick?: () => void
-}) => {
-  if (loading)
-    return (
-      <div sx={{ height: pxToRem(34), lineHeight: 1 }}>
-        <Skeleton sx={{ width: pxToRem(80), height: pxToRem(34) }} />
-      </div>
-    )
-
-  if (symbol && icon)
-    return (
-      <SAssetButton
-        className={className}
-        type="button"
-        disabled={!!disabled}
-        isError={!!error}
-        onClick={onAsssetBtnClick}
+const AssetInputBalanceView = ({
+  label,
+  value,
+  isLoading,
+  onMax,
+  onPercentage,
+  withPercentageButton = false,
+  isMaxDisabled,
+  isDisabled,
+}: AssetInputBalance & { isDisabled: boolean }) => (
+  <SBalance>
+    <SBalanceText>
+      {label}:{" "}
+      {isLoading ? <Skeleton width={pxToRem(64)} height="1em" inline /> : value}
+    </SBalanceText>
+    {onMax && (
+      <Button
+        size="micro"
+        uppercase
+        variant="muted"
+        outline
+        onClick={onMax}
+        disabled={isLoading || isDisabled || isMaxDisabled}
       >
-        {icon}
-        <Flex flex={1} align="center" gap="s" justify="space-between">
-          <Text
-            color={getToken("text.high")}
-            fw={600}
-            fs="p3"
-            whiteSpace="nowrap"
-          >
-            {symbol}
-          </Text>
-          {onAsssetBtnClick && (
-            <Icon
-              size="s"
-              mr="-base"
-              component={ChevronDown}
-              color={getToken("icons.onContainer")}
-            />
-          )}
-        </Flex>
-      </SAssetButton>
-    )
+        max
+      </Button>
+    )}
+    {withPercentageButton &&
+      onPercentage &&
+      !isLoading &&
+      !isDisabled &&
+      !isMaxDisabled && <PercentageButton onSelect={onPercentage} />}
+  </SBalance>
+)
+
+export type AssetButtonProps = {
+  asset?: AssetInputAsset | null
+  onClick?: () => void
+  selectAssetLabel?: string
+  isLoading?: boolean
+  isError?: boolean
+  isDisabled?: boolean
+  fullWidth?: boolean
+  className?: string
+}
+
+export const AssetButton = ({
+  asset,
+  onClick,
+  selectAssetLabel = "Select asset",
+  isLoading = false,
+  isError = false,
+  isDisabled = false,
+  fullWidth = false,
+  className,
+}: AssetButtonProps) => {
+  const isInteractive = !!onClick && !isDisabled && !isLoading
 
   return (
-    <SAssetButtonEmpty
-      variant="secondary"
-      sx={{ justifyContent: "space-between" }}
+    <SAssetButton
+      type="button"
       className={className}
-      onClick={onAsssetBtnClick}
+      isLoading={isLoading}
+      isEmpty={!asset && !isLoading}
+      isError={isError}
+      fullWidth={fullWidth}
+      disabled={!isInteractive}
+      aria-busy={isLoading}
+      onClick={onClick}
     >
-      <Text fw={600} fs="p3" whiteSpace="nowrap">
-        Select asset
-      </Text>
-      {!disabled && <Icon size="s" component={ChevronDown} />}
-    </SAssetButtonEmpty>
+      {isLoading ? (
+        <>
+          <LogoSkeleton size="medium" />
+          <Skeleton width={pxToRem(48)} height="1em" />
+        </>
+      ) : asset ? (
+        <>
+          {asset.icon}
+          {asset.symbol}
+        </>
+      ) : (
+        selectAssetLabel
+      )}
+      {isInteractive && (
+        <Icon
+          size="s"
+          mr="-s"
+          ml={fullWidth ? "auto" : undefined}
+          component={ChevronDown}
+        />
+      )}
+    </SAssetButton>
   )
 }

@@ -1,4 +1,4 @@
-import { Box, Button, Spinner } from "@galacticcouncil/ui/components"
+import { Box, LoadingButton } from "@galacticcouncil/ui/components"
 import { ReactNode } from "react"
 
 import { TxStateType, useModalContext } from "@/hooks/useModal"
@@ -43,8 +43,7 @@ export const TxActionsWrapper = ({
 }: TxActionsWrapperProps) => {
   const { txError } = useModalContext()
 
-  const isAmountMissing =
-    requiresAmount && requiresAmount && Number(amount) === 0
+  const isAmountMissing = requiresAmount && Number(amount) === 0
 
   function getMainParams() {
     if (blocked) return { loading: false, disabled: true, content: actionText }
@@ -69,7 +68,8 @@ export const TxActionsWrapper = ({
         disabled: true,
         content: <span>Enter an amount</span>,
       }
-    if (preparingTransactions) return { loading: true, disabled: true }
+    if (preparingTransactions)
+      return { loading: true, disabled: true, content: actionText }
     if (mainTxState?.loading)
       return { loading: true, disabled: true, content: actionInProgressText }
     if (requiresApproval && !approvalTxState?.success)
@@ -83,28 +83,16 @@ export const TxActionsWrapper = ({
 
   return (
     <Box mt="var(--modal-content-padding)" className={className}>
-      <Button
-        variant={isSubmitDisabled ? "tertiary" : "primary"}
+      <LoadingButton
         width="100%"
         disabled={isSubmitDisabled}
+        disabledVariant="muted"
         onClick={() => handleClick?.()}
         size="large"
-        sx={{ position: "relative" }}
+        isLoading={!!loading}
       >
-        {loading && (
-          <span
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <Spinner />
-          </span>
-        )}
-        <span sx={{ opacity: loading ? 0 : 1 }}>{content || <>&nbsp;</>}</span>
-      </Button>
+        {content}
+      </LoadingButton>
     </Box>
   )
 }

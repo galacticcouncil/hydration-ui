@@ -48,7 +48,11 @@ import {
 } from "@/components/Table"
 import { getToken } from "@/utils"
 
-import { useDataTable, UseDataTableOwnOptions } from "./DataTable.utils"
+import {
+  handleCopyPlainNumbers,
+  useDataTable,
+  UseDataTableOwnOptions,
+} from "./DataTable.utils"
 
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
@@ -99,6 +103,7 @@ const DataTable = <TData,>({
   fixedLayout = false,
   paginated = false,
   expandable = false,
+  hideExpandColumn = false,
   pageSize = DATA_TABLE_DEFAULT_PAGE_SIZE,
   pageNumber = 1,
   borderless,
@@ -131,6 +136,8 @@ const DataTable = <TData,>({
     size,
     borderless,
   }
+
+  const showExpandColumn = !!expandable && !hideExpandColumn
 
   const isControlledSorting =
     sorting !== undefined && onSortingChange !== undefined
@@ -180,7 +187,11 @@ const DataTable = <TData,>({
 
   return (
     <>
-      <Table {...tableProps} className={className}>
+      <Table
+        {...tableProps}
+        className={className}
+        onCopy={handleCopyPlainNumbers}
+      >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -211,6 +222,9 @@ const DataTable = <TData,>({
                   </TableHead>
                 )
               })}
+              {showExpandColumn && (
+                <TableHead sx={{ pl: "0 !important", width: "xl" }} />
+              )}
             </TableRow>
           ))}
         </TableHeader>
@@ -256,6 +270,9 @@ const DataTable = <TData,>({
                       data-expanded={isRowExpanded}
                       data-selected={row.getIsSelected()}
                       onClick={() => {
+                        // don't trigger the row while the user is selecting text
+                        if (window.getSelection()?.toString()) return
+
                         if (isRowExpandable) {
                           if (expandable === "single" && !isRowExpanded) {
                             table.resetExpanded()
@@ -286,7 +303,6 @@ const DataTable = <TData,>({
                             }
                             isPinned={isPinned}
                             data-pinned={isPinned}
-                            isClickable={isRowClickable}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
@@ -296,31 +312,39 @@ const DataTable = <TData,>({
                         )
                       })}
 
-                      {isRowExpandable && (
-                        <TableCell sx={{ pl: "0 !important" }}>
-                          <Flex justify="end" align="center">
-                            <Icon
-                              size="m"
-                              color={getToken("icons.onSurface")}
-                              component={
-                                isRowExpanded ? ChevronUp : ChevronDown
-                              }
-                            />
-                          </Flex>
+                      {showExpandColumn && (
+                        <TableCell sx={{ pl: "0 !important", width: "xl" }}>
+                          {isRowExpandable && (
+                            <Flex justify="end" align="center">
+                              <Icon
+                                size="m"
+                                color={getToken("icons.onSurface")}
+                                component={
+                                  isRowExpanded ? ChevronUp : ChevronDown
+                                }
+                              />
+                            </Flex>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>
                   </DataTableExternalLink>
                   {override && (
                     <TableRowOverride
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                     >
                       {override}
                     </TableRowOverride>
                   )}
                   {isRowExpandable && renderSubComponent && (
                     <DataTableCollapsibleRow
-                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      colSpan={
+                        table.getVisibleLeafColumns().length +
+                        (showExpandColumn ? 1 : 0)
+                      }
                       isExpanded={isRowExpanded}
                     >
                       {renderSubComponent(row.original)}
@@ -330,8 +354,8 @@ const DataTable = <TData,>({
               )
             })
           ) : (
-            <TableRow isEmptyState>
-              <TableCell colSpan={columns.length}>
+            <TableRow isEmptyState data-variable-height data-empty-state>
+              <TableCell colSpan={columns.length + (showExpandColumn ? 1 : 0)}>
                 {emptyState ?? "No results."}
               </TableCell>
             </TableRow>
@@ -416,7 +440,10 @@ const DataTableCollapsibleRow: FC<DataTableCollapsibleRowProps> = ({
   }
 
   return (
-    <TableRow sx={{ display: isVisible ? "table-row" : "none" }}>
+    <TableRow
+      data-variable-height
+      sx={{ display: isVisible ? "table-row" : "none" }}
+    >
       <TableCell
         colSpan={colSpan}
         sx={{ p: "0!important", height: "auto!important" }}

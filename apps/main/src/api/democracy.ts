@@ -5,7 +5,8 @@ import { number, string, z } from "zod/v4"
 
 import { bestNumberQuery } from "@/api/chain"
 import { accountVotesQuery, SubsquareVoteState } from "@/api/external/subsquare"
-import { Papi, TProviderContext } from "@/providers/rpcProvider"
+import { Papi } from "@/api/rpcClient"
+import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 export type CastingVoteInfo = Extract<
@@ -34,28 +35,8 @@ export type TUnlockableVote = {
   classId: number
 }
 
-const CONVICTIONS_BLOCKS: { [key: string]: number } = {
-  none: 0,
-  locked1x: 100800,
-  locked2x: 201600,
-  locked3x: 403200,
-  locked4x: 806400,
-  locked5x: 1612800,
-  locked6x: 3225600,
-}
-
 export const CONVICTIONS = [0, 1, 2, 3, 4, 5, 6] as const
 export type Conviction = (typeof CONVICTIONS)[number]
-
-export const CONVICTIONS_BLOCKS_BY_INDEX: { [key in Conviction]: number } = {
-  0: 0,
-  1: 100800,
-  2: 201600,
-  3: 403200,
-  4: 806400,
-  5: 1612800,
-  6: 3225600,
-}
 
 const CONVICTION_NAMES = [
   "none",
@@ -67,11 +48,62 @@ const CONVICTION_NAMES = [
   "locked6x",
 ] as const
 
+const LOCK_PERIODS_BY_CONVICTION: Record<Conviction, number> = {
+  0: 0,
+  1: 1,
+  2: 2,
+  3: 4,
+  4: 8,
+  5: 16,
+  6: 32,
+}
+
+export const VOTE_WEIGHT_BY_CONVICTION: Record<Conviction, number> = {
+  0: 0.1,
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+}
+
+export const REWARD_MULTIPLIER_BY_CONVICTION: Record<Conviction, number> = {
+  0: 0,
+  1: 0.25,
+  2: 0.5,
+  3: 1,
+  4: 2,
+  5: 4,
+  6: 8,
+}
+
+const toConviction = (value: string | number): Conviction | undefined =>
+  CONVICTIONS.find((c) => c === value || CONVICTION_NAMES[c] === value)
+
+export const getConvictionBlocks = (
+  voteLockingPeriodBlocks: number,
+  conviction: string | number,
+) => {
+  const index = toConviction(conviction)
+  if (index === undefined) return undefined
+
+  return LOCK_PERIODS_BY_CONVICTION[index] * voteLockingPeriodBlocks
+}
+
+export const voteLockingPeriodQuery = (rpc: TProviderContext) =>
+  queryOptions({
+    queryKey: ["voteLockingPeriod"],
+    enabled: rpc.isReady,
+    staleTime: Infinity,
+    queryFn: async () =>
+      Number(await rpc.papi.constants.ConvictionVoting.VoteLockingPeriod()),
+  })
+
 export const decodeStandardVote = (packedVote: number) => {
   const aye = (packedVote & 0x80) !== 0
   const index = packedVote & 0x7f
-  const conviction =
-    (index <= 6 ? CONVICTION_NAMES[index] : CONVICTION_NAMES[0]) ?? "none"
+  const conviction = CONVICTION_NAMES[index] ?? "none"
   return { conviction, aye }
 }
 
@@ -96,22 +128,14 @@ const getVoteConviction = (vote: ConvictionVotingVoteAccountVote): string => {
 
 export type TVoteKind = "aye" | "nay" | "split" | "abstain"
 
-export const convictionVoteWeightFactor = (conviction: string): number => {
-  if (conviction === "none") return 0.1
-
-  const locked = /^locked([1-6])x$/u.exec(conviction)
-  if (locked?.[1]) return Number.parseInt(locked[1], 10)
-
-  return 0.1
-}
+export const convictionVoteWeightFactor = (
+  conviction: string | number,
+): number => VOTE_WEIGHT_BY_CONVICTION[toConviction(conviction) ?? 0]
 
 /** Human-facing multiplier for Standard conviction (0.1x … 6x). */
 export const convictionVoteMultiplierForDisplay = (
-  conviction: string,
-): string => {
-  const factor = convictionVoteWeightFactor(conviction)
-  return factor === 0.1 ? "0.1x" : `${factor}x`
-}
+  conviction: string | number,
+): string => `${convictionVoteWeightFactor(conviction)}x`
 
 const voteKindFromAccountVote = (
   vote: ConvictionVotingVoteAccountVote,
@@ -124,11 +148,11 @@ const voteKindFromAccountVote = (
 }
 
 export const referendumInfoQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   referendumIndex: number,
 ) =>
   queryOptions({
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: millisecondsInMinute,
     queryKey: ["referendumInfoQuery", referendumIndex],
     queryFn: async () => {
@@ -143,13 +167,10 @@ export const referendumInfoQuery = (
     },
   })
 
-export const ongoingReferendaQuery = ({
-  papi,
-  isApiLoaded,
-}: TProviderContext) =>
+export const ongoingReferendaQuery = ({ papi, isReady }: TProviderContext) =>
   queryOptions({
     queryKey: ["ongoingReferenda"],
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     queryFn: async () => {
@@ -187,7 +208,7 @@ type TAccountOpenGovVotesAccumulator = {
 }
 
 export const accountOpenGovVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
+  { papi, isReady }: TProviderContext,
   address: string,
 ) => {
   return queryOptions({
@@ -226,7 +247,7 @@ export const accountOpenGovVotesQuery = (
 
       return { votes, classIds: Array.from(classIds) }
     },
-    enabled: isApiLoaded && !!address,
+    enabled: isReady && !!address,
     refetchInterval: millisecondsInMinute,
   })
 }
@@ -291,7 +312,7 @@ export const accountUnlockClassesQuery = (
   address: string,
 ) =>
   queryOptions({
-    enabled: rpc.isApiLoaded && !!address,
+    enabled: rpc.isReady && !!address,
     queryKey: ["accountUnlockClasses", address],
     queryFn: async () => {
       const classLocksRaw =
@@ -318,7 +339,7 @@ export const openGovUnlockedTokensQuery = (
   queryOptions({
     queryKey: openGovUnlockedTokensQueryKey(address),
     queryFn: async () => {
-      const [accountVotes, bestNumber, subsquareAccountVotes] =
+      const [accountVotes, bestNumber, subsquareAccountVotes, voteLocking] =
         await Promise.all([
           rpc.queryClient.ensureQueryData(
             accountOpenGovVotesQuery(rpc, address),
@@ -327,6 +348,7 @@ export const openGovUnlockedTokensQuery = (
           rpc.queryClient.ensureQueryData(
             accountVotesQuery(address, indexerUrl),
           ),
+          rpc.queryClient.ensureQueryData(voteLockingPeriodQuery(rpc)),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")
@@ -340,8 +362,10 @@ export const openGovUnlockedTokensQuery = (
 
         const balance = vote.balance ?? vote.abstainBalance ?? "0"
         if (status === SubsquareVoteState.Executed) {
-          const convictionBlockNumber =
-            CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
+          const convictionBlockNumber = getConvictionBlocks(
+            voteLocking,
+            vote.conviction,
+          )
 
           if (convictionBlockNumber === undefined) {
             indexedVotes.push({
@@ -416,8 +440,10 @@ export const openGovUnlockedTokensQuery = (
               referendumInfo.type === "Killed"
                 ? referendumInfo.value
                 : referendumInfo.value[0]
-            const convictionBlockNumber =
-              CONVICTIONS_BLOCKS[accountVote.conviction]
+            const convictionBlockNumber = getConvictionBlocks(
+              voteLocking,
+              accountVote.conviction,
+            )
 
             if (convictionBlockNumber === undefined) {
               throw new Error("Invalid conviction")

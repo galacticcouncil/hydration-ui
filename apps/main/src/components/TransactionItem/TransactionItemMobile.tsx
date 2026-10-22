@@ -1,16 +1,17 @@
-import { SubScan } from "@galacticcouncil/ui/assets/icons"
+import { SquareArrowOutUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonIcon,
+  Button,
   ExternalLink,
   Flex,
-  Icon,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { replaceAaveWithBorrow } from "@galacticcouncil/utils"
+import { isMobileDevice, replaceAaveWithBorrow } from "@galacticcouncil/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
+import { DateText } from "@/components/RelativeDateText"
 import {
   TransactionStatus,
   TransactionStatusMessage,
@@ -58,16 +59,22 @@ export const TransactionItemMobile: FC<Props> = ({
             {sent ?? "⎯"}
           </Text>
           {timestamp && (
-            <Text fw={500} fs="p6" lh={1.4} color={getToken("text.low")}>
-              {t("date.datetime", { value: timestamp })}
-            </Text>
+            <DateText
+              date={timestamp}
+              fw={500}
+              fs="p6"
+              lh={1.4}
+              color={getToken("text.low")}
+            />
           )}
         </Flex>
 
-        <Flex direction="column" align="end" gap="s">
-          <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
-            {received ?? "⎯"}
-          </Text>
+        <Flex direction="column" justify="center" align="end" gap="s">
+          {received && (
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
+              {received}
+            </Text>
+          )}
           <TransactionStatus variant={statusProps.status} />
           {message && (
             <TransactionStatusMessage
@@ -81,15 +88,16 @@ export const TransactionItemMobile: FC<Props> = ({
       </Flex>
       {link && (
         <TransactionItemMobileAction>
-          <ButtonIcon asChild>
-            <ExternalLink href={link}>
-              <Icon
-                size="s"
-                component={SubScan}
-                color={getToken("text.high")}
-              />
-            </ExternalLink>
-          </ButtonIcon>
+          <Tooltip
+            text={isMobileDevice() ? null : t("openInExplorer")}
+            size="small"
+            asChild
+            side="top"
+          >
+            <Button icon={SquareArrowOutUpRight} variant="transparent" asChild>
+              <ExternalLink href={link} />
+            </Button>
+          </Tooltip>
         </TransactionItemMobileAction>
       )}
     </TransactionItemMobileContainer>
@@ -102,7 +110,7 @@ export const TransactionItemMobileContainer = ({
   readonly children: ReactNode
 }) => {
   return (
-    <Flex align="center" gap="xl">
+    <Flex align="center" gap="s">
       {children}
     </Flex>
   )

@@ -17,12 +17,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { first } from "remeda"
-import { useDebounce } from "use-debounce"
+import { first, isNullish } from "remeda"
 import z from "zod"
 
 import { healthFactorQuery } from "@/api/aave"
 import { TAssetData, TErc20AToken } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import {
   lendingPoolAddressProvider,
   useBorrowAssetsApy,
@@ -30,16 +30,20 @@ import {
   userBorrowSummaryQueryKey,
   useSetUsageAsCollateralTx,
 } from "@/api/borrow"
+import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellWithTxQuery } from "@/api/trade"
-import i18n from "@/i18n"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
+import {
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { scaleHuman, toDecimal } from "@/utils/formatting"
-import { validateMaxBalance } from "@/utils/validators"
+import { scaleHuman } from "@/utils/formatting"
 
 export type TSupplyIsolatedLiquidityFormValues = {
   amount: string
@@ -63,7 +67,11 @@ export const useSupplyIsolatedLiquidity = ({
 }) => {
   const { t } = useTranslation("common")
   const rpc = useRpcProvider()
+  const { sdk, isReady } = rpc
   const { account } = useAccount()
+  const { getAssetWithFallback } = useAssets()
+  const { getTransferableBalance } = useAccountBalances()
+  const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const createBatch = useCreateBatchTx()
   const {
     swap: {
@@ -71,7 +79,65 @@ export const useSupplyIsolatedLiquidity = ({
     },
   } = useTradeSettings()
   const queryClient = useQueryClient()
-  const form = useSupplyIsolatedLiquidityForm({ asset: initialAsset })
+  const { usageAsCollateralEnabledOnUser, reserve, underlyingAsset } =
+    userReserve
+
+  const { data: feeEstimationSwapTx } = useQuery({
+    enabled:
+      isReady && !!account?.address && !isNullish(accountFeePaymentAssetId),
+    queryKey: [
+      "supplyIsolatedLiquidityFeeEstimation",
+      accountFeePaymentAssetId,
+      aToken.id,
+    ],
+    queryFn: async () => {
+      const swap = await sdk.api.router.getBestSell(
+        accountFeePaymentAssetId ?? 0,
+        Number(aToken.id),
+        scaleHuman(
+          getTransferableBalance(accountFeePaymentAssetId?.toString() ?? ""),
+          getAssetWithFallback(accountFeePaymentAssetId?.toString() ?? "")
+            .decimals,
+        ),
+      )
+
+      const swapTx = await sdk.tx
+        .trade(swap)
+        .withSlippage(swapSlippage)
+        .withBeneficiary(account?.address ?? "")
+        .build()
+        .then((tx) => tx.get())
+
+      const txs = [swapTx]
+
+      if (!usageAsCollateralEnabledOnUser) {
+        const disableCollateralsTxs = await getDisableCollateralsTxs()
+
+        txs.push(...(disableCollateralsTxs ?? []))
+
+        const enableCollateralTx = await getSetUsageAsCollateralTx(
+          underlyingAsset,
+          true,
+        )
+        txs.push(enableCollateralTx)
+      }
+
+      return txs.length > 1
+        ? rpc.papi.tx.Utility.batch_all({
+            calls: txs.map((tx) => tx.decodedCall),
+          })
+        : swapTx
+    },
+  })
+
+  const { getMaxBalance, validateBalance } = useFormMaxBalanceWithFee(
+    feeEstimationSwapTx ?? null,
+  )
+
+  const form = useSupplyIsolatedLiquidityForm({
+    asset: initialAsset,
+    validateBalance,
+  })
   const getMinimumTradeAmount = useMinimumTradeAmount()
   const getDisableCollateralsTxs = useBorrowDisableCollateralTxs()
   const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
@@ -82,12 +148,12 @@ export const useSupplyIsolatedLiquidity = ({
       apy: apyData.supplyApy,
       apyType: apyData.apyType,
     })) ?? []
-  const { usageAsCollateralEnabledOnUser, reserve, underlyingAsset } =
-    userReserve
+
   const assetCap = getAssetCapData(reserve)
 
   const [amountIn, assetIn] = form.watch(["amount", "asset"])
 
+  const maxBalance = getMaxBalance(assetIn)
   const isAaveSupply = aToken.underlyingAssetId === assetIn.id
 
   const { data: spotPriceData, isLoading: isPriceLoading } = useQuery({
@@ -95,7 +161,7 @@ export const useSupplyIsolatedLiquidity = ({
     enabled: !isAaveSupply,
   })
 
-  const [debouncedAmountIn] = useDebounce(amountIn, 300)
+  const [debouncedAmountIn, isAmountInSynced] = useDebouncedValue(amountIn)
 
   const collateralType = getAssetCollateralType(
     userReserve,
@@ -137,7 +203,7 @@ export const useSupplyIsolatedLiquidity = ({
   const isBlockedSupply =
     isBlockedByBorrowedAssets || !!supplyCapWarning || !!debtCeilingWarning
 
-  const { data: trade } = useQuery(
+  const { data: quotedTrade, isLoading: isTradeQueryLoading } = useQuery(
     bestSellWithTxQuery(rpc, {
       assetIn: assetIn.id,
       assetOut: aToken.id,
@@ -147,21 +213,28 @@ export const useSupplyIsolatedLiquidity = ({
     }),
   )
 
+  const trade = isAmountInSynced ? quotedTrade : undefined
+  const isTradeLoading = isTradeQueryLoading || !isAmountInSynced
+
   const minReceiveAmount =
     (isAaveSupply
       ? trade?.swap.amountOut
       : getMinimumTradeAmount(trade?.swap)?.toString()) ?? "0"
   const minReceiveAmountShifted = scaleHuman(minReceiveAmount, aToken.decimals)
 
-  const { data: healthFactor } = useQuery(
-    healthFactorQuery(rpc, {
-      address: account?.address ?? "",
-      fromAsset: assetIn,
-      fromAmount: debouncedAmountIn,
-      toAsset: isBlockedSupply ? null : aToken,
-      toAmount: minReceiveAmountShifted,
-    }),
-  )
+  const { data: healthFactor, isPlaceholderData: isHealthFactorStale } =
+    useQuery(
+      healthFactorQuery(rpc, {
+        address: account?.address ?? "",
+        fromAsset: assetIn,
+        fromAmount: debouncedAmountIn,
+        toAsset: isBlockedSupply ? null : aToken,
+        toAmount: minReceiveAmountShifted,
+      }),
+    )
+
+  const isHealthFactorLoading =
+    !isBlockedSupply && (isTradeLoading || isHealthFactorStale)
 
   const toasts = useProtocolActionToasts(CustomToastAction.supplyIsolated, {
     value: t("currency", {
@@ -206,9 +279,11 @@ export const useSupplyIsolatedLiquidity = ({
 
   return {
     form,
+    maxBalance,
     onSubmit,
     collateralType,
     healthFactor,
+    isHealthFactorLoading,
     isolationWarning,
     supplyCapWarning,
     debtCeilingWarning,
@@ -220,13 +295,18 @@ export const useSupplyIsolatedLiquidity = ({
     spotPriceData,
     isPriceLoading,
     isAaveSupply,
+    isTradeLoading,
     swap: trade?.swap,
   }
 }
 
-const useSupplyIsolatedLiquidityForm = ({ asset }: { asset: TAssetData }) => {
-  const { getTransferableBalance } = useAccountBalances()
-
+const useSupplyIsolatedLiquidityForm = ({
+  asset,
+  validateBalance,
+}: {
+  asset: TAssetData
+  validateBalance: ValidateFormMaxBalanceWithFee
+}) => {
   return useForm<TSupplyIsolatedLiquidityFormValues>({
     mode: "onChange",
     defaultValues: {
@@ -234,21 +314,12 @@ const useSupplyIsolatedLiquidityForm = ({ asset }: { asset: TAssetData }) => {
       asset,
     },
     resolver: standardSchemaResolver(
-      z.object({ amount: z.string(), asset: z.custom<TAssetData>() }).refine(
-        (values) => {
-          return validateMaxBalance(
-            toDecimal(
-              getTransferableBalance(values.asset.id),
-              values.asset.decimals,
-            ),
-            values.amount,
-          )
-        },
-        {
-          message: i18n.t("error.maxBalance"),
-          path: ["amount"],
-        },
-      ),
+      z
+        .object({
+          amount: z.string(),
+          asset: z.custom<TAssetData>(),
+        })
+        .check(validateBalance("amount", (form) => [form.asset, form.amount])),
     ),
   })
 }

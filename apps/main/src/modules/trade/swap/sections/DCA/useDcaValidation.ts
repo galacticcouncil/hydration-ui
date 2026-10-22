@@ -14,7 +14,7 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-const PRICE_IMPACT_WARNING_THRESHOLD = -0.1
+const PRICE_IMPACT_WARNING_THRESHOLD = -1
 
 export enum DcaValidationError {
   PriceImpact = "PriceImpact",
@@ -25,17 +25,27 @@ export enum DcaValidationWarning {
   PriceImpact = "PriceImpact",
 }
 
+type DcaValidationResult = {
+  readonly warnings: ReadonlyArray<DcaValidationWarning>
+  readonly errors: ReadonlyArray<DcaValidationError>
+}
+
 export const useDcaValidation = (
   order: TradeDcaOrder | undefined | null,
   duration: TimeFrame,
-): {
-  readonly warnings: ReadonlyArray<DcaValidationWarning>
-  readonly errors: ReadonlyArray<DcaValidationError>
-} => {
+): DcaValidationResult => {
   const {
-    dca: { slippage },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
+  return validateDcaOrder(order, duration, twapSlippage)
+}
+
+export const validateDcaOrder = (
+  order: TradeDcaOrder | undefined | null,
+  duration: TimeFrame,
+  twapSlippage: number,
+): DcaValidationResult => {
   if (!order) {
     return { warnings: [], errors: [] }
   }
@@ -45,7 +55,7 @@ export const useDcaValidation = (
   const warnings: Array<DcaValidationWarning> = []
   const errors: Array<DcaValidationError> = []
 
-  if (priceImpact < -slippage) {
+  if (priceImpact < -twapSlippage) {
     errors.push(DcaValidationError.PriceImpact)
   } else if (priceImpact < PRICE_IMPACT_WARNING_THRESHOLD) {
     warnings.push(DcaValidationWarning.PriceImpact)
@@ -67,31 +77,43 @@ export const useOpenBudgetDcaHfValidation = (
   order: TradeDcaOrder | null | undefined,
   healthFactor: HealthFactorResult | undefined,
   isOpenBudget: boolean,
-): HealthFactorResult | undefined => {
+): {
+  readonly healthFactor: HealthFactorResult | undefined
+  readonly isLoading: boolean
+} => {
   const rpc = useRpcProvider()
   const { getAsset, isErc20AToken } = useAssets()
 
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: aaveSummary } = useQuery(
-    aaveSummaryQuery(rpc, address, isOpenBudget),
+  const assetIn = order ? getAsset(order.assetIn) : undefined
+  const aTokenIn = assetIn && isErc20AToken(assetIn) ? assetIn : undefined
+
+  const { data: aaveSummary, isLoading } = useQuery(
+    aaveSummaryQuery(
+      rpc,
+      address,
+      aTokenIn?.underlyingAssetId,
+      isOpenBudget && !!aTokenIn,
+    ),
   )
 
-  if (!order || !healthFactor || !isOpenBudget) {
-    return
-  }
-
-  const assetIn = getAsset(order.assetIn)
-
-  if (!assetIn || !isErc20AToken(assetIn)) {
-    return
+  if (!order || !healthFactor || !isOpenBudget || !aTokenIn) {
+    return { healthFactor: undefined, isLoading: false }
   }
 
   const reserve = aaveSummary?.reserves.find(
     (reserve) =>
-      getAssetIdFromAddress(reserve.reserveAsset) === assetIn.underlyingAssetId,
+      getAssetIdFromAddress(reserve.reserveAsset) ===
+      aTokenIn.underlyingAssetId,
   )
 
-  return { ...healthFactor, isUserConsentRequired: !!reserve?.isCollateral }
+  return {
+    healthFactor: {
+      ...healthFactor,
+      isUserConsentRequired: !!reserve?.isCollateral,
+    },
+    isLoading,
+  }
 }

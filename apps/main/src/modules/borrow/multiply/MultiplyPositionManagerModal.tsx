@@ -159,8 +159,7 @@ export const MultiplyPositionManagerModal = ({
                     selectedAsset={debtAsset}
                     value={field.value}
                     onChange={field.onChange}
-                    maxBalance={position.debtAmount}
-                    maxBalanceFallback={position.debtAmount}
+                    balance={{ value: position.debtAmount }}
                     amountError={fieldState.error?.message}
                   />
                 )}

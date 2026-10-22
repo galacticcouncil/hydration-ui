@@ -1,4 +1,4 @@
-import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { CallType } from "@galacticcouncil/xc-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -9,7 +9,7 @@ import {
   ToastProcessorFn,
 } from "@/modules/transactions/utils/toasts/processors"
 import { xcScanHttpClient } from "@/modules/xcm/history/xcScanStore"
-import { ToastData, ToastMeta } from "@/states/toasts"
+import { TransactionToastData } from "@/states/toasts"
 import { TransactionType, XcmTag } from "@/states/transactions"
 
 enum ToastProcessorType {
@@ -17,6 +17,7 @@ enum ToastProcessorType {
   Substrate = "Substrate",
   XcScan = "XcScan",
   Basejump = "Basejump",
+  XcSwap = "XcSwap",
   Unknown = "Unknown",
 }
 
@@ -25,10 +26,11 @@ const MAX_TOAST_MINUTE_AGE = {
   [ToastProcessorType.Substrate]: 60,
   [ToastProcessorType.XcScan]: 60,
   [ToastProcessorType.Basejump]: 60,
+  [ToastProcessorType.XcSwap]: 360,
   [ToastProcessorType.Unknown]: 0,
 } as const
 
-const REQUIRED_TOAST_META_KEYS: (keyof ToastMeta)[] = [
+const REQUIRED_TOAST_META_KEYS: (keyof TransactionToastData["meta"])[] = [
   "type",
   "txHash",
   "ecosystem",
@@ -36,7 +38,7 @@ const REQUIRED_TOAST_META_KEYS: (keyof ToastMeta)[] = [
 
 const validateToastForProcessing = (
   type: ToastProcessorType,
-  toast: ToastData,
+  toast: TransactionToastData,
 ): boolean => {
   if (REQUIRED_TOAST_META_KEYS.some((key) => !toast.meta[key])) {
     return false
@@ -50,7 +52,9 @@ const validateToastForProcessing = (
   return toastAgeInMinutes < MAX_TOAST_MINUTE_AGE[type]
 }
 
-const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
+const getToastProcessorType = (
+  toast: TransactionToastData,
+): ToastProcessorType => {
   const { type, ecosystem } = toast.meta
 
   const tags = type === TransactionType.Xcm ? (toast.meta.tags ?? []) : []
@@ -68,6 +72,9 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
     case type === TransactionType.Xcm:
       return ToastProcessorType.XcScan
 
+    case type === TransactionType.XcSwap:
+      return ToastProcessorType.XcSwap
+
     default:
       return ToastProcessorType.Unknown
   }
@@ -76,13 +83,14 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
 export const createToastProcessorFn = (
   address: string,
   queryClient: QueryClient,
-  indexerSdk: IndexerSdk,
+  neckworkClient: NeckworkClient,
   evm: PublicClient,
 ): ToastProcessorFn => {
-  const substrateProcessor = processors.substrate(queryClient, indexerSdk)
-  const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
-  const xcscanProcessor = processors.xcscan(xcScanHttpClient)
-  const basejumpProcessor = processors.basejump(address, queryClient)
+  const substrateProcessor = processors.substrate(queryClient, neckworkClient)
+  const evmProcessor = processors.evm(queryClient, neckworkClient, evm)
+  const xcscanProcessor = processors.xcscan(address, xcScanHttpClient)
+  const basejumpProcessor = processors.basejump(queryClient)
+  const xcSwapProcessor = processors.xcSwap()
   const invalidProcessor = processors.invalid()
 
   return async (toast) => {
@@ -102,6 +110,8 @@ export const createToastProcessorFn = (
         return xcscanProcessor(toast)
       case ToastProcessorType.Basejump:
         return basejumpProcessor(toast)
+      case ToastProcessorType.XcSwap:
+        return xcSwapProcessor(toast)
       case ToastProcessorType.Unknown:
         return invalidProcessor(toast)
     }

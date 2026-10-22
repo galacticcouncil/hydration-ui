@@ -4,7 +4,9 @@ export const apyChartTimeRangeOptions = ["1M", "6M", "1Y"] as const
 export type ApyChartTimeRangeOption = (typeof apyChartTimeRangeOptions)[number]
 
 export const getApyChartTimeRange = (option: ApyChartTimeRangeOption) => {
+  // Round to the hour so remounts within the same hour reuse cache / SQL bounds
   const now = new Date()
+  now.setMinutes(0, 0, 0)
 
   const from = ((): Date => {
     switch (option) {

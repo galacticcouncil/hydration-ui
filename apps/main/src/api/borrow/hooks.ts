@@ -1,7 +1,4 @@
-import {
-  SquidSdk,
-  stablepoolYieldMetricsQuery,
-} from "@galacticcouncil/indexer/squid"
+import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/neckwork"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
 import {
@@ -34,7 +31,7 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { useSquidClient } from "@/api/provider"
+import { neckworkClient } from "@/api/neckwork"
 import {
   stablepoolReservesQuery,
   type TReserve,
@@ -73,7 +70,6 @@ export type BorrowAssetApyData = {
 }
 
 export const useBorrowAssetsApy = (assetIds: string[]) => {
-  const squidClient = useSquidClient()
   const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
   const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
     useBorrowReserves()
@@ -90,15 +86,16 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
   const assetIdsMemo = useStableArray(assetIds)
 
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
-    stablepoolYieldMetricsQuery(squidClient),
+    stablepoolYieldMetricsQuery(neckworkClient),
   )
 
   const yieldsMap = useMemo<Map<string, number>>(() => {
-    return new Map(
-      yieldMetrics?.map((item) => [
-        item.poolId,
-        Number(item.projectedApyPerc),
-      ]) ?? [],
+    return new Map<string, number>(
+      (yieldMetrics ?? []).flatMap<[string, number]>((item) =>
+        item.feeApyPerc === null
+          ? []
+          : [[item.poolId, Number(item.feeApyPerc)]],
+      ),
     )
   }, [yieldMetrics])
 
@@ -542,7 +539,6 @@ export const borrowAssetApyQuery = (
   poolDataContract: UiPoolDataProvider | null,
   incentivesContract: UiIncentiveDataProvider | null,
   queryClient: QueryClient,
-  squidClient: SquidSdk,
   indexerUrl: string,
   assetId: string,
   getAssetWithFallback: TAssetsContext["getAssetWithFallback"],
@@ -595,12 +591,12 @@ export const borrowAssetApyQuery = (
         )
 
         const yieldMetrics = await queryClient.ensureQueryData(
-          stablepoolYieldMetricsQuery(squidClient),
+          stablepoolYieldMetricsQuery(neckworkClient),
         )
 
         const stableswapApy = Number(
           yieldMetrics?.find((metric) => metric.poolId === assetId)
-            ?.projectedApyPerc ?? 0,
+            ?.feeApyPerc ?? 0,
         )
 
         const stablepoolData = await queryClient.ensureQueryData(
@@ -717,35 +713,6 @@ export const useApproveErc20 = () => {
         evmAddress,
       )
       return approveEvmCall
-    },
-    [provider],
-  )
-}
-
-const ERC20_ALLOWANCE_ABI = [
-  {
-    type: "function",
-    name: "allowance",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    outputs: [{ name: "", type: "uint256" }],
-  },
-] as const
-
-export const useErc20Allowance = () => {
-  const provider = useRpcProvider()
-
-  return useCallback(
-    async (tokenAddress: string, evmAddress: string, spender: string) => {
-      return await provider.evm.readContract({
-        abi: ERC20_ALLOWANCE_ABI,
-        address: tokenAddress as `0x${string}`,
-        functionName: "allowance",
-        args: [evmAddress as `0x${string}`, spender as `0x${string}`],
-      })
     },
     [provider],
   )

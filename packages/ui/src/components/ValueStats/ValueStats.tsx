@@ -7,6 +7,7 @@ import {
   SValueStatsLabel,
   SValueStatsValue,
   SValueStatsValueContainer,
+  ValueStatsAlign,
   ValueStatsFont,
   ValueStatsSize,
 } from "@/components/ValueStats/ValueStats.styled"
@@ -18,7 +19,7 @@ export const ValueStatsLabel = SValueStatsLabel
 export const ValueStatsValue = SValueStatsValue
 export const ValueStatsBottomValue = SValueStatsBottomValue
 
-type ValueStatsProps = {
+export type ValueStatsProps = {
   readonly font?: ValueStatsFont
   readonly wrap?: ResponsiveStyleValue<boolean>
   readonly size?: ValueStatsSize
@@ -29,6 +30,7 @@ type ValueStatsProps = {
   readonly bottomLabel?: string
   readonly customBottomLabel?: ReactNode
   readonly floatingBottomLabel?: boolean
+  readonly align?: ValueStatsAlign
   readonly isLoading?: boolean
   readonly className?: string
   readonly containerClassName?: string
@@ -45,6 +47,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   bottomLabel,
   customBottomLabel,
   floatingBottomLabel,
+  align = "left",
   isLoading,
   className,
   containerClassName,
@@ -54,7 +57,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   const renderBottomValues = () => {
     if (isLoading && (bottomLabel || customBottomLabel)) {
       return (
-        <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+        <SValueStatsBottomValue isFloating={floatingBottomLabel} align={align}>
           <Skeleton width={120} height="100%" />
         </SValueStatsBottomValue>
       )
@@ -66,7 +69,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
 
     if (bottomLabel) {
       return (
-        <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+        <SValueStatsBottomValue isFloating={floatingBottomLabel} align={align}>
           {bottomLabel}
         </SValueStatsBottomValue>
       )
@@ -76,7 +79,12 @@ export const ValueStats: FC<ValueStatsProps> = ({
   }
 
   return (
-    <SValueStats shouldWrap={shouldWrap} size={size} className={className}>
+    <SValueStats
+      shouldWrap={shouldWrap}
+      size={size}
+      align={align}
+      className={className}
+    >
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (

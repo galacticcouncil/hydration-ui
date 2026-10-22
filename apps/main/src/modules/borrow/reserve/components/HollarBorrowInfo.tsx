@@ -1,4 +1,3 @@
-import { FormattedGhoReserveData } from "@aave/math-utils"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { Flex, Stack, ValueStats } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
@@ -7,7 +6,6 @@ import { CapProgressCircle } from "@/modules/borrow/reserve/components/CapProgre
 
 type HollarBorrowInfoProps = {
   reserve: ComputedReserveData
-  ghoReserveData: FormattedGhoReserveData
   totalBorrowed: string
   totalBorrowedUSD: string
   maxAvailableToBorrow: string
@@ -17,7 +15,6 @@ type HollarBorrowInfoProps = {
 
 export const HollarBorrowInfo = ({
   reserve,
-  ghoReserveData,
   totalBorrowed,
   totalBorrowedUSD,
   maxAvailableToBorrow,
@@ -72,7 +69,7 @@ export const HollarBorrowInfo = ({
           wrap
           label={t("borrow:apy.variable")}
           value={t("percent", {
-            value: Number(ghoReserveData.ghoVariableBorrowAPY) * 100,
+            value: Number(reserve.variableBorrowAPY) * 100,
           })}
         />
       </Stack>

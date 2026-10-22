@@ -1,0 +1,107 @@
+import { dcaSchedulesQuery } from "@galacticcouncil/indexer/neckwork"
+import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import Big from "big.js"
+import { useMemo } from "react"
+
+import { neckworkClient } from "@/api/neckwork"
+import {
+  toApiDcaStatuses,
+  toDcaScheduleStatus,
+} from "@/modules/trade/orders/lib/apiVocabulary"
+import {
+  DcaOrderData,
+  OrderKind,
+  toOrderStatusFromSchedule,
+} from "@/modules/trade/orders/lib/orderData"
+import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
+import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
+import { scaleHuman } from "@/utils/formatting"
+
+export const useHistoryData = (
+  statuses: ReadonlyArray<DcaScheduleStatus>,
+  assetIds: Array<string>,
+  page: number,
+  pageSize: number,
+  enabled = true,
+) => {
+  const { account } = useAccount()
+  const accountAddress = account?.address ?? ""
+  const owner = safeConvertSS58toPublicKey(accountAddress)
+  const neckworkEnabled = useNeckworkEnabled()
+
+  const { data, isLoading, isLoadingError } = useQuery({
+    ...dcaSchedulesQuery(neckworkClient, {
+      owner,
+      statuses: toApiDcaStatuses(statuses),
+      assetIds,
+      page,
+      pageSize,
+    }),
+    enabled: enabled && neckworkEnabled && !!owner,
+    placeholderData: keepPreviousData,
+  })
+
+  const { getAssetWithFallback } = useAssets()
+
+  const totalCount = data?.totalCount ?? 0
+  const orders = useMemo<Array<DcaOrderData>>(
+    () =>
+      data?.items.map<DcaOrderData>((schedule) => {
+        const from = getAssetWithFallback(schedule.assetIn)
+        const to = getAssetWithFallback(schedule.assetOut)
+
+        // A pre-router schedule (id < 2354) never recorded its terms on chain,
+        // so the API reports budget, singleTradeAmount, isRollingBudget and
+        // periodBlocks as null. That is "not recorded", never zero — a schedule
+        // that really set no budget reports "0" with isRollingBudget: true.
+        const fromAmountBudget =
+          schedule.budget === null
+            ? null
+            : scaleHuman(schedule.budget, from.decimals)
+        const fromAmountExecuted = scaleHuman(
+          schedule.executedAmountIn,
+          from.decimals,
+        )
+
+        return {
+          kind: schedule.isRollingBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+          scheduleId: schedule.scheduleId,
+          from,
+          fromAmountBudget,
+          fromAmountExecuted,
+          fromAmountRemaining:
+            fromAmountBudget === null
+              ? null
+              : Big(fromAmountBudget).minus(fromAmountExecuted).toString(),
+          singleTradeSize:
+            schedule.singleTradeAmount === null
+              ? null
+              : scaleHuman(schedule.singleTradeAmount, from.decimals),
+          to,
+          toAmountExecuted: scaleHuman(schedule.executedAmountOut, to.decimals),
+          status: toOrderStatusFromSchedule(
+            toDcaScheduleStatus(schedule.status),
+          ),
+          timestamp: schedule.lastEventAt ?? schedule.createdAt,
+          blocksPeriod:
+            schedule.periodBlocks === null
+              ? null
+              : String(schedule.periodBlocks),
+          isOpenBudget: schedule.isRollingBudget ?? false,
+          limitPrice: null,
+        }
+      }) ?? [],
+    [data, getAssetWithFallback],
+  )
+
+  return {
+    orders,
+    totalCount,
+    isLoading,
+    // A dead Neckwork disables the query, which is a failed load, not an empty one.
+    isError: isLoadingError || (!neckworkEnabled && !data),
+  }
+}

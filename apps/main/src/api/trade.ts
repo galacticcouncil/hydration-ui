@@ -3,6 +3,7 @@ import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { blockTimeQuery } from "@/api/chain"
 import { papiDryRunErrorQuery } from "@/api/dryRun"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import { ENV } from "@/config/env"
@@ -12,6 +13,7 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
+import { toBigInt } from "@/utils/formatting"
 
 export const TradeType = sor.TradeType
 
@@ -22,7 +24,6 @@ export type TradeOrder = sor.TradeOrder
 export type TxBuilderFactory = SdkCtx["tx"]
 export type TradeRouter = sor.TradeRouter
 
-export const TradeOrderType = sor.TradeOrderType
 export const TradeOrderError = sor.TradeOrderError
 
 type BestSellArgs = {
@@ -33,7 +34,7 @@ type BestSellArgs = {
 }
 
 export const bestSellQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { assetIn, assetOut, amountIn, debug }: BestSellArgs,
 ) =>
   queryOptions({
@@ -58,8 +59,7 @@ export const bestSellQuery = (
 
       return swap
     },
-    enabled:
-      isApiLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+    enabled: isReady && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
 export const bestSellTxQuery = (
@@ -137,8 +137,9 @@ export const bestSellWithTxQuery = (
 type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
 export const bestSellTwapQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  rpc: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellTwapArgs,
+  isIceEnabled: boolean,
   enabled = true,
 ) =>
   queryOptions({
@@ -149,100 +150,36 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
+      isIceEnabled,
     ],
-    queryFn: async () =>
-      sdk.api.scheduler.getTwapSellOrder(
-        Number(assetIn),
-        Number(assetOut),
+    queryFn: async () => {
+      const inId = Number(assetIn)
+      const outId = Number(assetOut)
+      if (!isIceEnabled) {
+        return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
+      }
+      // ICE: the scheduler's TWAP schedule (impact-based count, fixed
+      // interval), built as a DCA order
+      const { scheduler, router } = rpc.sdk.api
+      const quote = await router.getBestSell(inId, outId, amountIn)
+      const tradeCount = scheduler.getTwapTradeCount(
+        Math.abs(quote.priceImpactPct),
+      )
+      return scheduler.getDcaOrder(
+        inId,
+        outId,
         amountIn,
-      ),
+        scheduler.getTwapExecutionTime(tradeCount),
+        tradeCount,
+      )
+    },
     enabled:
       enabled &&
-      isApiLoaded &&
+      rpc.isReady &&
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0),
   })
-
-export const bestSellTwapTxQuery = (
-  { sdk }: TProviderContext,
-  twap: TradeOrder,
-  twapKey: QueryKey,
-  address: string,
-  slippage: number,
-  maxRetries: number,
-) =>
-  queryOptions({
-    queryKey: [twapKey, "tx"],
-    queryFn: () =>
-      sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get()),
-    enabled: !!address,
-  })
-
-type BestSellTwapWithTxArgs = BestSellTwapArgs & {
-  readonly slippage: number
-  readonly address: string
-  readonly maxRetries: number
-  readonly dryRun?: boolean
-}
-
-export const bestSellTwapWithTxQuery = (
-  rpc: TProviderContext,
-  {
-    slippage,
-    maxRetries,
-    address,
-    dryRun,
-    ...bestSellTwapArgs
-  }: BestSellTwapWithTxArgs,
-  enabled = true,
-) => {
-  const { queryClient } = rpc
-  const bestSellTwap = bestSellTwapQuery(rpc, bestSellTwapArgs)
-
-  return queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      bestSellTwap.queryKey,
-      slippage,
-      maxRetries,
-      address,
-      dryRun,
-    ],
-    queryFn: async () => {
-      const twap = await queryClient.ensureQueryData(bestSellTwap)
-
-      const txQuery = bestSellTwapTxQuery(
-        rpc,
-        twap,
-        bestSellTwap.queryKey,
-        address,
-        slippage,
-        maxRetries,
-      )
-
-      const tx = txQuery.enabled
-        ? await queryClient.ensureQueryData(txQuery)
-        : null
-
-      const dryRunError =
-        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
-          ? await queryClient.ensureQueryData(
-              papiDryRunErrorQuery(rpc, address, tx),
-            )
-          : null
-
-      return { twap, tx, dryRunError }
-    },
-    enabled: enabled && (bestSellTwap.enabled as boolean),
-  })
-}
 
 type BestBuyArgs = {
   readonly assetIn: string
@@ -252,7 +189,7 @@ type BestBuyArgs = {
 }
 
 export const bestBuyQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  { sdk, isReady }: TProviderContext,
   { assetIn, assetOut, amountOut, debug }: BestBuyArgs,
 ) =>
   queryOptions({
@@ -277,8 +214,7 @@ export const bestBuyQuery = (
 
       return swap
     },
-    enabled:
-      isApiLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+    enabled: isReady && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 
 export const bestBuyTxQuery = (
@@ -353,120 +289,8 @@ export const bestBuyWithTxQuery = (
   })
 }
 
-type BestBuyTwapArgs = Omit<BestBuyArgs, "debug">
-
-export const bestBuyTwapQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut }: BestBuyTwapArgs,
-  enabled = true,
-) =>
-  queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "trade",
-      "twapBuyOrder",
-      assetIn,
-      assetOut,
-      amountOut,
-    ],
-    queryFn: async () =>
-      sdk.api.scheduler.getTwapBuyOrder(
-        Number(assetIn),
-        Number(assetOut),
-        amountOut,
-      ),
-    enabled:
-      enabled &&
-      isApiLoaded &&
-      !!assetIn &&
-      !!assetOut &&
-      Big(amountOut || "0").gt(0),
-  })
-
-export const bestBuyTwapTxQuery = (
-  { sdk }: TProviderContext,
-  twap: TradeOrder,
-  twapKey: QueryKey,
-  address: string,
-  slippage: number,
-  maxRetries: number,
-) =>
-  queryOptions({
-    queryKey: [twapKey, "tx"],
-    queryFn: () =>
-      sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get()),
-    enabled: !!address,
-  })
-
-type BestBuyTwapWithTxArgs = BestBuyTwapArgs & {
-  readonly slippage: number
-  readonly address: string
-  readonly maxRetries: number
-  readonly dryRun?: boolean
-}
-
-export const bestBuyTwapWithTxQuery = (
-  rpc: TProviderContext,
-  {
-    slippage,
-    maxRetries,
-    address,
-    dryRun,
-    ...bestBuyTwapArgs
-  }: BestBuyTwapWithTxArgs,
-  enabled = true,
-) => {
-  const { queryClient } = rpc
-  const bestBuyTwap = bestBuyTwapQuery(rpc, bestBuyTwapArgs)
-
-  return queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      bestBuyTwap.queryKey,
-      slippage,
-      maxRetries,
-      address,
-      dryRun,
-    ],
-    queryFn: async () => {
-      const twap = await queryClient.ensureQueryData(bestBuyTwap)
-
-      const txQuery = bestBuyTwapTxQuery(
-        rpc,
-        twap,
-        bestBuyTwap.queryKey,
-        address,
-        slippage,
-        maxRetries,
-      )
-
-      const tx = txQuery.enabled
-        ? await queryClient.ensureQueryData(txQuery)
-        : null
-
-      const dryRunError =
-        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
-          ? await queryClient.ensureQueryData(
-              papiDryRunErrorQuery(rpc, address, tx),
-            )
-          : null
-
-      return { twap, tx, dryRunError }
-    },
-    enabled: enabled && (bestBuyTwap.enabled as boolean),
-  })
-}
-
-export const dcaOrderQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  form: DcaFormValues,
-) => {
+export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
+  const { sdk, isReady, queryClient } = rpc
   const duration = getTimeFrameMillis(form.duration)
 
   const orders =
@@ -485,28 +309,46 @@ export const dcaOrderQuery = (
       form.duration,
       form.orders,
     ],
-    queryFn: () => {
+    queryFn: async () => {
       if (!form.sellAsset || !form.buyAsset) {
         return null
       }
 
-      return form.orders.type === DcaOrdersMode.OpenBudget
-        ? sdk.api.scheduler.getOpenBudgetDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-          )
-        : sdk.api.scheduler.getDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-            orders ?? undefined,
-          )
+      if (form.orders.type === DcaOrdersMode.OpenBudget) {
+        return sdk.api.scheduler.getOpenBudgetDcaOrder(
+          Number(form.sellAsset.id),
+          Number(form.buyAsset.id),
+          form.sellAmount,
+          duration,
+        )
+      }
+
+      const minBudget = await queryClient.ensureQueryData(
+        minimumOrderBudgetQuery(
+          rpc,
+          form.sellAsset.id,
+          form.sellAsset.decimals,
+        ),
+      )
+
+      // getDcaOrder divides by tradeCount, which is 0 below 20% of min budget.
+      const minTradeAmount = (minBudget * 2n) / 10n
+      const amountIn = toBigInt(form.sellAmount, form.sellAsset.decimals)
+
+      if (minTradeAmount === 0n || amountIn < minTradeAmount) {
+        return null
+      }
+
+      return sdk.api.scheduler.getDcaOrder(
+        Number(form.sellAsset.id),
+        Number(form.buyAsset.id),
+        form.sellAmount,
+        duration,
+        orders ?? undefined,
+      )
     },
     enabled:
-      isLoaded &&
+      isReady &&
       !!form.sellAsset &&
       !!form.buyAsset &&
       Big(form.sellAmount || "0").gt(0) &&
@@ -515,77 +357,8 @@ export const dcaOrderQuery = (
   })
 }
 
-export const dcaTxQuery = (
-  { sdk }: TProviderContext,
-  order: TradeOrder,
-  orderKey: QueryKey,
-  address: string,
-  slippage: number,
-  maxRetries: number,
-) =>
-  queryOptions({
-    queryKey: [...orderKey, "tx", address, slippage, maxRetries],
-    queryFn: () =>
-      sdk.tx
-        .order(order)
-        .withBeneficiary(address)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .build()
-        .then((tx) => tx.get()),
-    enabled: !!address,
-  })
-
-type DcaTradeOrderArgs = {
-  readonly form: DcaFormValues
-  readonly slippage: number
-  readonly maxRetries: number
-  readonly address: string
-  readonly dryRun?: boolean
-}
-
-export const dcaTradeOrderQuery = (
-  rpc: TProviderContext,
-  { form, slippage, maxRetries, address, dryRun }: DcaTradeOrderArgs,
-) => {
-  const { queryClient } = rpc
-  const dcaOrder = dcaOrderQuery(rpc, form)
-
-  return queryOptions({
-    queryKey: [...dcaOrder.queryKey, slippage, maxRetries, address, dryRun],
-    queryFn: async () => {
-      const order = await queryClient.ensureQueryData(dcaOrder)
-
-      const txQuery = order
-        ? dcaTxQuery(
-            rpc,
-            order,
-            dcaOrder.queryKey,
-            address,
-            slippage,
-            maxRetries,
-          )
-        : null
-
-      const orderTx = txQuery?.enabled
-        ? await queryClient.ensureQueryData(txQuery)
-        : null
-
-      const dryRunError =
-        orderTx && dryRun && ENV.VITE_DRY_RUN_ENABLED
-          ? await queryClient.ensureQueryData(
-              papiDryRunErrorQuery(rpc, address, orderTx),
-            )
-          : null
-
-      return { order, orderTx, dryRunError }
-    },
-    enabled: dcaOrder.enabled as boolean,
-  })
-}
-
 export const minimumOrderBudgetQuery = (
-  { isLoaded, sdk }: TProviderContext,
+  { isReady, sdk }: TProviderContext,
   assetId: string,
   assetDecimals: number,
 ) => {
@@ -599,15 +372,17 @@ export const minimumOrderBudgetQuery = (
     ],
     queryFn: async () =>
       sdk.api.scheduler.getMinimumOrderBudget(Number(assetId), assetDecimals),
-    enabled: isLoaded,
+    enabled: isReady,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
   })
 }
 
 export const tradeOrderDurationQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
+  { sdk, isReady, queryClient }: TProviderContext,
+  isIceEnabled: boolean,
   tradeCount: number,
+  tradePeriod = 0,
 ) =>
   queryOptions({
     queryKey: [
@@ -615,7 +390,16 @@ export const tradeOrderDurationQuery = (
       "trade",
       "twapExecutionTime",
       tradeCount,
+      tradePeriod,
+      isIceEnabled,
     ],
-    queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
-    enabled: isApiLoaded && tradeCount > 0,
+    queryFn: async () => {
+      if (!isIceEnabled) {
+        return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
+      }
+
+      const blockTimeMs = await queryClient.ensureQueryData(blockTimeQuery(sdk))
+      return tradeCount * tradePeriod * blockTimeMs
+    },
+    enabled: isReady && tradeCount > 0 && (!isIceEnabled || tradePeriod > 0),
   })

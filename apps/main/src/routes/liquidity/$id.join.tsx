@@ -10,6 +10,7 @@ const joinFarmsSchema = z.object({
 })
 
 export const Route = createFileRoute("/liquidity/$id/join")({
+  staticData: { crumb: "liquidity:joinFarms" },
   component: RouteComponent,
   validateSearch: joinFarmsSchema,
 })

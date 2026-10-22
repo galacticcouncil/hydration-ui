@@ -1,16 +1,23 @@
-import { IconPlaceholder } from "@galacticcouncil/ui/assets/icons"
+import {
+  ArrowRight,
+  IconPlaceholder,
+  MoveUpRight,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItemDescription,
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
-  MenuSelectionItemArrow,
+  MenuSelectionItemIcon,
 } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
 import { Ref } from "react"
 
 import { NavigationItem } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import {
+  isExternalNavItem,
+  NavigationItemLink,
+} from "@/modules/layout/components/NavigationItemLink"
 
 type Props = {
   readonly item: NavigationItem
@@ -19,21 +26,25 @@ type Props = {
 
 export const MobileTabBarSubmenuItem = ({ item, ...props }: Props) => {
   const translations = useMenuTranslations()
-  const { key, icon, to, search, defaultChild } = item
+  const { key, icon } = item
+  const external = isExternalNavItem(item)
 
   const { title, description } = translations[key] ?? {}
-  const linkTo = defaultChild ?? to
 
   return (
     <MenuSelectionItem {...props} asChild>
-      <Link to={linkTo} search={search}>
+      <NavigationItemLink item={item}>
         <MenuItemIcon component={icon ?? IconPlaceholder} />
         <MenuItemLabel>{title}</MenuItemLabel>
         {description && (
           <MenuItemDescription>{description}</MenuItemDescription>
         )}
-        <MenuSelectionItemArrow />
-      </Link>
+        {external ? (
+          <MenuSelectionItemIcon component={MoveUpRight} />
+        ) : (
+          <MenuSelectionItemIcon component={ArrowRight} />
+        )}
+      </NavigationItemLink>
     </MenuSelectionItem>
   )
 }

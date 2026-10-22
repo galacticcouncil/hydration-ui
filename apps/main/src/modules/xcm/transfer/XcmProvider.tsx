@@ -10,15 +10,16 @@ import {
   EvmParachain,
 } from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
-import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
+import { prop, unique } from "remeda"
 
-import { getSortedRpcUrlList } from "@/api/provider"
+import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
+  xcmDestinationFeeQuery,
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
@@ -27,11 +28,11 @@ import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
+  isOmniRoute,
   resolveValidBridgeProvider,
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
 import {
-  getChainPriority,
   isAccountValidOnChain,
   withCustomChainRpcUrls,
   XCM_CHAINS,
@@ -40,6 +41,10 @@ import {
   calculateTransferDestAmount,
   getTransferStatus,
   getXcmTransferArgs,
+  isDestinationSynced,
+  requiresEvmBinding,
+  resolveBestDestination,
+  resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -76,15 +81,19 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const sourceChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     return XCM_CHAINS.map((chain) => {
+      // The sdk throws on a source without routes, as a destination-only
+      // chain is
+      const isRouted = configService.routes.has(chain.key)
       const assets = [...chain.assetsData.values()]
         .map(({ asset }) => asset)
         .filter((asset) => {
+          if (!isRouted) return false
           const assetSource = config.asset(asset).source(chain)
           return assetSource.destinationChains.length > 0
         })
       return { chain, routes: [], assets, isTagSelect: false }
     })
-  }, [config])
+  }, [config, configService])
 
   const destChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     const { routes } = configService
@@ -120,7 +129,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   )
 
   // The SDK only sets isTagSelect when every route in the pair delivers the
-  // same destination asset (e.g. outbound Snowbridge V2/Fast/V1, all → ETH).
+  // same destination asset (e.g. outbound Snowbridge V2/V1, all → ETH).
   // Inbound, Snowbridge and Wormhole deliver *different* assets, so the pair
   // is isAssetSelect and isTagSelect is false — yet once a destination asset
   // is picked there can still be multiple bridge variants for it (Snowbridge
@@ -134,6 +143,20 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     )
     return forDestAsset.length > 1 ? forDestAsset : []
   }, [destPair, destAsset?.key])
+
+  const selectedRoute = useMemo(
+    () => resolveSelectedRoute(destPair, destAsset, bridgeProvider),
+    [destPair, destAsset, bridgeProvider],
+  )
+
+  const isOmni = isOmniRoute(selectedRoute)
+  const isOmniWithdrawal = isOmni && !!destChain?.isZec()
+
+  const requiresBinding = requiresEvmBinding(
+    selectedRoute,
+    destChain,
+    destAddress,
+  )
 
   useEffect(() => {
     if (!destPair || !destAsset) return
@@ -156,28 +179,36 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   }, [bridgeProvider, destPair, destAsset, form])
 
   useEffect(() => {
-    const validRoutes = pipe(
+    const bestDest = resolveBestDestination(
       destChainAssetPairs,
-      flatMap((c) => c.routes),
-      sortBy((r) => getChainPriority(r.destination.chain.key)),
+      destChain,
+      destAsset,
     )
 
-    const foundRoute = validRoutes.find(
-      (r) =>
-        r.destination.chain.key === destChain?.key &&
-        r.destination.asset.key === destAsset?.key,
-    )
-
-    const bestRoute = foundRoute || first(validRoutes)
-
-    if (!bestRoute) {
+    if (!bestDest) {
       form.setValue("destChain", null)
       form.setValue("destAsset", null)
       return
     }
 
-    const bestAsset = bestRoute.destination.asset
-    const bestChain = bestRoute.destination.chain
+    const destSynced = isDestinationSynced(bestDest, destChain, destAsset)
+
+    if (destSynced) {
+      const destAddress = form.getValues("destAddress")
+
+      if (
+        destChain &&
+        destAddress &&
+        !isAddressValidOnChain(destAddress, destChain)
+      ) {
+        form.setValue("destAddress", "")
+        form.setValue("destAccount", null)
+      }
+      return
+    }
+
+    const bestAsset = bestDest.asset
+    const bestChain = bestDest.chain
 
     const destAddress = form.getValues("destAddress")
 
@@ -188,7 +219,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     form.setValue("destChain", bestChain)
     form.setValue("destAsset", bestAsset)
-  }, [destAsset?.key, destChain?.key, destChainAssetPairs, form, srcAsset?.key])
+  }, [destAsset, destChain, destChainAssetPairs, form])
 
   const isConnectedAccountValid =
     !!srcChain && isAccountValidOnChain(account, srcChain)
@@ -197,35 +228,76 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  const transferArgs = useMemo(
-    () => getXcmTransferArgs(account, values),
-    [account, values],
+  const bestDest = useMemo(
+    () => resolveBestDestination(destChainAssetPairs, destChain, destAsset),
+    [destChainAssetPairs, destChain, destAsset],
   )
+
+  const isDestSynced = isDestinationSynced(bestDest, destChain, destAsset)
+
+  const transferArgs = useMemo(() => {
+    if (!isDestSynced) return null
+
+    return getXcmTransferArgs(account, values)
+  }, [account, isDestSynced, values])
 
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
     isLoadingCall,
+    isLoadingReport,
     call,
     dryRunError,
     report,
   } = useXcmTransfer(form, transferArgs)
 
-  const alerts = useXcmTransferAlerts(form, report)
+  const { alerts, isLoading: isLoadingAlerts } = useXcmTransferAlerts(
+    form,
+    report,
+    requiresBinding,
+  )
+
+  // An Omni withdrawal's bridge fee is rated on the amount, so what lands
+  // reads it per amount rather than the build-time snapshot
+  const { data: omniDestFee } = useQuery(
+    xcmDestinationFeeQuery(
+      isOmniWithdrawal ? xcmTransfer : null,
+      srcAmount,
+      transferArgs,
+    ),
+  )
 
   useEffect(() => {
     setTransfer(xcmTransfer)
     form.setValue(
       "destAmount",
       srcAsset && srcAmount && xcmTransfer
-        ? calculateTransferDestAmount(srcAsset, srcAmount, xcmTransfer)
+        ? calculateTransferDestAmount(
+            srcAsset,
+            srcAmount,
+            xcmTransfer,
+            !!selectedRoute?.destination.fee.prepaid,
+            omniDestFee,
+          )
         : "",
     )
-  }, [form, srcAmount, srcAsset, xcmTransfer])
+  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer, omniDestFee])
+
+  // Only the assets actually in view are subscribed now - the asset picker
+  // fetches the full set on its own.
+  const srcSubscribedAssets = useMemo(
+    () => (srcAsset ? [srcAsset] : []),
+    [srcAsset],
+  )
+  const destSubscribedAssets = useMemo(
+    () => (destAsset ? [destAsset] : []),
+    [destAsset],
+  )
 
   const { isLoading: isLoadingSrcBalances } = useCrossChainBalanceSubscription(
     srcAddress,
     srcChainKey,
+    srcSubscribedAssets,
     () => {
       queryClient.invalidateQueries({ queryKey: ["xcm", "transfer"] })
     },
@@ -233,6 +305,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { isLoading: isLoadingDestBalances } = useCrossChainBalanceSubscription(
     destAddress,
     destChainKey,
+    destSubscribedAssets,
   )
 
   const registryChain = useMemo(() => {
@@ -245,19 +318,31 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   useTrackApprovals(srcChainKey)
 
+  const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
+  // Only the report checks an Omni deposit or withdrawal against its minimum
+  // and the NEAR leg's limits, neither of which can be undone, so submit
+  // waits for it
+  const isLoadingBridgeReport = isOmni && isLoadingReport
   const isLoading =
-    isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
+    isLoadingTransfer ||
+    isLoadingBalances ||
+    isLoadingAlerts ||
+    isLoadingBridgeReport
 
   return (
     <XcmContext.Provider
       value={{
         isLoading,
+        isLoadingBalances,
         isLoadingCall,
         isLoadingTransfer,
+        isLoadingSrcBalances,
+        isLoadingDestBalances,
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
         availableBridgeRoutes,
+        selectedRoute,
         transferArgs,
         alerts,
         transfer,

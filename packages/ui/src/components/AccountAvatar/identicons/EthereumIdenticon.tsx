@@ -12,7 +12,7 @@ export const EthereumIdenticon: React.FC<EthereumIdenticonProps> = ({
   size,
   ...props
 }) => (
-  <Flex {...props}>
+  <Flex flexShrink={0} {...props}>
     <Jazzicon diameter={size} seed={jsNumberForAddress(address)} />
   </Flex>
 )

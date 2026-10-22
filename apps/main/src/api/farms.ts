@@ -2,17 +2,15 @@ import { IndexerSdk, newFarmsQuery } from "@galacticcouncil/indexer/indexer"
 import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToSeconds } from "date-fns"
-import { millisecondsInHour, secondsInDay } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { z } from "zod"
 
-import { useIndexerClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { isXykDepositPosition } from "@/states/account"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { OmnipoolDepositFull, XykDeposit } from "./account"
-import { bestNumberQuery } from "./chain"
+import { bestNumberQuery, blockTimeQuery } from "./chain"
 
 export type Farm = farm.Farm
 export type FarmDepositReward = farm.FarmDepositReward
@@ -27,9 +25,9 @@ export type FarmRewards = {
 }
 
 export const NEW_YIELD_FARMS_DAYS = 4
-const NEW_YIELD_FARMS_TIME = secondsInDay * NEW_YIELD_FARMS_DAYS
-const NEW_YIELD_FARMS_BLOCKS =
-  NEW_YIELD_FARMS_TIME / millisecondsToSeconds(PARACHAIN_BLOCK_TIME) // 2 days in blocks
+const NEW_YIELD_FARMS_TIME = millisecondsInDay * NEW_YIELD_FARMS_DAYS
+const getNewYieldFarmsBlocks = (blockTimeMs: number) =>
+  Math.round(NEW_YIELD_FARMS_TIME / blockTimeMs)
 
 const newFarmsDataSchema = z.object({
   events: z.array(
@@ -42,12 +40,12 @@ const newFarmsDataSchema = z.object({
 })
 
 export const useOmnipoolFarms = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarms"],
     queryFn: () => sdk.api.farm.getAllOmnipoolFarms(),
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 
@@ -55,12 +53,12 @@ export const useOmnipoolFarms = () => {
 }
 
 export const useIsolatedPoolsFarms = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["isolatedPoolsFarms"],
     queryFn: () => sdk.api.farm.getAllIsolatedFarms(),
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 
@@ -68,7 +66,7 @@ export const useIsolatedPoolsFarms = () => {
 }
 
 export const useIsolatedPoolFarms = (address: string) => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["isolatedPoolFarms", address],
@@ -76,7 +74,7 @@ export const useIsolatedPoolFarms = (address: string) => {
       const data = await sdk.api.farm.getIsolatedFarms(address)
       return data.filter((farm) => !!farm)
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 
@@ -84,7 +82,7 @@ export const useIsolatedPoolFarms = (address: string) => {
 }
 
 export const useOmnipoolActiveFarm = (poolId: string) => {
-  const { isApiLoaded, sdk } = useRpcProvider()
+  const { isReady, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarm", poolId],
@@ -92,7 +90,7 @@ export const useOmnipoolActiveFarm = (poolId: string) => {
       const data = await sdk.api.farm.getOmnipoolFarms(poolId)
       return data.filter((farm) => !!farm)
     },
-    enabled: isApiLoaded,
+    enabled: isReady,
     staleTime: Infinity,
   })
 
@@ -139,7 +137,7 @@ export const useFarmRewards = (
   positions: Array<XykDeposit | OmnipoolDepositFull>,
   relayBlockChainNumber: number | undefined = 0,
 ) => {
-  const { sdk, isApiLoaded } = useRpcProvider()
+  const { sdk, isReady } = useRpcProvider()
   const isPositions = positions.length > 0
 
   const allEntries = positions.flatMap((position) =>
@@ -150,10 +148,7 @@ export const useFarmRewards = (
     queries: allEntries.map(({ entry, position }) => ({
       ...farmRewardsQuery(sdk, entry, position, relayBlockChainNumber),
       enabled:
-        isApiLoaded &&
-        !!sdk.api.router &&
-        isPositions &&
-        !!relayBlockChainNumber,
+        isReady && !!sdk.api.router && isPositions && !!relayBlockChainNumber,
       refetchInterval: 60000,
     })),
   })
@@ -183,15 +178,19 @@ const newCreatedFarmsQuery = (
   indexerSdk: IndexerSdk,
 ) =>
   queryOptions({
+    enabled: rpcProvider.isReady,
     queryKey: ["newCreatedFarms"],
     queryFn: async () => {
+      const blockTimeMs = await rpcProvider.queryClient.ensureQueryData(
+        blockTimeQuery(rpcProvider.sdk),
+      )
       const { parachainBlockNumber } =
         await rpcProvider.queryClient.ensureQueryData(
           bestNumberQuery(rpcProvider),
         )
 
       const latestBlockNumber = Big(parachainBlockNumber)
-        .minus(NEW_YIELD_FARMS_BLOCKS)
+        .minus(getNewYieldFarmsBlocks(blockTimeMs))
         .toNumber()
 
       const data = await rpcProvider.queryClient.fetchQuery(

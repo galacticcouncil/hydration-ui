@@ -1,12 +1,12 @@
 import { ChevronDown, ChevronUp } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
+  Button,
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger,
   Flex,
   Icon,
-  MicroButton,
   SectionHeader,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -92,7 +92,11 @@ export const OngoingReferenda: FC<Props> = ({
                   noTopPadding
                 />
                 {!isLoading && referenda.length > 0 && (
-                  <MicroButton
+                  <Button
+                    size="micro"
+                    uppercase
+                    variant="muted"
+                    outline
                     sx={{ display: "flex", alignItems: "center", gap: "s" }}
                   >
                     <Text
@@ -109,7 +113,7 @@ export const OngoingReferenda: FC<Props> = ({
                       component={isCollapsed ? ChevronDown : ChevronUp}
                       color={getToken("icons.onContainer")}
                     />
-                  </MicroButton>
+                  </Button>
                 )}
               </Box>
             </CollapsibleTrigger>

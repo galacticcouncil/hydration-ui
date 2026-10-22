@@ -6,7 +6,6 @@ import { createContext, FC, ReactNode, Ref, useContext, useMemo } from "react"
 import { Box, BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { FlexProps } from "@/components/Flex"
-import { Icon } from "@/components/Icon"
 import { ScrollArea } from "@/components/ScrollArea"
 import { useBreakpoints } from "@/theme"
 
@@ -59,6 +58,8 @@ type ModalContentProps = React.ComponentPropsWithoutRef<
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
   topContent?: ReactNode
   animationDurationMs?: number
+  centered?: boolean
+  contentWidth?: string
 }
 
 const ModalContent: FC<ModalContentProps> = ({
@@ -67,6 +68,8 @@ const ModalContent: FC<ModalContentProps> = ({
   topContent,
   forceMount,
   animationDurationMs,
+  centered = false,
+  onAnimationEnd,
   ...props
 }) => (
   <ModalPortal forceMount={forceMount}>
@@ -77,8 +80,18 @@ const ModalContent: FC<ModalContentProps> = ({
     <SModalWrapper
       onClick={(e) => e.stopPropagation()}
       animationDurationMs={animationDurationMs}
+      centered={centered}
     >
-      <SModalContent ref={ref} {...props} hasTopContent={!!topContent}>
+      <SModalContent
+        ref={ref}
+        {...props}
+        hasTopContent={!!topContent}
+        centered={centered}
+        onAnimationEnd={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.dataset.settled = ""
+          onAnimationEnd?.(e)
+        }}
+      >
         {topContent && <SModalTopContent>{topContent}</SModalTopContent>}
         <SModalPaper>{children}</SModalPaper>
       </SModalContent>
@@ -129,10 +142,14 @@ type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
 
 const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
-    <SModalHeaderButton asChild align="right">
-      <DialogPrimitive.Close {...props}>
-        <Icon component={X} size="l" />
-      </DialogPrimitive.Close>
+    <SModalHeaderButton
+      icon={X}
+      variant="ghost"
+      size="medium"
+      asChild
+      align="right"
+    >
+      <DialogPrimitive.Close {...props} />
     </SModalHeaderButton>
   )
 }
@@ -166,9 +183,12 @@ const ModalHeader: FC<ModalHeaderProps> = ({
     <SModalHeader {...props}>
       <SModalTitleContainer>
         {onBack && (
-          <SModalHeaderButton onClick={onBack} align="left">
-            <Icon component={ArrowLeft} size="m" />
-          </SModalHeaderButton>
+          <SModalHeaderButton
+            icon={ArrowLeft}
+            variant="ghost"
+            onClick={onBack}
+            align="left"
+          />
         )}
 
         {customTitle ? (
@@ -251,6 +271,8 @@ export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableAutoFocus?: boolean
   topContent?: ReactNode
   animationDurationMs?: number
+  centered?: boolean
+  contentWidth?: string
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
 }
 
@@ -261,6 +283,8 @@ const Modal = ({
   disableAutoFocus = false,
   topContent,
   animationDurationMs,
+  centered = false,
+  contentWidth,
   ref,
   ...props
 }: ModalProps) => {
@@ -291,6 +315,7 @@ const Modal = ({
       <ModalRoot {...props}>
         <ModalContent
           animationDurationMs={animationDurationMs}
+          centered={centered}
           onClick={(e) => e.stopPropagation()}
           topContent={topContent}
           onInteractOutside={
@@ -299,6 +324,7 @@ const Modal = ({
           onOpenAutoFocus={
             disableAutoFocus ? (e) => e.preventDefault() : undefined
           }
+          contentWidth={contentWidth}
           ref={ref}
         >
           {children}

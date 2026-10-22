@@ -18,8 +18,7 @@ import { useDebounce } from "react-use"
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-import { useStakeForm } from "@/modules/staking/Stake.form"
-import { useStake } from "@/modules/staking/Stake.stake"
+import { useStake } from "@/modules/staking/Stake.form"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { toBigInt } from "@/utils/formatting"
@@ -44,14 +43,16 @@ export const StakeForm: FC<Props> = ({
   const { t } = useTranslation(["common", "staking"])
 
   const { native } = useAssets()
-  const { form, minStake, hasGigaStakes } = useStakeForm(balance, staked || "0")
-
-  const stakeMutation = useStake(positionId, votes, votesSuccess, () =>
-    form.reset(),
+  const { form, minStake, maxBalanceHuman, mutation, hasGigaStakes } = useStake(
+    balance,
+    staked || "0",
+    positionId,
+    votes,
+    votesSuccess,
   )
 
   const submitForm = form.handleSubmit((values) =>
-    stakeMutation.mutate(values.amount),
+    mutation.mutate(values.amount),
   )
 
   const amount = form.watch("amount")
@@ -75,17 +76,17 @@ export const StakeForm: FC<Props> = ({
           control={form.control}
           name="amount"
           render={({ field, fieldState }) => (
-            <AssetSelect
-              sx={{ px: "xl" }}
-              label={t("staking:stake.stake.amount")}
-              assets={[]}
-              selectedAsset={native}
-              modalDisabled
-              maxBalance={balance}
-              value={field.value}
-              onChange={field.onChange}
-              amountError={fieldState.error?.message}
-            />
+            <Box px="xl" py="l" width="100%">
+              <AssetSelect
+                label={t("staking:stake.stake.amount")}
+                assets={[]}
+                selectedAsset={native}
+                balance={{ value: maxBalanceHuman }}
+                value={field.value}
+                onChange={field.onChange}
+                amountError={fieldState.error?.message}
+              />
+            </Box>
           )}
         />
         <Separator />

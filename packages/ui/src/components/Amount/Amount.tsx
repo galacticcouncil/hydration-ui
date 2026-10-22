@@ -2,6 +2,7 @@ import { ComponentProps, ComponentType, FC, ReactNode, Ref } from "react"
 
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
+import { Skeleton } from "@/components/Skeleton"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
@@ -20,6 +21,7 @@ type AmountProps = {
   readonly className?: string
   readonly size?: AmountSize
   readonly color?: AmountColor
+  readonly isLoading?: boolean
 }
 
 export const Amount: FC<AmountProps> = ({
@@ -33,6 +35,7 @@ export const Amount: FC<AmountProps> = ({
   className,
   size = "default",
   color = "default",
+  isLoading = false,
 }) => {
   return (
     <Flex
@@ -82,17 +85,17 @@ export const Amount: FC<AmountProps> = ({
         gap="xs"
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
-        {typeof value !== "string" ? (
-          value
-        ) : (
+        {isLoading || typeof value === "string" ? (
           <AmountValue variant={variant} size={size}>
-            {value}
+            {isLoading ? <Skeleton width="6em" height="1em" /> : value}
           </AmountValue>
+        ) : (
+          value
         )}
 
-        {displayValue && (
+        {(isLoading || displayValue) && (
           <AmountDisplayValue variant={variant}>
-            {displayValue}
+            {isLoading ? <Skeleton width="4em" height="1em" /> : displayValue}
           </AmountDisplayValue>
         )}
       </Flex>

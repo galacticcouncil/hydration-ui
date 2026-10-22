@@ -25,8 +25,11 @@ yarn-error.log*
 
 .idea
 .turbo
+.tanstack
 *.gen.*
 *storybook.log
 .cursor
+.claude.mcp.json
 .claude
-CLAUDE.md
+# agent task tracking
+TODO.md

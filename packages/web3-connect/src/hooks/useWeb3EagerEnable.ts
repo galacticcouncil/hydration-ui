@@ -1,17 +1,27 @@
+import { withTimeout } from "@galacticcouncil/utils"
 import { useEffect, useRef, useState } from "react"
 import { useMount, usePrevious } from "react-use"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
-import { useWeb3Enable } from "@/hooks/useWeb3Enable"
+import { NEAR_PROVIDERS, WalletProviderType } from "@/config/providers"
+import {
+  useWeb3Connect,
+  WalletProviderStatus,
+  WalletRestoreState,
+} from "@/hooks/useWeb3Connect"
+import { abandonEnable, useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { toStoredAccount } from "@/utils"
 import { ExternalWallet, getWallet } from "@/wallets"
-import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
-export const useWeb3EagerEnable = (enabled = true) => {
-  const { enable, disconnect } = useWeb3Enable()
+const RESTORE_TIMEOUT_MS = 10_000
+
+export const useWeb3EagerEnable = () => {
+  const { enable, disconnect } = useWeb3Enable({ eager: true })
+  const { enable: enableRestore } = useWeb3Enable({
+    restore: true,
+    eager: true,
+  })
   const { providers, setAccount } = useWeb3Connect(
     useShallow(pick(["providers", "setAccount"])),
   )
@@ -21,7 +31,6 @@ export const useWeb3EagerEnable = (enabled = true) => {
   const hasTriedEagerEnable = useRef(false)
 
   useMount(() => {
-    if (!enabled) return
     window.dispatchEvent(new Event("eip6963:requestProvider"))
     setProvidersRequested(true)
   })
@@ -30,7 +39,7 @@ export const useWeb3EagerEnable = (enabled = true) => {
     if (!providersRequested) return
 
     const state = useWeb3Connect.getState()
-    const { providers, account } = state
+    const { providers } = state
 
     if (providers.length > 0) {
       eagerEnable()
@@ -42,31 +51,54 @@ export const useWeb3EagerEnable = (enabled = true) => {
     async function eagerEnable() {
       if (hasTriedEagerEnable.current) return
 
-      for (const { type, status } of providers) {
-        const wallet = getWallet(type)
+      await Promise.allSettled(
+        providers.map(({ type, status }) => restore(type, status)),
+      )
+    }
 
-        // Skip external wallet, it is handled separately based on `acocunt` query param
-        if (wallet instanceof ExternalWallet) continue
+    async function restore(
+      type: WalletProviderType,
+      status: WalletProviderStatus,
+    ) {
+      const wallet = getWallet(type)
 
-        if (!wallet || status !== WalletProviderStatus.Connected) {
-          disconnect(type)
-          continue
-        }
+      // Skip external wallet, it is handled separately based on `acocunt` query param
+      if (wallet instanceof ExternalWallet) return
 
-        if (wallet.installed && !wallet.enabled) {
-          await enable(wallet.provider)
+      // Restoring a NEAR wallet downloads and runs its code, so one that only
+      // filled destinations is dropped, its session reconnecting without a
+      // prompt; one holding the account is restored, as it signs
+      if (NEAR_PROVIDERS.includes(type) && state.account?.provider !== type) {
+        return disconnect(type)
+      }
 
-          const isSubstrate = wallet instanceof BaseSubstrateWallet
-          if (isSubstrate && account) {
-            const signerAddress = account.isMultisig
-              ? (account.multisigSignerAddress ?? account.address)
-              : account.address
-            wallet.setSigner(signerAddress)
-          }
+      if (!wallet || status !== WalletProviderStatus.Connected) {
+        return disconnect(type)
+      }
+
+      if (!wallet.installed) {
+        return disconnect(type)
+      }
+
+      if (wallet.enabled) return
+
+      try {
+        // Restore success also sets the substrate signer, see `useWeb3Enable`.
+        await withTimeout(enableRestore(wallet.provider), RESTORE_TIMEOUT_MS)
+      } catch (error) {
+        // A real rejection already disconnected the provider in
+        // `useWeb3Enable`'s restore mode. Here we only handle our own limit,
+        // and only while this restore is still the pending one.
+        const isTimeout =
+          error instanceof Error && error.name === "TimeoutError"
+        const { restoreStates, setRestoreState } = useWeb3Connect.getState()
+        if (isTimeout && restoreStates[type] === WalletRestoreState.Restoring) {
+          abandonEnable(type)
+          setRestoreState(type, WalletRestoreState.Unavailable)
         }
       }
     }
-  }, [providersRequested, enable, disconnect])
+  }, [providersRequested, enableRestore, disconnect])
 
   useEffect(() => {
     prevProviders?.forEach(({ type }) => {

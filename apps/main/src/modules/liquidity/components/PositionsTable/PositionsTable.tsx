@@ -1,4 +1,4 @@
-import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
+import { CircleMinus, LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CollapsibleContent,
@@ -16,7 +16,6 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -112,7 +111,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
                 selectable: true,
               }}
             >
-              <Minus />
+              <CircleMinus />
               {t("removeLiquidity")}
             </Link>
           </Button>
@@ -217,6 +216,37 @@ const OmnipoolStablepoolPositions = ({
   )
 }
 
+export const PositionsTableShell = ({
+  expanded,
+  onToggle,
+  totalBalanceDisplay,
+  totalInFarms,
+  positions,
+  children,
+}: {
+  expanded: boolean
+  onToggle: () => void
+  totalBalanceDisplay: string
+  totalInFarms?: string
+  positions?: DepositPosition[]
+  children?: React.ReactNode
+}) => (
+  <CollapsibleRoot open={expanded}>
+    <TableContainer as={Paper} mb="xl">
+      <PositionsHeader
+        onClick={onToggle}
+        showMore={expanded}
+        totalInFarms={totalInFarms}
+        totalBalanceDisplay={totalBalanceDisplay}
+        positions={positions}
+      />
+      <CollapsibleContent css={{ overflowX: "auto" }}>
+        {children}
+      </CollapsibleContent>
+    </TableContainer>
+  </CollapsibleRoot>
+)
+
 const PositionsTableBody = ({
   totalInFarms,
   totalBalanceDisplay,
@@ -245,19 +275,14 @@ const PositionsTableBody = ({
   }
 
   return (
-    <CollapsibleRoot open={expanded}>
-      <TableContainer as={Paper} sx={{ mb: "xl" }}>
-        <PositionsHeader
-          onClick={onClick}
-          showMore={expanded}
-          totalInFarms={totalInFarms}
-          totalBalanceDisplay={totalBalanceDisplay}
-          positions={positions}
-        />
-        <CollapsibleContent css={{ overflowX: "auto" }}>
-          {children}
-        </CollapsibleContent>
-      </TableContainer>
-    </CollapsibleRoot>
+    <PositionsTableShell
+      expanded={expanded}
+      onToggle={onClick}
+      totalInFarms={totalInFarms}
+      totalBalanceDisplay={totalBalanceDisplay}
+      positions={positions}
+    >
+      {children}
+    </PositionsTableShell>
   )
 }

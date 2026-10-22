@@ -15,17 +15,30 @@ export type BannerConfig = PromoteBannerItem & {
 
 const bannerEntries: BannerConfig[] = [
   {
-    id: "hollarb",
+    id: "bil-vault",
+    backgroundImage: "/images/bil.webp",
+    backgroundImageMobile: "/images/bilMobile.webp",
+    title: "banners.bil.title",
+    description: "banners.bil.description",
+    textColor: "#000000",
+    ctaColor: "#000000",
+    ctaTextColor: "#FFFFFF",
+    cta: "banners.bil.cta",
+    to: LINKS.strategiesBil,
+    priority: 1,
+    enabled: false,
+  },
+  {
+    id: "hollarb-24-11-26",
     backgroundImage: "/images/hollarb.webp",
     backgroundImageMobile: "/images/hollarbMobile.webp",
     title: "banners.hollarb.title",
-    description: "banners.hollarb.description",
     textColor: "#FFF",
     ctaColor: "#B3D7FA",
     ctaTextColor: "#0D1525",
-    cta: "Get HOLLARb",
+    cta: "banners.hollarb.cta",
     to: LINKS.strategiesHollarBonds,
-    priority: 1,
+    priority: 2,
     enabled: false,
   },
 ]
@@ -36,7 +49,7 @@ export const useEnabledBanners = () => {
 
   return useMemo(() => {
     return bannerEntries.filter((banner) => {
-      if (banner.id === "hollarb") {
+      if (banner.id.startsWith("hollarb")) {
         return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
       }
 
@@ -67,6 +80,7 @@ type BannersState = {
     }
   }
   closedGigaNewsIds: string[]
+  gigaNewsDeferred: boolean
 }
 
 type BannersActions = {
@@ -78,6 +92,7 @@ type BannersActions = {
   closeGigaNews: (id: string) => void
   openAllGigaNews: () => void
   closeAllGigaNews: () => void
+  deferGigaNews: () => void
 }
 
 type BannersStore = BannersState & BannersActions
@@ -90,6 +105,7 @@ const defaultState: BannersState = {
     ["giga-migration"]: { visible: undefined, type: "flow" },
   },
   closedGigaNewsIds: [],
+  gigaNewsDeferred: false,
 }
 
 const bannerIds = Object.keys(
@@ -111,10 +127,14 @@ function mergePersistedWithDefaults(
     ]),
   ) as BannersState["banners"]
 
+  const closedGigaNewsIds = (
+    p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds
+  ).filter((id) => bannerConfig.some((banner) => banner.id === id))
+
   return {
     ...currentState,
     banners,
-    closedGigaNewsIds: p?.closedGigaNewsIds ?? defaultState.closedGigaNewsIds,
+    closedGigaNewsIds,
   }
 }
 
@@ -155,6 +175,7 @@ export const useBannersStore = create<BannersStore>()(
             closedGigaNewsIds: bannerConfig.map((banner) => banner.id),
           }
         }),
+      deferGigaNews: () => set({ gigaNewsDeferred: true }),
     }),
     {
       name: "banners",

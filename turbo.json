@@ -7,6 +7,10 @@
       "outputs": ["build/**"]
     },
     "lint": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test": {
       "cache": false
     },
     "lint:fix": {

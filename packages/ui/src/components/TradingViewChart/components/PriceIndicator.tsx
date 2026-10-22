@@ -10,7 +10,13 @@ export const PriceIndicator: FC<
       ref={ref}
       variant="tertiary"
       rounded
-      sx={{ position: "absolute", zIndex: 2, fontWeight: 600, lineHeight: 1.4 }}
+      sx={{
+        position: "absolute",
+        zIndex: 2,
+        fontWeight: 600,
+        lineHeight: 1.4,
+        pointerEvents: "none",
+      }}
       {...props}
     />
   )

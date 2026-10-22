@@ -1,12 +1,23 @@
 import {
   formatSourceChainAddress,
+  getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
+  isZecChain,
   QUERY_KEY_BLOCK_PREFIX,
+  resolveHydrationAssetId,
+  resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
+import { readNoirBalance } from "@galacticcouncil/web3-connect/src/utils/zec"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
-import { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
+import {
+  AnyChain,
+  Asset,
+  AssetAmount,
+  ChainRoutes,
+  Ntt,
+} from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -17,11 +28,19 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { isString } from "remeda"
+import { erc20Abi, Hex } from "viem"
 
+import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
+import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
+import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -29,10 +48,48 @@ export const useCrossChainConfig = () => {
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xcm", "context"],
-    queryFn: () =>
-      createXcContext({
+    queryFn: async () => {
+      const ctx = await createXcContext({
         poolCtx: sdk.ctx.pool,
-      }),
+      })
+
+      const hydration = ctx.config.chains.get(HYDRATION_CHAIN_KEY)
+      if (hydration && isEvmParachain(hydration)) {
+        withPermissiveEvmResolver(hydration)
+      }
+
+      // Zcash is utxo with no public balance api, so balances come from the
+      // connected Noir wallet
+      const zcash = ctx.config.chains.get("zec")
+      if (zcash && isZecChain(zcash)) {
+        zcash.registerBalanceReader(readNoirBalance)
+      }
+
+      // Wormhole carries basejump with it — basejump routes hop through the
+      // wormhole stack — but basejump can also be pulled on its own.
+      const disabledBridgeTags = [
+        ...(ENV.VITE_WORMHOLE_DISABLED
+          ? [XcmTag.Wormhole, XcmTag.Basejump]
+          : []),
+        ...(ENV.VITE_BASEJUMP_DISABLED ? [XcmTag.Basejump] : []),
+      ]
+
+      if (disabledBridgeTags.length) {
+        ctx.config.routes.forEach((chainRoutes) => {
+          ctx.config.updateRoutes(
+            new ChainRoutes({
+              chain: chainRoutes.chain,
+              routes: chainRoutes.getRoutes().filter((route) => {
+                const tags = route.tags ?? []
+                return !disabledBridgeTags.some((tag) => tags.includes(tag))
+              }),
+            }),
+          )
+        })
+      }
+
+      return ctx
+    },
   })
 }
 
@@ -55,13 +112,125 @@ export const useCrossChainConfigService = () => {
   return data.config
 }
 
+export const useHydrationAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset, sourceChainKey: string): string | null =>
+      resolveHydrationAssetId(asset, sourceChainKey, configService),
+    [configService],
+  )
+}
+
+export const useHydrationDisplayAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset): string | null =>
+      resolveHydrationDisplayAssetId(asset, configService),
+    [configService],
+  )
+}
+
 export const useCrossChainWallet = () => {
   const { data } = useCrossChainConfig()
   return data.wallet
 }
 
+export const useNttOutboundLimit = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "outboundLimit", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      return clients.nttClient(chain, asset).getOutboundLimit()
+    },
+  })
+}
+
+export const useNttInboundLimit = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+  from: AnyChain | null,
+) => {
+  const enabled = !!chain && !!asset && !!from && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "inboundLimit", chain?.key, asset?.key, from?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: () => {
+      if (!chain || !asset || !from) {
+        throw new Error("chain, asset, and from are required")
+      }
+      return clients.nttClient(chain, asset).getInboundLimit(from)
+    },
+  })
+}
+
+/**
+ * Custody a locking ntt manager can release - `null` for a burning
+ * destination, which mints and is not bound by it.
+ */
+export const useNttCustody = (chain: AnyChain | null, asset: Asset | null) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "custody", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: async () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      const custody = await clients.nttClient(chain, asset).getCustody()
+      return custody ?? null
+    },
+  })
+}
+
+/**
+ * What the basejump landing on hydration can pay out right now, for the
+ * asset a transfer lands as.
+ */
+export const useBasejumpPoolLiquidity = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+) => {
+  const { evm } = useRpcProvider()
+
+  return useQuery({
+    queryKey: ["xcm", "basejump", "poolLiquidity", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    refetchInterval: minutesToMilliseconds(1),
+    enabled: !!chain && !!asset && chain.key === HYDRATION_CHAIN_KEY,
+    queryFn: async (): Promise<BasejumpPoolLiquidity> => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+
+      const decimals = chain.getAssetDecimals(asset)
+      if (decimals === undefined) throw new Error("Unknown asset decimals")
+
+      const available = await evm.readContract({
+        abi: erc20Abi,
+        address: getAddressFromAssetId(
+          chain.getAssetId(asset).toString(),
+        ) as Hex,
+        functionName: "balanceOf",
+        args: [BASEJUMP_LANDING_CONTRACT],
+      })
+
+      return { available, decimals }
+    },
+  })
+}
+
 const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
-  return ["xcm", "balance", chainKey, address] as const
+  const normalizedAddress = isString(address) ? address.toLowerCase() : ""
+  return ["xcm", "balance", chainKey, normalizedAddress] as const
 }
 
 export const useCrossChainBalance = (address: string, chainKey: string) => {
@@ -78,9 +247,57 @@ export const useCrossChainBalance = (address: string, chainKey: string) => {
   })
 }
 
+/**
+ * One-shot balance snapshot for a whole chain — no live subscription held.
+ * Used by the asset picker, which only needs balances while it is open and
+ * would otherwise subscribe every asset on every chain you highlight.
+ */
+export const useCrossChainBalancesFetch = (
+  address: string,
+  chainKey: string,
+) => {
+  const queryClient = useQueryClient()
+  const wallet = useCrossChainWallet()
+
+  const { data, dataUpdatedAt, isLoading, isError } = useQuery({
+    queryKey: ["xcm", "balanceSnapshot", chainKey, address],
+    enabled: !!wallet && !!address && !!chainKey,
+    // Reopening the picker inside this window reuses the snapshot; past it we
+    // re-fetch, which is the "re-fetch when you reopen the chain list" case.
+    staleTime: secondsToMilliseconds(30),
+    queryFn: async () => {
+      const chain = chainsMap.get(chainKey)
+      if (!chain) return []
+      return wallet.getBalances(formatSourceChainAddress(address, chain), chain)
+    },
+  })
+
+  // Apply each fetch once. The picker remounts on every open and react-query
+  // serves cached data synchronously, so keying this on `data` alone replays an
+  // old snapshot over the fresher values the live subscription has been writing
+  // for the selected asset.
+  const appliedAt = useRef(0)
+
+  useEffect(() => {
+    if (!data || dataUpdatedAt === appliedAt.current) return
+    appliedAt.current = dataUpdatedAt
+    queryClient.setQueryData<Map<string, AssetAmount>>(
+      createCrossChainBalanceQueryKey(chainKey, address),
+      (prev) => {
+        const next = new Map(prev)
+        for (const balance of data) next.set(balance.key, balance)
+        return next
+      },
+    )
+  }, [data, dataUpdatedAt, chainKey, address, queryClient])
+
+  return { isLoading, isError }
+}
+
 export const useCrossChainBalanceSubscription = (
   address: string,
   chainKey: string,
+  assets: Asset[],
   onSuccess?: (balances: AssetAmount[]) => void,
 ) => {
   const queryClient = useQueryClient()
@@ -93,13 +310,22 @@ export const useCrossChainBalanceSubscription = (
     onSuccessRef.current = onSuccess
   }, [onSuccess])
 
+  // Assets is a fresh array each render; key the effect on its contents so we
+  // resubscribe when the selection changes, not on every render.
+  const assetsRef = useRef(assets)
+  assetsRef.current = assets
+  const assetsKey = assets
+    .map((asset) => asset.key)
+    .sort()
+    .join(",")
+
   useEffect(() => {
     const chain = chainsMap.get(chainKey)
     const queryKey = createCrossChainBalanceQueryKey(chainKey, address)
     const formattedAddress =
       address && chain ? formatSourceChainAddress(address, chain) : ""
 
-    if (!wallet || !formattedAddress || !chain) {
+    if (!wallet || !formattedAddress || !chain || !assetsRef.current.length) {
       setIsLoading(false)
       return
     }
@@ -118,14 +344,18 @@ export const useCrossChainBalanceSubscription = (
         subscription = await wallet.subscribeBalance(
           formattedAddress,
           chain,
+          assetsRef.current,
           (balances) => {
-            const balanceMap = new Map(
-              balances.map((balance) => [balance.key, balance]),
-            )
-
+            // Merge, don't replace. The cache key has no asset dimension, so a
+            // narrow subscription (selected asset) and a wide one (asset list)
+            // on the same chain would otherwise blank each other out.
             queryClient.setQueryData<Map<string, AssetAmount>>(
               queryKey,
-              balanceMap,
+              (prev) => {
+                const next = new Map(prev)
+                for (const balance of balances) next.set(balance.key, balance)
+                return next
+              },
             )
 
             onSuccessRef.current?.(balances)
@@ -144,7 +374,7 @@ export const useCrossChainBalanceSubscription = (
     return () => {
       subscription?.unsubscribe()
     }
-  }, [address, chainKey, queryClient, wallet])
+  }, [address, chainKey, assetsKey, queryClient, wallet])
 
   return { isLoading, isError }
 }
@@ -181,6 +411,7 @@ export const xcmTransferQuery = (
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
     retry: false,
+    placeholderData: keepPreviousData,
     queryKey: [
       "xcm",
       "transfer",
@@ -246,15 +477,16 @@ export const xcmTransferQuery = (
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
+  amount: string,
   transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
     enabled: !!transfer && !!transferArgs,
-    placeholderData: keepPreviousData,
-    queryKey: ["xcm", "report", transferArgs],
+    queryKey: ["xcm", "report", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) return []
-      return transfer.validate()
+      // Amount-bound checks (ntt rate limits, custody) see zero without it.
+      return transfer.validate(undefined, amount || undefined)
     },
   })
 

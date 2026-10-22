@@ -1,23 +1,29 @@
+import { useNow } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { type XcJourney, XcJourneyBuilder } from "@galacticcouncil/xc-scan"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { minutesToMilliseconds } from "date-fns"
 import { useMemo } from "react"
 import { sortBy } from "remeda"
 
+import { journeyRedeemedQuery } from "@/modules/xcm/history/hooks/useJourneyRedeemed"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { useXcScan } from "@/modules/xcm/history/useXcScan"
-import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
+import { useScanJourneys } from "@/modules/xcm/history/useScanJourneys"
+import { isXcScanAddress, useXcScan } from "@/modules/xcm/history/useXcScan"
+import {
+  getClaimableJourneys,
+  isJourneyAwaitingMinAge,
+} from "@/modules/xcm/history/utils/claim"
 import { journeyDate } from "@/modules/xcm/history/utils/journey"
+import { withoutScanTwins } from "@/modules/xcm/history/utils/scan"
 import { xcScanHttpClient } from "@/modules/xcm/history/xcScanStore"
 
 const useClaimableBackfill = (address: string) => {
   return useQuery({
     queryKey: ["xcscan", "claimable-backfill", address],
-    enabled: !!address,
+    enabled: isXcScanAddress(address),
     refetchOnWindowFocus: true,
     retry: false,
-    select: getClaimableJourneys,
     staleTime: minutesToMilliseconds(5),
     queryFn: async () => {
       const req = XcJourneyBuilder.journeys()
@@ -35,25 +41,51 @@ export const useClaimableTransactions = () => {
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: claimable } = useXcScan(address, {
-    claimableOnly: true,
-  })
-  const { data: claimableBackfill } = useClaimableBackfill(address)
+  const { data: xcscanJourneys = [] } = useXcScan(address)
+  const { data: xcscanBackfill = [] } = useClaimableBackfill(address)
+  const { data: scanJourneys } = useScanJourneys(address)
+
+  // Claims the scan has come with useXcScan's journeys, from the scan
+  const claimableBackfill = useMemo(
+    () =>
+      scanJourneys
+        ? withoutScanTwins(xcscanBackfill, scanJourneys)
+        : xcscanBackfill,
+    [scanJourneys, xcscanBackfill],
+  )
 
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
-  return useMemo(() => {
+  const sources = useMemo(
+    () => [...xcscanJourneys, ...claimableBackfill],
+    [xcscanJourneys, claimableBackfill],
+  )
+
+  const shouldPoll = sources.some(isJourneyAwaitingMinAge)
+  const now = useNow(shouldPoll ? 5000 : null)
+
+  const claimableCandidates = useMemo(() => {
     const byCorrelationId = new Map<string, XcJourney>()
-    for (const journey of claimableBackfill ?? []) {
+    const nowMs = now.getTime()
+    for (const journey of getClaimableJourneys(claimableBackfill, nowMs)) {
       byCorrelationId.set(journey.correlationId, journey)
     }
-    for (const journey of claimable) {
+    for (const journey of getClaimableJourneys(xcscanJourneys, nowMs)) {
       byCorrelationId.set(journey.correlationId, journey)
     }
 
-    const merged = sortBy([...byCorrelationId.values()], [journeyDate, "desc"])
+    return sortBy([...byCorrelationId.values()], [journeyDate, "desc"])
+  }, [claimableBackfill, now, xcscanJourneys])
 
+  const redeemedResults = useQueries({
+    queries: claimableCandidates.map(journeyRedeemedQuery),
+  })
+
+  return useMemo(() => {
     const pending = new Set(pendingCorrelationIds)
-    return merged.filter(({ correlationId }) => !pending.has(correlationId))
-  }, [claimable, claimableBackfill, pendingCorrelationIds])
+    return claimableCandidates.filter((journey, index) => {
+      if (pending.has(journey.correlationId)) return false
+      return redeemedResults[index]?.data !== true
+    })
+  }, [claimableCandidates, pendingCorrelationIds, redeemedResults])
 }

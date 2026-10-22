@@ -3,13 +3,11 @@ import {
   FormError,
   NumberInput,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import {
-  SliderTabs,
-  SliderTabsOption,
-} from "@galacticcouncil/ui/components/SliderTabs"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
@@ -34,35 +32,64 @@ export const TradeSlippage: FC<Props> = ({
   const { t } = useTranslation()
   const isError = !!error
 
-  const slippageOptions = Array.from(new Set(options).values()).map<
-    SliderTabsOption<number>
-  >((slippage) => ({
-    id: slippage,
-    label: t("percent", { value: slippage }),
-  }))
+  const [inputValue, setInputValue] = useState(slippage?.toString() ?? "")
+
+  useEffect(() => {
+    setInputValue((previous) => {
+      const previousValue = previous === "" ? null : Number(previous)
+      return previousValue === slippage
+        ? previous
+        : (slippage?.toString() ?? "")
+    })
+  }, [slippage])
+
+  const slippageOptions = Array.from(new Set(options).values()).map(
+    (slippage) => ({
+      id: String(slippage),
+      label: t("percent", { value: slippage }),
+    }),
+  )
+
+  const selectedSlippage =
+    slippage !== null
+      ? slippageOptions.find((option) => option.id === String(slippage))?.id
+      : undefined
 
   return (
     <Flex direction="column" gap="s">
       <Flex justify="space-between" align="center" py="s">
         <SettingLabel label={t("slippage")} helpTooltip={helpTooltip} />
         <Flex gap="base" align="center">
-          <SliderTabs
-            options={slippageOptions}
-            selected={
-              slippageOptions.find((option) => option.id === slippage)?.id
-            }
-            onSelect={(option) => onSlippageChange(option.id)}
-          />
+          <ToggleGroup
+            type="single"
+            value={selectedSlippage}
+            onValueChange={(value) => {
+              if (value) {
+                setInputValue(value)
+                onSlippageChange(parseFloat(value))
+              }
+            }}
+          >
+            {slippageOptions.map((option) => (
+              <ToggleGroupItem key={option.id} value={option.id}>
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
 
           <NumberInput
-            sx={{ width: 85 }}
-            value={slippage}
+            sx={{ width: "3xl" }}
+            value={inputValue}
+            valueIsNumericString
             unit="%"
             placeholder={t("custom")}
             isError={isError}
-            onValueChange={({ floatValue }) =>
-              onSlippageChange(floatValue ?? null)
-            }
+            onValueChange={({ value, floatValue }, { source }) => {
+              if (source === "event") {
+                setInputValue(value)
+                onSlippageChange(floatValue ?? null)
+              }
+            }}
           />
         </Flex>
       </Flex>
@@ -76,4 +103,4 @@ export const TradeSlippage: FC<Props> = ({
   )
 }
 
-const defaultSlippageOptions: ReadonlyArray<number> = [0.5, 1, 3]
+const defaultSlippageOptions: ReadonlyArray<number> = [1, 2, 3]

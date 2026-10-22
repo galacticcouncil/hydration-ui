@@ -1,6 +1,7 @@
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
+import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { FC, lazy, Suspense, useEffect } from "react"
+import { useShallow } from "zustand/shallow"
 
 import { BackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
 import { AppDataProvider } from "@/hooks/app-data-provider/useAppDataProvider"
@@ -12,7 +13,7 @@ import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { ExternalApyData, MoneyMarketTxFn } from "@/types"
+import { ExternalApyData, MoneyMarketTxFn, UseMaxBalanceFn } from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -56,8 +57,10 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
   market: CustomMarket
-  squidClient: SquidSdk
+  neckwork: NeckworkClient
   onCreateTransaction: MoneyMarketTxFn
+  useMaxBalance: UseMaxBalanceFn
+  getRelatedATokenId: (id: string) => string | undefined
   externalApyData: ExternalApyData
 }
 
@@ -65,16 +68,17 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   children,
   market,
   onCreateTransaction,
+  useMaxBalance,
+  getRelatedATokenId,
   provider: externalProvider,
-  squidClient,
+  neckwork,
   externalApyData,
   ...formatters
 }) => {
   const provider = useRootStore((state) => state.provider)
-  const [setProvider, setCurrentMarket] = useRootStore((state) => [
-    state.setProvider,
-    state.setCurrentMarket,
-  ])
+  const [setProvider, setCurrentMarket] = useRootStore(
+    useShallow((state) => [state.setProvider, state.setCurrentMarket]),
+  )
 
   useEffect(() => {
     if (!externalProvider) return
@@ -96,7 +100,11 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
           <PermissionProvider>
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
-                <SharedDependenciesProvider squidClient={squidClient}>
+                <SharedDependenciesProvider
+                  neckwork={neckwork}
+                  useMaxBalance={useMaxBalance}
+                  getRelatedATokenId={getRelatedATokenId}
+                >
                   {children}
                   <Suspense>
                     <SupplyModal />

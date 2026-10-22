@@ -1,33 +1,16 @@
-import { useMatch, useMatches, useRouter } from "@tanstack/react-router"
+import { useMatches, useRouter } from "@tanstack/react-router"
 
 import { Loader } from "@/components/Loader"
-import { TabMenu } from "@/components/TabMenu"
-import {
-  Container,
-  Content,
-  ContentContainer,
-  MainContent,
-} from "@/modules/layout/components/Content"
+import { BreadcrumbBar } from "@/modules/layout/components/BreadcrumbBar"
+import { Container, MainContent } from "@/modules/layout/components/Content"
 import { Footer } from "@/modules/layout/components/Footer"
 import { Header } from "@/modules/layout/components/Header"
-import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
-import { useSubNav } from "@/modules/layout/hooks/useSubNav"
+import { SubNavBar } from "@/modules/layout/components/SubNavBar"
 
 export const LayoutSkeleton = () => {
-  useRemoveInitialLoader()
-
   const router = useRouter()
   const matches = useMatches()
   const leafMatch = matches.at(-1)
-
-  const subNav = useSubNav()
-
-  const isLiqDetailPage = useMatch({
-    from: "/liquidity/$id",
-    shouldThrow: false,
-  })
-
-  const hasSubNav = !isLiqDetailPage && subNav.length > 1
 
   const PendingComponent = leafMatch
     ? router.routesById[leafMatch.routeId]?.options?.pendingComponent
@@ -36,18 +19,8 @@ export const LayoutSkeleton = () => {
   return (
     <>
       <Header />
-      {hasSubNav && (
-        <ContentContainer>
-          <Content>
-            <TabMenu
-              items={subNav}
-              size="medium"
-              variant="transparent"
-              horizontalEdgeOffset="var(--layout-gutter)"
-            />
-          </Content>
-        </ContentContainer>
-      )}
+      <BreadcrumbBar />
+      <SubNavBar />
       {PendingComponent ? (
         <Container>
           <MainContent>

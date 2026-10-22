@@ -4,8 +4,10 @@ import { xcmQueryParamsSchema } from "@/modules/xcm/transfer/utils/query"
 import { XcmPage } from "@/modules/xcm/XcmPage"
 import { XcmPageSkeleton } from "@/modules/xcm/XcmPageSkeleton"
 
+const Page = () => <XcmPage />
+
 export const Route = createFileRoute("/cross-chain/")({
-  component: XcmPage,
+  component: Page,
   pendingComponent: XcmPageSkeleton,
   validateSearch: xcmQueryParamsSchema,
 })

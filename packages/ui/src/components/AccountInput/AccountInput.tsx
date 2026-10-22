@@ -1,15 +1,7 @@
 import { ArrowDownToLine } from "lucide-react"
 
 import { Close } from "@/assets/icons"
-import {
-  AccountAvatar,
-  AccountAvatarTheme,
-  ButtonIcon,
-  Flex,
-  Grid,
-  Icon,
-  Input,
-} from "@/components"
+import { AccountAvatar, Button, Flex, Grid, Input, Tooltip } from "@/components"
 
 export type AccountInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -17,22 +9,30 @@ export type AccountInputProps = Omit<
 > & {
   value: string
   onChange: (value: string) => void
-  avatarTheme?: AccountAvatarTheme
   isError?: boolean
   className?: string
   pasteDisabled?: boolean
   clearDisabled?: boolean
+  pasteLabel?: string
+  clearLabel?: string
+  endAdornment?: React.ReactNode
+  trailingElement?: React.ReactNode
+  variant?: "embedded" | "standalone"
   ref?: React.Ref<HTMLInputElement>
 }
 
 export const AccountInput: React.FC<AccountInputProps> = ({
   value,
   onChange,
-  avatarTheme = "auto",
   className,
   ref,
   pasteDisabled = false,
   clearDisabled = false,
+  pasteLabel = "Paste",
+  clearLabel = "Clear",
+  endAdornment,
+  trailingElement,
+  variant = "embedded",
   ...props
 }) => {
   const handlePaste = async () => {
@@ -48,6 +48,76 @@ export const AccountInput: React.FC<AccountInputProps> = ({
     onChange("")
   }
 
+  const withTooltip = (label: string | undefined, button: React.ReactNode) =>
+    label ? (
+      <Tooltip
+        text={label}
+        size="small"
+        delayDuration={0}
+        side="bottom"
+        alignOffset={0}
+        asChild
+      >
+        {button}
+      </Tooltip>
+    ) : (
+      button
+    )
+
+  const actions = (
+    <>
+      {endAdornment}
+      {trailingElement ? (
+        trailingElement
+      ) : (
+        <>
+          {!value &&
+            !pasteDisabled &&
+            withTooltip(
+              pasteLabel,
+              <Button
+                icon={ArrowDownToLine}
+                variant="ghost"
+                aria-label={pasteLabel}
+                onClick={handlePaste}
+              />,
+            )}
+          {value &&
+            !clearDisabled &&
+            withTooltip(
+              clearLabel,
+              <Button
+                icon={Close}
+                variant="ghost"
+                aria-label={clearLabel}
+                onClick={handleClear}
+              />,
+            )}
+        </>
+      )}
+    </>
+  )
+
+  if (variant === "standalone") {
+    return (
+      <Input
+        ref={ref}
+        className={className}
+        customSize="large"
+        spellCheck={false}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        leadingElement={<AccountAvatar address={value} size={32} />}
+        trailingElement={
+          <Flex align="center" gap="s">
+            {actions}
+          </Flex>
+        }
+        {...props}
+      />
+    )
+  }
+
   return (
     <Grid
       columnTemplate="1fr auto"
@@ -56,7 +126,7 @@ export const AccountInput: React.FC<AccountInputProps> = ({
       className={className}
     >
       <Flex align="center" gap="base">
-        <AccountAvatar address={value} theme={avatarTheme} />
+        <AccountAvatar address={value} />
         <Input
           ref={ref}
           variant="embedded"
@@ -67,16 +137,9 @@ export const AccountInput: React.FC<AccountInputProps> = ({
           {...props}
         />
       </Flex>
-      {!value && !pasteDisabled && (
-        <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size="m" />
-        </ButtonIcon>
-      )}
-      {value && !clearDisabled && (
-        <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size="m" />
-        </ButtonIcon>
-      )}
+      <Flex align="center" gap="s">
+        {actions}
+      </Flex>
     </Grid>
   )
 }

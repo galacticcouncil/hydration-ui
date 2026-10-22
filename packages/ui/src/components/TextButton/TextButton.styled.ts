@@ -4,6 +4,7 @@ import styled from "@emotion/styled"
 export type CustomTextButtonProps = {
   variant?: "plain" | "underline"
   direction?: "none" | "internal" | "external"
+  icon?: React.ReactNode
 }
 
 export const STextButton = styled.button<CustomTextButtonProps>(

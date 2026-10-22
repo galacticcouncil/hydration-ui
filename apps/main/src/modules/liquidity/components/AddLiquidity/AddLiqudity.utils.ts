@@ -21,15 +21,15 @@ import {
   useOmnipoolAssetsData,
   useOmnipoolMinLiquidity,
 } from "@/api/omnipool"
-import i18n from "@/i18n"
 import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
-import { positive, required, validateMaxBalance } from "@/utils/validators"
+import { scale, scaleHuman } from "@/utils/formatting"
+import { positive, required } from "@/utils/validators"
 
 export type TAddLiquidityFormValues = { amount: string; asset: TAssetData }
 
@@ -200,38 +200,30 @@ export const useAddLiquidityForm = ({
   initialAmount,
   selectedAsset,
   rule,
+  tx,
 }: {
   selectedAsset: TAssetData
   initialAmount?: string
   rule?: ZodType<string, string> | undefined
+  tx: AnyTransaction | null
 }) => {
-  const { getTransferableBalance } = useAccountBalances()
+  const { validateBalance, getMaxBalance } = useFormMaxBalanceWithFee(tx, 3)
 
   const form = useForm<TAddLiquidityFormValues>({
     mode: "onChange",
     defaultValues: { amount: initialAmount ?? "", asset: selectedAsset },
     resolver: rule
       ? standardSchemaResolver(
-          z.object({ amount: rule, asset: z.custom<TAssetData>() }).refine(
-            (values) => {
-              return validateMaxBalance(
-                toDecimal(
-                  getTransferableBalance(values.asset.id),
-                  values.asset.decimals,
-                ),
-                values.amount,
-              )
-            },
-            {
-              message: i18n.t("error.maxBalance"),
-              path: ["amount"],
-            },
-          ),
+          z
+            .object({ amount: rule, asset: z.custom<TAssetData>() })
+            .check(
+              validateBalance("amount", (form) => [form.asset, form.amount]),
+            ),
         )
       : undefined,
   })
 
-  return form
+  return { form, getMaxBalance }
 }
 
 export const useAddLiquidity = ({
@@ -264,19 +256,26 @@ export const useAddLiquidity = ({
     : false
 
   const addLiquidityZod = useAddToOmnipoolZod(poolId)
-  const underlyingAssetId = isErc20Asset
-    ? getErc20AToken(poolId)?.underlyingAssetId
-    : undefined
 
-  const form = useAddLiquidityForm({
+  const addLiquidityTx = papi.tx.Omnipool.add_liquidity_with_limit({
+    asset: Number(poolId),
+    amount: BigInt(scale("1", poolMeta.decimals)),
+    min_shares_limit: 0n,
+  })
+
+  const { form, getMaxBalance } = useAddLiquidityForm({
     initialAmount: "",
     selectedAsset: poolMeta,
     rule: addLiquidityZod,
+    tx: addLiquidityTx,
   })
 
   const amount = Big(form.watch("amount") || "0")
   const selectedAsset = form.watch("asset")
   const isErc20SelectedAsset = isErc20AToken(selectedAsset)
+  const underlyingAssetId = isErc20Asset
+    ? getErc20AToken(poolId)?.underlyingAssetId
+    : undefined
 
   const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
     useCheckJoinOmnipoolFarm({
@@ -380,6 +379,7 @@ export const useAddLiquidity = ({
 
   return {
     form,
+    getMaxBalance,
     liquidityShares,
     isFarms,
     activeFarms,

@@ -15,12 +15,15 @@ import { PoolToken } from "@/api/pools"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { TXYKConsts, XYKPoolWithLiquidity } from "@/api/xyk"
 import { useXYKFarmMinShares } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import {
+  useFormMaxBalanceWithFee,
+  ValidateFormMaxBalanceWithFee,
+} from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { TShareToken } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
-import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
+import { positive, required } from "@/utils/validators"
 
 export const orders = ["assetA", "assetB"] as const
 type Order = (typeof orders)[number]
@@ -35,8 +38,7 @@ export type TAddIsolatedLiquidityFormValues = {
 }
 
 export const useAddIsolatedLiquidityZod = (
-  balanceA: string,
-  balanceB: string,
+  validateBalance: ValidateFormMaxBalanceWithFee,
   minTradingLimit: bigint,
   minPoolLiquidity: bigint,
 ) => {
@@ -44,8 +46,8 @@ export const useAddIsolatedLiquidityZod = (
 
   return z
     .object({
-      amountA: required.pipe(positive).check(validateFieldMaxBalance(balanceA)),
-      amountB: required.check(validateFieldMaxBalance(balanceB)),
+      amountA: required.pipe(positive),
+      amountB: required,
       assetA: z.custom<TAssetData>(),
       assetB: z.custom<TAssetData>(),
       lastUpdated: z.literal(["assetA", "assetB"]),
@@ -55,6 +57,10 @@ export const useAddIsolatedLiquidityZod = (
           error: t("liquidity.add.modal.validation.minPoolLiquidity"),
         }),
     })
+    .check(
+      validateBalance("amountA", (form) => [form.assetA, form.amountA]),
+      validateBalance("amountB", (form) => [form.assetB, form.amountB]),
+    )
     .refine(
       ({ amountA, assetA }) => {
         const minAssetATradingLimit = Big(
@@ -104,7 +110,6 @@ export const useAddIsolatedLiquidity = ({
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { getTransferableBalance } = useAccountBalances()
   const { data: farms } = useIsolatedPoolFarms(shareTokenMeta.poolAddress)
   const activeFarms = farms?.filter((farm) => farm.apr !== "0") ?? []
   const isFarms = activeFarms.length > 0
@@ -117,22 +122,22 @@ export const useAddIsolatedLiquidity = ({
 
   const [assetAMeta, assetBMeta] = shareTokenMeta.assets
 
-  const assetABalance = scaleHuman(
-    getTransferableBalance(assetAMeta.id),
-    assetAMeta.decimals,
-  )
-  const assetBBalance = scaleHuman(
-    getTransferableBalance(assetBMeta.id),
-    assetBMeta.decimals,
-  )
-
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
     spotPriceQuery(rpc, assetAMeta.id, assetBMeta.id),
   )
 
+  const addLiquidityTx = papi.tx.XYK.add_liquidity({
+    asset_a: Number(assetAMeta.id),
+    asset_b: Number(assetBMeta.id),
+    amount_a: BigInt(scale("1", assetAMeta.decimals)),
+    amount_b_max_limit: BigInt(scale("1", assetBMeta.decimals)),
+  })
+
+  const { validateBalance, getMaxBalance } =
+    useFormMaxBalanceWithFee(addLiquidityTx)
+
   const zodSchema = useAddIsolatedLiquidityZod(
-    assetABalance,
-    assetBBalance,
+    validateBalance,
     pool.minTradingLimit,
     consts.minPoolLiquidity,
   )
@@ -236,12 +241,11 @@ export const useAddIsolatedLiquidity = ({
 
   return {
     form,
+    getMaxBalance,
     reserveA,
     reserveB,
     ratio,
     mutation,
-    assetABalance,
-    assetBBalance,
     assetAMeta,
     assetBMeta,
     shares,

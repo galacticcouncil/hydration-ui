@@ -1,8 +1,19 @@
+import {
+  CANDLE_BUCKETS,
+  CandleBucket,
+  PRICE_CHANGE_PERIODS,
+  PriceChangePeriod,
+} from "@galacticcouncil/indexer/neckwork"
 import { createZustandStorage, safeParse } from "@galacticcouncil/utils"
 import * as z from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import i18n from "@/i18n"
+import {
+  TRADE_CHART_TYPES,
+  TradeChartType,
+} from "@/modules/trade/swap/components/TradeChart/TradeChart.utils"
 import { validNumber } from "@/utils/validators"
 
 const legacyTradeSettingsSchema = z.object({
@@ -23,14 +34,23 @@ const generalSettingsSchema = z.object({
 const slippageSchema = validNumber.min(0).max(100)
 const maxRetriesSchema = validNumber.min(0).max(10)
 
+export const MIN_TRADE_SLIPPAGE = 0.5
+
+const tradeSlippageSchema = validNumber
+  .min(
+    MIN_TRADE_SLIPPAGE,
+    i18n.t("error.minNumber", { value: MIN_TRADE_SLIPPAGE }),
+  )
+  .max(100)
+
 export const singleTradeSchema = z.object({
-  swapSlippage: slippageSchema,
+  swapSlippage: tradeSlippageSchema,
 })
 
 export type SingleTradeSettings = z.infer<typeof singleTradeSchema>
 
 export const splitTradeSchema = z.object({
-  twapSlippage: slippageSchema,
+  twapSlippage: tradeSlippageSchema,
   twapMaxRetries: maxRetriesSchema,
 })
 
@@ -44,9 +64,17 @@ export const swapSettingsSchema = z.object({
 export type SwapSettings = z.infer<typeof swapSettingsSchema>
 
 export const dcaOrderSchema = z.object({
-  slippage: slippageSchema,
+  slippage: tradeSlippageSchema,
   maxRetries: maxRetriesSchema,
 })
+
+export const chartSettingsSchema = z.object({
+  interval: z.enum(CANDLE_BUCKETS),
+  chartType: z.enum(TRADE_CHART_TYPES),
+  changePeriod: z.enum(PRICE_CHANGE_PERIODS),
+})
+
+export type ChartSettings = z.infer<typeof chartSettingsSchema>
 
 export const liquidityLimitSchema = z.object({
   slippage: slippageSchema,
@@ -59,9 +87,16 @@ export const tradeSettingsSchema = z.object({
   swap: swapSettingsSchema,
   dca: dcaOrderSchema,
   liquidity: liquidityLimitSchema,
+  chart: chartSettingsSchema,
 })
 
 export type TradeSettings = z.infer<typeof tradeSettingsSchema>
+
+export const defaultChartSettings: ChartSettings = {
+  interval: "1h",
+  chartType: "candles",
+  changePeriod: "24h",
+}
 
 const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
@@ -81,6 +116,7 @@ const defaultState: TradeSettings = {
     slippage: 1,
     maxRetries: 5,
   },
+  chart: defaultChartSettings,
 }
 
 type TradeSettingsStore = TradeSettings & {
@@ -95,13 +131,19 @@ export const useTradeSettings = create<TradeSettingsStore>()(
     }),
     createZustandStorage({
       name: "trade-settings",
-      version: 1,
+      version: 3,
       schema: tradeSettingsSchema,
       defaultState,
       migrate: (persistedState, storedVersion) => {
         switch (storedVersion) {
           case 0:
-            return migrateLegacySettings()
+            return migrateMinimumSlippage(migrateLegacySettings())
+          case 1:
+            return migrateMinimumSlippage(
+              migrateDcaSettingsToSplit(persistedState as TradeSettings),
+            )
+          case 2:
+            return migrateMinimumSlippage(persistedState as TradeSettings)
           default:
             return persistedState as TradeSettings
         }
@@ -142,12 +184,112 @@ function migrateLegacySettings() {
             twapMaxRetries: Number(legacyTrade.data.maxRetries),
           },
         }
-      : defaultState.swap,
+      : legacyDca.success
+        ? {
+            ...defaultState.swap,
+            split: {
+              twapSlippage: Number(legacyDca.data.slippage),
+              twapMaxRetries: Number(legacyDca.data.maxRetries),
+            },
+          }
+        : defaultState.swap,
     dca: legacyDca.success
       ? {
           slippage: Number(legacyDca.data.slippage),
           maxRetries: Number(legacyDca.data.maxRetries),
         }
       : defaultState.dca,
+  }
+}
+
+function migrateDcaSettingsToSplit(state: TradeSettings): TradeSettings {
+  const splitIsDefault =
+    state.swap.split.twapSlippage === defaultState.swap.split.twapSlippage &&
+    state.swap.split.twapMaxRetries === defaultState.swap.split.twapMaxRetries
+
+  const dcaWasCustomized =
+    state.dca.slippage !== defaultState.dca.slippage ||
+    state.dca.maxRetries !== defaultState.dca.maxRetries
+
+  if (!splitIsDefault || !dcaWasCustomized) {
+    return state
+  }
+
+  return {
+    ...state,
+    swap: {
+      ...state.swap,
+      split: {
+        twapSlippage: state.dca.slippage,
+        twapMaxRetries: state.dca.maxRetries,
+      },
+    },
+  }
+}
+
+function migrateMinimumSlippage(state: TradeSettings): TradeSettings {
+  return {
+    ...state,
+    swap: {
+      ...state.swap,
+      single: {
+        ...state.swap.single,
+        swapSlippage: Math.max(
+          MIN_TRADE_SLIPPAGE,
+          state.swap.single.swapSlippage,
+        ),
+      },
+      split: {
+        ...state.swap.split,
+        twapSlippage: Math.max(
+          MIN_TRADE_SLIPPAGE,
+          state.swap.split.twapSlippage,
+        ),
+      },
+    },
+    dca: {
+      ...state.dca,
+      slippage: Math.max(MIN_TRADE_SLIPPAGE, state.dca.slippage),
+    },
+    liquidity: {
+      ...state.liquidity,
+      slippage: Math.max(0, state.liquidity.slippage),
+    },
+  }
+}
+
+const guard = <T extends string>(
+  options: readonly T[],
+  value: string,
+  fallback: T,
+): T => (options.includes(value as T) ? (value as T) : fallback)
+
+export const useTradeChartSettings = () => {
+  const { update, ...settings } = useTradeSettings()
+  const { chart } = settings
+
+  const setChart = (values: Partial<ChartSettings>) =>
+    update({ ...settings, chart: { ...chart, ...values } })
+
+  return {
+    interval: guard(
+      CANDLE_BUCKETS,
+      chart.interval,
+      defaultChartSettings.interval,
+    ),
+    chartType: guard(
+      TRADE_CHART_TYPES,
+      chart.chartType,
+      defaultChartSettings.chartType,
+    ),
+    changePeriod: guard(
+      PRICE_CHANGE_PERIODS,
+      chart.changePeriod,
+      defaultChartSettings.changePeriod,
+    ),
+    setInterval: (interval: CandleBucket) => setChart({ interval }),
+    setChartType: (chartType: TradeChartType) => setChart({ chartType }),
+    setChangePeriod: (changePeriod: PriceChangePeriod) =>
+      setChart({ changePeriod }),
   }
 }

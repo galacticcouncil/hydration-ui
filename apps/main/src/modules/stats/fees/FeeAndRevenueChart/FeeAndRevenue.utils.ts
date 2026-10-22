@@ -26,7 +26,7 @@ export const feesAndRevenueColorConfig = {
 
   // Trading breakdown
   omnipoolAssetFee: "secondaryColors.blues.vibrantBlue",
-  omnipoolProtocolFee: "text.tint.secondary",
+  omnipoolProtocolFee: "colors.skyBlue.550",
   stablepools: "accents.alertAlt.primary",
   xykTradeFee: "accents.success.primary",
 
@@ -37,7 +37,7 @@ export const feesAndRevenueColorConfig = {
   // Supply & Borrow breakdown
   liquidationPenalty: "accents.danger.emphasis",
   pepl: "accents.alertAlt.primary",
-  assetReserve: "accents.success.primary",
+  assetReserve: "colors.successGreen.500",
 
   // Stacked summary
   swap: "secondaryColors.blues.vibrantBlue",

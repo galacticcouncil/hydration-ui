@@ -1,0 +1,125 @@
+import { Box, Flex, Separator } from "@galacticcouncil/ui/components"
+import { containerSize, css, styled } from "@galacticcouncil/ui/utils"
+
+const BREAKPOINT = "20rem"
+
+export const SPendingPosition = styled(Flex)(
+  ({ theme }) => css`
+    padding: ${theme.containers.paddings.secondary};
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
+    background: ${theme.controls.dim.base};
+    border: 1px solid ${theme.details.borders};
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: ${theme.space.base};
+
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        flex-wrap: nowrap;
+        gap: 0;
+      `,
+    )}
+  `,
+)
+
+export const SAmountSection = styled(Flex)(
+  ({ theme }) => css`
+    order: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: center;
+    gap: ${theme.space.base};
+
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        flex: 0 1 auto;
+      `,
+    )}
+  `,
+)
+
+export const SActionsGroup = styled(Flex)(
+  ({ theme }) => css`
+    display: contents;
+
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        display: flex;
+        order: 1;
+        align-items: center;
+        gap: ${theme.space.m};
+        flex-shrink: 0;
+      `,
+    )}
+  `,
+)
+
+export const SStatusSection = styled(Flex)(
+  ({ theme }) => css`
+    order: 3;
+    flex-basis: 100%;
+    width: 100%;
+    align-items: center;
+    gap: ${theme.space.m};
+
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        order: unset;
+        flex-basis: auto;
+        width: auto;
+      `,
+    )}
+  `,
+)
+
+export const SActionSection = styled(Box)`
+  order: 1;
+  flex-shrink: 0;
+
+  ${containerSize(
+    BREAKPOINT,
+    css`
+      order: unset;
+    `,
+  )}
+`
+
+export const SMobileSeparator = styled(Separator)`
+  order: 2;
+  flex-basis: 100%;
+  width: 100%;
+
+  ${containerSize(
+    BREAKPOINT,
+    css`
+      display: none;
+    `,
+  )}
+`
+
+export const SStat = styled(Box)(
+  ({ theme }) => css`
+    flex: 1 1 auto;
+
+    & > div {
+      align-items: flex-end;
+      margin-bottom: -${theme.space.s};
+    }
+
+    ${containerSize(
+      BREAKPOINT,
+      css`
+        & > div {
+          flex-direction: column;
+          align-items: flex-end;
+          margin-bottom: 0;
+        }
+      `,
+    )}
+  `,
+)

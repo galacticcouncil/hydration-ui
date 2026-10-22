@@ -21,6 +21,9 @@ export const SpinnerIcon: React.FC<SpinnerProps> = ({ size, ...props }) => {
         animationDuration: "0.75s",
         animationIterationCount: "infinite",
         animationTimingFunction: "linear",
+        // keeps the rotation on the compositor, so it keeps ticking while the
+        // main thread is busy (route chunk, SDK wasm, papi init)
+        willChange: "transform",
       }}
     />
   )

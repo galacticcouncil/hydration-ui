@@ -99,6 +99,6 @@ export const SStackLayer = styled.div<{ readonly $depth: number }>(
   `,
 )
 
-export const SGigaNewsContainer = styled(Box)<{ readonly isHidden?: boolean }>(
-  ({ isHidden }) => hiddenStyles(isHidden),
-)
+export const SGigaNewsContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "isHidden",
+})<{ readonly isHidden?: boolean }>(({ isHidden }) => hiddenStyles(isHidden))

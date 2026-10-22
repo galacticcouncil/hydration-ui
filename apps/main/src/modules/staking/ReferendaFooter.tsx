@@ -11,6 +11,7 @@ import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
 import {
   accountOpenGovVotesQuery,
   ongoingReferendaQuery,
@@ -18,7 +19,6 @@ import {
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import { VoteModal } from "@/modules/staking/components/VoteModal/VoteModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 
 type Props = {
@@ -26,6 +26,7 @@ type Props = {
   readonly classId: number
   readonly voted: boolean
   readonly isGigaStaking?: boolean
+  readonly title: string
 }
 
 export const ReferendaFooter: FC<Props> = ({
@@ -33,6 +34,7 @@ export const ReferendaFooter: FC<Props> = ({
   classId,
   voted,
   isGigaStaking,
+  title,
 }) => {
   const { t } = useTranslation("staking")
   const rpc = useRpcProvider()
@@ -117,6 +119,7 @@ export const ReferendaFooter: FC<Props> = ({
         open={voteOpen}
         onClose={() => setVoteOpen(false)}
         isGigaStaking={isGigaStaking}
+        title={title}
       />
     </>
   )

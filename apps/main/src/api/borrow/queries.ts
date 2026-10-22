@@ -64,17 +64,14 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import {
-  TProviderData,
-  useIndexerClient,
-  useProxyUrl,
-  useSquidClient,
-} from "@/api/provider"
+import { useIndexerClient } from "@/api/indexer"
+import { PROXY_URL } from "@/api/neckwork"
 import { getAccountProxies } from "@/api/proxy"
+import { TProviderData } from "@/api/rpcClient"
 import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
 import { useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { RELAY_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const lendingPoolAddressProvider =
@@ -155,7 +152,7 @@ export const borrowReserveQuery = (
       !!lendingPoolAddressProvider &&
       !!poolDataContract &&
       !!reserveId &&
-      rpc.isApiLoaded,
+      rpc.isReady,
   })
 
 export const borrowReservesQuery = (
@@ -215,8 +212,7 @@ export const borrowReservesQuery = (
     },
     retry: false,
     staleTime: RESERVES_STALE_TIME,
-    enabled:
-      !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
+    enabled: !!lendingPoolAddressProvider && !!poolDataContract && rpc.isReady,
   })
 
 export const useBorrowReserves = () => {
@@ -377,7 +373,7 @@ export const ghoUserDataQuery = (
       }
     },
     retry: false,
-    enabled: !!evmAddress && !!ghoServiceContract && rpc.isApiLoaded,
+    enabled: !!evmAddress && !!ghoServiceContract && rpc.isReady,
   })
 
 export const useGhoUserData = (evmAddress: string) => {
@@ -497,7 +493,7 @@ export const userBorrowSummaryQuery = (
     },
     retry: false,
     staleTime: USER_RESERVES_STALE_TIME,
-    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
+    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isReady,
   })
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
@@ -553,7 +549,7 @@ export const facilitatorBucketQuery = (
         facilitatorBucketLevel: facilitatorBucketLevel,
       }
     },
-    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isApiLoaded,
+    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isReady,
   })
 
 export const useFacilitatorBucket = (aTokenAddress: string) => {
@@ -1032,8 +1028,6 @@ export enum ExternalApyType {
 }
 
 export const useExternalApys = (assetIds: string[]) => {
-  const url = useProxyUrl()
-
   const queryConfigs = assetIds
     .map((assetId) => {
       const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
@@ -1042,7 +1036,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.stake,
           query: {
-            ...defillamaLatestApyQuery(defillamaId, url),
+            ...defillamaLatestApyQuery(defillamaId, PROXY_URL),
             enabled: !!defillamaId,
           },
         }
@@ -1054,7 +1048,7 @@ export const useExternalApys = (assetIds: string[]) => {
           assetId,
           type: ExternalApyType.nativeYield,
           query: {
-            ...kaminoApyQuery(kaminoId, url),
+            ...kaminoApyQuery(kaminoId, PROXY_URL),
             enabled: !!kaminoId,
           },
         }
@@ -1097,8 +1091,6 @@ export const useStrategyPositions = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const indexerClient = useIndexerClient()
-  const squidClient = useSquidClient()
-  const indexerUrl = useProxyUrl()
   const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
   const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
@@ -1151,8 +1143,7 @@ export const useStrategyPositions = () => {
                 poolDataContract,
                 incentivesContract,
                 queryClient,
-                squidClient,
-                indexerUrl,
+                PROXY_URL,
                 assetId,
                 getAssetWithFallback,
                 getErc20AToken,
@@ -1224,7 +1215,7 @@ export const useStrategyPositions = () => {
 
             const blocksAgo =
               Number(parachainBlockNumber) - Number(proxyCreateData.blockHeight)
-            const deltaMs = blocksAgo * PARACHAIN_BLOCK_TIME
+            const deltaMs = blocksAgo * RELAY_BLOCK_TIME
             const proxyCreatedAt = new Date(currentTimestampMs - deltaMs)
 
             return {

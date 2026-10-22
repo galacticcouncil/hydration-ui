@@ -27,7 +27,7 @@ export const SearchInput = ({
       onChange={(e) => onChange(e.target.value)}
       customSize="medium"
       sx={{
-        width: [isFocused ? "100%" : 100, 270],
+        width: [isFocused ? "100%" : 100, "4xl"],
       }}
     />
   )

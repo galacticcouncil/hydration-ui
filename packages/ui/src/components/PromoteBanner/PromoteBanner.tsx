@@ -110,7 +110,7 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                   <SDefaultButton
                     size="medium"
                     onClick={ctaHandler}
-                    minWidth={[pxToRem(140), "auto"]}
+                    minWidth={[pxToRem(140), pxToRem(100)]}
                     sx={{
                       backgroundColor: item.ctaColor,
                       color: item.ctaTextColor,

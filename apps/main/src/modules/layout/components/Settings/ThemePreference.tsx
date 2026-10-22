@@ -61,6 +61,7 @@ export const ThemePreference: FC = () => {
               <Tooltip
                 text={isMobile ? undefined : t(`theme.${theme}`)}
                 side="top"
+                size="small"
                 sideOffset={10}
                 asChild
               >

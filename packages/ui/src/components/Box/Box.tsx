@@ -36,6 +36,7 @@ export type BoxOwnProps = Partial<
     | "maxWidth"
     | "maxHeight"
     | "size"
+    | "overflow"
     | "borderRadius"
     | "borderWidth"
     | "borderStyle"
@@ -43,6 +44,9 @@ export type BoxOwnProps = Partial<
     | "alignItems"
     | "gap"
     | "flex"
+    | "flexShrink"
+    | "flexGrow"
+    | "flexBasis"
     | "visibility"
     | "gridColumn"
     | "gridRow"
@@ -97,6 +101,7 @@ export const Box: React.FC<BoxProps> = ({
   maxWidth,
   maxHeight,
   size,
+  overflow,
   borderRadius,
   borderWidth,
   borderStyle,
@@ -105,6 +110,9 @@ export const Box: React.FC<BoxProps> = ({
   alignItems,
   gap,
   flex,
+  flexShrink,
+  flexGrow,
+  flexBasis,
   visibility,
   gridColumn,
   gridRow,
@@ -143,6 +151,7 @@ export const Box: React.FC<BoxProps> = ({
     maxWidth,
     maxHeight,
     size,
+    overflow,
     borderRadius,
     borderWidth,
     borderStyle,
@@ -151,6 +160,9 @@ export const Box: React.FC<BoxProps> = ({
     alignItems,
     gap,
     flex,
+    flexShrink,
+    flexGrow,
+    flexBasis,
     visibility,
     gridColumn,
     gridRow,

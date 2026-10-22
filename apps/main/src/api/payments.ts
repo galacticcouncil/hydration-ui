@@ -12,16 +12,15 @@ import { Binary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isBigInt, isNullish, isNumber, pick, prop, unique, zip } from "remeda"
-import { useShallow } from "zustand/shallow"
+import { isBigInt, isNullish, isNumber, prop, unique, zip } from "remeda"
 
 import { useAccountInfo } from "@/api/account"
+import { useAccountBalances } from "@/api/balances"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiValue } from "@/hooks/usePapiValue"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
@@ -36,12 +35,12 @@ const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
 }
 
 export const useAcceptedFeePaymentAssets = (ids: string[]) => {
-  const { papi, isLoaded, sdk } = useRpcProvider()
+  const { papi, isReady, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
   const { getAsset } = useAssets()
 
   return useQuery({
-    enabled: isLoaded && ids.length > 0,
+    enabled: isReady && ids.length > 0,
     queryKey: ["acceptedCurrencies", ids],
     queryFn: async () => {
       const assetIds = ids.map<[number]>((id) => [Number(id)])
@@ -112,9 +111,7 @@ export const useAccountFeePaymentAssetId = (
 export const useAccountFeePaymentAssets = () => {
   const { getAsset } = useAssets()
 
-  const { balances, isBalanceLoading } = useAccountData(
-    useShallow(pick(["balances", "isBalanceLoading"])),
-  )
+  const { balances, isBalanceLoading } = useAccountBalances()
   const { data: accountFeePaymentAssetId, isLoading: isPaymentAssetLoading } =
     useAccountFeePaymentAssetId()
 
@@ -126,11 +123,18 @@ export const useAccountFeePaymentAssets = () => {
     )
       return []
 
-    const assetIds = Object.keys(balances)
+    const assetIds: string[] = []
+
+    Object.entries(balances).forEach(([assetId, balance]) => {
+      if (balance.transferable > 0n && getAsset(assetId)) {
+        assetIds.push(assetId)
+      }
+    })
     return unique([...assetIds, accountFeePaymentAssetId.toString()])
   }, [
     accountFeePaymentAssetId,
     balances,
+    getAsset,
     isPaymentAssetLoading,
     isBalanceLoading,
   ])

@@ -1,14 +1,18 @@
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
   AnyEvmChain,
   AnyParachain,
   Asset,
   ChainType,
+  ConfigService,
   EvmChain,
   EvmParachain,
+  NearChain,
   Parachain,
   SolanaChain,
   SuiChain,
+  ZecChain,
 } from "@galacticcouncil/xc-core"
 
 import { HYDRATION_CHAIN_KEY } from "../constants"
@@ -19,7 +23,15 @@ import {
   safeConvertSS58ToSolanaAddress,
   safeConvertSS58ToSuiAddress,
 } from "../helpers"
-import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
+import {
+  EvmAddr,
+  NearAddr,
+  SolanaAddr,
+  Ss58Addr,
+  SuiAddr,
+  toNearAccountId,
+  ZecAddr,
+} from "./address"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
@@ -34,9 +46,18 @@ export function getChainId(chain: AnyChain) {
       return chain.parachainId
     case isAnyEvmChain(chain):
       return chain.evmChain.id
-    default:
+    case isSolanaChain(chain):
+    case isSuiChain(chain):
       return chain.id
+    default:
+      return chain.key
   }
+}
+
+export function isAddressValidOnHydration(address: string) {
+  const chain = chainsMap.get(HYDRATION_CHAIN_KEY)
+  if (!chain) return false
+  return isAddressValidOnChain(address, chain)
 }
 
 export function isAddressValidOnChain(address: string, chain: AnyChain) {
@@ -55,6 +76,10 @@ export function isAddressValidOnChain(address: string, chain: AnyChain) {
       return SolanaAddr.isValid(address)
     case chain.isSui():
       return SuiAddr.isValid(address)
+    case chain.isNear():
+      return NearAddr.isValid(toNearAccountId(address))
+    case chain.isZec():
+      return ZecAddr.isValid(address)
     default:
       return false
   }
@@ -85,6 +110,14 @@ export function isSolanaChain(chain: AnyChain): chain is SolanaChain {
 
 export function isSuiChain(chain: AnyChain): chain is SuiChain {
   return chain.getType() === ChainType.SuiChain
+}
+
+export function isNearChain(chain: AnyChain): chain is NearChain {
+  return chain.getType() === ChainType.NearChain
+}
+
+export function isZecChain(chain: AnyChain): chain is ZecChain {
+  return chain.getType() === ChainType.ZecChain
 }
 
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
@@ -124,6 +157,15 @@ export function formatSourceChainAddress(
       : safeConvertAddressSS58(address)
   }
 
+  if (isNearChain(chain)) {
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
+  }
+
+  if (isZecChain(chain)) {
+    return ZecAddr.isValid(address) ? address : ""
+  }
+
   return safeConvertAddressSS58(address)
 }
 
@@ -134,5 +176,87 @@ export function formatDestChainAddress(
   if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
     return safeConvertH160toSS58(address)
   }
+  if (isNearChain(chain)) {
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
+  }
   return isAddressValidOnChain(address, chain) ? address : ""
+}
+
+const HYDRATION_REGISTRY_ID = /^\d+$/
+
+function toHydrationRegistryId(
+  hydrationChain: AnyChain,
+  asset: Asset,
+): string | null {
+  const id = hydrationChain.getAssetId(asset).toString()
+  return HYDRATION_REGISTRY_ID.test(id) ? id : null
+}
+
+export function hasRouteToHydration(
+  assetKey: string,
+  sourceChain: AnyChain,
+  configService: ConfigService,
+): boolean {
+  if (sourceChain.key === HYDRATION_CHAIN_KEY) return false
+
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return false
+
+  const asset =
+    configService.assets.get(assetKey) ?? sourceChain.getAsset(assetKey)
+  if (!asset) return false
+
+  return (
+    configService.getAssetRoutesOrEmpty(asset, sourceChain, hydrationChain)
+      .length > 0
+  )
+}
+
+export function resolveHydrationDisplayAssetId(
+  asset: Asset,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  const canonical = configService.assets.get(asset.key) ?? asset
+  return toHydrationRegistryId(hydrationChain, canonical)
+}
+
+export function resolveHydrationAssetId(
+  asset: Asset,
+  sourceChainKey: string,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  if (sourceChainKey === HYDRATION_CHAIN_KEY) {
+    return toHydrationRegistryId(hydrationChain, asset)
+  }
+
+  const sourceChain = configService.chains.get(sourceChainKey)
+  if (!sourceChain) return toHydrationRegistryId(hydrationChain, asset)
+
+  const canonical =
+    configService.assets.get(asset.key) ??
+    sourceChain.getAsset(asset.key) ??
+    asset
+
+  const routes = configService.getAssetRoutesOrEmpty(
+    canonical,
+    sourceChain,
+    hydrationChain,
+  )
+
+  const sameKey = routes.find(
+    (route) => route.destination?.asset?.key === canonical.key,
+  )
+  const fallback = routes.find((route) => route.destination?.asset)
+  const dest = (sameKey ?? fallback)?.destination?.asset
+
+  return dest
+    ? toHydrationRegistryId(hydrationChain, dest)
+    : toHydrationRegistryId(hydrationChain, asset)
 }

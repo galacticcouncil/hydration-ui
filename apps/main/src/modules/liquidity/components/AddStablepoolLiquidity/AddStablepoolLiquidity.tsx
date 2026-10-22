@@ -3,17 +3,18 @@ import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
-  Button,
   Flex,
+  LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
   Skeleton,
-  SliderTabs,
   Summary,
   Text,
   Toggle,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
@@ -28,6 +29,7 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { useAccountBalances } from "@/api/balances"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -57,7 +59,6 @@ import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
-import { useAccountBalances } from "@/states/account"
 
 import {
   addStablepoolOptions,
@@ -85,7 +86,9 @@ type AddStablepoolLiquidityFormProps = AddStablepoolLiquidityProps &
     | (ReturnType<typeof useAddMoneyMarketLiquidity> &
         TAddMoneyMarketLiquidityWrapperReturn),
     "form"
-  >
+  > & {
+    isTradeLoading?: boolean
+  }
 
 export const AddStablepoolLiquidityWrapper = (
   props: AddStablepoolLiquidityProps,
@@ -153,7 +156,7 @@ export const AddStablepoolLiquidityForm = ({
   stableswapId,
   closable,
   onBack,
-  accountBalances,
+  getMaxBalance,
   assetsToSelect,
   minReceiveAmount,
   meta,
@@ -168,6 +171,7 @@ export const AddStablepoolLiquidityForm = ({
   isAddableToOmnipool,
   title,
   swap,
+  isTradeLoading = false,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -190,7 +194,7 @@ export const AddStablepoolLiquidityForm = ({
 
   const customErrors = getCustomErrors(formState.errors.sharesAmount)
 
-  const isSubmitDisabled = !formState.isValid
+  const isSubmitDisabled = !formState.isValid || isTradeLoading
 
   if (!split && !selectedAssetId)
     return (
@@ -260,13 +264,23 @@ export const AddStablepoolLiquidityForm = ({
                 control={form.control}
                 name="option"
                 render={({ field: { value, onChange, disabled } }) => (
-                  <SliderTabs
-                    options={addStablepoolOptions}
-                    selected={value}
-                    onSelect={(option) => onChange(option.id)}
-                    sx={{ flex: 1 }}
-                    disabled={disabled}
-                  />
+                  <Flex flex={1}>
+                    <ToggleGroup
+                      type="single"
+                      fullWidth
+                      value={value}
+                      onValueChange={(nextValue) =>
+                        nextValue && onChange(nextValue)
+                      }
+                      disabled={disabled}
+                    >
+                      {addStablepoolOptions.map((option) => (
+                        <ToggleGroupItem key={option.id} value={option.id}>
+                          {option.label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </Flex>
                 )}
               />
               <AddStablepoolLiquidityTooltip />
@@ -297,7 +311,7 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
 
         {activeFields.map((field, index) => {
-          const balance = accountBalances.get(field.assetId) ?? "0"
+          const asset = getAssetWithFallback(field.assetId)
 
           return (
             <Fragment key={field.id}>
@@ -308,30 +322,32 @@ export const AddStablepoolLiquidityForm = ({
                   field: { value, onChange },
                   fieldState: { error },
                 }) => (
-                  <AssetSelect
-                    label={t("liquidity.add.modal.selectAsset")}
-                    assets={[]}
-                    sortedAssets={assetsToSelect}
-                    maxBalance={balance}
-                    selectedAsset={getAssetWithFallback(value.assetId)}
-                    amountError={error?.message}
-                    value={value.amount}
-                    onChange={(amount) => {
-                      const updatedValue = { ...value, amount }
-                      const allFields = form.getValues("fields")
-                      const fieldIndex = allFields.findIndex(
-                        (f) => f.assetId === field.assetId,
-                      )
+                  <Box py="l" width="100%">
+                    <AssetSelect
+                      label={t("liquidity.add.modal.selectAsset")}
+                      assets={[]}
+                      sortedAssets={assetsToSelect}
+                      balance={{ value: getMaxBalance(asset) }}
+                      selectedAsset={getAssetWithFallback(value.assetId)}
+                      amountError={error?.message}
+                      value={value.amount}
+                      onChange={(amount) => {
+                        const updatedValue = { ...value, amount }
+                        const allFields = form.getValues("fields")
+                        const fieldIndex = allFields.findIndex(
+                          (f) => f.assetId === field.assetId,
+                        )
 
-                      onChange(updatedValue)
+                        onChange(updatedValue)
 
-                      const indexToUpdate =
-                        fieldIndex === -1 ? allFields.length : fieldIndex
+                        const indexToUpdate =
+                          fieldIndex === -1 ? allFields.length : fieldIndex
 
-                      form.setValue(`fields.${indexToUpdate}`, updatedValue)
-                    }}
-                    setSelectedAsset={!split ? onSelectAsset : undefined}
-                  />
+                        form.setValue(`fields.${indexToUpdate}`, updatedValue)
+                      }}
+                      setSelectedAsset={!split ? onSelectAsset : undefined}
+                    />
+                  </Box>
                 )}
               />
               <ModalContentDivider />
@@ -397,16 +413,17 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
       </ModalBody>
       <ModalFooter sx={{ pt: 0 }}>
-        <Button
+        <LoadingButton
           type="submit"
           size="large"
           width="100%"
+          isLoading={isTradeLoading}
           disabled={isSubmitDisabled}
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
             : (title ?? t("liquidity.add.modal.submit"))}
-        </Button>
+        </LoadingButton>
       </ModalFooter>
     </form>
   )

@@ -28,4 +28,12 @@ export const Route = createFileRoute("/liquidity/$id")({
   component: Component,
   pendingComponent: PoolDetailsSkeleton,
   validateSearch: searchSchema,
+  staticData: {
+    showSubNav: false,
+    crumb: {
+      type: "pool",
+      param: "id",
+      from: "/liquidity/$id",
+    },
+  },
 })

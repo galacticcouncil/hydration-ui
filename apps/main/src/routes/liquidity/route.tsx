@@ -1,8 +1,7 @@
-import { createFileRoute, useMatch } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
 import { getPageMeta } from "@/config/navigation"
 import { SubpageLayout } from "@/modules/layout/SubpageLayout"
-import { useLiquidityCrumbs } from "@/modules/liquidity/Liquidity.crumbs"
 import {
   useIsolatedPools,
   useOmnipoolStablepools,
@@ -21,15 +20,9 @@ const IsolatedPoolsSubscriber = () => {
 }
 
 const Liquidity = () => {
-  const crumbs = useLiquidityCrumbs()
-  const isPoolsPage = useMatch({
-    from: "/liquidity/",
-    shouldThrow: false,
-  })
-
   return (
     <>
-      <SubpageLayout crumbs={!isPoolsPage ? crumbs : undefined} />
+      <SubpageLayout />
       <OmnipoolSubscriber />
       <IsolatedPoolsSubscriber />
     </>
@@ -38,6 +31,7 @@ const Liquidity = () => {
 
 export const Route = createFileRoute("/liquidity")({
   component: Liquidity,
+  staticData: { crumb: "liquidity:pools" },
   head: ({
     match: {
       context: { i18n },

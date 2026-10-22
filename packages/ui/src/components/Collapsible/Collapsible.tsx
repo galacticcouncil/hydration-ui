@@ -23,9 +23,13 @@ const CollapsibleTrigger = ({
   return <CollapsiblePrimitive.CollapsibleTrigger {...props} />
 }
 
-const CollapsibleContent = ({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) => {
+type CollapsibleContentProps = React.ComponentProps<
+  typeof CollapsiblePrimitive.CollapsibleContent
+> & {
+  animationDurationMs?: number
+}
+
+const CollapsibleContent = ({ ...props }: CollapsibleContentProps) => {
   return <SCollapsibleContent {...props} />
 }
 

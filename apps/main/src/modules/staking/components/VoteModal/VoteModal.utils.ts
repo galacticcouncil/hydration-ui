@@ -1,8 +1,8 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsToHours } from "date-fns"
+import { millisecondsInDay } from "date-fns/constants"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
@@ -13,16 +13,19 @@ import {
   TokenLockType,
   useNativeTokenLocks,
 } from "@/api/balances"
+import { useAccountBalances } from "@/api/balances"
+import { useBlockTime } from "@/api/chain"
 import {
   Conviction,
-  CONVICTIONS_BLOCKS_BY_INDEX,
+  getConvictionBlocks,
   ongoingReferendaQuery,
+  VOTE_WEIGHT_BY_CONVICTION,
+  voteLockingPeriodQuery,
 } from "@/api/democracy"
 import { claimableVotingRewardsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman, toBigInt } from "@/utils/formatting"
 import { positive } from "@/utils/validators"
@@ -40,7 +43,7 @@ export const VOTE_TYPE_OPTIONS = [
 
 export type VoteModalFormValues = {
   voteType: VoteType
-  multiplier: Conviction
+  conviction: Conviction
   amount: string
   aye: string
   nay: string
@@ -57,6 +60,7 @@ export const useVoteModal = (
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
   const rpc = useRpcProvider()
+  const { data: blockTimeMs = 0 } = useBlockTime()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getBalance } = useAccountBalances()
   const { data: locks } = useNativeTokenLocks()
@@ -81,7 +85,7 @@ export const useVoteModal = (
     mode: "onChange",
     defaultValues: {
       voteType: "aye",
-      multiplier: 0,
+      conviction: 0,
       amount: isGigaStaking ? ghdxLocksHuman : "",
       aye: "",
       nay: "",
@@ -97,7 +101,7 @@ export const useVoteModal = (
           abstain: z.string(),
           asset: z.custom<TAssetData>(),
           voteType: z.enum(VOTE_TYPES),
-          multiplier: z.custom<Conviction>(),
+          conviction: z.custom<Conviction>(),
         })
         .superRefine((data, { addIssue }) => {
           const parseHuman = (raw: string, path: VoteType) => {
@@ -216,16 +220,19 @@ export const useVoteModal = (
   })
 
   const voteType = form.watch("voteType")
-  const [multiplier, amount, aye, nay, abstain] = form.watch([
-    "multiplier",
+  const [conviction, amount, aye, nay, abstain] = form.watch([
+    "conviction",
     "amount",
     "aye",
     "nay",
     "abstain",
   ])
 
-  const lockedBlocks = CONVICTIONS_BLOCKS_BY_INDEX[multiplier] ?? 0
-  const lockedDays = millisecondsToHours(lockedBlocks * rpc.slotDurationMs) / 24
+  const { data: voteLockingPeriod = 0 } = useQuery(voteLockingPeriodQuery(rpc))
+  const lockedBlocks = getConvictionBlocks(voteLockingPeriod, conviction) ?? 0
+  const lockedDays = Math.round(
+    (lockedBlocks * blockTimeMs) / millisecondsInDay,
+  )
   const totalVotes = (() => {
     if (voteType === "split") {
       return Big(aye || "0")
@@ -243,15 +250,13 @@ export const useVoteModal = (
 
   const totalVotesWithMultiplier =
     voteType === "aye" || voteType === "nay"
-      ? Big(totalVotes)
-          .mul(multiplier || 0.1)
-          .toString()
+      ? Big(totalVotes).mul(VOTE_WEIGHT_BY_CONVICTION[conviction]).toString()
       : totalVotes
 
   const mutation = useMutation({
     mutationFn: async ({
       voteType,
-      multiplier,
+      conviction,
       amount,
       aye,
       nay,
@@ -264,7 +269,7 @@ export const useVoteModal = (
           return {
             type: "Standard" as const,
             value: {
-              vote: (isAye ? 0x80 : 0x00) | (multiplier & 0x7f),
+              vote: (isAye ? 0x80 : 0x00) | (conviction & 0x7f),
               balance,
             },
           }
