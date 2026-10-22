@@ -79,7 +79,7 @@
   "deposit.vault": "Vault",
   "deposit.vault.value": "{{ name }}, backed by {{ symbol }}",
   "withdraw.title": "Withdraw {{symbol}}",
-  "withdraw.carryEstimate": "The strategy currently has a funding deficit. Your collateral claim is not reduced, but settlement may take longer while funding is recovered.",
+  "withdraw.carryEstimate": "The strategy is temporarily short on funds. You'll still receive your full amount, but it may take longer to arrive.",
   "withdraw.ack": "Withdrawal settles gradually after a {{duration}} cooldown and arrives in your wallet automatically. Yield may pay out separately in HOLLAR.",
   "withdraw.cta.withdraw": "Request withdrawal",
   "withdraw.toast.submitted": "Requesting {{ amount }} withdrawal...",
