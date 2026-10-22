@@ -269,6 +269,18 @@ export const SUBLOOP_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  // bps below the collateral's live max LTV
+  {
+    type: "function",
+    name: "rebalanceBand",
+    inputs: [{ name: "vault", type: "address" }],
+    outputs: [
+      { name: "targetGap", type: "uint16" },
+      { name: "releverGap", type: "uint16" },
+      { name: "deleverGap", type: "uint16" },
+    ],
+    stateMutability: "view",
+  },
   // Source equity can affect settlement availability after the cooldown.
   {
     type: "function",

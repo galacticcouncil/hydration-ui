@@ -36,6 +36,7 @@ const stats = (
   deficitStop: false,
   exchangeRate: 1,
   maxLtv: 0.8,
+  targetLtv: 0.75,
   pendingDeployment: "0",
   ...overrides,
 })

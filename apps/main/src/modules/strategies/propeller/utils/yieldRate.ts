@@ -34,27 +34,27 @@ const SYNTH_PER_DEBT = 1 / 0.98
  * the factor between the steady-state estimate and what a holder accrues
  * right now. Pro-rata shares make the vault's fraction every holder's.
  * The Main account's totalCollateralBase includes the synthetic, stripped
- * via its known debt ratio before applying max LTV.
+ * via its known debt ratio before applying the target LTV.
  */
 export const borrowDeployedFraction = ({
   mainCollUsd,
   mainDebtUsd,
-  maxLtv,
+  targetLtv,
 }: {
   mainCollUsd: number | null | undefined
   mainDebtUsd: number | null | undefined
-  maxLtv: number | null | undefined
+  targetLtv: number | null | undefined
 }): number | null => {
   if (
     isNullish(mainCollUsd) ||
     isNullish(mainDebtUsd) ||
-    isNullish(maxLtv) ||
-    maxLtv <= 0 ||
+    isNullish(targetLtv) ||
+    targetLtv <= 0 ||
     mainDebtUsd < 0
   ) {
     return null
   }
   const realColl = mainCollUsd - mainDebtUsd * SYNTH_PER_DEBT
   if (realColl <= 0) return null
-  return Math.min(mainDebtUsd / (realColl * maxLtv), 1)
+  return Math.min(mainDebtUsd / (realColl * targetLtv), 1)
 }

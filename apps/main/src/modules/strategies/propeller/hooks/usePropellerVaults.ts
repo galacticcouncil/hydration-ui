@@ -54,6 +54,7 @@ export type PropellerVaultStats = {
   deficitStop: boolean | null
   exchangeRate: number
   maxLtv: number | null
+  targetLtv: number | null
   mainCollUsd: number | null
   mainDebtUsd: number | null
   pendingDeployment: string | null
@@ -113,6 +114,7 @@ export const usePropellerVaults = () => {
       deficitStop: data.deficitStop,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
+      targetLtv: data.targetLtv,
       mainCollUsd: data.mainCollUsd,
       mainDebtUsd: data.mainDebtUsd,
       pendingDeployment: data.pendingDeployment,
@@ -123,7 +125,7 @@ export const usePropellerVaults = () => {
     // estimate a function of whoever deposited last.
     const apy = toApy(
       computeVaultApr({
-        maxLtv: stats?.maxLtv,
+        targetLtv: stats?.targetLtv,
         leverage:
           targetLoopLeverage(subLoop?.targetHf, subLoop?.primeLtBps) ??
           subLoop?.leverage,
@@ -131,6 +133,7 @@ export const usePropellerVaults = () => {
         primeSupplyApy,
         protocolFeeBps: data?.protocolFeeBps,
         mainDiscountBps: data?.mainDiscountBps,
+        loopDiscountBps: subLoop?.loopDiscountBps,
       }),
     )
     // deficitStop is the juicer generation's deficit signal (keeper-maintained;
@@ -140,7 +143,7 @@ export const usePropellerVaults = () => {
     const deployed = borrowDeployedFraction({
       mainCollUsd: stats?.mainCollUsd,
       mainDebtUsd: stats?.mainDebtUsd,
-      maxLtv: stats?.maxLtv,
+      targetLtv: stats?.targetLtv,
     })
     return {
       vault,

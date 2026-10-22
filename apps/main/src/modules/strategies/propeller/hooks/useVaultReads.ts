@@ -126,7 +126,7 @@ export const vaultStatsQuery = (
           pool.read.getUserAccountData([vault.vaultAddress], at),
         ),
       ])
-      const [protocolFeeBps, mainDiscountBps] = await Promise.all([
+      const [protocolFeeBps, mainDiscountBps, band] = await Promise.all([
         safeRead("FeeController.protocolFeeBps", () =>
           evm.readContract({
             address: feeController,
@@ -145,6 +145,16 @@ export const vaultStatsQuery = (
             ...at,
           }),
         ),
+        // reverts on loops without a band; the target is then max LTV
+        safeRead("SubLoop.rebalanceBand(vault)", () =>
+          evm.readContract({
+            address: SUBLOOP_ADDRESS,
+            abi: SUBLOOP_ABI,
+            functionName: "rebalanceBand",
+            args: [vault.vaultAddress],
+            ...at,
+          }),
+        ),
       ])
 
       const queueLength = queueTail > queueHead ? queueTail - queueHead : 0n
@@ -154,6 +164,7 @@ export const vaultStatsQuery = (
       // totalCollateralBase.
       const ltvBps =
         collateralConfig === null ? 0 : Number(collateralConfig & 0xffffn)
+      const targetLtvBps = ltvBps - (band?.[0] ?? 0)
 
       return {
         totalAssets: Number(formatUnits(totalAssets, decimals)),
@@ -165,6 +176,7 @@ export const vaultStatsQuery = (
         paused,
         depositsPaused,
         maxLtv: ltvBps > 0 ? ltvBps / 1e4 : null,
+        targetLtv: ltvBps > 0 && targetLtvBps > 0 ? targetLtvBps / 1e4 : null,
         withdrawalDelay,
         deficitStop,
         // Main leg in base currency (USD, 8 decimals); collateral includes the
@@ -244,6 +256,16 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
       if (hollarRes) {
         borrowRate = Number(hollarRes.currentVariableBorrowRate) / 1e27
       }
+      const loopDiscountBps = hollarRes
+        ? await safeRead("DebtToken.getDiscountPercent(SubLoop)", () =>
+            evm.readContract({
+              address: hollarRes.variableDebtTokenAddress,
+              abi: DEBT_TOKEN_ABI,
+              functionName: "getDiscountPercent",
+              args: [SUBLOOP_ADDRESS],
+            }),
+          )
+        : null
 
       return {
         leverage: loopLeverage,
@@ -251,6 +273,8 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),
         borrowRate,
+        loopDiscountBps:
+          loopDiscountBps === null ? null : Number(loopDiscountBps),
         negativeCarry:
           negativeCarryBps === null ? null : Number(negativeCarryBps) / 1e4,
         // liquidation threshold sits in bits 16-31 of the reserve config bitmap
