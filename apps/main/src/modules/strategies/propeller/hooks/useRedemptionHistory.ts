@@ -2,10 +2,7 @@ import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 import { formatUnits, type Hex, parseAbiItem } from "viem"
 
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
-import {
-  BLOCK_TIME_SECONDS,
-  VAULT_DEPLOY_BLOCK,
-} from "@/modules/strategies/propeller/constants"
+import { VAULT_DEPLOY_BLOCK } from "@/modules/strategies/propeller/constants"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { TProviderContext } from "@/providers/rpcProvider"
 
@@ -54,12 +51,12 @@ export interface RedemptionSettlement {
   recentRatePerBlock: number | null
   lastSettledBlock: bigint
   /**
-   * How long settling typically takes on this vault, in seconds: the median
+   * How long settling typically takes on this vault, in blocks: the median
    * first-to-last-tranche span of requests that finished settling. The keeper
    * completes in bursts, so this phase length beats any linear projection.
    * Vault-wide (every settlement the scan has seen), same on each entry.
    */
-  typicalSettleSeconds: number | null
+  typicalSettleBlocks: number | null
 }
 
 /** settlements older than this say nothing about the current pace (~10 min) */
@@ -179,8 +176,8 @@ export const vaultSettlementsQuery = (
         .filter((e) => e.collateral > 0n && e.lastSettledBlock < windowStart)
         .map((e) => Number(e.lastSettledBlock - e.firstSettledBlock))
         .sort((a, b) => a - b)
-      const typicalSettleSeconds = spans.length
-        ? spans[Math.floor(spans.length / 2)]! * BLOCK_TIME_SECONDS
+      const typicalSettleBlocks = spans.length
+        ? spans[Math.floor(spans.length / 2)]!
         : null
 
       return [...byId].map(
@@ -203,7 +200,7 @@ export const vaultSettlementsQuery = (
               ? null
               : Number(formatUnits(recentCollateral, decimals)) /
                 Number(head - recentFirstBlock + 1n),
-          typicalSettleSeconds,
+          typicalSettleBlocks,
         }),
       )
     },
