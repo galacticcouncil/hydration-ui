@@ -91,10 +91,19 @@ export const OpenActionModal: FC<{
       case "withdraw":
       case "borrow":
       case "repay":
+        return reserve
+          ? t(`${action}.withSymbol`, {
+              symbol: resolveDisplay(reserve).symbol,
+            })
+          : t(action)
       case "claim":
         return t(action)
       case "collateral":
-        return t("collateral.title")
+        return reserve
+          ? t("collateral.withSymbol", {
+              symbol: resolveDisplay(reserve).symbol,
+            })
+          : t("collateral.title")
       case "emode":
         return t("emode.title")
     }

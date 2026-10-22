@@ -417,7 +417,7 @@ export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
   pinned
     ? toSupply.display({ id: "balancePlaceholder" })
     : toSupply.display({
-        header: "Wallet balance",
+        header: "Balance",
         ...right,
         cell: ({ row }) => {
           const { balance, balanceUsd } = row.original
@@ -436,7 +436,7 @@ export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
     ),
   }),
   toSupply.display({
-    header: "Can be collateral",
+    header: "Collateral",
     ...center,
     cell: ({ row }) => (
       <CollateralCell

@@ -203,20 +203,24 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
           }
           loading={isAssessing || current.isPending}
         />
+        {findings.length > 0 && (
+          <Stack gap="base" py="base">
+            <Controller
+              control={control}
+              name="acknowledged"
+              render={({ field }) => (
+                <FindingsList
+                  findings={findings}
+                  acknowledged={field.value}
+                  onAcknowledgedChange={field.onChange}
+                />
+              )}
+            />
+          </Stack>
+        )}
       </Summary>
       <Divider />
-      <Stack gap="base" pt="base">
-        <Controller
-          control={control}
-          name="acknowledged"
-          render={({ field }) => (
-            <FindingsList
-              findings={findings}
-              acknowledged={field.value}
-              onAcknowledgedChange={field.onChange}
-            />
-          )}
-        />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"

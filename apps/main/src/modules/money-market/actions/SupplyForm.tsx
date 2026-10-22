@@ -154,7 +154,7 @@ export const SupplyForm: FC<Props> = ({ asset, onSubmitted }) => {
               icon: <AssetLogo id={logoId} size="medium" />,
             }}
             balance={{
-              label: t("available"),
+              label: t("common:balance"),
               value:
                 max === undefined ? "" : t("common:number", { value: max }),
               isLoading: isSpendableLoading,
@@ -216,20 +216,24 @@ export const SupplyForm: FC<Props> = ({ asset, onSubmitted }) => {
           }
           loading={isAssessing || current.isPending}
         />
+        {findings.length > 0 && (
+          <Stack gap="base" py="base">
+            <Controller
+              control={control}
+              name="acknowledged"
+              render={({ field }) => (
+                <FindingsList
+                  findings={findings}
+                  acknowledged={field.value}
+                  onAcknowledgedChange={field.onChange}
+                />
+              )}
+            />
+          </Stack>
+        )}
       </Summary>
       <Divider />
-      <Stack gap="base" pt="base">
-        <Controller
-          control={control}
-          name="acknowledged"
-          render={({ field }) => (
-            <FindingsList
-              findings={findings}
-              acknowledged={field.value}
-              onAcknowledgedChange={field.onChange}
-            />
-          )}
-        />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"

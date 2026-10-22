@@ -22,7 +22,7 @@ import Big from "big.js"
 import { FC, useEffect, useMemo, useState } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Address, parseUnits } from "viem"
+import { Address, formatUnits, parseUnits } from "viem"
 
 import { useAccountBalances } from "@/api/balances"
 import { AssetLogo } from "@/components/AssetLogo"
@@ -48,7 +48,7 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
   const { t } = useTranslation(["borrow", "common"])
   const { market } = useMoneyMarket()
   const user = useUserAddress()
-  const { getTransferableBalance } = useAccountBalances()
+  const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
 
   const assetId = reserveAssetId(asset, market)
   const { symbol, logoId } = useReserveDisplay({
@@ -145,10 +145,11 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
               icon: <AssetLogo id={logoId} size="medium" />,
             }}
             balance={{
-              label: t("available"),
-              value:
-                max === undefined ? "" : t("common:number", { value: max }),
-              isLoading: isSpendableLoading,
+              label: t("common:balance"),
+              value: t("common:number", {
+                value: formatUnits(transferable, decimals),
+              }),
+              isLoading: isBalanceLoading || !reserves,
               isMaxDisabled: !(Number(max) > 0),
               onMax: () => {
                 if (max === undefined) return
@@ -191,10 +192,14 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
           }
           loading={isAssessing || current.isPending}
         />
+        {findings.length > 0 && (
+          <Stack gap="base" py="base">
+            <FindingsList findings={findings} />
+          </Stack>
+        )}
       </Summary>
       <Divider />
-      <Stack gap="base" pt="base">
-        <FindingsList findings={findings} />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"

@@ -16,6 +16,7 @@ import { FC } from "react"
 import { BreadcrumbBar } from "@/modules/layout/components/BreadcrumbBar"
 import { Container, MainContent } from "@/modules/layout/components/Content"
 import { SubNavBar } from "@/modules/layout/components/SubNavBar"
+import { EModeSelect } from "@/modules/money-market/EModeSelect"
 import { DEFAULT_MARKET } from "@/modules/money-market/hooks"
 import { ReserveApyProvider } from "@/modules/money-market/ReserveApyProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -48,7 +49,14 @@ export const MoneyMarketLayout: FC = () => {
             {isReserve ? (
               <BreadcrumbBar />
             ) : (
-              <SubNavBar actions={<MarketSelect />} />
+              <SubNavBar
+                actions={
+                  <Flex align="center" gap="m">
+                    <MarketSelect />
+                    <EModeSelect key={market} />
+                  </Flex>
+                }
+              />
             )}
             <MainContent>
               <Outlet />
@@ -66,14 +74,16 @@ export const MoneyMarketLayout: FC = () => {
 
 /** Sits in the sub nav strip, so every page shares it. */
 export const MarketSelect: FC = () => {
-  const { market = DEFAULT_MARKET } = useSearch({ from: "/borrow" })
+  const { market } = useSearch({ from: "/borrow" })
   const navigate = useNavigate()
 
   const onMarketChange = (next: CustomMarket) =>
     navigate({
       to: ".",
-      search: { market: next === DEFAULT_MARKET ? undefined : next },
+      search: { market: next },
     })
+
+  if (!market) return null
 
   return (
     <Select

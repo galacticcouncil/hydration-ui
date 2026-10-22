@@ -155,7 +155,14 @@ export function assessBorrow({
     : [Decimal(0)]
   // Hollar is minted on borrow, so what its aToken holds bounds nothing; the
   // pool's own liquidity figure already carries the reserve's borrow cap.
-  bounds.push(hollarCapacity ?? Decimal(summary.availableLiquidity))
+  const poolAvailable = Decimal(summary.availableLiquidity)
+  // Debt accrues against the borrow cap between quoting and execution, even
+  // when the account's borrowing power is not the limiting bound.
+  const bufferedPoolAvailable = Decimal(summary.totalDebt).gt(0)
+    ? poolAvailable.times(BORROW_MAX_MARGIN)
+    : poolAvailable
+
+  bounds.push(hollarCapacity ?? bufferedPoolAvailable)
 
   const max =
     blockers.length > 0

@@ -72,6 +72,12 @@ describe("isSwapInReserve", () => {
     expect(isSwapInReserve(reserve(PRIME, true), GIGAHDX)).toBe(false)
   })
 
+  it("treats isolated apyUSD as an ordinary reserve", () => {
+    expect(
+      isSwapInReserve(reserve(getAddressFromAssetId("46"), true), MAIN),
+    ).toBe(false)
+  })
+
   it("is false for a plain reserve", () => {
     expect(isSwapInReserve(reserve(DOT), MAIN)).toBe(false)
   })

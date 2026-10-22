@@ -9,9 +9,9 @@ const schema = z.object({
 
 export type EModeFormValues = z.infer<typeof schema>
 
-export const useEModeForm = () =>
+export const useEModeForm = (categoryId = 0) =>
   useForm<EModeFormValues>({
-    defaultValues: { categoryId: 0, acknowledged: false },
+    defaultValues: { categoryId, acknowledged: false },
     resolver: standardSchemaResolver(schema),
     mode: "onChange",
   })

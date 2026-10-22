@@ -49,7 +49,7 @@ const debtToken1 = "0x00000000000000000000000000000000000000b1" as Address
 const aToken2 = "0x00000000000000000000000000000000000000a2" as Address
 const debtToken2 = "0x00000000000000000000000000000000000000b2" as Address
 
-/** Two reserves, both sides incentivised, all four tokens on one controller. */
+/** Two reserves, three incentivised token sides on one controller. */
 const userIncentives: UserReserveIncentives[] = [
   {
     underlyingAsset: "0x0000000000000000000000000000000000000001",
@@ -124,7 +124,7 @@ describe("claim actions", () => {
     expect(call?.args).toEqual([[aToken1, aToken2], 1_500n, user, gdot])
   })
 
-  it("claims everything in one call per controller", () => {
+  it("claims only token sides with nonempty rewards in one call per controller", () => {
     const plan = buildClaimAllRewards({ userIncentives, to: user })
 
     expect(plan).toHaveLength(1)
@@ -132,15 +132,12 @@ describe("claim actions", () => {
     expect(call?.to).toBe(controller)
     expect(call?.functionName).toBe("claimAllRewards")
     // Every incentivised token the controller named, repeats removed.
-    expect(call?.args).toEqual([
-      [aToken1, debtToken1, aToken2, debtToken2],
-      user,
-    ])
+    expect(call?.args).toEqual([[aToken1, debtToken1, aToken2], user])
     expect(call?.data).toBe(
       encodeFunctionData({
         abi: incentiveControllerAbi,
         functionName: "claimAllRewards",
-        args: [[aToken1, debtToken1, aToken2, debtToken2], user],
+        args: [[aToken1, debtToken1, aToken2], user],
       }),
     )
   })
@@ -159,7 +156,25 @@ describe("claim actions", () => {
 
     expect(plan.map((call) => call.to)).toEqual([controller, otherController])
     expect(plan[0]?.args).toEqual([[aToken1, debtToken1], user])
-    expect(plan[1]?.args).toEqual([[aToken2, debtToken2], user])
+    expect(plan[1]?.args).toEqual([[aToken2], user])
+  })
+
+  it("skips controllers with no configured rewards", () => {
+    const empty: UserReserveIncentives = {
+      underlyingAsset: "0x0000000000000000000000000000000000000003",
+      supply: side(aToken2, otherController, []),
+      variableBorrow: side(debtToken2, otherController, []),
+    }
+
+    const plan = buildClaimAllRewards({
+      userIncentives: [userIncentives[0] as UserReserveIncentives, empty],
+      to: user,
+    })
+
+    expect(plan.map((call) => call.to)).toEqual([controller])
+    expect(buildClaimAllRewards({ userIncentives: [empty], to: user })).toEqual(
+      [],
+    )
   })
 
   it("carries the gas hints and the ABI item it encoded", () => {

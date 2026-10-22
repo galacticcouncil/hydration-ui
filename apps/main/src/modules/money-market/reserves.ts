@@ -5,6 +5,7 @@ import type {
 import {
   getAssetIdFromAddress,
   HOLLAR_ASSET_ID,
+  ISOLATED_MODE_ASSETS,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
 
@@ -35,11 +36,15 @@ export const isPoolShareReserve = (address: string, market: MarketDescriptor) =>
 
 /**
  * Supplied from any asset through a swap, so holding the reserve's own token
- * is not required. Isolated is read from the chain, never listed.
+ * is not required. Only configured isolated assets support this flow.
  */
 export const isSwapInReserve = (
   reserve: Pick<ReserveSummary, "underlyingAsset" | "isIsolated">,
   market: MarketDescriptor,
 ) =>
   market.market === "hydration_v3" &&
-  (isPoolShareReserve(reserve.underlyingAsset, market) || reserve.isIsolated)
+  (isPoolShareReserve(reserve.underlyingAsset, market) ||
+    (reserve.isIsolated &&
+      ISOLATED_MODE_ASSETS.includes(
+        reserveAssetId(reserve.underlyingAsset, market),
+      )))

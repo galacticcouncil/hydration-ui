@@ -65,14 +65,8 @@ const symbols = (args: Partial<Parameters<typeof toSupplyRows<Row>>[0]> = {}) =>
   }).rows.map((r) => r.symbol)
 
 describe("toSupplyRows", () => {
-  it("leads with isolated reserves, then pool-share ones in list order", () => {
-    expect(symbols().slice(0, 5)).toEqual([
-      "PRIME",
-      "apyUSD",
-      "GDOT",
-      "GETH",
-      "HUSDC",
-    ])
+  it("leads with configured swap-in reserves, then pool-share ones in list order", () => {
+    expect(symbols().slice(0, 4)).toEqual(["PRIME", "GDOT", "GETH", "HUSDC"])
   })
 
   it("flags the pinned rows only", () => {
@@ -84,7 +78,6 @@ describe("toSupplyRows", () => {
     })
     expect(rows.filter((r) => r.pinned).map((r) => r.symbol)).toEqual([
       "PRIME",
-      "apyUSD",
       "GDOT",
       "GETH",
       "HUSDC",
@@ -94,20 +87,30 @@ describe("toSupplyRows", () => {
   it("keeps a pinned row without a balance and hides an ordinary one", () => {
     expect(symbols()).toEqual([
       "PRIME",
-      "apyUSD",
       "GDOT",
       "GETH",
       "HUSDC",
       "USDC",
+      "apyUSD",
       "DOT",
     ])
   })
 
   it("shows ordinary rows without a balance when asked, largest first", () => {
-    expect(symbols({ showZeroBalance: true }).slice(5)).toEqual([
+    expect(symbols({ showZeroBalance: true }).slice(4)).toEqual([
       "USDC",
+      "apyUSD",
       "DOT",
       "WETH",
+    ])
+  })
+
+  it("hides apyUSD without a balance like an ordinary reserve", () => {
+    const apyUsd = row("apyUSD", "46", undefined, true)
+    expect(symbols({ rows: [USDC, apyUsd] })).toEqual(["USDC"])
+    expect(symbols({ rows: [USDC, apyUsd], showZeroBalance: true })).toEqual([
+      "USDC",
+      "apyUSD",
     ])
   })
 

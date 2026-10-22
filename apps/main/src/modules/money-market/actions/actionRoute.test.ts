@@ -45,6 +45,10 @@ describe("actionRoute", () => {
     expect(actionRoute("supply", PRIME, MAIN, true)).toBe("supplyIsolated")
   })
 
+  it("supplies isolated apyUSD through the normal form", () => {
+    expect(actionRoute("supply", reserve("46", true), MAIN, true)).toBe("form")
+  })
+
   it("opens the remove modal for pool-share withdraw", () => {
     expect(actionRoute("withdraw", GDOT, MAIN, true)).toBe("removeMoneyMarket")
   })

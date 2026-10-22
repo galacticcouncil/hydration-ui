@@ -4,7 +4,10 @@ import type {
 } from "@galacticcouncil/money-market/types"
 
 import type { RowAction } from "@/modules/money-market/MoneyMarketTables"
-import { isPoolShareReserve } from "@/modules/money-market/reserves"
+import {
+  isPoolShareReserve,
+  isSwapInReserve,
+} from "@/modules/money-market/reserves"
 
 export type ActionRoute =
   | "addStablepool"
@@ -31,8 +34,7 @@ export const actionRoute = (
 
   if (action === "supply") {
     if (isPoolShare) return "addStablepool"
-    if (reserve.isIsolated && market.market === "hydration_v3")
-      return "supplyIsolated"
+    if (isSwapInReserve(reserve, market)) return "supplyIsolated"
   }
 
   if (action === "withdraw" && isPoolShare) return "removeMoneyMarket"

@@ -1,7 +1,4 @@
-import {
-  assessBorrow,
-  eModeCategories,
-} from "@galacticcouncil/money-market/core"
+import { assessBorrow } from "@galacticcouncil/money-market/core"
 import {
   useAccountRequest,
   useClaimableRewards,
@@ -30,8 +27,8 @@ import {
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Settings, Zap } from "lucide-react"
 import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Address } from "viem"
@@ -148,7 +145,18 @@ export const MoneyMarketDashboard: FC = () => {
   const [side, setSide] = useState<Side>("supply")
   const [showZeroBalance, setShowZeroBalance] = useState(false)
   const [showUnavailable, setShowUnavailable] = useState(false)
-  const [category, setCategory] = useState<Category | "all">("all")
+  const { supplyCategory } = useSearch({ from: "/borrow/" })
+  const navigate = useNavigate({ from: "/borrow/" })
+  const category = supplyCategory ?? "all"
+  const setCategory = (value: Category | "all") => {
+    navigate({
+      search: (search) => ({
+        ...search,
+        supplyCategory: value === "all" ? undefined : value,
+      }),
+      resetScroll: false,
+    })
+  }
 
   const {
     reserves,
@@ -269,10 +277,6 @@ export const MoneyMarketDashboard: FC = () => {
     value ? t("currency", { value, maximumFractionDigits: 2 }) : "-"
   const percent = (value: number) => t("percent", { value: value * 100 })
 
-  const eModeLabel =
-    eModeCategories(reserves.data ?? []).find(
-      (c) => c.id === acc?.eModeCategoryId,
-    )?.label ?? t("borrow:emode.disabled")
   const claimableUsd = (claimable.data ?? []).reduce(
     (sum, r) => sum.plus(r.amountUsd),
     Big(0),
@@ -371,24 +375,6 @@ export const MoneyMarketDashboard: FC = () => {
             }
           />
         )}
-        {user && acc && (
-          <ValueStats
-            size="large"
-            label={t("borrow:emode.title")}
-            wrap
-            customValue={
-              <Button
-                iconStart={acc.eModeCategoryId ? Zap : Settings}
-                size="small"
-                variant={acc.eModeCategoryId ? "accent" : "tertiary"}
-                outline
-                onClick={() => setOpen({ action: "emode" })}
-              >
-                {eModeLabel}
-              </Button>
-            }
-          />
-        )}
       </Stack>
 
       <Box display={["block", null, null, "none"]}>
@@ -441,6 +427,7 @@ export const MoneyMarketDashboard: FC = () => {
             actions={
               categoryItems.length > 1 && (
                 <Select<Category | "all">
+                  variant={category === "all" ? "muted" : "accent"}
                   size="small"
                   items={[
                     { key: "all", label: "All categories" },

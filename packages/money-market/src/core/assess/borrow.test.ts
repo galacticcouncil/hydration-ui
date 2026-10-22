@@ -177,9 +177,32 @@ describe("assessBorrow", () => {
       expect(healthFactor.lt("1.011")).toBe(true)
     })
 
-    it("is bounded by the reserve's available liquidity", () => {
-      const summaries = withSummary(USDC, { availableLiquidity: "12.3456789" })
+    it("buffers available liquidity when the reserve has outstanding debt", () => {
+      const summaries = withSummary(USDC, {
+        availableLiquidity: "12.3456789",
+        totalDebt: "1",
+      })
+      expect(assessBorrow({ ...request, summaries }).max).toBe("12.222222")
+    })
+
+    it("leaves liquidity unbuffered when the reserve has no debt", () => {
+      const summaries = withSummary(USDC, {
+        availableLiquidity: "12.3456789",
+        totalDebt: "0",
+      })
       expect(assessBorrow({ ...request, summaries }).max).toBe("12.345678")
+    })
+
+    it("buffers borrow-cap headroom when it binds before liquidity", () => {
+      const patched = withReserve(USDC, {
+        availableLiquidity: "1000000000",
+        borrowCap: "1000",
+        totalScaledVariableDebt: "900000000",
+        variableBorrowIndex: "1000000000000000000000000000",
+        variableBorrowRate: "0",
+      })
+
+      expect(assessBorrow({ ...request, ...patched }).max).toBe("98.999999")
     })
 
     it("bounds Hollar by the facilitator's remaining capacity", () => {

@@ -82,6 +82,7 @@ const assetsOf = (
       .filter(
         (side) =>
           side.incentiveControllerAddress === controller &&
+          side.rewards.length > 0 &&
           (rewardTokenAddress === undefined ||
             side.rewards.some(
               (reward) => reward.rewardTokenAddress === rewardTokenAddress,
@@ -143,7 +144,9 @@ export const buildClaimAllRewards = ({
   gas,
 }: ClaimAllRewardsRequest): ActionPlan => {
   const controllers = new Set(
-    sides(userIncentives).map((side) => side.incentiveControllerAddress),
+    sides(userIncentives)
+      .filter((side) => side.rewards.length > 0)
+      .map((side) => side.incentiveControllerAddress),
   )
 
   return [...controllers].map((controller) =>

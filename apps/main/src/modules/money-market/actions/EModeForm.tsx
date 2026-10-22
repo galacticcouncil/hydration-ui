@@ -35,6 +35,7 @@ import { useUserAddress } from "@/modules/money-market/hooks"
 import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
 
 type Props = {
+  readonly initialCategoryId?: number
   readonly onSubmitted?: () => void
 }
 
@@ -58,7 +59,7 @@ const Change: FC<{ current: ReactNode; next: ReactNode }> = ({
   </Flex>
 )
 
-export const EModeForm: FC<Props> = ({ onSubmitted }) => {
+export const EModeForm: FC<Props> = ({ initialCategoryId, onSubmitted }) => {
   const { t } = useTranslation(["borrow", "common"])
   const { market } = useMoneyMarket()
   const user = useUserAddress()
@@ -73,14 +74,15 @@ export const EModeForm: FC<Props> = ({ onSubmitted }) => {
     [summaries.data],
   )
   const labelOf = (id: number) =>
-    categories.find((c) => c.id === id)?.label ?? t("emode.none")
+    categories.find((c) => c.id === id)?.label ?? t("emode.disabled")
 
   const options = [
-    { key: String(NO_EMODE), label: t("emode.none") },
+    { key: String(NO_EMODE), label: t("emode.disabled") },
     ...categories.map((c) => ({ key: String(c.id), label: c.label })),
   ].filter((o) => Number(o.key) !== currentId)
 
-  const { control, formState, handleSubmit, setValue, watch } = useEModeForm()
+  const { control, formState, handleSubmit, setValue, watch } =
+    useEModeForm(initialCategoryId)
   const watchedId = watch("categoryId")
   const firstId = options[0] ? Number(options[0].key) : undefined
   const categoryId = options.some((o) => Number(o.key) === watchedId)
@@ -198,20 +200,24 @@ export const EModeForm: FC<Props> = ({ onSubmitted }) => {
           }
           loading={isAssessing || isCurrentLoading}
         />
+        {findings.length > 0 && (
+          <Stack gap="base" py="base">
+            <Controller
+              control={control}
+              name="acknowledged"
+              render={({ field }) => (
+                <FindingsList
+                  findings={findings}
+                  acknowledged={field.value}
+                  onAcknowledgedChange={field.onChange}
+                />
+              )}
+            />
+          </Stack>
+        )}
       </Summary>
       <Divider />
-      <Stack gap="base" pt="base">
-        <Controller
-          control={control}
-          name="acknowledged"
-          render={({ field }) => (
-            <FindingsList
-              findings={findings}
-              acknowledged={field.value}
-              onAcknowledgedChange={field.onChange}
-            />
-          )}
-        />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"

@@ -17,12 +17,14 @@ import {
   Flex,
   Icon,
   LoadingButton,
+  Paper,
   Separator,
   Stack,
   Summary,
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -148,30 +150,47 @@ export const CollateralForm: FC<Props> = ({ asset, onSubmitted }) => {
   return (
     <form onSubmit={onSubmit}>
       <Summary separator={<Divider />}>
-        <SummaryRow
-          label={
+        <Flex asChild align="center" justify="space-between" mb="xl">
+          <Paper p="xl" shadow={false}>
             <Flex gap="s" align="center">
               <AssetLogo id={logoId} size="small" />
               <Text fs="p5" fw={500}>
                 {symbol}
               </Text>
             </Flex>
-          }
-          content={t("common:currency", {
-            value: position?.underlyingBalance ?? "0",
-            symbol,
-          })}
-          loading={!!user && current.isPending}
-        />
+            <Text fw={600} fs="p4">
+              {t("common:currency", {
+                value: position?.underlyingBalance ?? "0",
+                symbol,
+              })}
+            </Text>
+          </Paper>
+        </Flex>
         <SummaryRow
           label={t("summary.collateral")}
           content={
             <Flex gap="s" align="center">
-              <Text fs="p5" fw={500}>
+              <Text
+                fs="p5"
+                fw={500}
+                color={getToken(
+                  !enable
+                    ? "details.values.positive"
+                    : "details.values.negative",
+                )}
+              >
                 {collateralStatus(!enable)}
               </Text>
               <Icon component={ArrowRight} size="s" />
-              <Text fs="p5" fw={500}>
+              <Text
+                fs="p5"
+                fw={500}
+                color={getToken(
+                  enable
+                    ? "details.values.positive"
+                    : "details.values.negative",
+                )}
+              >
                 {collateralStatus(enable)}
               </Text>
             </Flex>
@@ -188,20 +207,24 @@ export const CollateralForm: FC<Props> = ({ asset, onSubmitted }) => {
           }
           loading={isAssessing || current.isPending}
         />
+        {findings.length > 0 && (
+          <Stack gap="base" py="base">
+            <Controller
+              control={control}
+              name="acknowledged"
+              render={({ field }) => (
+                <FindingsList
+                  findings={findings}
+                  acknowledged={field.value}
+                  onAcknowledgedChange={field.onChange}
+                />
+              )}
+            />
+          </Stack>
+        )}
       </Summary>
       <Divider />
-      <Stack gap="base" pt="base">
-        <Controller
-          control={control}
-          name="acknowledged"
-          render={({ field }) => (
-            <FindingsList
-              findings={findings}
-              acknowledged={field.value}
-              onAcknowledgedChange={field.onChange}
-            />
-          )}
-        />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"

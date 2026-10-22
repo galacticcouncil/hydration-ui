@@ -15,6 +15,7 @@ import {
   LoadingButton,
   Separator,
   Stack,
+  Summary,
   Table,
   TableBody,
   TableCell,
@@ -228,9 +229,15 @@ export const ClaimRewardsForm: FC<Props> = ({ onSubmitted }) => {
           </Table>
         </TableContainer>
       )}
+      {findings.length > 0 && (
+        <Summary>
+          <Stack gap="base" py="base">
+            <FindingsList findings={findings} />
+          </Stack>
+        </Summary>
+      )}
       <Divider />
-      <Stack gap="base" pt="base">
-        <FindingsList findings={findings} />
+      <Stack gap="base" pt="xl">
         <LoadingButton
           type="submit"
           size="large"
