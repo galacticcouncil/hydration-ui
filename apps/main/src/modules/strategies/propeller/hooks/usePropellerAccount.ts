@@ -1,11 +1,11 @@
 import { useQueries } from "@tanstack/react-query"
 import { type Hex } from "viem"
 
+import { useBlockTime } from "@/api/chain"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
-import { BLOCK_TIME_SECONDS } from "@/modules/strategies/propeller/constants"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
   type RedemptionSettlement,
@@ -89,6 +89,7 @@ export const buildWithdrawalRow = ({
   exchangeRate,
   price,
   baseRate = 1,
+  blockTimeSeconds,
 }: {
   vault: PropellerVaultConfig
   entry: QueueEntry
@@ -98,6 +99,8 @@ export const buildWithdrawalRow = ({
   price: number
   /** collateral -> display-asset spot (GETH -> ETH); 1 when they coincide */
   baseRate?: number
+  /** measured, never assumed: lark forks run slower than mainnet */
+  blockTimeSeconds: number | null
 }): PropellerWithdrawalRow => {
   const settledSoFar = entry.claimedCollateral + entry.collateralSettled
   const state = withdrawalState({
@@ -119,9 +122,15 @@ export const buildWithdrawalRow = ({
   const remainingCollateral = entry.collateralOwed - settledSoFar
   const rate = settlement?.recentRatePerBlock ?? null
   const etaSeconds =
-    entry.active && entry.started && remainingCollateral > 0 && rate && rate > 0
-      ? (remainingCollateral / rate) * BLOCK_TIME_SECONDS
+    entry.active &&
+    entry.started &&
+    remainingCollateral > 0 &&
+    rate &&
+    rate > 0 &&
+    blockTimeSeconds
+      ? (remainingCollateral / rate) * blockTimeSeconds
       : null
+  const typicalSettleBlocks = settlement?.typicalSettleBlocks ?? null
 
   return {
     id: withdrawalRowId(vault.vaultAddress, entry.requestId),
@@ -139,8 +148,12 @@ export const buildWithdrawalRow = ({
     settledSoFar: settledSoFar * baseRate,
     etaSeconds,
     typicalSettleSeconds:
-      entry.active && entry.started && remainingCollateral > 0
-        ? (settlement?.typicalSettleSeconds ?? null)
+      entry.active &&
+      entry.started &&
+      remainingCollateral > 0 &&
+      typicalSettleBlocks !== null &&
+      blockTimeSeconds
+        ? typicalSettleBlocks * blockTimeSeconds
         : null,
     eligibleAt: entry.eligibleAt,
     mainDebt: entry.mainDebt,
@@ -160,6 +173,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { vaults: markets } = usePropellerVaults()
+  const { data: blockTimeMs } = useBlockTime()
 
   const decimalsOf = (vault: PropellerVaultConfig) =>
     getAssetWithFallback(vault.assetId).decimals
@@ -265,6 +279,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
           exchangeRate: market?.stats?.exchangeRate ?? 1,
           price: market?.price ?? 0,
           baseRate: market?.baseRate ? Number(market.baseRate) : 1,
+          blockTimeSeconds: blockTimeMs ? blockTimeMs / 1000 : null,
         })
       })
     }),

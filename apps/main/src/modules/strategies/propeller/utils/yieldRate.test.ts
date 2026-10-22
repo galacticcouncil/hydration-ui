@@ -29,7 +29,7 @@ describe("borrowDeployedFraction", () => {
     const f = borrowDeployedFraction({
       mainCollUsd: 18_962,
       mainDebtUsd: 38.69,
-      maxLtv: 0.75,
+      targetLtv: 0.75,
     })
     expect(f).toBeCloseTo(38.69 / ((18_962 - 38.69 / 0.98) * 0.75), 8)
   })
@@ -41,14 +41,14 @@ describe("borrowDeployedFraction", () => {
       borrowDeployedFraction({
         mainCollUsd: real + debt / 0.98,
         mainDebtUsd: debt,
-        maxLtv: 0.75,
+        targetLtv: 0.75,
       }),
     ).toBeCloseTo(1, 6)
     expect(
       borrowDeployedFraction({
         mainCollUsd: null,
         mainDebtUsd: 1,
-        maxLtv: 0.75,
+        targetLtv: 0.75,
       }),
     ).toBeNull()
   })

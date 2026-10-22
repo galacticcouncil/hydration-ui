@@ -8,12 +8,13 @@ import {
 } from "./accounting"
 
 const rates = {
-  maxLtv: 0.75,
+  targetLtv: 0.75,
   leverage: 5,
   borrowRate: 0.044,
   primeSupplyApy: 6.5,
   protocolFeeBps: 500,
   mainDiscountBps: 0,
+  loopDiscountBps: 0,
 }
 
 describe("Propeller return estimate", () => {
@@ -32,6 +33,21 @@ describe("Propeller return estimate", () => {
     )
   })
 
+  it("discounts the loop leg by its own rate, before the fee", () => {
+    expect(computeVaultApr({ ...rates, loopDiscountBps: 9_000 })).toBeCloseTo(
+      17.8808528421,
+      8,
+    )
+    expect(
+      computeVaultApr({
+        ...rates,
+        protocolFeeBps: 6_900,
+        mainDiscountBps: 4_000,
+        loopDiscountBps: 9_000,
+      }),
+    ).toBeCloseTo(4.9316467169, 8)
+  })
+
   it("retains the previous two-leg result at zero fee and zero discount", () => {
     expect(computeVaultApr({ ...rates, protocolFeeBps: 0 })).toBeCloseTo(
       7.115634570684039,
@@ -42,6 +58,7 @@ describe("Propeller return estimate", () => {
   it("does not invent fee or discount data when the read is missing", () => {
     expect(computeVaultApr({ ...rates, protocolFeeBps: null })).toBeNull()
     expect(computeVaultApr({ ...rates, mainDiscountBps: undefined })).toBeNull()
+    expect(computeVaultApr({ ...rates, loopDiscountBps: null })).toBeNull()
   })
 
   it("rejects invalid inputs and does not display positive return at a full fee", () => {
@@ -50,6 +67,7 @@ describe("Propeller return estimate", () => {
     )
     expect(computeVaultApr({ ...rates, leverage: Number.NaN })).toBeNull()
     expect(computeVaultApr({ ...rates, mainDiscountBps: 10_001 })).toBeNull()
+    expect(computeVaultApr({ ...rates, loopDiscountBps: 10_001 })).toBeNull()
   })
 
   it("reports negative carry rather than hiding it and rejects impossible APY", () => {

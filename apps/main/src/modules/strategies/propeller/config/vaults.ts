@@ -28,7 +28,7 @@ export interface PropellerVaultConfig {
 export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
   {
     assetId: GETH_ASSET_ID,
-    vaultAddress: "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+    vaultAddress: "0x7b200b8c8a5ffd7720a48b0cb5a7f9fc6a512578",
     shareAssetId: "5552",
     shareSymbol: "jETH",
     shareName: "Juicer ETH",
@@ -41,7 +41,7 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
   },
   {
     assetId: "1000765",
-    vaultAddress: "0x2c66100c46d15d6b826ba2a89f2d31e3ca47a153",
+    vaultAddress: "0x13ad8e687f7d9aab96025497ba5a96968175cc22",
     shareAssetId: "5553",
     shareSymbol: "jBTC",
     shareName: "Juicer BTC",

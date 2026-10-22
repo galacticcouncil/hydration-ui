@@ -5,23 +5,25 @@ import { formatUnits } from "viem"
  * Execution costs, ramp time and retained yield are not forecast here.
  */
 export const computeVaultApr = ({
-  maxLtv,
+  targetLtv,
   leverage,
   borrowRate,
   primeSupplyApy,
   protocolFeeBps,
   mainDiscountBps,
+  loopDiscountBps,
 }: {
-  maxLtv: number | null | undefined
+  targetLtv: number | null | undefined
   leverage: number | null | undefined
   borrowRate: number | null | undefined
   primeSupplyApy: number | null | undefined
   protocolFeeBps: number | null | undefined
   mainDiscountBps: number | null | undefined
+  loopDiscountBps: number | null | undefined
 }): number | null => {
   if (
-    maxLtv === null ||
-    maxLtv === undefined ||
+    targetLtv === null ||
+    targetLtv === undefined ||
     leverage === null ||
     leverage === undefined ||
     borrowRate === null ||
@@ -31,35 +33,41 @@ export const computeVaultApr = ({
     protocolFeeBps === null ||
     protocolFeeBps === undefined ||
     mainDiscountBps === null ||
-    mainDiscountBps === undefined
+    mainDiscountBps === undefined ||
+    loopDiscountBps === null ||
+    loopDiscountBps === undefined
   )
     return null
   if (
     ![
-      maxLtv,
+      targetLtv,
       leverage,
       borrowRate,
       primeSupplyApy,
       protocolFeeBps,
       mainDiscountBps,
+      loopDiscountBps,
     ].every(Number.isFinite) ||
-    maxLtv < 0 ||
-    maxLtv > 1 ||
+    targetLtv < 0 ||
+    targetLtv > 1 ||
     leverage < 1 ||
     borrowRate < 0 ||
     primeSupplyApy <= -100 ||
     protocolFeeBps < 0 ||
     protocolFeeBps > 10_000 ||
     mainDiscountBps < 0 ||
-    mainDiscountBps > 10_000
+    mainDiscountBps > 10_000 ||
+    loopDiscountBps < 0 ||
+    loopDiscountBps > 10_000
   )
     return null
 
   const sourceApr = Math.expm1(Math.log1p(primeSupplyApy / 100) / 8760) * 8760
-  const loopCarry = leverage * sourceApr - (leverage - 1) * borrowRate
+  const loopBorrow = borrowRate * (1 - loopDiscountBps / 10_000)
+  const loopCarry = leverage * sourceApr - (leverage - 1) * loopBorrow
   const fee = (Math.max(loopCarry, 0) * protocolFeeBps) / 10_000
   const mainBorrow = borrowRate * (1 - mainDiscountBps / 10_000)
-  const apr = maxLtv * (loopCarry - fee - mainBorrow)
+  const apr = targetLtv * (loopCarry - fee - mainBorrow)
   return apr * 100
 }
 

@@ -92,7 +92,9 @@ describe("Pooled collateral awaiting deployment", () => {
 
   it("leaves pending deployment unknown if its read fails while retaining funded collateral", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {})
-    const { result } = await stats({ reinvestAssets: new Error("RPC timeout") })
+    const { result } = await stats({
+      reinvestAssets: new Error("RPC timeout"),
+    })
     expect(result.pendingDeployment).toBeNull()
     expect(result.totalAssets).toBe(10)
   })
@@ -111,6 +113,22 @@ describe("Keeper deficit stop", () => {
     })
     expect(result.deficitStop).toBeNull()
     expect(result.totalAssets).toBe(10)
+  })
+})
+
+describe("Rebalance band", () => {
+  it("targets the band's gap below max LTV", async () => {
+    const { result } = await stats({ rebalanceBand: [500, 1000, 800] })
+    expect(result.maxLtv).toBe(0.75)
+    expect(result.targetLtv).toBe(0.7)
+  })
+
+  it("targets max LTV when the loop has no band", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+    const { result } = await stats({
+      rebalanceBand: new Error("unknown selector"),
+    })
+    expect(result.targetLtv).toBe(0.75)
   })
 })
 
