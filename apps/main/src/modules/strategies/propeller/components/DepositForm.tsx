@@ -78,6 +78,12 @@ export const DepositForm = ({
   // the raw pool-share collateral keeps its registry identity (2-Pool-GETH)
   // in the picker, so it stays distinguishable from the GETH ERC20 pay asset
   const collateral = getAssetWithFallback(vault.assetId)
+  // everywhere else the collateral is determined, so it wears its product
+  // identity (GETH) — same convention as the vault's "backed by" row
+  const collateralDisplay = {
+    ...collateral,
+    symbol: getAssetWithFallback(vaultCollateralDisplayId(vault)).symbol,
+  }
   const asset = getAssetWithFallback(assetId)
   // informational amounts (capacity, vault identity) speak the display asset;
   // the pay-asset input and swap details keep their own true units
@@ -262,10 +268,8 @@ export const DepositForm = ({
               label={t("deposit.vault")}
               content={t("deposit.vault.value", {
                 name: vault.shareName,
-                // what actually backs the vault — a fact about the collateral,
-                // never restated in the display denomination
-                symbol: getAssetWithFallback(vaultCollateralDisplayId(vault))
-                  .symbol,
+                // what actually backs the vault — a fact about the collateral
+                symbol: collateralDisplay.symbol,
               })}
             />
             <SummaryRow
@@ -322,7 +326,7 @@ export const DepositForm = ({
                   variant="warning"
                   description={t("deposit.swap.unavailable", {
                     symbolIn: asset.symbol,
-                    symbol: collateral.symbol,
+                    symbol: collateralDisplay.symbol,
                   })}
                 />
               )}
@@ -331,7 +335,9 @@ export const DepositForm = ({
                   variant="error"
                   description={
                     isSwap
-                      ? t("deposit.swap.failed", { symbol: collateral.symbol })
+                      ? t("deposit.swap.failed", {
+                          symbol: collateralDisplay.symbol,
+                        })
                       : t("deposit.failed")
                   }
                 />
@@ -363,7 +369,7 @@ export const DepositForm = ({
             <CollapsibleContent>
               <DepositSwapSummary
                 assetIn={asset}
-                collateral={collateral}
+                collateral={collateralDisplay}
                 quote={quote}
               />
             </CollapsibleContent>

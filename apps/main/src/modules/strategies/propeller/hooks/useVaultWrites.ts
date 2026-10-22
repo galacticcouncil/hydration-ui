@@ -33,7 +33,10 @@ import { getDryRunError } from "@/api/dryRun"
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
 import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  type PropellerVaultConfig,
+  vaultCollateralDisplayId,
+} from "@/modules/strategies/propeller/config/vaults"
 import { EVM_CALL_GAS } from "@/modules/strategies/propeller/constants"
 import {
   useBaseRates,
@@ -264,7 +267,9 @@ export function useDeposit(
     useVaultEvmCall(options)
   const { vaultAddress, assetId } = vault
   const assetAddress = getAddressFromAssetId(assetId) as Hex
-  const { decimals, symbol } = getAssetWithFallback(assetId)
+  const { decimals } = getAssetWithFallback(assetId)
+  // toast amounts are collateral units, labeled by its product identity (GETH)
+  const { symbol } = getAssetWithFallback(vaultCollateralDisplayId(vault))
 
   const formatAmount = (value: string, assetSymbol = symbol) =>
     t("currency", { value, symbol: assetSymbol, maximumFractionDigits: 4 })
