@@ -152,7 +152,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
           <SectionSeparator />
 
           {collateralAsset && (
-            <Paper p="m">
+            <Paper p="m" shadow={false}>
               <Flex justify="space-between" align="center">
                 <Box>
                   <Text fs="p4">{t("multiply.app.loopedAmount")}</Text>
