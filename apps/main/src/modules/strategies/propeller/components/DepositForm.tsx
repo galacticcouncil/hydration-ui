@@ -152,14 +152,14 @@ export const DepositForm = ({
   const exceedsCapacity =
     isSwap &&
     !!capacity &&
-    quote.minAmountOut !== undefined &&
-    quote.minAmountOut > capacity.maximum
+    quote.depositAmount !== undefined &&
+    quote.depositAmount > capacity.maximum
   const isSwapReady =
     !isSwap ||
     (!!quote.tx &&
       !quote.isLoading &&
       !exceedsCapacity &&
-      (quote.minAmountOut ?? 0n) > 0n)
+      (quote.depositAmount ?? 0n) > 0n)
 
   const canSubmit =
     formState.isValid &&
@@ -194,7 +194,14 @@ export const DepositForm = ({
     if (!canSubmit) return
     deposit.mutate(
       isSwap && quote.tx
-        ? { amount, trade: { assetIn: assetId, tx: quote.tx } }
+        ? {
+            amount,
+            trade: {
+              assetIn: assetId,
+              tx: quote.tx,
+              quotedAmountIn: quote.swap?.amountIn ?? 0n,
+            },
+          }
         : { amount },
     )
   })
@@ -361,7 +368,7 @@ export const DepositForm = ({
           <CollapsibleRoot
             open={
               !!quote.swap &&
-              quote.minAmountOut !== undefined &&
+              quote.depositAmount !== undefined &&
               !quote.isLoading &&
               !quote.isError
             }

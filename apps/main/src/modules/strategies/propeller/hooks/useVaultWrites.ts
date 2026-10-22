@@ -249,7 +249,7 @@ export type DepositVariables = {
   /** in units of the asset paid with */
   amount: string
   /** sell of the asset paid with for the collateral */
-  trade?: { assetIn: string; tx: AnyPapiTx }
+  trade?: { assetIn: string; tx: AnyPapiTx; quotedAmountIn: bigint }
 }
 
 export function useDeposit(
@@ -347,17 +347,19 @@ export function useDeposit(
         )
       }
 
-      const { amount: depositAmount, approval } = await prepareSwapDeposit(
-        evm,
-        {
-          vault: vaultAddress,
-          asset: assetAddress,
-          owner: evmAddress,
-          collateralId: assetId,
-          assetIn: trade.assetIn,
-          tradeCall: trade.tx.decodedCall,
-        },
-      )
+      const {
+        exact,
+        amount: depositAmount,
+        approval,
+      } = await prepareSwapDeposit(evm, {
+        vault: vaultAddress,
+        asset: assetAddress,
+        owner: evmAddress,
+        collateralId: assetId,
+        assetIn: trade.assetIn,
+        quotedAmountIn: trade.quotedAmountIn,
+        tradeCall: trade.tx.decodedCall,
+      })
       const amountIn = formatAmount(
         amount,
         getAssetWithFallback(trade.assetIn).symbol,
@@ -419,11 +421,16 @@ export function useDeposit(
         {
           tx,
           title: t("propeller:deposit.swap.title"),
-          description: t("propeller:deposit.swap.description", {
-            amountIn,
-            amount: deposited,
-            symbol,
-          }),
+          description: t(
+            exact
+              ? "propeller:deposit.swap.description.exact"
+              : "propeller:deposit.swap.description",
+            {
+              amountIn,
+              amount: deposited,
+              symbol,
+            },
+          ),
           toasts: {
             submitted: t("propeller:deposit.swap.toast.submitted", {
               amountIn,

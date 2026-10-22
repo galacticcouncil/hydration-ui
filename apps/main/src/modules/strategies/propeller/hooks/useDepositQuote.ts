@@ -1,11 +1,12 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
 import { bestSellWithTxQuery } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { isExactAmount } from "@/modules/strategies/propeller/utils/amount"
-import { readSellLimit } from "@/modules/strategies/propeller/utils/deposit"
+import { readSwapDeposit } from "@/modules/strategies/propeller/utils/deposit"
 import {
   isSwapDeposit,
   type PropellerDepositOption,
@@ -39,18 +40,52 @@ export const useDepositQuote = (
 
   const quote = isSynced && quotedAmount ? data : undefined
   const swap = quote?.swap
-  const tx = quote?.tx ?? null
+  const quotedTx = quote?.tx ?? null
+
+  const prepared = useMemo(() => {
+    if (!quotedTx || !swap) return null
+    try {
+      const { exact, depositAmount, tradeCall } = readSwapDeposit(
+        quotedTx.decodedCall,
+        {
+          assetIn: deposit.assetId,
+          collateralId: deposit.vault.assetId,
+          quotedAmountIn: swap.amountIn,
+        },
+      )
+      if (tradeCall === quotedTx.decodedCall)
+        return { exact, depositAmount, tx: quotedTx }
+      const { type: pallet, value } = tradeCall as {
+        type: string
+        value: { type: string; value: unknown }
+      }
+      // untyped rebuild of the same pallet call with the rewritten minimum
+      const build = (
+        rpc.papi.tx as unknown as Record<
+          string,
+          Record<string, (args: unknown) => typeof quotedTx> | undefined
+        >
+      )[pallet]?.[value.type]
+      return build ? { exact, depositAmount, tx: build(value.value) } : null
+    } catch {
+      return null
+    }
+  }, [quotedTx, swap, deposit.assetId, deposit.vault.assetId, rpc.papi])
+
+  const tx = prepared?.tx ?? null
   // without a wallet there is no tx to read the limit from
-  const minAmountOut = tx
-    ? readSellLimit(tx.decodedCall)?.minAmountOut
+  const depositAmount = quotedTx
+    ? prepared?.depositAmount
     : swap && swap.amountOut - calculateSlippage(swap.amountOut, slippage)
 
   return {
     isSwap,
     swap,
     tx,
-    minAmountOut,
+    depositAmount,
+    exact: prepared?.exact ?? false,
     isLoading: isSwap && !!amountIn && (!isSynced || isLoading),
-    isError: isSwap && !!quotedAmount && isError,
+    // a quote whose call can't be turned into a deposit is as good as none
+    isError: isSwap && !!quotedAmount && (isError || (!!quotedTx && !prepared)),
   }
 }

@@ -167,9 +167,28 @@ const isCallNode = (
 ): value is { type: string; value: unknown } =>
   isPlainObject(value) && isString(value.type) && "value" in value
 
+type Hop = { pool: string; assetIn: number; assetOut: number }
+
+const readHop = (hop: unknown): Hop | null =>
+  isPlainObject(hop) &&
+  isPlainObject(hop.pool) &&
+  isString(hop.pool.type) &&
+  isNumber(hop.asset_in) &&
+  isNumber(hop.asset_out)
+    ? { pool: hop.pool.type, assetIn: hop.asset_in, assetOut: hop.asset_out }
+    : null
+
 export const readSellLimit = (
   call: unknown,
-): { assetIn: number; assetOut: number; minAmountOut: bigint } | null => {
+): {
+  assetIn: number
+  assetOut: number
+  minAmountOut: bigint
+  /** absent on sell_all, which sells the whole balance */
+  amountIn?: bigint
+  /** router sells only */
+  route?: Hop[]
+} | null => {
   if (!isCallNode(call) || !isCallNode(call.value)) return null
   const { type: method, value: args } = call.value
   if (!isPlainObject(args)) return null
@@ -177,32 +196,54 @@ export const readSellLimit = (
   if (call.type === "Dispatcher" && method === "dispatch_with_extra_gas")
     return readSellLimit(args.call)
 
-  const minAmountOut =
+  const isRouter =
     call.type === "Router" && (method === "sell" || method === "sell_all")
-      ? args.min_amount_out
-      : call.type === "Omnipool" && method === "sell"
-        ? args.min_buy_amount
-        : undefined
+  const minAmountOut = isRouter
+    ? args.min_amount_out
+    : call.type === "Omnipool" && method === "sell"
+      ? args.min_buy_amount
+      : undefined
   const { asset_in: assetIn, asset_out: assetOut } = args
   if (!isBigInt(minAmountOut) || !isNumber(assetIn) || !isNumber(assetOut))
     return null
 
-  return { assetIn, assetOut, minAmountOut }
+  const route =
+    isRouter && Array.isArray(args.route) ? args.route.map(readHop) : undefined
+  return {
+    assetIn,
+    assetOut,
+    minAmountOut,
+    ...(isRouter && isBigInt(args.amount_in) && { amountIn: args.amount_in }),
+    ...(route?.every((hop) => hop !== null) && { route }),
+  }
 }
 
-/** deposits the sell's guaranteed minimum, never more than the trade delivers */
-export const prepareSwapDeposit = async (
-  client: PublicClient,
+/** the runtime's AAVE_ROUNDING_BUFFER, in wei */
+const AAVE_ROUNDING_BUFFER = 2n
+
+const withMinAmountOut = (call: unknown, minAmountOut: bigint): unknown => {
+  if (!isCallNode(call) || !isCallNode(call.value)) return call
+  const args = call.value.value as Record<string, unknown>
+  const next =
+    call.type === "Dispatcher"
+      ? { ...args, call: withMinAmountOut(args.call, minAmountOut) }
+      : { ...args, min_amount_out: minAmountOut }
+  return { ...call, value: { ...call.value, value: next } }
+}
+
+/**
+ * A single Aave hop into the collateral is a fee-free unwrap that returns exactly
+ * what it sells, so it deposits the full amount (less the runtime's rounding
+ * buffer) and the sell is told to accept nothing less. Every other route deposits
+ * the sell's slippage-protected minimum.
+ */
+export const readSwapDeposit = (
+  tradeCall: unknown,
   {
-    collateralId,
     assetIn,
-    tradeCall,
-    ...input
-  }: Omit<DepositInput, "amount"> & {
-    collateralId: string
-    assetIn: string
-    tradeCall: unknown
-  },
+    collateralId,
+    quotedAmountIn,
+  }: { assetIn: string; collateralId: string; quotedAmountIn: bigint },
 ) => {
   const sell = readSellLimit(tradeCall)
   if (
@@ -211,8 +252,47 @@ export const prepareSwapDeposit = async (
     String(sell.assetOut) !== collateralId
   )
     throw new Error("The swap does not buy this vault's collateral")
-  const amount = sell.minAmountOut
+
+  const hop = sell.route?.length === 1 ? sell.route[0] : undefined
+  const exact =
+    hop?.pool === "Aave" &&
+    hop.assetIn === sell.assetIn &&
+    hop.assetOut === sell.assetOut
+  if (!exact)
+    return { exact, depositAmount: sell.minAmountOut, tradeCall } as const
+
+  const depositAmount = (sell.amountIn ?? quotedAmountIn) - AAVE_ROUNDING_BUFFER
+  if (depositAmount <= 0n) throw new Error("The swap amount is too small")
   return {
+    exact,
+    depositAmount,
+    tradeCall: withMinAmountOut(tradeCall, depositAmount),
+  } as const
+}
+
+/** deposits what readSwapDeposit guarantees, never more than the trade delivers */
+export const prepareSwapDeposit = async (
+  client: PublicClient,
+  {
+    collateralId,
+    assetIn,
+    quotedAmountIn,
+    tradeCall,
+    ...input
+  }: Omit<DepositInput, "amount"> & {
+    collateralId: string
+    assetIn: string
+    quotedAmountIn: bigint
+    tradeCall: unknown
+  },
+) => {
+  const { exact, depositAmount: amount } = readSwapDeposit(tradeCall, {
+    assetIn,
+    collateralId,
+    quotedAmountIn,
+  })
+  return {
+    exact,
     amount,
     approval: await prepareApproval(client, { ...input, amount }),
   }

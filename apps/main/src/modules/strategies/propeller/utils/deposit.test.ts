@@ -18,6 +18,7 @@ import {
   prepareSwapDeposit,
   readDepositCapacity,
   readSellLimit,
+  readSwapDeposit,
 } from "./deposit"
 
 const vault = "0x0000000000000000000000000000000000000001"
@@ -298,6 +299,8 @@ describe("Sell limit of a trade call", () => {
       assetIn: 34,
       assetOut: 4200,
       minAmountOut: 2n * unit,
+      amountIn: 3n * unit,
+      route: [],
     })
   })
 
@@ -353,6 +356,7 @@ describe("Swap deposit", () => {
     owner,
     collateralId: "4200",
     assetIn: "34",
+    quotedAmountIn: 3n * unit,
     tradeCall: routerSell(),
   } as const
 
@@ -364,6 +368,18 @@ describe("Swap deposit", () => {
       approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
     ).toEqual({ functionName: "approve", args: [vault, 2n * unit] })
     expect(mock.simulateContract).not.toHaveBeenCalled()
+  })
+
+  it("approves exactly the full amount of a 1:1 Aave unwrap", async () => {
+    const { amount, approval } = await prepareSwapDeposit(mockClient().client, {
+      ...swapArgs,
+      assetIn: "420",
+      tradeCall: withExtraGas(aaveSell()),
+    })
+    expect(amount).toBe(3n * unit - 2n)
+    expect(
+      approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
+    ).toEqual({ functionName: "approve", args: [vault, 3n * unit - 2n] })
   })
 
   it("skips the approval when the allowance already covers the output", async () => {
@@ -403,5 +419,102 @@ describe("Swap deposit", () => {
       functionName: "deposit",
       args: [2n * unit, owner],
     })
+  })
+})
+
+const hop = (
+  pool: { type: string; value?: number },
+  inId: number,
+  out: number,
+) => ({ pool, asset_in: inId, asset_out: out })
+const aaveSell = (args: Record<string, unknown> = {}) =>
+  routerSell({
+    asset_in: 420,
+    route: [hop({ type: "Aave" }, 420, 4200)],
+    ...args,
+  })
+const minOut = (call: unknown) => readSellLimit(call)?.minAmountOut
+const geth = {
+  assetIn: "420",
+  collateralId: "4200",
+  quotedAmountIn: 3n * unit,
+}
+
+describe("Deposit amount of a swap", () => {
+  it("deposits the full input of a single Aave hop into the collateral, less 2 wei", () => {
+    const { exact, depositAmount, tradeCall } = readSwapDeposit(
+      aaveSell(),
+      geth,
+    )
+    expect(exact).toBe(true)
+    expect(depositAmount).toBe(3n * unit - 2n)
+    expect(minOut(tradeCall)).toBe(3n * unit - 2n)
+  })
+
+  it("rewrites the minimum inside the extra gas dispatch", () => {
+    const { depositAmount, tradeCall } = readSwapDeposit(
+      withExtraGas(aaveSell()),
+      geth,
+    )
+    expect(depositAmount).toBe(3n * unit - 2n)
+    expect(tradeCall).toMatchObject({
+      type: "Dispatcher",
+      value: { value: { extra_gas: 1n } },
+    })
+    expect(minOut(tradeCall)).toBe(3n * unit - 2n)
+  })
+
+  it("uses the quoted amount in for sell_all", () => {
+    const sellAll = aaveSell({ amount_in: undefined })
+    sellAll.value.type = "sell_all"
+    const { depositAmount, tradeCall } = readSwapDeposit(sellAll, {
+      ...geth,
+      quotedAmountIn: 5n * unit,
+    })
+    expect(depositAmount).toBe(5n * unit - 2n)
+    expect(minOut(tradeCall)).toBe(5n * unit - 2n)
+  })
+
+  it("keeps the slippage-protected minimum and the call for pool routes", () => {
+    for (const [assetIn, route] of [
+      [
+        "34",
+        [
+          hop({ type: "Aave" }, 34, 1007),
+          hop({ type: "Stableswap", value: 4200 }, 1007, 4200),
+        ],
+      ],
+      ["1000809", [hop({ type: "Stableswap", value: 4200 }, 1000809, 4200)]],
+    ] as const) {
+      const call = routerSell({ asset_in: Number(assetIn), route })
+      const result = readSwapDeposit(call, { ...geth, assetIn })
+      expect(result).toEqual({
+        exact: false,
+        depositAmount: 2n * unit,
+        tradeCall: call,
+      })
+    }
+  })
+
+  it("rejects an Aave hop that does not buy the collateral", () => {
+    expect(() =>
+      readSwapDeposit(
+        aaveSell({
+          asset_out: 1007,
+          route: [hop({ type: "Aave" }, 420, 1007)],
+        }),
+        geth,
+      ),
+    ).toThrow("does not buy")
+  })
+
+  it("never deposits zero or less", () => {
+    for (const amount_in of [1n, 2n])
+      expect(() => readSwapDeposit(aaveSell({ amount_in }), geth)).toThrow(
+        "too small",
+      )
+    expect(
+      readSwapDeposit(aaveSell({ amount_in: 3n }), geth).depositAmount,
+    ).toBe(1n)
   })
 })
