@@ -1,0 +1,12 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/apps/main
+
+ ✓ src/modules/strategies/propeller/utils/accounting.test.ts (11 tests) 4ms
+ ✓ src/modules/strategies/propeller/utils/amount.test.ts (2 tests) 4ms
+ ✓ src/modules/strategies/propeller/utils/deposit.test.ts (15 tests) 18ms
+ ✓ src/modules/strategies/propeller/hooks/useVaultReads.test.ts (4 tests) 6ms
+
+ Test Files  4 passed (4)
+      Tests  32 passed (32)
+   Start at  13:02:35
+   Duration  540ms (transform 221ms, setup 0ms, collect 776ms, tests 31ms, environment 1ms, prepare 328ms)

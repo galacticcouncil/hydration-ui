@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-10-14T13:24:08.067Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "tap",
+        "summary": "tap button \"HOLLAR HOLLAR\"",
+        "target": {
+          "role": "button",
+          "name": "HOLLAR HOLLAR",
+          "text": "HOLLAR"
+        }
+      },
+      {
+        "name": "tap",
+        "summary": "tap option \"HDX HDX Hydration 136 956 $1 030.43\" in \"Asset select modal\"",
+        "target": {
+          "role": "option",
+          "name": "HDX HDX Hydration 136 956 $1 030.43",
+          "within": "Asset select modal"
+        }
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "tests/swap.e2e.ts::a%20visitor%20gets%20a%20quote%20for%20swapping%20HDX%20to%20DOT",
+      "targetId": "web",
+      "instructionDigest": "c910b4aa1c3244df95f8df4b0dc844c474515613ebd83b14e7af6b3cead8664d",
+      "paramsDigest": "276f28c397c8c08b1a3ab562fc9d6b35b04f99ec3dae8ddd2a8a9b2ae51b04b5",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "summary": "Selected HDX from the asset selector; the asset list now places HDX first, confirming it is selected as the asset to sell.",
+    "startPath": "/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+    "endPath": "/trade/swap/market?tab=myActivity&assetIn=%220%22&assetOut=%22222%22&destPlatform=hydration&allPairs=true",
+    "endAnchors": [
+      {
+        "role": "image",
+        "name": "HOLLAR"
+      },
+      {
+        "text": "Hydrated Dollar"
+      },
+      {
+        "text": "HOLLAR"
+      },
+      {
+        "text": "131.7491"
+      },
+      {
+        "text": "O"
+      },
+      {
+        "text": "H"
+      },
+      {
+        "text": "L"
+      },
+      {
+        "text": "C"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "text": "‌"
+      },
+      {
+        "role": "document",
+        "name": "Hydration - An Ocean of Liquidity"
+      },
+      {
+        "role": "button",
+        "name": "‌ ‌"
+      },
+      {
+        "role": "row",
+        "name": "‌ ‌ ‌ ‌"
+      },
+      {
+        "role": "columnheader",
+        "name": "‌"
+      },
+      {
+        "role": "cell",
+        "name": "‌"
+      },
+      {
+        "role": "button",
+        "name": "‌"
+      }
+    ],
+    "endWaitMs": 12159
+  }
+}

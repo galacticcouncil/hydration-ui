@@ -10,6 +10,7 @@ import {
   canDepositToHydration,
   DepositToHydrationButton,
 } from "@/modules/portfolio/overview/MyAssets/DepositToHydrationAction"
+import { JuicerAssetCta } from "@/modules/portfolio/overview/MyAssets/JuicerAssetCta"
 import {
   AssetDetailModal,
   MyAsset,
@@ -43,6 +44,7 @@ export const AssetDetailMobileActions: FC<Props> = ({
 
   return (
     <SAssetDetailMobileActions>
+      <JuicerAssetCta assetId={asset.id} mobile />
       <Button size="large" onClick={() => onModalOpen?.("transfer")}>
         <ArrowDownUp />
         {t("send")}
