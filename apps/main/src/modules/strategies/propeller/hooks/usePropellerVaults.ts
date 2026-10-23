@@ -35,7 +35,17 @@ export const remainingCapacity = (tvl: number, cap: number) => {
 export type VaultDepositState = "open" | "paused" | "full" | "unavailable"
 
 export const vaultDepositState = (
-  stats: PropellerVaultStats | undefined,
+  stats:
+    | Pick<
+        PropellerVaultStats,
+        | "paused"
+        | "depositsPaused"
+        | "deficitStop"
+        | "deleverPending"
+        | "deploying"
+        | "remaining"
+      >
+    | undefined,
 ): VaultDepositState => {
   if (!stats) return "unavailable"
   if (depositBlocker(stats) !== null) return "paused"

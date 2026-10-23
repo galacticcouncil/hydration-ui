@@ -289,6 +289,11 @@ export const StrategyPositionCta = ({
     return (
       <JuicerAssetCta
         assetId={position.assetId}
+        // the position's assetId is its display asset (ETH), not the
+        // collateral, so name the vault rather than look it up by asset
+        vault={PROPELLER_VAULTS.find(
+          (v) => position.id === `juicer:${v.vaultAddress}`,
+        )}
         mobile={mobile}
         isExistingPosition
       />
