@@ -188,6 +188,7 @@ export const requiresEvmBinding = (
 export const getXcmTransferArgs = (
   account: Account | null,
   values: XcmFormValues,
+  options?: Pick<XcmTransferArgs, "automaticBridgeSelection">,
 ): XcmTransferArgs => {
   const {
     srcChain,
@@ -217,6 +218,9 @@ export const getXcmTransferArgs = (
     destAsset: isValidAsset ? destAsset.key : "",
     destChain: destChain?.key ?? "",
     bridgeTag: bridgeProvider ?? undefined,
+    ...(options?.automaticBridgeSelection
+      ? { automaticBridgeSelection: true }
+      : {}),
   }
 }
 

@@ -32,10 +32,7 @@ export type AssetSelectBalance = Omit<
   onMax?: (() => void) | null
 }
 
-export type AssetSelectProps = Omit<
-  AssetInputProps,
-  "asset" | "onAssetClick" | "balance"
-> & {
+export type AssetSelectProps = Omit<AssetInputProps, "asset" | "balance"> & {
   assets: TAssetData[]
   sortedAssets?: TAssetWithBalance[]
   selectedAsset: TSelectedAsset | undefined | null
@@ -50,6 +47,7 @@ export const AssetSelect = ({
   selectedAsset,
   setSelectedAsset,
   balance: balanceOverride,
+  onAssetClick,
   onLockToggle,
   ...props
 }: AssetSelectProps) => {
@@ -124,7 +122,10 @@ export const AssetSelect = ({
               }
             : null
         }
-        onAssetClick={setSelectedAsset ? () => setOpenModal(true) : undefined}
+        onAssetClick={
+          onAssetClick ??
+          (setSelectedAsset ? () => setOpenModal(true) : undefined)
+        }
         selectAssetLabel={props.selectAssetLabel ?? t("selectAsset")}
         displayValue={
           hasDisplayValue ? props.displayValue : fetchedDisplayValue

@@ -217,6 +217,7 @@ export const WalletProviderSourceButton: React.FC<{
   readonly status: WalletProviderStatus
   readonly pending: boolean
   readonly variant?: WalletSourceButtonVariant
+  readonly mode?: WalletMode
   readonly connectLabel?: string
   readonly icon?: ComponentType
   readonly iconColor?: SourceIconColor
@@ -228,6 +229,7 @@ export const WalletProviderSourceButton: React.FC<{
   status,
   pending,
   variant = "management",
+  mode = WalletMode.Default,
   connectLabel,
   icon,
   iconColor,
@@ -239,7 +241,7 @@ export const WalletProviderSourceButton: React.FC<{
   if (!wallet) return null
 
   const isConnected = status === WalletProviderStatus.Connected
-  const chainModes = getWalletSourceModes(wallet.provider)
+  const chainModes = getWalletSourceModes(wallet.provider, mode)
   const subtitle = isConnected
     ? t("provider.connected")
     : wallet.installed || connectLabel
@@ -274,6 +276,7 @@ export const WalletGroupSourceButton: React.FC<{
   readonly connected: boolean
   readonly pending: boolean
   readonly variant?: WalletSourceButtonVariant
+  readonly mode?: WalletMode
   readonly connectLabel?: string
   readonly onClick: () => void
   readonly onDisconnect: () => void
@@ -283,12 +286,13 @@ export const WalletGroupSourceButton: React.FC<{
   connected,
   pending,
   variant = "management",
+  mode = WalletMode.Default,
   connectLabel,
   onClick,
   onDisconnect,
 }) => {
   const { t } = useTranslation()
-  const chainModes = getWalletGroupSourceModes(group)
+  const chainModes = getWalletGroupSourceModes(group, mode)
   const isInstalled = group.wallets.some((wallet) => wallet.installed)
   const subtitle = connected
     ? t("provider.connected")

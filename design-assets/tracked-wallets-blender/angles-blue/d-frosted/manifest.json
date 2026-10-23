@@ -1,0 +1,10 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/tracked-wallets-blender/angles-blue/blue-glasses-angles.blend",
+  "sourceSha256": "45c46b3ca40b24df0bcfa077bc993f785837edc4fac0ea3259bb86e82e352012",
+  "sourceUnchanged": true,
+  "camera": "CAMERA D - Three-quarter right",
+  "lensRoughness": 0.3,
+  "render": "d-frosted-1024.png",
+  "blend": "d-frosted.blend",
+  "renderSha256": "dd4918411abd1d079c3d975792c95093c8fc460d2b622309db1e83bb2b90f5e5"
+}

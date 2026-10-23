@@ -1,7 +1,7 @@
-import { CircleCheck } from "@galacticcouncil/ui/assets/icons"
+import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatus.webp"
 import {
   Button,
-  Icon,
+  Image,
   ModalBody,
   Stack,
   Text,
@@ -14,10 +14,12 @@ import { useAssets } from "@/providers/assetsProvider"
 
 export type WithdrawSuccessProps = {
   onConfirm: () => void
+  showTitle?: boolean
 }
 
 export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
   onConfirm,
+  showTitle = true,
 }) => {
   const { t } = useTranslation(["onramp"])
   const { getAsset } = useAssets()
@@ -27,15 +29,18 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
   return (
     <ModalBody>
       <Stack gap="s">
-        <Icon
-          size="2xl"
-          component={CircleCheck}
-          color={getToken("accents.success.emphasis")}
-          sx={{ mx: "auto", my: 10 }}
+        <Image
+          src={SuccessStatus}
+          alt=""
+          aria-hidden
+          lazy={false}
+          sx={{ size: "3xl", objectFit: "contain", mx: "auto", my: "m" }}
         />
-        <Text fs="p2" lh={1.3} fw={600} align="center">
-          {t("withdraw.success.title")}
-        </Text>
+        {showTitle && (
+          <Text fs="p2" lh={1.3} fw={600} align="center">
+            {t("withdraw.success.title")}
+          </Text>
+        )}
         {assetDetails && (
           <Text fs="p3" lh={1.4} color={getToken("text.low")} align="center">
             <Trans

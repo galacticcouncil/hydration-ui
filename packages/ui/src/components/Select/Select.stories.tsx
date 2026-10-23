@@ -4,6 +4,8 @@ import { useState } from "react"
 import {
   Bitcoin,
   Droplets,
+  FiatEur,
+  FiatUsd,
   Flower,
   Gem,
   Hexagon,
@@ -145,6 +147,26 @@ export const WithIcons: Story = {
       <Multiple items={itemsWithIcons} />
     </Flex>
   ),
+}
+
+export const WithAssetIcons: Story = {
+  render: () => {
+    const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
+
+    return (
+      <Select
+        value={currency}
+        onValueChange={setCurrency}
+        variant="secondary"
+        size="medium"
+        iconSize={24}
+        items={[
+          { key: "USD", label: "USD · ACH", icon: FiatUsd },
+          { key: "EUR", label: "EUR · SEPA", icon: FiatEur },
+        ]}
+      />
+    )
+  },
 }
 
 export const ManyItems: Story = {

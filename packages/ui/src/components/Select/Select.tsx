@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CaretDown, Check } from "@/assets/icons"
 import { getToken } from "@/utils"
 
+import { BoxProps } from "../Box"
 import { SButtonProps } from "../Button"
 import { Flex } from "../Flex"
 import { Icon } from "../Icon"
@@ -46,6 +47,7 @@ type SelectionProps<TKey extends string> =
 export type SelectProps<TKey extends string> = SButtonProps &
   SelectionProps<TKey> & {
     items: ReadonlyArray<SelectItem<TKey>>
+    iconSize?: BoxProps["size"]
     label?: string
     placeholder?: string
     disabled?: boolean
@@ -56,6 +58,7 @@ export type SelectProps<TKey extends string> = SButtonProps &
 
 export const Select = <TKey extends string = string>({
   items,
+  iconSize,
   label,
   placeholder,
   multiple,
@@ -97,12 +100,17 @@ export const Select = <TKey extends string = string>({
             )}
             {selectedItems.length
               ? selectedItems.map((item, index) => (
-                  <Flex key={item.key} as="span" align="center" gap="0.3em">
+                  <Flex
+                    key={item.key}
+                    as="span"
+                    align="center"
+                    gap={iconSize === undefined ? "0.3em" : "base"}
+                  >
                     {item.icon && (
                       <Icon
-                        size="1.15em"
+                        size={iconSize ?? "1.15em"}
                         sx={
-                          index === 0
+                          index === 0 && iconSize === undefined
                             ? { marginInlineStart: "-0.5em" }
                             : undefined
                         }
@@ -148,7 +156,9 @@ export const Select = <TKey extends string = string>({
                     <MenuSelectionItem variant="filterLink">
                       {selectedIndicator}
                       <MenuItemLabel>
-                        {item.icon && <Icon size="s" component={item.icon} />}
+                        {item.icon && (
+                          <Icon size={iconSize ?? "s"} component={item.icon} />
+                        )}
                         {item.label}
                       </MenuItemLabel>
                     </MenuSelectionItem>
@@ -168,7 +178,9 @@ export const Select = <TKey extends string = string>({
                   >
                     <MenuSelectionItem variant="filterLink">
                       <MenuItemLabel>
-                        {item.icon && <Icon size="s" component={item.icon} />}
+                        {item.icon && (
+                          <Icon size={iconSize ?? "s"} component={item.icon} />
+                        )}
                         {item.label}
                       </MenuItemLabel>
                     </MenuSelectionItem>

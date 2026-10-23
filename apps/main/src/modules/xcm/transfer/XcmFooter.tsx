@@ -1,4 +1,11 @@
-import { Alert, Box, Flex, Text, Toggle } from "@galacticcouncil/ui/components"
+import {
+  Alert,
+  Box,
+  Button,
+  Flex,
+  Text,
+  Toggle,
+} from "@galacticcouncil/ui/components"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -12,9 +19,19 @@ import { XcmLimits } from "@/modules/xcm/transfer/XcmLimits"
 
 type XcmFooterProps = {
   isSubmitting: boolean
+  canSubmit?: boolean
+  onCancel?: () => void
+  submitLabel?: string
+  onSubmit?: () => void
 }
 
-export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
+export const XcmFooter: React.FC<XcmFooterProps> = ({
+  isSubmitting,
+  canSubmit = true,
+  onCancel,
+  submitLabel,
+  onSubmit,
+}) => {
   const { t } = useTranslation()
 
   const {
@@ -40,7 +57,7 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
     status === XcmTransferStatus.ApproveAndTransferValid
 
   const isSubmitReady =
-    formState.isValid && isTransferValid && !isConsentPending
+    canSubmit && formState.isValid && isTransferValid && !isConsentPending
 
   const isLoadingCallOrTransfer = isLoadingCall || isLoadingTransfer
 
@@ -86,18 +103,42 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
             tooltip={dryRunError.description}
           />
         )}
-        <SubmitButton
-          status={status}
-          disabled={
-            isLoading ||
-            isLoadingCallOrTransfer ||
-            isSubmitting ||
-            !isSubmitReady
-          }
-          isLoading={isLoading || isLoadingCallOrTransfer || isSubmitting}
-          disabledVariant="muted"
-          chain={srcChain}
-        />
+        <Flex gap="m" align="center">
+          {onCancel && (
+            <Button variant="muted" size="large" onClick={onCancel}>
+              {t("cancel")}
+            </Button>
+          )}
+          <Flex flex={1}>
+            <SubmitButton
+              submitLabel={submitLabel}
+              type={onSubmit ? "button" : "submit"}
+              onClick={
+                onSubmit
+                  ? () => {
+                      if (
+                        isSubmitReady &&
+                        !isLoading &&
+                        !isLoadingCallOrTransfer &&
+                        !isSubmitting
+                      )
+                        onSubmit()
+                    }
+                  : undefined
+              }
+              status={status}
+              disabled={
+                isLoading ||
+                isLoadingCallOrTransfer ||
+                isSubmitting ||
+                !isSubmitReady
+              }
+              isLoading={isLoading || isLoadingCallOrTransfer || isSubmitting}
+              disabledVariant="muted"
+              chain={srcChain}
+            />
+          </Flex>
+        </Flex>
       </Flex>
     </Box>
   )

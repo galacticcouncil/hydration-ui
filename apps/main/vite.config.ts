@@ -102,6 +102,8 @@ export default defineConfig(({ mode }) => {
       wasm(),
       svgr({
         svgrOptions: {
+          // Keep SVG configuration inside this checkout when nested in a worktree.
+          runtimeConfig: false,
           svgo: true,
         },
       }),

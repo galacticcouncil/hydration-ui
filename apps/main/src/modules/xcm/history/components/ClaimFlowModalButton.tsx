@@ -8,6 +8,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
+  Account,
   useAccount,
   useWeb3Connect,
   WalletMode,
@@ -21,6 +22,7 @@ import { neckworkClient } from "@/api/neckwork"
 import { TransactionStatus } from "@/components/TransactionStatus"
 import { ClaimPendingModalContent } from "@/modules/xcm/history/components/ClaimPendingModalContent"
 import { useDepositClaim } from "@/modules/xcm/history/hooks/useDepositClaim"
+import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { useWithdrawClaim } from "@/modules/xcm/history/hooks/useWithdrawClaim"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
@@ -33,7 +35,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type DepositMutation = ReturnType<typeof useDepositClaim>
 type WithdrawMutation = ReturnType<typeof useWithdrawClaim>
 
-type ClaimFlowModalButtonProps =
+type ClaimFlowModalButtonProps = { depositAccount?: Account } & (
   | {
       type: "deposit"
       journey: XcJourney
@@ -44,11 +46,13 @@ type ClaimFlowModalButtonProps =
       journey: XcJourney
       mutation: WithdrawMutation
     }
+)
 
 export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
   type,
   journey,
   mutation,
+  depositAccount,
 }) => {
   const { t } = useTranslation("common")
   const { papi } = useRpcProvider()
@@ -60,19 +64,29 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
   const walletMode = chain ? getWalletModeByChain(chain) : WalletMode.EVM
 
   const { mutate, isPending, error, reset } = mutation
+  const pendingClaimIds = usePendingClaimsStore(
+    (state) => state.pendingCorrelationIds,
+  )
+  const isClaimSubmitted =
+    type === "deposit" && pendingClaimIds.includes(journey.correlationId)
 
   const transferAsset = getTransferAsset(journey)
 
-  if (!account) return null
+  const signerAccount =
+    type === "deposit" ? (depositAccount ?? account) : account
+  if (!signerAccount) return null
 
   // A deposit is claimed on hydration by the active wallet, since the review
   // modal signs with it. An account that can't sign there, e.g. the NEAR
   // sender of an inbound transfer, picks a hydration account first.
   const canClaimWithActiveAccount =
-    type === "deposit" && !!chain && isAccountValidOnChain(account, chain)
+    type === "deposit" && !!chain && isAccountValidOnChain(signerAccount, chain)
 
   const onClick = canClaimWithActiveAccount
-    ? () => mutate(account)
+    ? () => {
+        if (type === "deposit") setAccount(signerAccount)
+        mutate(signerAccount)
+      }
     : () => setModalOpen(true)
 
   return (
@@ -80,10 +94,10 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
       <Button
         variant="secondary"
         size="small"
-        disabled={isPending}
+        disabled={isPending || isClaimSubmitted}
         onClick={onClick}
       >
-        {isPending ? t("claiming") : t("claim")}
+        {isPending || isClaimSubmitted ? t("claiming") : t("claim")}
       </Button>
       <Web3ConnectModal
         neckwork={neckworkClient}

@@ -1,5 +1,5 @@
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import { ButtonProps, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
@@ -10,14 +10,17 @@ import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 
 import { SButton } from "./ChainAssetSelectButton.styled"
 
-type ChainAssetSelectButtonProps = {
+type ChainAssetSelectButtonProps = Pick<ButtonProps, "aria-label"> & {
   currentSelection: { asset: Asset; chain: AnyChain } | null
   disabled?: boolean
+  fullWidth?: boolean
+  onClick?: () => void
 }
 
 export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
   currentSelection,
   disabled,
+  fullWidth = false,
   ...props
 }) => {
   const { t } = useTranslation("xcm")
@@ -27,6 +30,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
       variant={currentSelection ? "tertiary" : "secondary"}
       disabled={disabled || false}
       hasSelection={!!currentSelection}
+      fullWidth={fullWidth}
       {...props}
     >
       {currentSelection ? (

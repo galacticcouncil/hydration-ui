@@ -61,11 +61,25 @@ type UncontrolledProps = {
 type Props = ControlledProps | UncontrolledProps
 
 type Web3ConnectModalContentProps = Props & {
+  readonly isPage?: boolean
+  readonly accountFilter?: (account: Account) => boolean
+  readonly customSource?: Web3ConnectContextType["customSource"]
+  readonly onBack?: () => void
   readonly setModalContentWidth: (width: string) => void
 }
 
-const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
-  const { neckwork, papi, setModalContentWidth } = props
+export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
+  props,
+) => {
+  const {
+    neckwork,
+    papi,
+    setModalContentWidth,
+    isPage,
+    onBack,
+    accountFilter,
+    customSource,
+  } = props
 
   const isControlled =
     "open" in props &&
@@ -97,6 +111,10 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
   const context = useMemo<Web3ConnectContextType>(
     () => ({
       isControlled,
+      isPage,
+      accountFilter,
+      customSource,
+      onBack,
       page,
       setPage,
       neckwork,
@@ -112,6 +130,10 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
       neckwork,
       onAccountSelect,
       isControlled,
+      isPage,
+      accountFilter,
+      customSource,
+      onBack,
       mode,
       meta,
       papi,

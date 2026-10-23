@@ -1,10 +1,13 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
+  AccountAvatar,
   Alert,
   Box,
   Button,
   Flex,
+  InputSuggestions,
+  InputSuggestionsOption,
   LoadingButton,
   ModalBody,
   ModalContentDivider,
@@ -13,26 +16,34 @@ import {
   Summary,
   SummaryRow,
   Text,
+  TextMiddleTruncate,
   Toggle,
 } from "@galacticcouncil/ui/components"
 import {
   normalizeSS58Address,
+  safeConvertAddressH160,
+  safeConvertAddressSS58,
   safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
 import {
+  Account,
   AddressBookModal,
+  sortByLastUsed,
   useAccount,
   useAddresses,
   useAddressStore,
+  useWeb3Connect,
   WalletMode,
+  Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useEffect, useState } from "react"
+import { FC, ReactNode, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { healthFactorAfterWithdrawQuery } from "@/api/aave"
+import { neckworkClient } from "@/api/neckwork"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
@@ -45,24 +56,57 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly assetId?: string
+  readonly header?: ReactNode | ((pending: boolean) => ReactNode)
+  readonly defaultRecipient?: Account | null
+  readonly sourceAccount?: Account
+  readonly lockAsset?: boolean
+  readonly onAssetClick?: () => void
+  readonly onPendingChange?: (pending: boolean) => void
+  readonly onBack?: () => void
   readonly onClose: () => void
 }
 
-export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
+export const TransferPositionModal: FC<Props> = ({
+  assetId,
+  header,
+  defaultRecipient,
+  sourceAccount,
+  lockAsset = false,
+  onAssetClick,
+  onPendingChange,
+  onBack,
+  onClose,
+}) => {
   const { t } = useTranslation(["wallet", "common"])
   const { account } = useAccount()
   const { tradable, native } = useAssets()
+  const rpc = useRpcProvider()
 
   const transferPosition = useSubmitTransferPosition({ onClose })
-  const { form, getMaxBalance } = useTransferPosition({ assetId })
+  useEffect(() => {
+    onPendingChange?.(transferPosition.isPending)
+    return () => onPendingChange?.(false)
+  }, [onPendingChange, transferPosition.isPending])
+  const { form, getMaxBalance } = useTransferPosition({
+    assetId,
+    defaultAddress: defaultRecipient?.rawAddress,
+  })
+  const isSourceCurrent =
+    !sourceAccount ||
+    (account?.provider === sourceAccount.provider &&
+      account.address === sourceAccount.address)
   const shouldValidate = form.formState.isSubmitted
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
+  const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(false)
+  const [connectedRecipient, setConnectedRecipient] = useState<Account | null>(
+    defaultRecipient ?? null,
+  )
 
   const [asset, amount, address] = form.watch(["asset", "amount", "address"])
 
   const { data: healthFactor } = useQuery(
-    healthFactorAfterWithdrawQuery(useRpcProvider(), {
+    healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
       fromAssetId: asset && isErc20AToken(asset) ? asset.underlyingAssetId : "",
       fromAmount: amount,
@@ -88,8 +132,22 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     }
   }, [watch])
 
-  const { add: addAddressToAddressBook } = useAddressStore()
+  const { add: addAddressToAddressBook, touch: touchAddress } =
+    useAddressStore()
   const userOwnedAddresses = useAddresses()
+  const recipientAccount =
+    connectedRecipient?.rawAddress === address ? connectedRecipient : null
+  const recipientSearch = address.trim().toLowerCase()
+  const suggestions = sortByLastUsed(
+    userOwnedAddresses.filter(
+      (entry) =>
+        (entry.mode === WalletMode.Substrate ||
+          entry.mode === WalletMode.EVM) &&
+        (!recipientSearch ||
+          entry.address.toLowerCase().includes(recipientSearch) ||
+          entry.name.toLowerCase().includes(recipientSearch)),
+    ),
+  ).slice(0, 3)
 
   const addCustomRecipient = (recipient: string) => {
     addAddressToAddressBook({
@@ -118,6 +176,36 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     ? cexDisclaimerAccepted
     : true
 
+  if (isRecipientWalletOpen) {
+    return (
+      <Web3ConnectPage
+        neckwork={neckworkClient}
+        papi={rpc.papi}
+        mode={WalletMode.SubstrateEVM}
+        meta={{
+          title: t("common:connectWallet.modal.title", { chain: "Hydration" }),
+          description: t("common:connectWallet.modal.description", {
+            chain: "Hydration",
+          }),
+          closable: true,
+        }}
+        accountFilter={(recipient) =>
+          !!safeConvertAddressSS58(recipient.rawAddress, 0) ||
+          !!safeConvertAddressH160(recipient.rawAddress)
+        }
+        onBack={() => setIsRecipientWalletOpen(false)}
+        onAccountSelect={(recipient) => {
+          form.setValue("address", recipient.rawAddress, {
+            shouldValidate: true,
+            shouldTouch: true,
+          })
+          setConnectedRecipient(recipient)
+          setIsRecipientWalletOpen(false)
+        }}
+      />
+    )
+  }
+
   if (isMyContactsOpen) {
     return (
       <AddressBookModal
@@ -135,11 +223,26 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit((values) => {
+          const active = useWeb3Connect.getState().account
+          if (
+            sourceAccount &&
+            (active?.provider !== sourceAccount.provider ||
+              active.address !== sourceAccount.address)
+          )
+            return
           addCustomRecipient(values.address)
           transferPosition.mutate(values)
         })}
       >
-        <ModalHeader align="center" title={t("transfer.modal.title")} />
+        {(typeof header === "function"
+          ? header(transferPosition.isPending)
+          : header) ?? (
+          <ModalHeader
+            align="center"
+            title={t("transfer.modal.title")}
+            onBack={onBack}
+          />
+        )}
         <ModalBody sx={{ py: 0 }}>
           <ModalContentDivider />
           <Box py="l" width="100%">
@@ -149,13 +252,65 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               amountFieldName="amount"
               balance={{ value: getMaxBalance(asset) }}
               assets={tradable}
+              disabledAssetSelector={lockAsset}
+              onAssetClick={onAssetClick}
             />
           </Box>
           <ModalContentDivider />
-          <AddressBookFormField<TransferPositionFormValues>
-            fieldName="address"
-            onOpenMyContacts={() => setIsMyContactsOpen(true)}
-          />
+          <InputSuggestions
+            open={suggestions.length > 0 ? undefined : false}
+            anchor={(inputProps) => (
+              <AddressBookFormField<TransferPositionFormValues>
+                fieldName="address"
+                inputProps={inputProps}
+                contactsVariant="icon"
+                headerAction={
+                  <Button
+                    type="button"
+                    size="micro"
+                    uppercase
+                    variant="secondary"
+                    outline
+                    disabled={transferPosition.isPending}
+                    onClick={() => setIsRecipientWalletOpen(true)}
+                  >
+                    {t(
+                      recipientAccount
+                        ? "common:change"
+                        : "common:connectWallet",
+                    )}
+                  </Button>
+                }
+                onOpenMyContacts={() => setIsMyContactsOpen(true)}
+              />
+            )}
+          >
+            {suggestions.map((entry) => (
+              <InputSuggestionsOption
+                key={entry.publicKey}
+                onSelect={() => {
+                  form.setValue("address", entry.address, {
+                    shouldValidate: true,
+                    shouldTouch: true,
+                  })
+                  setConnectedRecipient(null)
+                  touchAddress(entry.address)
+                }}
+              >
+                <AccountAvatar address={entry.address} size={32} />
+                <Flex direction="column" flex={1} minWidth={0}>
+                  {entry.name && (
+                    <Text fs="p4" fw={500}>
+                      {entry.name}
+                    </Text>
+                  )}
+                  <TextMiddleTruncate fs="p5" color="text.medium">
+                    {entry.address}
+                  </TextMiddleTruncate>
+                </Flex>
+              </InputSuggestionsOption>
+            ))}
+          </InputSuggestions>
 
           {healthFactor?.isSignificantChange && (
             <Summary separator={<ModalContentDivider />} withLeadingSeparator>
@@ -217,6 +372,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             size="large"
             type="submit"
             disabled={
+              !isSourceCurrent ||
               !isHealthFactorCheckSatisfied ||
               !isCexDisclaimerSatisfied ||
               !form.formState.isValid

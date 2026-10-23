@@ -57,6 +57,7 @@ type ModalContentProps = React.ComponentPropsWithoutRef<
 > & {
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
   topContent?: ReactNode
+  bottomContent?: ReactNode
   animationDurationMs?: number
   centered?: boolean
   contentWidth?: string
@@ -66,6 +67,7 @@ const ModalContent: FC<ModalContentProps> = ({
   children,
   ref,
   topContent,
+  bottomContent,
   forceMount,
   animationDurationMs,
   centered = false,
@@ -86,6 +88,7 @@ const ModalContent: FC<ModalContentProps> = ({
         ref={ref}
         {...props}
         hasTopContent={!!topContent}
+        hasBottomContent={!!bottomContent}
         centered={centered}
         onAnimationEnd={(e) => {
           if (e.target === e.currentTarget) e.currentTarget.dataset.settled = ""
@@ -93,7 +96,10 @@ const ModalContent: FC<ModalContentProps> = ({
         }}
       >
         {topContent && <SModalTopContent>{topContent}</SModalTopContent>}
-        <SModalPaper>{children}</SModalPaper>
+        <SModalPaper data-modal-paper hasBottomContent={!!bottomContent}>
+          {children}
+        </SModalPaper>
+        {bottomContent}
       </SModalContent>
     </SModalWrapper>
   </ModalPortal>
@@ -186,6 +192,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
           <SModalHeaderButton
             icon={ArrowLeft}
             variant="ghost"
+            size="medium"
             onClick={onBack}
             align="left"
           />
@@ -270,6 +277,7 @@ export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableInteractOutside?: boolean
   disableAutoFocus?: boolean
   topContent?: ReactNode
+  bottomContent?: ReactNode
   animationDurationMs?: number
   centered?: boolean
   contentWidth?: string
@@ -282,6 +290,7 @@ const Modal = ({
   disableInteractOutside = false,
   disableAutoFocus = false,
   topContent,
+  bottomContent,
   animationDurationMs,
   centered = false,
   contentWidth,
@@ -318,6 +327,7 @@ const Modal = ({
           centered={centered}
           onClick={(e) => e.stopPropagation()}
           topContent={topContent}
+          bottomContent={bottomContent}
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
           }
@@ -343,7 +353,7 @@ const ModalContainer = ({
 }) => (
   <ModalRoot {...props} modal={false}>
     <SModalContent sx={{ position: "unset" }} className={className}>
-      <Paper>{children}</Paper>
+      <Paper data-modal-paper>{children}</Paper>
     </SModalContent>
   </ModalRoot>
 )
