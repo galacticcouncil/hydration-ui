@@ -128,7 +128,11 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
             value: <DateText date={new Date(row.eligibleAt)} />,
           },
         ]
-      : row.state === "partial" && (row.collateralOwed ?? 0) > 0
+      : // a claim button already names the settled amount, and next to it
+        // the stat overflows the card — show it only while there is no button
+        row.state === "partial" &&
+          (row.collateralOwed ?? 0) > 0 &&
+          status !== "claimable"
         ? [
             {
               // the chip already says Settling and the row's amount is the
