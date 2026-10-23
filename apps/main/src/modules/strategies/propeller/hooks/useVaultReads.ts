@@ -1,7 +1,7 @@
 import { getAddressFromAssetId, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { queryOptions, useQueries } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
-import { erc20Abi, formatUnits, getContract, type Hex } from "viem"
+import { erc20Abi, formatUnits, getContract, type Hex, zeroAddress } from "viem"
 
 import { bestSellQuery } from "@/api/trade"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
@@ -20,6 +20,7 @@ import {
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
 import { readDepositCapacity } from "@/modules/strategies/propeller/utils/deposit"
+import { readMainDebtBusy } from "@/modules/strategies/propeller/utils/depositGates"
 import { readHarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
 import {
   getPayoutAssetIds,
@@ -105,6 +106,8 @@ export const vaultStatsQuery = (
         deferredDeployment,
         pendingDeployment,
         mainAccount,
+        deleverTarget,
+        mainDebt,
       ] = await Promise.all([
         contract.read.totalAssets(at),
         contract.read.totalSupply(at),
@@ -134,7 +137,13 @@ export const vaultStatsQuery = (
         safeRead("Pool.getUserAccountData(vault)", () =>
           pool.read.getUserAccountData([vault.vaultAddress], at),
         ),
+        safeRead("Vault.deleverTarget", () => contract.read.deleverTarget(at)),
+        safeRead("Vault.mainDebt", () => contract.read.mainDebt(at)),
       ])
+      const deploying =
+        mainDebt === null || mainDebt === zeroAddress
+          ? null
+          : await readMainDebtBusy(evm, mainDebt, at.blockNumber)
       const [protocolFeeBps, mainDiscountBps, band] = await Promise.all([
         safeRead("FeeController.protocolFeeBps", () =>
           evm.readContract({
@@ -188,6 +197,10 @@ export const vaultStatsQuery = (
         targetLtv: ltvBps > 0 && targetLtvBps > 0 ? targetLtvBps / 1e4 : null,
         withdrawalDelay,
         deficitStop,
+        // deposit() reverts DeleverPending while a de-lever is due
+        deleverPending: deleverTarget !== null && deleverTarget > 0n,
+        // a borrowing round still deploying makes deposit() revert OutstandingDebt
+        deploying,
         // Main leg in base currency (USD, 8 decimals); collateral includes the
         // synthetic, consumers strip it via its known debt ratio
         mainCollUsd:
@@ -235,6 +248,7 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
         account,
         hollarRes,
         primeConfig,
+        emergencyPaused,
       ] = await Promise.all([
         safeRead("SubLoop.healthFactor", () => subLoop.read.healthFactor()),
         safeRead("SubLoop.negativeCarryBps", () =>
@@ -249,6 +263,9 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
         ),
         safeRead("Pool.getConfiguration(PRIME)", () =>
           pool.read.getConfiguration([PRIME_ADDRESS]),
+        ),
+        safeRead("SubLoop.emergencyPaused", () =>
+          subLoop.read.emergencyPaused(),
         ),
       ])
 
@@ -278,6 +295,9 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
 
       return {
         leverage: loopLeverage,
+        // freezes deposits, withdrawals and claims on every attached vault,
+        // but not share transfers (those check only the vault's own pause)
+        emergencyPaused,
         healthFactor:
           healthFactor === null ? null : Number(formatUnits(healthFactor, 18)),
         targetHf: targetHf === null ? null : Number(formatUnits(targetHf, 18)),

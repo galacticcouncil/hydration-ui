@@ -15,6 +15,7 @@ import {
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { computeVaultApr } from "@/modules/strategies/propeller/utils/accounting"
+import { depositBlocker } from "@/modules/strategies/propeller/utils/depositGates"
 import {
   borrowDeployedFraction,
   targetLoopLeverage,
@@ -37,7 +38,7 @@ export const vaultDepositState = (
   stats: PropellerVaultStats | undefined,
 ): VaultDepositState => {
   if (!stats) return "unavailable"
-  if (stats.paused || stats.depositsPaused || stats.deficitStop) return "paused"
+  if (depositBlocker(stats) !== null) return "paused"
   // an unreadable stop fails closed like the deposit form
   if (stats.deficitStop === null) return "unavailable"
   if (stats.remaining <= 0) return "full"
@@ -52,6 +53,9 @@ export type PropellerVaultStats = {
   paused: boolean
   depositsPaused: boolean
   deficitStop: boolean | null
+  deleverPending: boolean
+  /** a borrowing round still deploying; null when unreadable */
+  deploying: boolean | null
   exchangeRate: number
   maxLtv: number | null
   targetLtv: number | null
@@ -112,6 +116,8 @@ export const usePropellerVaults = () => {
       paused: data.paused,
       depositsPaused: data.depositsPaused,
       deficitStop: data.deficitStop,
+      deleverPending: data.deleverPending,
+      deploying: data.deploying,
       exchangeRate: data.exchangeRate,
       maxLtv: data.maxLtv,
       targetLtv: data.targetLtv,

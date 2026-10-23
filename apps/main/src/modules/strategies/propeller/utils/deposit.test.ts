@@ -68,6 +68,7 @@ describe("Collateral-only deposit capacity", () => {
       blockNumber: 100n,
       maximum: 7n * unit,
       ready: true,
+      blocker: null,
       paused: false,
     })
     expect(

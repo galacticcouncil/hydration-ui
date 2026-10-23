@@ -28,7 +28,10 @@ import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MySt
 import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
 import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { useBaseRates } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
-import { vaultStatsQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import {
+  subLoopQuery,
+  vaultStatsQuery,
+} from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useTransferShares } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -102,6 +105,14 @@ const ShareTransferModalContent = ({
     ...vaultStatsQuery(rpc, vault ?? PROPELLER_VAULTS[0]!, decimals ?? 18),
     enabled: rpc.isReady && isJuicer && !!vault,
   })
+  const { data: subLoop } = useQuery({
+    ...subLoopQuery(rpc),
+    enabled: rpc.isReady && isJuicer,
+  })
+  // share transfers check only the vault's own pause: paused() also reports a
+  // loop emergency, which does not stop transfers
+  const transferPaused =
+    stats?.paused === true && subLoop?.emergencyPaused !== true
   const { getRate } = useBaseRates()
   const transfer = useTransferShares(vault ?? PROPELLER_VAULTS[0]!, {
     onSuccess: onClose,
@@ -138,6 +149,7 @@ const ShareTransferModalContent = ({
     parsedAmount.gt(0) &&
     parsedAmount.lte(maxDisplay) &&
     recipient !== null &&
+    !transferPaused &&
     !transfer.isPending
 
   const onConfirm = () => {
@@ -275,11 +287,13 @@ const ShareTransferModalContent = ({
         }}
       >
         <Alert
-          variant="info"
+          variant={transferPaused ? "warning" : "info"}
           description={
-            isJuicer
-              ? t("transfer.juicerDescription", { symbol })
-              : `${t("transfer.previewOnly")} ${t("transfer.description")}`
+            !isJuicer
+              ? `${t("transfer.previewOnly")} ${t("transfer.description")}`
+              : transferPaused
+                ? t("transfer.paused")
+                : t("transfer.juicerDescription", { symbol })
           }
         />
         <Button

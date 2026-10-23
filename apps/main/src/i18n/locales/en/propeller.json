@@ -48,6 +48,7 @@
   "withdrawals.etaAtPace": "{{ eta }} left at current pace",
   "withdrawals.etaTypical": "usually takes {{ eta }}",
   "withdrawals.action.claim": "Claim",
+  "withdrawals.action.claimPaused": "Vault paused",
   "withdrawals.action.claimPartial": "Claim ≥ {{ amount }}",
   "withdrawals.claim.label": "Claim available payouts for {{symbol}} withdrawal",
   "withdrawals.claim.title": "Claim withdrawal",
@@ -71,6 +72,11 @@
   "deposit.benefit.noImpermanentLossDescription": "Single-asset exposure, without pool rebalancing.",
   "deposit.cta.paused": "Deposits paused",
   "deposit.cta.full": "Vault at capacity",
+  "deposit.alert.paused": "This vault is temporarily not accepting new deposits.",
+  "deposit.alert.deficit": "Deposits are paused while the strategy recovers a funding shortfall. Withdrawals are not affected.",
+  "deposit.alert.delever": "Deposits are paused while the vault reduces its borrowing after a price move. This clears automatically.",
+  "deposit.alert.deploying": "Deposits pause briefly while the vault deploys funds. Try again in a few minutes.",
+  "deposit.alert.full": "The vault has reached its TVL cap. New deposits are not accepted until capacity becomes available.",
   "deposit.alert.notReady": "This vault is not open for deposits yet.",
   "deposit.alert.unavailable": "The vault status could not be loaded, so deposits are disabled. Try again after the connection recovers.",
   "deposit.cta.deposit": "Deposit",
@@ -161,6 +167,7 @@
   "transfer.description": "This sends position shares, not the underlying asset.",
   "transfer.juicerDescription": "The recipient receives your Juicer position, not {{symbol}}. Amounts are shown as the current {{symbol}} equivalent.",
   "transfer.previewOnly": "Preview only — transfers are not connected yet.",
+  "transfer.paused": "The vault is paused. Positions can't be sent until it resumes.",
   "transfer.toast.submitted": "Sending {{ amount }} Juicer position...",
   "transfer.toast.success": "Sent {{ amount }} Juicer position"
 }

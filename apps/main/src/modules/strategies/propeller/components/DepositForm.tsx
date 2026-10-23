@@ -181,9 +181,12 @@ export const DepositForm = ({
     return isSwap ? t("deposit.cta.swapAndDeposit") : t("deposit.cta.deposit")
   })()
 
+  // each reason is one the contract itself enforces (see depositGates)
   const blockedDescription = (() => {
     if (capacityError) return t("deposit.alert.unavailable")
     if (capacity?.ready === false) return t("deposit.alert.notReady")
+    if (capacity?.blocker) return t(`deposit.alert.${capacity.blocker}`)
+    if (atCapacity) return t("deposit.alert.full")
   })()
 
   const onSelectAsset = (selectedAsset: TAssetData) => {

@@ -34,6 +34,8 @@ const stats = (
   mainCollUsd: null,
   mainDebtUsd: null,
   deficitStop: false,
+  deleverPending: false,
+  deploying: false,
   exchangeRate: 1,
   maxLtv: 0.8,
   targetLtv: 0.75,
@@ -44,6 +46,15 @@ const stats = (
 describe("Vault deposit state", () => {
   it("is open below the cap with no pause or stop", () => {
     expect(vaultDepositState(stats())).toBe("open")
+  })
+
+  it("blocks exactly what deposit() rejects: a due de-lever and a borrowing round in flight", () => {
+    expect(vaultDepositState(stats({ deleverPending: true }))).toBe("paused")
+    expect(vaultDepositState(stats({ deploying: true }))).toBe("paused")
+  })
+
+  it("does not block on an unreadable borrowing-round state", () => {
+    expect(vaultDepositState(stats({ deploying: null }))).toBe("open")
   })
 
   it("shows the keeper deficit stop as paused, like a governance pause", () => {

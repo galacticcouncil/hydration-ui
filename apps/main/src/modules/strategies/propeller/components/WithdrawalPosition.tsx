@@ -3,6 +3,7 @@ import {
   type ChipProps,
   LoadingButton,
 } from "@galacticcouncil/ui/components"
+import { useQuery } from "@tanstack/react-query"
 import { type FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,11 +12,14 @@ import { DateText } from "@/components/RelativeDateText"
 import { ClaimModal } from "@/modules/strategies/propeller/components/ClaimModal"
 import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { vaultStatsQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   useClaim,
   usePendingClaimIds,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 const statusVariants: Record<
   ReturnType<typeof getWithdrawalStateLabel>,
@@ -87,6 +91,18 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   const [claimOpen, setClaimOpen] = useState(false)
   const hasPayoutChoice = !!row.vault.payoutAssetIds
   const isClaiming = usePendingClaimIds().includes(row.id)
+  // claim() is whenNotPaused, and the vault's paused() includes a loop
+  // emergency pause — while either holds, the call can only revert
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const { data: vaultStats } = useQuery(
+    vaultStatsQuery(
+      rpc,
+      row.vault,
+      getAssetWithFallback(row.vault.assetId).decimals,
+    ),
+  )
+  const claimPaused = vaultStats?.paused === true
   const cooldownElapsed = useCooldownElapsed(
     row.eligibleAt,
     row.state === "cooldown",
@@ -162,14 +178,16 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
               size="small"
               loadingMode="replace"
               isLoading={isClaiming}
-              disabled={isClaiming}
+              disabled={isClaiming || claimPaused}
               onClick={() =>
                 hasPayoutChoice
                   ? setClaimOpen(true)
                   : claim.mutate({ vault: row.vault, requestId: row.requestId })
               }
             >
-              {row.state === "partial"
+              {claimPaused
+                ? t("withdrawals.action.claimPaused")
+                : row.state === "partial"
                 ? t("withdrawals.action.claimPartial", {
                     amount: t("common:currency", {
                       value: row.collateralSettled ?? 0,

@@ -359,6 +359,7 @@ export const POOL_ABI = [
 
 export const MAIN_DEBT_ABI = parseAbi([
   "function pendingSourceAccounting() view returns (bool)",
+  "function activeSourceRemaining() view returns (uint256)",
   "function serviceBlocked() view returns (bool)",
   "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
   "function surplusOf(uint256 id) view returns (uint256 amount)",

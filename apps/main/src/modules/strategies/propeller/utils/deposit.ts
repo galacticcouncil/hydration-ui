@@ -15,6 +15,10 @@ import {
   DEPOSIT_MIN_GAS,
   EVM_CALL_GAS,
 } from "@/modules/strategies/propeller/constants"
+import {
+  depositBlocker,
+  readMainDebtBusy,
+} from "@/modules/strategies/propeller/utils/depositGates"
 import { type TProviderContext } from "@/providers/rpcProvider"
 
 const MAX_NATIVE_TX_GAS = 1n << 24n
@@ -61,13 +65,24 @@ export const readDepositCapacity = async (
   ])
   if (collateral.toLowerCase() !== asset.toLowerCase())
     throw new Error("The configured collateral does not match this vault")
+  const deploying =
+    mainDebt === zeroAddress
+      ? null
+      : await readMainDebtBusy(client, mainDebt, at.blockNumber)
+  const blocker = depositBlocker({
+    paused,
+    depositsPaused,
+    deficitStop,
+    deleverPending: deleverTarget > 0n,
+    deploying,
+  })
   return {
     blockNumber: at.blockNumber,
     maximum: cap > total ? cap - total : 0n,
     // Governance must bootstrap a fresh vault before opening public deposits.
     ready: supply > 0n && mainDebt !== zeroAddress,
-    // deposits revert on either pause flag and while a de-lever is due
-    paused: paused || depositsPaused || deficitStop || deleverTarget > 0n,
+    blocker,
+    paused: blocker !== null,
   }
 }
 
