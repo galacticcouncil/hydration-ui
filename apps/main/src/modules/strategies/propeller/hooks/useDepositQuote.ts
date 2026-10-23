@@ -6,7 +6,10 @@ import { bestSellWithTxQuery } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { isExactAmount } from "@/modules/strategies/propeller/utils/amount"
-import { readSwapDeposit } from "@/modules/strategies/propeller/utils/deposit"
+import {
+  readSwapDeposit,
+  readUnwrapDeposit,
+} from "@/modules/strategies/propeller/utils/deposit"
 import {
   isSwapDeposit,
   type PropellerDepositOption,
@@ -43,16 +46,30 @@ export const useDepositQuote = (
   const quotedTx = quote?.tx ?? null
 
   const prepared = useMemo(() => {
-    if (!quotedTx || !swap) return null
+    if (!swap) return null
     try {
-      const { exact, depositAmount, tradeCall } = readSwapDeposit(
-        quotedTx.decodedCall,
-        {
-          assetIn: deposit.assetId,
-          collateralId: deposit.vault.assetId,
-          quotedAmountIn: swap.amountIn,
-        },
-      )
+      // without a wallet there is no tx to read the limit from, only the route
+      if (!quotedTx) {
+        const unwrap = readUnwrapDeposit(swap.swaps, {
+          assetIn: Number(deposit.assetId),
+          assetOut: Number(deposit.vault.assetId),
+          amountIn: swap.amountIn,
+        })
+        return {
+          exact: unwrap !== null,
+          depositAmount:
+            unwrap ??
+            swap.amountOut - calculateSlippage(swap.amountOut, slippage),
+          tx: null,
+        }
+      }
+      const read = readSwapDeposit(quotedTx.decodedCall, {
+        assetIn: deposit.assetId,
+        collateralId: deposit.vault.assetId,
+        quotedAmountIn: swap.amountIn,
+      })
+      const { exact, tradeCall } = read
+      const depositAmount = read.exact ? read.depositAmount : read.minAmountOut
       if (tradeCall === quotedTx.decodedCall)
         return { exact, depositAmount, tx: quotedTx }
       const { type: pallet, value } = tradeCall as {
@@ -70,19 +87,20 @@ export const useDepositQuote = (
     } catch {
       return null
     }
-  }, [quotedTx, swap, deposit.assetId, deposit.vault.assetId, rpc.papi])
-
-  const tx = prepared?.tx ?? null
-  // without a wallet there is no tx to read the limit from
-  const depositAmount = quotedTx
-    ? prepared?.depositAmount
-    : swap && swap.amountOut - calculateSlippage(swap.amountOut, slippage)
+  }, [
+    quotedTx,
+    swap,
+    slippage,
+    deposit.assetId,
+    deposit.vault.assetId,
+    rpc.papi,
+  ])
 
   return {
     isSwap,
     swap,
-    tx,
-    depositAmount,
+    tx: prepared?.tx ?? null,
+    depositAmount: prepared?.depositAmount,
     exact: prepared?.exact ?? false,
     isLoading: isSwap && !!amountIn && (!isSynced || isLoading),
     // a quote whose call can't be turned into a deposit is as good as none

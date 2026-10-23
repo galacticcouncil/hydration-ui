@@ -16,7 +16,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import Big from "big.js"
-import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -43,23 +42,38 @@ import {
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { useFormatSurplusHollar } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
 import {
+  CHAIN_WAIT,
   encodeDeposit,
+  InterruptedDepositError,
+  isCallNode,
   prepareApproval,
+  prepareDeliveredDeposit,
   prepareFundedDeposit,
   prepareSwapDeposit,
+  readSellLimit,
+  waitForSwapBlock,
 } from "@/modules/strategies/propeller/utils/deposit"
+import {
+  buildPayoutSell,
+  getPayoutSell,
+} from "@/modules/strategies/propeller/utils/payout"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/withdrawalClaim"
 import { type AnyPapiTx } from "@/modules/transactions/types"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { type Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import {
+  getTxResultBlockHeight,
+  isSubstrateTxResult,
   type TransactionCommon,
   type TransactionOptions,
+  type TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
 
@@ -76,6 +90,7 @@ interface BatchEvmCall {
 
 type BatchOptions = {
   leading?: AnyPapiTx["decodedCall"][]
+  trailing?: AnyPapiTx["decodedCall"][]
   atomic?: boolean
 }
 
@@ -175,11 +190,14 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   /**
-   * Build EVM calls as one substrate Utility.batch_all, after any leading calls.
+   * Build EVM calls as one substrate Utility.batch_all, between any leading and trailing calls.
    * Prepends bind_evm_address when the account is not yet mapped.
    */
   const buildBatch = useCallback(
-    async (calls: BatchEvmCall[], { leading, atomic }: BatchOptions = {}) => {
+    async (
+      calls: BatchEvmCall[],
+      { leading, trailing, atomic }: BatchOptions = {},
+    ) => {
       if (calls.length === 0) {
         throw new Error("buildBatch called with no calls")
       }
@@ -214,6 +232,7 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
           bind: isBound === false,
           leading,
           evmCalls: papiCalls,
+          trailing,
           atomic,
         }),
       })
@@ -221,28 +240,24 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
     [address, evmAddress, queryClient, rpc],
   )
 
-  const submitBatch = useCallback(
-    async (
-      vaultAddress: Hex,
-      calls: BatchEvmCall[],
-      toasts: { submitted: string; success: string },
-      review?: Pick<TransactionCommon, "title" | "description">,
-    ) =>
-      createTransaction(
-        { tx: await buildBatch(calls), toasts, ...review },
-        txOptionsForVault(vaultAddress),
-      ),
-    [buildBatch, createTransaction, txOptionsForVault],
-  )
-
   return {
     evmAddress,
     submitTx,
-    submitBatch,
     buildBatch,
     createTransaction,
     txOptionsForVault,
   }
+}
+
+/** Polls until a submitted step's effect is visible on chain. */
+const waitForChain = async (
+  isVisible: () => Promise<boolean>,
+  message: string,
+) => {
+  await waitFor(isVisible, {
+    interval: CHAIN_WAIT.interval,
+    timeout: { milliseconds: CHAIN_WAIT.timeout, message },
+  })
 }
 
 export type DepositVariables = {
@@ -262,6 +277,7 @@ export function useDeposit(
   const { account } = useAccount()
   const wallet = useWallet()
   const { getAssetWithFallback } = useAssets()
+  const queryClient = useQueryClient()
   const getErc20Allowance = useErc20Allowance()
   const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
     useVaultEvmCall(options)
@@ -279,15 +295,6 @@ export function useDeposit(
     owner: evmAddress,
     amount,
   })
-  const waitForChain = async (
-    isVisible: () => Promise<boolean>,
-    message: string,
-  ) => {
-    await waitFor(isVisible, {
-      interval: 1000,
-      timeout: { milliseconds: minutesToMilliseconds(3), message },
-    })
-  }
 
   // Built only once the approval is visible on chain, so the simulation
   // and gas estimate run against the real allowance.
@@ -325,6 +332,92 @@ export function useDeposit(
     tx: () => buildDeposit(amount),
     stepTitle: t("deposit"),
     pendingComponent: PendingApproval,
+  })
+
+  // the swap has landed: whatever goes wrong now, its collateral is in the wallet
+  const interrupted = (delivered: bigint | undefined) =>
+    delivered === undefined
+      ? t("propeller:deposit.swap.interrupted.unknown")
+      : t("propeller:deposit.swap.interrupted", {
+          amount: formatAmount(formatUnits(delivered, decimals)),
+        })
+
+  /** Deposits exactly what the swap delivered, in one atomic approve and deposit batch. */
+  const deliveredDepositStep = () => ({
+    stepTitle: t("deposit"),
+    pendingComponent: PendingApproval,
+    tx: async (results: TSuccessResult[]) => {
+      let delivered: bigint | undefined
+      try {
+        // the swap is the step right before, after any bind
+        const swapResult = results.at(-1)
+        const height = swapResult ? getTxResultBlockHeight(swapResult) : null
+        if (height === null) throw new Error("The swap's block is unknown")
+        const prepared = await prepareDeliveredDeposit(evm, {
+          vault: vaultAddress,
+          asset: assetAddress,
+          owner: evmAddress,
+          block: BigInt(height),
+        })
+        delivered = prepared.delivered
+        const { amount, approval } = prepared
+        const tx = await buildBatch(
+          [
+            ...(approval ? [approval] : []),
+            encodeDeposit(depositInput(amount)),
+          ],
+          { atomic: true },
+        )
+        const at = await waitForSwapBlock(rpc, {
+          number: height,
+          hash:
+            swapResult && isSubstrateTxResult(swapResult)
+              ? swapResult.block.hash
+              : undefined,
+        })
+        if (swapResult && "blockHash" in swapResult) {
+          const block = await evm.getBlock({ blockNumber: BigInt(height) })
+          if (block.hash !== swapResult.blockHash)
+            throw new Error("The swap is no longer in the best chain")
+        }
+        // Finalized state can predate the swap; check the batch at the verified best block.
+        const dryRunError = await getDryRunError(
+          rpc,
+          account?.address ?? "",
+          tx,
+          { at },
+        )
+        if (dryRunError)
+          throw new Error(`Deposit dry run failed: ${dryRunError.name}`)
+
+        const format = (value: bigint) =>
+          formatAmount(formatUnits(value, decimals))
+        const value = format(amount)
+        return {
+          tx,
+          description:
+            amount < delivered
+              ? t("propeller:deposit.swap.delivered.clamped", {
+                  amount: value,
+                  delivered: format(delivered),
+                  rest: format(delivered - amount),
+                })
+              : t("propeller:deposit.swap.delivered", { amount: value }),
+          toasts: {
+            submitted: t("propeller:deposit.toast.submitted", {
+              amount: value,
+            }),
+            success: t("propeller:deposit.toast.success", { amount: value }),
+            error: interrupted(delivered),
+          },
+          errorMessage: interrupted(delivered),
+        }
+      } catch (error) {
+        if (error instanceof InterruptedDepositError)
+          delivered = error.delivered
+        throw new Error(interrupted(delivered), { cause: error })
+      }
+    },
   })
 
   return useMutation({
@@ -365,24 +458,54 @@ export function useDeposit(
         getAssetWithFallback(trade.assetIn).symbol,
       )
       const deposited = formatAmount(formatUnits(depositAmount, decimals))
+      const swapStep = (tx: AnyPapiTx) => ({
+        tx,
+        stepTitle: t("propeller:deposit.step.swap"),
+        toasts: {
+          submitted: t("propeller:deposit.swapStep.toast.submitted", {
+            amountIn,
+            symbol,
+          }),
+          success: t("propeller:deposit.swapStep.toast.success", {
+            amountIn,
+            symbol,
+          }),
+        },
+      })
+
+      if (!exact) {
+        const isBound = await queryClient.fetchQuery({
+          ...evmAccountBindingQuery(rpc, account?.address ?? ""),
+          staleTime: 0,
+        })
+        // the delivered amount is read through the collateral's EVM precompile,
+        // which sees a substrate account's balance only once it is bound
+        const bindStep = {
+          tx: rpc.papi.tx.EVMAccounts.bind_evm_address(),
+          stepTitle: t("propeller:deposit.step.bind"),
+          toasts: {
+            submitted: t("propeller:deposit.bind.toast.submitted"),
+            success: t("propeller:deposit.bind.toast.success"),
+          },
+        }
+        return createTransaction(
+          {
+            tx: [
+              ...(isBound ? [] : [bindStep]),
+              swapStep(trade.tx),
+              deliveredDepositStep(),
+            ],
+          },
+          txOptionsForVault(vaultAddress),
+        )
+      }
 
       if (isEthereumSigner(wallet?.signer)) {
         return createTransaction(
           {
             tx: [
               {
-                tx: trade.tx,
-                stepTitle: t("propeller:deposit.step.swap"),
-                toasts: {
-                  submitted: t("propeller:deposit.swapStep.toast.submitted", {
-                    amountIn,
-                    symbol,
-                  }),
-                  success: t("propeller:deposit.swapStep.toast.success", {
-                    amountIn,
-                    symbol,
-                  }),
-                },
+                ...swapStep(trade.tx),
                 beforeNext: () =>
                   waitForChain(
                     async () =>
@@ -421,16 +544,11 @@ export function useDeposit(
         {
           tx,
           title: t("propeller:deposit.swap.title"),
-          description: t(
-            exact
-              ? "propeller:deposit.swap.description.exact"
-              : "propeller:deposit.swap.description",
-            {
-              amountIn,
-              amount: deposited,
-              symbol,
-            },
-          ),
+          description: t("propeller:deposit.swap.description.exact", {
+            amountIn,
+            amount: deposited,
+            symbol,
+          }),
           toasts: {
             submitted: t("propeller:deposit.swap.toast.submitted", {
               amountIn,
@@ -542,19 +660,171 @@ export function useTransferShares(
 export type ClaimVariables = {
   vault: PropellerVaultConfig
   requestId: number
+  /** asset the claimed collateral is sold into; unset or the collateral itself sells nothing */
+  payoutAssetId?: string
+}
+
+/** A decoded call as a submittable tx, through its pallet's own builder. */
+const decodedCallToTx = (papi: Papi, call: AnyPapiTx["decodedCall"]) => {
+  if (!isCallNode(call) || !isCallNode(call.value))
+    throw new Error("Not a decoded call")
+  const { type: pallet } = call
+  const { type: method, value: args } = call.value
+  const build = (
+    papi.tx as unknown as Record<
+      string,
+      Record<string, (args: unknown) => AnyPapiTx> | undefined
+    >
+  )[pallet]?.[method]
+  if (!build) throw new Error(`No builder for ${pallet}.${method}`)
+  return build(args)
 }
 
 export function useClaim(options: VaultWriteOptions = {}) {
   const { t } = useTranslation(["propeller", "common"])
-  const { evm } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { evm, sdk } = rpc
+  const { account } = useAccount()
+  const wallet = useWallet()
   const { getAssetWithFallback } = useAssets()
-  const { evmAddress, submitBatch } = useVaultEvmCall(options)
+  const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
+    useVaultEvmCall(options)
   const { getRate } = useBaseRates()
   const getDisplayAsset = useVaultDisplayAsset()
+  const formatSurplus = useFormatSurplusHollar()
+  const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
+  const address = account?.address ?? ""
+
+  /** Router.sell of exactly the claimed collateral, priced by the SDK now. */
+  const buildSell = async (
+    vault: PropellerVaultConfig,
+    payoutAssetId: string,
+    collateral: bigint,
+  ) => {
+    const kind = getPayoutSell(vault, payoutAssetId)
+    if (kind === "none" || collateral === 0n) return null
+    const { decimals } = getAssetWithFallback(vault.assetId)
+    const swap = await sdk.api.router.getBestSell(
+      Number(vault.assetId),
+      Number(payoutAssetId),
+      formatUnits(collateral, decimals),
+    )
+    const tx = await sdk.tx
+      .trade(swap)
+      .withSlippage(slippage)
+      .withBeneficiary(address)
+      .build()
+      .then((built) => built.get())
+    // the 1:1 unwrap returns exactly what it sells, so it takes no buffer
+    return buildPayoutSell(
+      tx.decodedCall,
+      collateral,
+      kind === "exact" ? { minAmountOut: collateral } : {},
+    )
+  }
+
+  /**
+   * What the claim pays: a sell pays at least its minimum in the payout asset;
+   * without one the chain pays collateral, spoken in the current display asset.
+   */
+  const describePayouts = (
+    vault: PropellerVaultConfig,
+    payoutAssetId: string,
+    collateral: bigint,
+    surplusHollar: bigint,
+    sell: AnyPapiTx["decodedCall"] | null,
+  ) => {
+    const payout = getAssetWithFallback(payoutAssetId)
+    const { decimals } = getAssetWithFallback(vault.assetId)
+    const minAmountOut = sell ? readSellLimit(sell)?.minAmountOut : undefined
+    const collateralPayout =
+      minAmountOut !== undefined
+        ? t("common:currency", {
+            value: formatUnits(minAmountOut, payout.decimals),
+            symbol: payout.symbol,
+            maximumFractionDigits: payout.decimals,
+          })
+        : t("common:currency", {
+            value: Big(formatUnits(collateral, decimals))
+              .times(getRate(vault) ?? "1")
+              .toString(),
+            symbol: getDisplayAsset(vault).symbol,
+            maximumFractionDigits: decimals,
+          })
+    return [
+      ...(collateral > 0n ? [collateralPayout] : []),
+      ...(surplusHollar > 0n ? [formatSurplus(surplusHollar)] : []),
+    ].join(" + ")
+  }
+
+  /**
+   * EVM signers can't put a substrate sell behind the EVM calls: claim, wait
+   * for the collateral to arrive, then sell exactly that much.
+   */
+  const claimThenSellSteps = async (
+    vault: PropellerVaultConfig,
+    payoutAssetId: string,
+    collateral: bigint,
+    claimStep: TransactionCommon & { tx: AnyPapiTx },
+  ) => {
+    const collateralAddress = getAddressFromAssetId(vault.assetId) as Hex
+    const readCollateral = () =>
+      evm.readContract({
+        address: collateralAddress,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [evmAddress],
+      })
+    const before = await readCollateral()
+    const swapToasts = {
+      amountIn: t("common:currency", {
+        value: formatUnits(
+          collateral,
+          getAssetWithFallback(vault.assetId).decimals,
+        ),
+        symbol: getAssetWithFallback(vaultCollateralDisplayId(vault)).symbol,
+        maximumFractionDigits: 4,
+      }),
+      symbol: getAssetWithFallback(payoutAssetId).symbol,
+    }
+    return [
+      {
+        ...claimStep,
+        stepTitle: t("withdrawals.claim.step.claim"),
+        // dispatch-precompile calls emit no logs, so watch the balance
+        beforeNext: () =>
+          waitForChain(
+            async () => (await readCollateral()) >= before + collateral,
+            t("withdrawals.claim.timeout"),
+          ),
+      },
+      {
+        stepTitle: t("withdrawals.claim.step.swap"),
+        tx: async () => {
+          const sell = await buildSell(vault, payoutAssetId, collateral)
+          if (!sell) throw new Error("No payout sell to build")
+          return {
+            tx: decodedCallToTx(rpc.papi, sell),
+            toasts: {
+              submitted: t(
+                "withdrawals.claim.swap.toast.submitted",
+                swapToasts,
+              ),
+              success: t("withdrawals.claim.swap.toast.success", swapToasts),
+            },
+          }
+        },
+      },
+    ]
+  }
 
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
-    mutationFn: async ({ vault, requestId }: ClaimVariables) => {
+    mutationFn: async ({
+      vault,
+      requestId,
+      payoutAssetId = vault.assetId,
+    }: ClaimVariables) => {
       const { calls, collateral, surplusHollar } = await prepareWithdrawalClaim(
         evm,
         vault.vaultAddress,
@@ -562,44 +832,50 @@ export function useClaim(options: VaultWriteOptions = {}) {
         evmAddress,
       )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      // the chain pays collateral; the toast speaks the current display asset
-      const { symbol } = getDisplayAsset(vault)
-      const { decimals } = getAssetWithFallback(vault.assetId)
-      const rate = getRate(vault) ?? "1"
-      const payouts = [
-        ...(collateral > 0n
-          ? [
-              t("common:currency", {
-                value: Big(formatUnits(collateral, decimals))
-                  .times(rate)
-                  .toString(),
-                symbol,
-                maximumFractionDigits: decimals,
-              }),
-            ]
-          : []),
-        ...(surplusHollar > 0n
-          ? [
-              t("common:currency", {
-                value: formatUnits(surplusHollar, 18),
-                symbol: "HOLLAR",
-                maximumFractionDigits: 18,
-              }),
-            ]
-          : []),
-      ].join(" + ")
-      return submitBatch(
-        vault.vaultAddress,
-        calls,
-        {
+      const sell = await buildSell(vault, payoutAssetId, collateral)
+      const payouts = describePayouts(
+        vault,
+        payoutAssetId,
+        collateral,
+        surplusHollar,
+        sell,
+      )
+      const claim = {
+        title: t("withdrawals.claim.title"),
+        description: t("withdrawals.claim.description", { payouts }),
+        toasts: {
           submitted: t("withdrawals.claim.submitted"),
           success: t("withdrawals.claim.success"),
         },
-        {
-          title: t("withdrawals.claim.title"),
-          description: t("withdrawals.claim.description", { payouts }),
-        },
-      )
+      }
+      const txOptions = txOptionsForVault(vault.vaultAddress)
+
+      if (sell && isEthereumSigner(wallet?.signer)) {
+        const tx = await buildBatch(calls, { atomic: true })
+        const steps = await claimThenSellSteps(
+          vault,
+          payoutAssetId,
+          collateral,
+          {
+            ...claim,
+            tx,
+          },
+        )
+        return createTransaction({ tx: steps }, txOptions)
+      }
+
+      // a reverted claim must stop the rest: claimSurplus, and a sell that
+      // would otherwise spend collateral the wallet already held
+      const tx = await buildBatch(calls, {
+        atomic: true,
+        trailing: sell ? [sell] : [],
+      })
+      if (sell) {
+        const dryRunError = await getDryRunError(rpc, address, tx)
+        if (dryRunError)
+          throw new Error(`Claim dry run failed: ${dryRunError.name}`)
+      }
+      return createTransaction({ tx, ...claim }, txOptions)
     },
   })
 }

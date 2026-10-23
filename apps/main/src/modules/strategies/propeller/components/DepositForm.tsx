@@ -50,6 +50,7 @@ import {
 } from "@/modules/strategies/propeller/utils/depositOptions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { TransactionClosedError } from "@/states/transactions"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
@@ -136,6 +137,10 @@ export const DepositForm = ({
   const maxButtonBalance = capacityBound
     ? Big(capacityInPay).round(6, Big.roundDown).toString()
     : balance
+
+  // closing the review is not a failure
+  const depositFailed =
+    deposit.isError && !(deposit.error instanceof TransactionClosedError)
 
   const form = useDepositForm({
     maxBalance: balance,
@@ -319,7 +324,7 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          {(blockedDescription || quote.isError || deposit.isError) && (
+          {(blockedDescription || quote.isError || depositFailed) && (
             <Stack gap="base">
               {blockedDescription && (
                 <Alert
@@ -337,7 +342,7 @@ export const DepositForm = ({
                   })}
                 />
               )}
-              {deposit.isError && (
+              {depositFailed && (
                 <Alert
                   variant="error"
                   description={

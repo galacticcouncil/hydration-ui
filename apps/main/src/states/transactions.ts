@@ -64,6 +64,8 @@ export type TransactionCommon = {
   activity?: ActivityType
   /** When set, the review modal opens directly in the error state (no tx to sign). */
   initialError?: string
+  /** Shown in the review modal's error state instead of the generic description. */
+  errorMessage?: string
 }
 
 interface SingleTransactionInput extends TransactionCommon {

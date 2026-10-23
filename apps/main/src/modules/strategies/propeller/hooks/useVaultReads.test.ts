@@ -7,6 +7,13 @@ import { vaultBalancesQuery, vaultStatsQuery } from "./useVaultReads"
 vi.mock("@galacticcouncil/utils", () => ({
   getAddressFromAssetId: () => "0x0000000000000000000000000000000000000003",
 }))
+vi.mock("@/api/trade", () => ({}))
+vi.mock(
+  "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils",
+  () => ({}),
+)
+vi.mock("@/providers/assetsProvider", () => ({}))
+vi.mock("@/providers/rpcProvider", () => ({}))
 afterEach(() => vi.restoreAllMocks())
 
 const vault = {

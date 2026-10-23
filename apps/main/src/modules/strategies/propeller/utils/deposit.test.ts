@@ -12,13 +12,18 @@ import { DEPOSIT_MIN_GAS } from "@/modules/strategies/propeller/constants"
 
 import {
   assertDepositCapacity,
+  clampDeposit,
   encodeDeposit,
+  InterruptedDepositError,
   prepareApproval,
+  prepareDeliveredDeposit,
   prepareFundedDeposit,
   prepareSwapDeposit,
+  readDelivered,
   readDepositCapacity,
   readSellLimit,
   readSwapDeposit,
+  waitForSwapBlock,
 } from "./deposit"
 
 const vault = "0x0000000000000000000000000000000000000001"
@@ -360,14 +365,28 @@ describe("Swap deposit", () => {
     tradeCall: routerSell(),
   } as const
 
-  it("deposits the sell's guaranteed output and approves exactly that", async () => {
+  it("only shows the sell's minimum for a pool route; the deposit is sized after the swap lands", async () => {
     const mock = mockClient()
-    const { amount, approval } = await prepareSwapDeposit(mock.client, swapArgs)
-    expect(amount).toBe(2n * unit)
+    expect(await prepareSwapDeposit(mock.client, swapArgs)).toEqual({
+      exact: false,
+      amount: 2n * unit,
+      approval: null,
+    })
+    // the allowance is read for the delivered amount, not the minimum
     expect(
-      approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
-    ).toEqual({ functionName: "approve", args: [vault, 2n * unit] })
-    expect(mock.simulateContract).not.toHaveBeenCalled()
+      mock.readContract.mock.calls.map(([request]) => request.functionName),
+    ).not.toContain("allowance")
+  })
+
+  it("refuses a pool route before the swap while the vault takes no deposits", async () => {
+    for (const overrides of [
+      { totalSupply: 0n },
+      { paused: true },
+      { totalAssets: 10n * unit },
+    ])
+      await expect(
+        prepareSwapDeposit(mockClient(overrides).client, swapArgs),
+      ).rejects.toThrow("availability changed")
   })
 
   it("approves exactly the full amount of a 1:1 Aave unwrap", async () => {
@@ -383,10 +402,16 @@ describe("Swap deposit", () => {
   })
 
   it("skips the approval when the allowance already covers the output", async () => {
-    const mock = mockClient({ allowance: 2n * unit })
-    expect((await prepareSwapDeposit(mock.client, swapArgs)).approval).toBe(
-      null,
-    )
+    const mock = mockClient({ allowance: 3n * unit })
+    expect(
+      (
+        await prepareSwapDeposit(mock.client, {
+          ...swapArgs,
+          assetIn: "420",
+          tradeCall: aaveSell(),
+        })
+      ).approval,
+    ).toBe(null)
   })
 
   it("rejects a trade that does not buy this vault's collateral before reading the vault", async () => {
@@ -402,13 +427,25 @@ describe("Swap deposit", () => {
     expect(mock.readContract).not.toHaveBeenCalled()
   })
 
-  it("checks the guaranteed output against the remaining capacity", async () => {
+  it("checks a 1:1 unwrap against the remaining capacity", async () => {
     await expect(
       prepareSwapDeposit(mockClient().client, {
         ...swapArgs,
-        tradeCall: routerSell({ min_amount_out: 8n * unit }),
+        assetIn: "420",
+        tradeCall: aaveSell({ amount_in: 8n * unit }),
       }),
     ).rejects.toThrow("availability changed")
+  })
+
+  it("does not reject a pool route whose minimum exceeds the room; the deposit is clamped later", async () => {
+    expect(
+      (
+        await prepareSwapDeposit(mockClient().client, {
+          ...swapArgs,
+          tradeCall: routerSell({ min_amount_out: 8n * unit }),
+        })
+      ).amount,
+    ).toBe(8n * unit)
   })
 
   it("encodes the batched deposit for the swapped amount with a gas limit above the floor", () => {
@@ -475,7 +512,7 @@ describe("Deposit amount of a swap", () => {
     expect(minOut(tradeCall)).toBe(5n * unit - 2n)
   })
 
-  it("keeps the slippage-protected minimum and the call for pool routes", () => {
+  it("only reports the slippage-protected minimum of a pool route, not a deposit amount", () => {
     for (const [assetIn, route] of [
       [
         "34",
@@ -490,7 +527,7 @@ describe("Deposit amount of a swap", () => {
       const result = readSwapDeposit(call, { ...geth, assetIn })
       expect(result).toEqual({
         exact: false,
-        depositAmount: 2n * unit,
+        minAmountOut: 2n * unit,
         tradeCall: call,
       })
     }
@@ -516,5 +553,211 @@ describe("Deposit amount of a swap", () => {
     expect(
       readSwapDeposit(aaveSell({ amount_in: 3n }), geth).depositAmount,
     ).toBe(1n)
+  })
+})
+
+describe("Delivered swap deposit", () => {
+  it("deposits everything delivered, capped at the vault's remaining room", () => {
+    expect(clampDeposit(2n * unit, 7n * unit)).toBe(2n * unit)
+    expect(clampDeposit(7n * unit, 7n * unit)).toBe(7n * unit)
+    expect(clampDeposit(9n * unit, 7n * unit)).toBe(7n * unit)
+    expect(clampDeposit(9n * unit, 0n)).toBe(0n)
+  })
+
+  const balances = (byBlock: Record<string, bigint>) => {
+    const readContract = vi.fn(async (request) => {
+      expect(request).toMatchObject({
+        address: asset,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [owner],
+      })
+      const balance = byBlock[String(request.blockNumber)]
+      if (balance === undefined) throw missingBlock()
+      return balance
+    })
+    return { readContract, client: { readContract } as unknown as PublicClient }
+  }
+  // what a node answers for a block it has not imported yet
+  const missingBlock = () =>
+    new Error("Missing or invalid parameters.\n\nDetails: header not found")
+  const at = { asset, owner, block: 100n } as const
+  const fast = { interval: 1, timeout: 50 }
+
+  it("reads what the swap delivered as the balance change across its block", async () => {
+    // pre-held collateral is not counted
+    const mock = balances({ 99: 5n * unit, 100: 5n * unit + 982n })
+    expect(await readDelivered(mock.client, at, fast)).toBe(982n)
+  })
+
+  it("retries while the node has not imported the swap block", async () => {
+    let imported = false
+    const mock = balances({ 99: 1n })
+    mock.readContract.mockImplementation(async (request) => {
+      if (request.blockNumber === 100n && !imported) {
+        imported = true
+        throw missingBlock()
+      }
+      return request.blockNumber === 100n ? 10n : 1n
+    })
+    expect(await readDelivered(mock.client, at, fast)).toBe(9n)
+  })
+
+  it("fails at once on any other read error", async () => {
+    const mock = balances({})
+    mock.readContract.mockRejectedValue(new Error("execution reverted"))
+    await expect(
+      readDelivered(mock.client, at, { interval: 1, timeout: 10_000 }),
+    ).rejects.toThrow("execution reverted")
+    expect(mock.readContract).toHaveBeenCalledTimes(2)
+  })
+
+  it("fails when the swap delivered nothing", async () => {
+    for (const after of [3n, 2n])
+      await expect(
+        readDelivered(balances({ 99: 3n, 100: after }).client, at, fast),
+      ).rejects.toThrow("delivered nothing")
+  })
+
+  it("gives up when the swap block never appears", async () => {
+    await expect(
+      readDelivered(balances({ 99: 3n }).client, at, fast),
+    ).rejects.toThrow()
+  })
+})
+
+describe("Deposit of what a swap delivered", () => {
+  const fast = { interval: 1, timeout: 50 }
+  // a vault with 7 units of room and a swap that landed in block 100
+  const landed = (
+    byBlock: Record<string, bigint>,
+    overrides: Record<string, unknown> = {},
+  ) => {
+    const mock = mockClient(overrides)
+    const vaultRead = mock.readContract.getMockImplementation()!
+    mock.readContract.mockImplementation(async (request) => {
+      if (request.functionName !== "balanceOf") return vaultRead(request)
+      const balance = byBlock[String(request.blockNumber)]
+      if (balance === undefined) throw new Error("Details: header not found")
+      return balance
+    })
+    return mock
+  }
+  const input = { vault, asset, owner, block: 100n } as const
+
+  it("deposits and approves exactly what the swap delivered", async () => {
+    const mock = landed({ 99: unit, 100: 3n * unit })
+    const { delivered, amount, approval } = await prepareDeliveredDeposit(
+      mock.client,
+      input,
+      fast,
+    )
+    expect([delivered, amount]).toEqual([2n * unit, 2n * unit])
+    expect(
+      approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
+    ).toEqual({ functionName: "approve", args: [vault, 2n * unit] })
+  })
+
+  it("deposits at most the vault's remaining room", async () => {
+    const mock = landed({ 99: 0n, 100: 9n * unit })
+    const { delivered, amount } = await prepareDeliveredDeposit(
+      mock.client,
+      input,
+      fast,
+    )
+    expect([delivered, amount]).toEqual([9n * unit, 7n * unit])
+  })
+
+  it("waits until the node's head includes the swap", async () => {
+    const mock = landed({ 99: 0n, 100: unit })
+    mock.getBlockNumber.mockResolvedValueOnce(99n)
+    await prepareDeliveredDeposit(mock.client, input, fast)
+    expect(mock.getBlockNumber.mock.calls.length).toBeGreaterThan(1)
+  })
+
+  it("reports what was delivered when the vault no longer takes it", async () => {
+    for (const overrides of [{ totalAssets: 10n * unit }, { paused: true }]) {
+      const error = await prepareDeliveredDeposit(
+        landed({ 99: 0n, 100: unit }, overrides).client,
+        input,
+        fast,
+      ).catch((e) => e)
+      expect(error).toBeInstanceOf(InterruptedDepositError)
+      expect(error.delivered).toBe(unit)
+    }
+  })
+
+  it("reports nothing delivered when the swap delivered nothing", async () => {
+    const error = await prepareDeliveredDeposit(
+      landed({ 99: unit, 100: unit }).client,
+      input,
+      fast,
+    ).catch((e) => e)
+    expect(error).toBeInstanceOf(InterruptedDepositError)
+    expect(error.delivered).toBeUndefined()
+  })
+})
+
+describe("Best state for a deposit after a swap", () => {
+  const best = (number: number, hash = `0x${number}`) => ({ number, hash })
+  const fast = { interval: 1, timeout: 100 }
+  const fixture = () => {
+    const getBestBlocks = vi.fn(async () => [best(100), best(95)])
+    const getValue = vi.fn(async () => "0x100")
+    const rpc = {
+      papiClient: { getBestBlocks },
+      papi: { query: { System: { BlockHash: { getValue } } } },
+    } as unknown as Parameters<typeof waitForSwapBlock>[0]
+    return { rpc, getBestBlocks, getValue }
+  }
+
+  it("selects the swap's best state even while finalized is five blocks behind", async () => {
+    const { rpc, getValue } = fixture()
+    expect(await waitForSwapBlock(rpc, best(100), fast)).toBe("0x100")
+    expect(getValue).not.toHaveBeenCalled()
+  })
+
+  it("waits for PAPI to import the swap without waiting for finalization", async () => {
+    const { rpc, getBestBlocks } = fixture()
+    getBestBlocks.mockResolvedValueOnce([best(99), best(94)])
+    expect(await waitForSwapBlock(rpc, best(100), fast)).toBe("0x100")
+    expect(getBestBlocks).toHaveBeenCalledTimes(2)
+  })
+
+  it("verifies the swap's ancestor hash at the selected best state", async () => {
+    const { rpc, getBestBlocks, getValue } = fixture()
+    getBestBlocks.mockResolvedValue([best(106), best(101)])
+    expect(await waitForSwapBlock(rpc, best(100), fast)).toBe("0x106")
+    expect(getValue).toHaveBeenCalledWith(100, { at: "0x106" })
+  })
+
+  it("rejects a replacement block at the swap height", async () => {
+    const { rpc, getBestBlocks } = fixture()
+    getBestBlocks.mockResolvedValue([best(100, "0xother"), best(95)])
+    await expect(waitForSwapBlock(rpc, best(100), fast)).rejects.toThrow(
+      "no longer in the best chain",
+    )
+  })
+
+  it("rejects a replaced ancestor even when finalized passed the swap height", async () => {
+    const { rpc, getBestBlocks, getValue } = fixture()
+    getBestBlocks.mockResolvedValue([best(106), best(101)])
+    getValue.mockResolvedValue("0xother")
+    await expect(waitForSwapBlock(rpc, best(100), fast)).rejects.toThrow(
+      "no longer in the best chain",
+    )
+  })
+
+  it("waits for the corresponding native height for an EVM receipt", async () => {
+    const { rpc } = fixture()
+    expect(await waitForSwapBlock(rpc, { number: 100 }, fast)).toBe("0x100")
+  })
+
+  it("times out if PAPI never imports the swap", async () => {
+    const { rpc, getBestBlocks } = fixture()
+    getBestBlocks.mockResolvedValue([best(99), best(94)])
+    await expect(
+      waitForSwapBlock(rpc, best(100), { interval: 1, timeout: 5 }),
+    ).rejects.toThrow()
   })
 })

@@ -17,6 +17,8 @@ export interface PropellerVaultConfig {
   baseAssetId?: string
   /** assets a deposit can pay with through a swap; the base asset when unset */
   payAssetIds?: string[]
+  /** assets a claim can pay out in through a sell of the collateral; the collateral when unset */
+  payoutAssetIds?: string[]
   /**
    * The asset whose identity (symbol, logo) represents the collateral in the
    * UI when the collateral itself is a pool share — the same convention as
@@ -37,6 +39,8 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
     // pool, wstETH joins directly (it is a constituent), GETH unwinds 1:1
     // through the Aave leg, and the raw pool share deposits with no swap
     payAssetIds: [GETH_ERC20_ID, ETH_ASSET_ID, WSTETH_ASSET_ID],
+    // GETH is a 1:1 Aave hop; ETH and wstETH are swapped
+    payoutAssetIds: [ETH_ASSET_ID, GETH_ERC20_ID, WSTETH_ASSET_ID],
     collateralDisplayId: GETH_ERC20_ID,
   },
   {

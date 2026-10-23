@@ -111,10 +111,11 @@ export const buildWithdrawalRow = ({
     complete: entry.complete,
     settledAmount: settledSoFar,
   })
-  // collateral entitlement; USD prices the collateral, display amounts are
-  // converted to the vault's display asset below
+  // collateral entitlement, minus earlier partial claims while the request is
+  // open; USD prices the collateral, display amounts are converted to the
+  // vault's display asset below
   const estCollateral = entry.started
-    ? entry.collateralOwed
+    ? entry.collateralOwed - (entry.active ? entry.claimedCollateral : 0)
     : entry.shares * exchangeRate
 
   // "at the current pace" only: a stall drops the trailing rate and with it

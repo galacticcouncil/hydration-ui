@@ -50,4 +50,15 @@ describe("Vault batch composition", () => {
       }),
     ).toEqual([binding, trade, dispatched(approve), dispatched(deposit)])
   })
+  it("sells after the EVM calls, leaving the trade outside the atomic wrap", () => {
+    expect(
+      composeVaultBatch(papi, {
+        bind: true,
+        leading: calls(trade),
+        evmCalls: calls(approve, deposit),
+        trailing: calls(trade),
+        atomic: true,
+      }),
+    ).toEqual([binding, trade, dispatched(approve), dispatched(deposit), trade])
+  })
 })

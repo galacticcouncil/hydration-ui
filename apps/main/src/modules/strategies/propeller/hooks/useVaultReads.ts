@@ -1,7 +1,10 @@
-import { getAddressFromAssetId } from "@galacticcouncil/utils"
-import { queryOptions } from "@tanstack/react-query"
+import { getAddressFromAssetId, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import { queryOptions, useQueries } from "@tanstack/react-query"
+import { useTranslation } from "react-i18next"
 import { erc20Abi, formatUnits, getContract, type Hex } from "viem"
 
+import { bestSellQuery } from "@/api/trade"
+import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import {
   DEBT_TOKEN_ABI,
   FEE_CONTROLLER_ABI,
@@ -18,9 +21,15 @@ import {
 } from "@/modules/strategies/propeller/constants"
 import { readDepositCapacity } from "@/modules/strategies/propeller/utils/deposit"
 import { readHarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
+import {
+  getPayoutAssetIds,
+  getPayoutSell,
+} from "@/modules/strategies/propeller/utils/payout"
 import { readPendingYield } from "@/modules/strategies/propeller/utils/pendingYield"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
-import { TProviderContext } from "@/providers/rpcProvider"
+import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/withdrawalClaim"
+import { useAssets } from "@/providers/assetsProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 // No on-chain APR view; these are first-paint placeholders until chain reads load.
 const FALLBACK_APR = 0
@@ -383,3 +392,77 @@ export const vaultBalancesQuery = (
     },
     refetchInterval: 15_000,
   })
+
+export const claimPreviewQuery = (
+  { evm }: TProviderContext,
+  vault: PropellerVaultConfig,
+  requestId: number,
+  evmAddress: Hex,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.claimPreview(
+      vault.vaultAddress,
+      requestId,
+      evmAddress,
+    ),
+    queryFn: () =>
+      prepareWithdrawalClaim(evm, vault.vaultAddress, requestId, evmAddress),
+    enabled: !!evmAddress,
+  })
+
+/** What claiming `collateral` pays in each payout asset the vault offers. */
+export const usePayoutQuotes = (
+  vault: PropellerVaultConfig,
+  collateral: bigint,
+) => {
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const minimumReceived = useMinimumTradeAmount()
+  const payouts = getPayoutAssetIds(vault).map((id) => ({
+    asset: getAssetWithFallback(id),
+    isSwap: getPayoutSell(vault, id) === "swap",
+  }))
+  const amountIn = formatUnits(
+    collateral,
+    getAssetWithFallback(vault.assetId).decimals,
+  )
+
+  const results = useQueries({
+    queries: payouts.map(({ asset, isSwap }) =>
+      bestSellQuery(rpc, {
+        assetIn: vault.assetId,
+        assetOut: asset.id,
+        amountIn: isSwap ? amountIn : "",
+      }),
+    ),
+  })
+
+  return payouts.map(({ asset, isSwap }, i) => {
+    const swap = isSwap ? results[i]?.data : undefined
+    const receive = isSwap ? swap?.amountOut : collateral
+    const minimum = isSwap ? minimumReceived(swap) : collateral
+    return {
+      asset,
+      isSwap,
+      swap,
+      receive:
+        receive === undefined
+          ? undefined
+          : formatUnits(receive, asset.decimals),
+      minimum:
+        minimum === undefined
+          ? undefined
+          : formatUnits(minimum, asset.decimals),
+      isLoading: isSwap && !!results[i]?.isLoading,
+    }
+  })
+}
+
+/** A claim's surplus HOLLAR as a currency amount. */
+export const useFormatSurplusHollar = () => {
+  const { t } = useTranslation("common")
+  const { getAssetWithFallback } = useAssets()
+  const { symbol, decimals } = getAssetWithFallback(HOLLAR_ASSET_ID)
+  return (surplus: bigint) =>
+    t("currency", { value: formatUnits(surplus, decimals), symbol })
+}

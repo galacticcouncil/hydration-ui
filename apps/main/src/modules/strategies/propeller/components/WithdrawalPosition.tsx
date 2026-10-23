@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { PendingPosition } from "@/components/PendingPosition"
 import { DateText } from "@/components/RelativeDateText"
+import { ClaimModal } from "@/modules/strategies/propeller/components/ClaimModal"
 import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import {
@@ -72,15 +73,19 @@ const partialClaimWorthwhile = (row: PropellerWithdrawalRow) => {
   )
 }
 
-export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
-  row,
-}) => {
+type WithdrawalPositionProps = {
+  row: PropellerWithdrawalRow
+}
+
+export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   const { t } = useTranslation(["propeller", "common"])
   // row amounts arrive already converted to the current display asset
   const displayAsset = useVaultDisplayAsset()(row.vault)
   const { symbol } = displayAsset
   const usd = t("common:currency", { value: row.estUsd })
   const claim = useClaim()
+  const [claimOpen, setClaimOpen] = useState(false)
+  const hasPayoutChoice = !!row.vault.payoutAssetIds
   const isClaiming = usePendingClaimIds().includes(row.id)
   const cooldownElapsed = useCooldownElapsed(
     row.eligibleAt,
@@ -141,43 +146,54 @@ export const WithdrawalPosition: FC<{ row: PropellerWithdrawalRow }> = ({
         : undefined
 
   return (
-    <PendingPosition
-      assetId={displayAsset.id}
-      value={t("common:currency", { value: row.estEth, symbol })}
-      displayValue={usd}
-      isLoading={row.isSettlementLoading}
-      stats={stats}
-      status={
-        status === "claimable" ? (
-          <LoadingButton
-            aria-label={t("withdrawals.claim.label", { symbol })}
-            variant="secondary"
-            size="small"
-            loadingMode="replace"
-            isLoading={isClaiming}
-            disabled={isClaiming}
-            onClick={() =>
-              claim.mutate({ vault: row.vault, requestId: row.requestId })
-            }
-          >
-            {row.state === "partial"
-              ? t("withdrawals.action.claimPartial", {
-                  amount: t("common:currency", {
-                    value: row.collateralSettled ?? 0,
-                    symbol,
-                    maximumFractionDigits: 4,
-                  }),
-                })
-              : t("withdrawals.action.claim")}
-          </LoadingButton>
-        ) : (
-          <Chip variant={statusVariants[status]} size="small">
-            {row.sourcePending && row.state === "claimed"
-              ? t("withdrawals.recoveryPending")
-              : t(`withdrawals.state.${status}`)}
-          </Chip>
-        )
-      }
-    />
+    <>
+      <PendingPosition
+        assetId={displayAsset.id}
+        value={t("common:currency", { value: row.estEth, symbol })}
+        displayValue={usd}
+        isLoading={row.isSettlementLoading}
+        stats={stats}
+        status={
+          status === "claimable" ? (
+            <LoadingButton
+              aria-label={t("withdrawals.claim.label", { symbol })}
+              variant="secondary"
+              size="small"
+              loadingMode="replace"
+              isLoading={isClaiming}
+              disabled={isClaiming}
+              onClick={() =>
+                hasPayoutChoice
+                  ? setClaimOpen(true)
+                  : claim.mutate({ vault: row.vault, requestId: row.requestId })
+              }
+            >
+              {row.state === "partial"
+                ? t("withdrawals.action.claimPartial", {
+                    amount: t("common:currency", {
+                      value: row.collateralSettled ?? 0,
+                      symbol,
+                      maximumFractionDigits: 4,
+                    }),
+                  })
+                : t("withdrawals.action.claim")}
+            </LoadingButton>
+          ) : (
+            <Chip variant={statusVariants[status]} size="small">
+              {row.sourcePending && row.state === "claimed"
+                ? t("withdrawals.recoveryPending")
+                : t(`withdrawals.state.${status}`)}
+            </Chip>
+          )
+        }
+      />
+      {hasPayoutChoice && (
+        <ClaimModal
+          row={row}
+          open={claimOpen}
+          onClose={() => setClaimOpen(false)}
+        />
+      )}
+    </>
   )
 }

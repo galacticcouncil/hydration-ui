@@ -9,11 +9,14 @@ export const composeVaultBatch = (
     bind,
     leading = [],
     evmCalls,
+    trailing = [],
     atomic = false,
   }: {
     bind: boolean
     leading?: DecodedCall[]
     evmCalls: DecodedCall[]
+    /** after the EVM calls, e.g. a sell of what they paid out */
+    trailing?: DecodedCall[]
     atomic?: boolean
   },
 ): DecodedCall[] => [
@@ -25,4 +28,5 @@ export const composeVaultBatch = (
         (call) => papi.tx.Dispatcher.dispatch_evm_call({ call }).decodedCall,
       )
     : evmCalls),
+  ...trailing,
 ]

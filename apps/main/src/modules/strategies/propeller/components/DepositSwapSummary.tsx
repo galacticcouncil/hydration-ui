@@ -39,7 +39,9 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
         separator={<Separator mx="-xl" />}
         rows={[
           {
-            label: t("deposit.swap.deposit"),
+            label: t(
+              exact ? "deposit.swap.deposit" : "deposit.swap.minDeposit",
+            ),
             content:
               depositAmount === undefined
                 ? "—"

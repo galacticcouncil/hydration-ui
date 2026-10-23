@@ -24,7 +24,10 @@ const vault = {
   shareName: "Juicer BTC",
 } as const
 
-const row = (blockTimeSeconds: number | null) =>
+const row = (
+  blockTimeSeconds: number | null,
+  entry: { active?: boolean; claimedCollateral?: number } = {},
+) =>
   buildWithdrawalRow({
     vault,
     entry: {
@@ -44,6 +47,7 @@ const row = (blockTimeSeconds: number | null) =>
       mainDebt: "0x0000000000000000000000000000000000000003",
       surplusHollar: 0,
       sourcePending: false,
+      ...entry,
     },
     settlement: {
       requestId: 1,
@@ -69,5 +73,15 @@ describe("Settle estimates", () => {
   it("stay empty until the block time is known", () => {
     expect(row(null).etaSeconds).toBeNull()
     expect(row(null).typicalSettleSeconds).toBeNull()
+  })
+})
+
+describe("Withdrawal amount", () => {
+  it("excludes collateral already claimed from an open request", () => {
+    expect(row(2, { claimedCollateral: 0.25 }).estEth).toBe(0.75)
+  })
+
+  it("keeps the full amount once the request is claimed", () => {
+    expect(row(2, { claimedCollateral: 1, active: false }).estEth).toBe(1)
   })
 })

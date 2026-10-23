@@ -39,4 +39,9 @@ export const propellerQueryKeys = {
     "queue",
     evmAddress,
   ],
+  claimPreview: (
+    vaultAddress: string,
+    requestId: number,
+    evmAddress: string,
+  ) => [...vault(vaultAddress), "claim-preview", requestId, evmAddress],
 }
