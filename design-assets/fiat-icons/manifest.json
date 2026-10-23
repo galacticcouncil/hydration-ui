@@ -1,0 +1,21 @@
+{
+  "assets": [
+    "packages/ui/src/assets/icons/FiatUsd.svg",
+    "packages/ui/src/assets/icons/FiatEur.svg"
+  ],
+  "style": "Flat blue token disks with dark currency paths; transparent corners, no font dependency",
+  "colors": {
+    "background": "#5687F5",
+    "symbol": "#030816"
+  },
+  "source": "QuiverAI vector generation, then normalized disk geometry and glyph scale for native asset sizing",
+  "sourceArtifacts": {
+    "USD": "https://app.quiver.ai/library/01a162db-32d3-79da-83b0-7410c70d55d9",
+    "EUR": "https://app.quiver.ai/library/01a162db-32e8-7550-b5db-62480a0568bf"
+  },
+  "consumers": [
+    "BankWithdrawReceiveAmount (Current flow and Version 2, trigger and dropdown)",
+    "BankDepositV2 amount currency",
+    "BankDeposit current account currency summary"
+  ]
+}

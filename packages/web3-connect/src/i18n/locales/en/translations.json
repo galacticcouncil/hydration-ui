@@ -2,12 +2,10 @@
   "show": "Show",
   "hide": "Hide",
   "back": "Back",
-
   "button.connect": "Connect Wallet",
   "button.selectAccount": "Select Account",
   "button.multisig.signingAs": "Signing as",
   "button.all": "All",
-
   "provider.recentlyUsed": "Recently used",
   "provider.installed": "Installed wallets",
   "provider.available": "Available wallets",
@@ -46,14 +44,11 @@
   "account.changeAccount": "Change Account",
   "account.balance": "{{ value, number }} {{ symbol }}",
   "account.balanceValue": "{{ value, currency }}",
-
   "accountFilter.all": "All",
-
   "account.remove.title": "Remove address",
   "account.remove.confirmation": "Are you sure you want to remove this account address?",
   "account.remove.cancel": "Cancel",
   "account.remove.confirm": "Yes, remove",
-
   "external.viewAccount": "View external account",
   "external.description": "Paste account address you would like to monitor.",
   "external.addressLabel": "Account address",
@@ -62,7 +57,6 @@
   "external.section.contacts": "Addresses in my contacts",
   "external.empty": "No recent accounts or contacts",
   "external.confirm": "Confirm",
-
   "addressBook.selectAccount": "Select account to use",
   "addressBook.selectModeAccount": "Select {{ mode }} account to use",
   "addressBook.myContacts": "My contacts",
@@ -77,11 +71,9 @@
   "addressBook.add": "Add",
   "addressBook.copyAddress": "Copy address",
   "addressBook.deleteAddress": "Delete address",
-
   "error.title": "Connection error",
   "error.unknown": "Unknown error, please try again",
   "error.retry": "Retry",
-
   "multisig.title": "Multisig",
   "multisig.setup.title": "Set up multisig",
   "multisig.setup.signersLabel": "Signers",
@@ -120,5 +112,8 @@
   "multisig.signerSelect.noSignerAccounts.title": "No signer accounts found",
   "multisig.signerSelect.noSignerAccounts.description": "None of your connected accounts are signers for this multisig.",
   "multisig.signerSelect.connectDifferentWallet": "Connect different wallet",
-  "multisig.signerSelect.otherSignatories": "Other signatories ({{count}})"
+  "multisig.signerSelect.otherSignatories": "Other signatories ({{count}})",
+  "provider.queue.pending": "Waiting for approval…",
+  "provider.queue.connected": "✓ Connected",
+  "provider.queue.rejected": "Not connected"
 }

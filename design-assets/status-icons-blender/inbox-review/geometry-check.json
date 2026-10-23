@@ -1,0 +1,36 @@
+{
+  "scene": "03 - Review Inbox",
+  "objects": 11,
+  "modelMeshes": [
+    "Tray - Continuous rounded hollow shell with U-notch",
+    "Document - Lavender backing edge",
+    "Document - Warm ivory face",
+    "Document - Single royal-blue pill line",
+    "Tray - Lavender circular status dot"
+  ],
+  "trayVertices": 6156,
+  "trayFaces": 5930,
+  "trayNonManifoldEdges": 0,
+  "nativeMaterials": [
+    {
+      "name": "PALETTE - Native Royal Blue",
+      "roughness": 0.5799999833106995
+    },
+    {
+      "name": "PALETTE - Native Orchid Violet",
+      "roughness": 0.5799999833106995
+    },
+    {
+      "name": "PALETTE - Pale Ivory Mint",
+      "roughness": 0.800000011920929
+    }
+  ],
+  "transparent": true,
+  "sourceSHA256": "325b25c7ab5dad1a27e9695db5d009cefad82cbf3042e8399e977ef0c3abc46a",
+  "packedReference": true,
+  "resolution": [
+    1024,
+    1024
+  ],
+  "samples": 128
+}

@@ -1,0 +1,35 @@
+{
+  "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+  "pageId": "34:2",
+  "componentSetId": "442:28153",
+  "componentSetName": "icons/3d",
+  "assets": [
+    {
+      "variant": "review",
+      "componentId": "10242:491",
+      "artworkId": "10242:492",
+      "sourcePng": "design-assets/status-icons-blender/document-1024.png",
+      "sourceSha256": "d73f6139077e876f6dde0122dd6d55b9d0dd3bf18371a9cf1431af6cc32b9fa8",
+      "imageHash": "a72169a1669a93fad7742f2a06e5330f4b7fd094",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10242-491"
+    },
+    {
+      "variant": "waiting",
+      "componentId": "10242:493",
+      "artworkId": "10242:494",
+      "sourcePng": "design-assets/status-icons-blender/hourglass-1024.png",
+      "sourceSha256": "0464631872c98a659b6a988452362a390b0881a85769ef79c7557626d39d7701",
+      "imageHash": "3086f764b08e69348da7a463f2a9f1523aed3eb8",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10242-493"
+    },
+    {
+      "variant": "reviewPrevious",
+      "componentId": "10243:478",
+      "artworkId": "10243:479",
+      "sourcePng": "design-assets/status-icons-blender/revisions/before-library-search-shape/document-1024.png",
+      "sourceSha256": "14891107ba7794bfdfb020f5d512f4f56f9e9251690cd93d17de00cdf639f59b",
+      "imageHash": "9bdf5222d55cbaa1f6bbbcc5eb154f6e4709643b",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10243-478"
+    }
+  ]
+}

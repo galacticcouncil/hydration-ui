@@ -15,6 +15,7 @@ import {
 } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { resolveAutomaticBridgeRoute } from "@/modules/xcm/transfer/utils/automaticRoute"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import {
   assertTransferValues,
@@ -30,6 +31,7 @@ import {
 import { toDecimal } from "@/utils/formatting"
 
 export type XcmTransferOptions = TransactionActions & {
+  automaticBridgeSelection?: boolean
   onTransferSubmitted?: (
     txHash: string,
     values: XcmFormValues,
@@ -47,7 +49,10 @@ export type XcmTransferOptions = TransactionActions & {
   ) => void
 }
 
-export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
+export const useSubmitXcmTransfer = ({
+  automaticBridgeSelection = false,
+  ...options
+}: XcmTransferOptions = {}) => {
   const { t } = useTranslation(["xcm", "common"])
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
@@ -91,7 +96,10 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         bridgeProvider ?? undefined,
       )
 
-      const route = destPair.build(validDstAsset, tag).origin.route
+      const route = automaticBridgeSelection
+        ? resolveAutomaticBridgeRoute(destPair.routes, destAsset)
+        : destPair.build(validDstAsset, tag).origin.route
+      invariant(route, "Transfer route is required")
 
       const calls = await transfer.buildCalls(srcAmount)
       const transferCall = calls.at(-1)

@@ -48,28 +48,43 @@ export const useWalletSubscriptions = (enabled = true) => {
         currentProviderTypes,
       )
 
+      for (const type of removedProviders) {
+        unsubscribeProvider(type)
+      }
+
+      const isConnected = (type: WalletProviderType) =>
+        useWeb3Connect.getState().getStatus(type) ===
+        WalletProviderStatus.Connected
+
       for (const type of addedProviders) {
         const wallet = getWallet(type)
         if (!wallet || subscriptions.has(type)) continue
 
-        const unsub = subscribeWalletAccounts(wallet, {
+        const subscription: { active: boolean; unsubscribe?: () => void } = {
+          active: true,
+        }
+        subscriptions.set(type, () => {
+          subscription.active = false
+          subscription.unsubscribe?.()
+        })
+        subscription.unsubscribe = subscribeWalletAccounts(wallet, {
           onDisconnect: () => {
+            if (!subscription.active || !isConnected(type)) return
             unsubscribeProvider(type)
             disconnect(type)
           },
           onAccountsChange: (accounts) => {
+            if (!subscription.active || !isConnected(type)) return
             setAccounts(accounts.map(toStoredAccount), type)
           },
           onMainAccountChange: (mainAccount) => {
+            if (!subscription.active || !isConnected(type)) return
             setAccount(toStoredAccount(mainAccount))
           },
         })
 
-        subscriptions.set(type, unsub)
-      }
-
-      for (const type of removedProviders) {
-        unsubscribeProvider(type)
+        // Some extensions emit their first account update while subscribing.
+        if (!subscription.active) subscription.unsubscribe()
       }
     })
 

@@ -1,10 +1,12 @@
 import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
+import { FiatEur, FiatUsd } from "@/assets/icons"
 import { getToken } from "@/utils"
 
 import { Box } from "../Box"
 import { Logo } from "../Logo"
+import { Select } from "../Select"
 import { Stack } from "../Stack"
 import { AssetInput, AssetInputProps } from "./AssetInput"
 
@@ -100,6 +102,37 @@ export const Disabled: Story = { render, args: { isDisabled: true } }
 export const AmountHidden: Story = {
   render,
   args: { label: "Buy", balance: undefined, isAmountHidden: true },
+}
+
+export const CurrencySelector: Story = {
+  render: function Render(args) {
+    const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
+
+    return (
+      <Frame>
+        <Field
+          {...args}
+          label="You send from your bank"
+          balance={undefined}
+          assetSelector={
+            <Select<"USD" | "EUR">
+              aria-label="Bank currency"
+              value={currency}
+              onValueChange={setCurrency}
+              variant="secondary"
+              outline
+              size="medium"
+              iconSize={24}
+              items={[
+                { key: "USD", label: "USD · ACH / wire", icon: FiatUsd },
+                { key: "EUR", label: "EUR · SEPA", icon: FiatEur },
+              ]}
+            />
+          }
+        />
+      </Frame>
+    )
+  },
 }
 
 export const AllStates: Story = {

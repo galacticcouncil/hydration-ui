@@ -8,7 +8,9 @@ import {
 } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
 import {
+  getConflictingWalletProviders,
   getConnectAllGroups,
+  getExclusiveWalletProviderTypes,
   getSelectableWallets,
   getWalletGroupSourceModes,
   getWalletSourceAction,
@@ -34,6 +36,8 @@ const TALISMAN_H160 = wallet(WalletProviderType.TalismanH160, "Talisman")
 const POLKADOT_JS = wallet(WalletProviderType.PolkadotJS, "Polkadot.js")
 const PHANTOM = wallet(WalletProviderType.Phantom, "Phantom")
 const SUBWALLET = wallet(WalletProviderType.Subwallet, "SubWallet")
+const SUBWALLET_EVM = wallet(WalletProviderType.SubwalletEvm, "SubWallet")
+const SUBWALLET_H160 = wallet(WalletProviderType.SubwalletH160, "SubWallet")
 const NOVA = wallet(WalletProviderType.NovaWallet, "Nova Wallet")
 const RABBY = wallet(WalletProviderType.RabbyWallet, "Rabby")
 const NOT_INSTALLED = wallet(WalletProviderType.Enkrypt, "Enkrypt", false)
@@ -62,6 +66,134 @@ describe("groupWalletsBySource", () => {
     expect(group && isWalletSourceGroupId(group.id)).toBe(true)
     expect(isWalletSourceGroupId(WalletProviderType.Talisman)).toBe(false)
     expect(isWalletSourceGroupId("all")).toBe(false)
+  })
+})
+
+describe("getConflictingWalletProviders", () => {
+  const all = [
+    SUBWALLET,
+    SUBWALLET_EVM,
+    SUBWALLET_H160,
+    TALISMAN,
+    TALISMAN_EVM,
+    TALISMAN_H160,
+    TALISMAN_SOL,
+    POLKADOT_JS,
+  ]
+
+  it("treats SubWallet's Polkadot, EVM and H160 connections as alternatives", () => {
+    expect(
+      getConflictingWalletProviders(all, WalletProviderType.SubwalletEvm),
+    ).toEqual([WalletProviderType.Subwallet, WalletProviderType.SubwalletH160])
+    expect(
+      getConflictingWalletProviders(all, WalletProviderType.Subwallet),
+    ).toEqual([
+      WalletProviderType.SubwalletEvm,
+      WalletProviderType.SubwalletH160,
+    ])
+  })
+
+  it("includes other chains from the same brand without affecting other wallets", () => {
+    expect(
+      getConflictingWalletProviders(all, WalletProviderType.Talisman),
+    ).toEqual([
+      WalletProviderType.TalismanEvm,
+      WalletProviderType.TalismanH160,
+      WalletProviderType.TalismanSol,
+    ])
+    expect(
+      getConflictingWalletProviders(all, WalletProviderType.PolkadotJS),
+    ).toEqual([])
+  })
+
+  it("never groups unknown providers or multisig with a wallet brand", () => {
+    const sameTitle = [
+      TALISMAN,
+      wallet(WalletProviderType.Multisig, "Talisman"),
+    ]
+
+    expect(
+      getConflictingWalletProviders(sameTitle, WalletProviderType.Multisig),
+    ).toEqual([])
+    expect(
+      getConflictingWalletProviders(sameTitle, WalletProviderType.Talisman),
+    ).toEqual([])
+    expect(
+      getConflictingWalletProviders(sameTitle, WalletProviderType.MetaMask),
+    ).toEqual([])
+  })
+})
+
+describe("getExclusiveWalletProviderTypes", () => {
+  const all = [
+    TALISMAN,
+    TALISMAN_EVM,
+    TALISMAN_SOL,
+    SUBWALLET,
+    SUBWALLET_EVM,
+    SUBWALLET_H160,
+    POLKADOT_JS,
+  ]
+
+  it("keeps the first legacy connection of each brand without preferences", () => {
+    expect(
+      getExclusiveWalletProviderTypes(all, [
+        WalletProviderType.SubwalletH160,
+        WalletProviderType.TalismanSol,
+        WalletProviderType.Subwallet,
+        WalletProviderType.TalismanEvm,
+        WalletProviderType.PolkadotJS,
+      ]),
+    ).toEqual([
+      WalletProviderType.SubwalletH160,
+      WalletProviderType.TalismanSol,
+      WalletProviderType.PolkadotJS,
+    ])
+  })
+
+  it("prefers the active account type before recent types and preserves retained order", () => {
+    expect(
+      getExclusiveWalletProviderTypes(
+        all,
+        [
+          WalletProviderType.Talisman,
+          WalletProviderType.SubwalletEvm,
+          WalletProviderType.Subwallet,
+          WalletProviderType.TalismanEvm,
+          WalletProviderType.PolkadotJS,
+        ],
+        [
+          WalletProviderType.TalismanEvm,
+          WalletProviderType.Subwallet,
+          WalletProviderType.Talisman,
+        ],
+      ),
+    ).toEqual([
+      WalletProviderType.Subwallet,
+      WalletProviderType.TalismanEvm,
+      WalletProviderType.PolkadotJS,
+    ])
+  })
+
+  it("ignores preferences that are not connected and keeps unrelated sources", () => {
+    expect(
+      getExclusiveWalletProviderTypes(
+        [...all, wallet(WalletProviderType.Multisig, "Talisman")],
+        [
+          WalletProviderType.Talisman,
+          WalletProviderType.Multisig,
+          WalletProviderType.MetaMask,
+          WalletProviderType.Phantom,
+          WalletProviderType.MetaMask,
+        ],
+        [WalletProviderType.TalismanEvm],
+      ),
+    ).toEqual([
+      WalletProviderType.Talisman,
+      WalletProviderType.Multisig,
+      WalletProviderType.MetaMask,
+      WalletProviderType.Phantom,
+    ])
   })
 })
 
@@ -278,6 +410,27 @@ describe("getSelectableWallets", () => {
 })
 
 describe("getWalletSourceModes", () => {
+  it.each([WalletMode.EVM, WalletMode.Substrate])(
+    "shows only %s for WalletConnect when a route is selected",
+    (mode) => {
+      expect(
+        getWalletSourceModes(WalletProviderType.WalletConnect, mode),
+      ).toEqual([mode])
+    },
+  )
+
+  it("does not advertise an incompatible wallet account type", () => {
+    expect(
+      getWalletSourceModes(WalletProviderType.Phantom, WalletMode.EVM),
+    ).toEqual([])
+  })
+
+  it("keeps WalletConnect capabilities visible in the general wallet manager", () => {
+    expect(getWalletSourceModes(WalletProviderType.WalletConnect)).toEqual([
+      WalletMode.Substrate,
+      WalletMode.EVM,
+    ])
+  })
   it("badges a provider with its chain modes, never Default", () => {
     const modes = getWalletSourceModes(WalletProviderType.Phantom)
 
@@ -294,6 +447,14 @@ describe("getWalletSourceModes", () => {
 })
 
 describe("getWalletGroupSourceModes", () => {
+  it("scopes a multi-network wallet's badges to the selected route", () => {
+    const [group] = groupWalletsBySource([TALISMAN, TALISMAN_EVM, TALISMAN_SOL])
+    if (!group) throw new Error("expected a group")
+
+    expect(getWalletGroupSourceModes(group, WalletMode.EVM)).toEqual([
+      WalletMode.EVM,
+    ])
+  })
   it("badges a brand's group with one entry per chain it covers", () => {
     const [group] = groupWalletsBySource([TALISMAN, TALISMAN_EVM, TALISMAN_SOL])
     if (!group) throw new Error("expected a group")
@@ -414,9 +575,47 @@ describe("getConnectAllGroups", () => {
 
     expect(providers(groups)).toEqual([
       WalletProviderType.Talisman,
-      WalletProviderType.TalismanEvm,
       WalletProviderType.PolkadotJS,
       WalletProviderType.RabbyWallet,
+    ])
+  })
+
+  it("requests only one installed compatible account type per wallet", () => {
+    const groups = getConnectAllGroups(
+      [
+        TALISMAN,
+        TALISMAN_EVM,
+        TALISMAN_SOL,
+        SUBWALLET,
+        SUBWALLET_EVM,
+        SUBWALLET_H160,
+        POLKADOT_JS,
+      ],
+      [WalletProviderType.SubwalletEvm, WalletProviderType.TalismanEvm],
+    )
+
+    expect(providers(groups)).toEqual([
+      WalletProviderType.TalismanEvm,
+      WalletProviderType.SubwalletEvm,
+      WalletProviderType.PolkadotJS,
+    ])
+    expect(groups.every((group) => group.wallets.length === 1)).toBe(true)
+  })
+
+  it("does not batch an unsupported or uninstalled remembered type", () => {
+    const groups = getConnectAllGroups(
+      [
+        TALISMAN,
+        { ...TALISMAN_EVM, installed: false },
+        TALISMAN_SOL,
+        POLKADOT_JS,
+      ],
+      [WalletProviderType.TalismanSol, WalletProviderType.TalismanEvm],
+    )
+
+    expect(providers(groups)).toEqual([
+      WalletProviderType.Talisman,
+      WalletProviderType.PolkadotJS,
     ])
   })
 

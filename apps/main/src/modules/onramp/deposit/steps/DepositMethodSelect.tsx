@@ -1,14 +1,13 @@
 import {
   ArrowRightLeftIcon,
-  CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
 import { StepButton } from "@/modules/onramp/components/StepButton"
+import { PendingDeposits } from "@/modules/onramp/deposit/components/PendingDeposits"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { OnrampScreen } from "@/modules/onramp/types"
 
 export type DepositMethodSelectProps = {
@@ -19,15 +18,11 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp"])
-  const navigate = useNavigate()
+  const setModal = useOnrampModal((state) => state.setModal)
 
   return (
     <>
-      <ModalHeader
-        title={t("deposit.method.title")}
-        closable={false}
-        align="center"
-      />
+      <ModalHeader title={t("deposit.method.title")} align="center" />
       <ModalBody>
         <Stack gap="m">
           <StepButton
@@ -38,20 +33,19 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           />
           <StepButton
             icon={ArrowRightLeftIcon}
-            onClick={() => navigate({ to: "/cross-chain" })}
+            onClick={() => onSelect(OnrampScreen.DepositOnchainWallet)}
             title={t("deposit.method.onchain.title")}
             description={t("deposit.method.onchain.description")}
           />
-          {ENV.VITE_ENV !== "production" && (
-            <StepButton
-              icon={CreditCardIcon}
-              onClick={() => onSelect(OnrampScreen.DepositBank)}
-              title={t("deposit.method.bank.title")}
-              description={t("deposit.method.bank.description")}
-            />
-          )}
+          <StepButton
+            icon={LandmarkIcon}
+            onClick={() => setModal("bankDeposit")}
+            title={t("deposit.method.bridge.title")}
+            description={t("deposit.method.bridge.description")}
+          />
         </Stack>
       </ModalBody>
+      <PendingDeposits />
     </>
   )
 }

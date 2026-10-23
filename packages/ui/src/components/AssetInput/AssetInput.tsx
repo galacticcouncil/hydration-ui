@@ -44,6 +44,8 @@ export type AssetInputProps = {
   label?: ReactNode
   labelAdornment?: ReactNode
   asset?: AssetInputAsset | null
+  /** Replaces the asset button; the custom control owns its disabled/loading state. */
+  assetSelector?: ReactNode
   onAssetClick?: () => void
   selectAssetLabel?: string
   value?: string
@@ -68,6 +70,7 @@ export const AssetInput = ({
   label,
   labelAdornment,
   asset,
+  assetSelector,
   onAssetClick,
   selectAssetLabel,
   value,
@@ -111,15 +114,17 @@ export const AssetInput = ({
       )}
 
       <SAssetGroup isFullWidth={isAmountHidden}>
-        <AssetButton
-          asset={asset}
-          onClick={onAssetClick}
-          selectAssetLabel={selectAssetLabel}
-          isLoading={isLoading}
-          isError={!!assetError && !isLoading}
-          isDisabled={isDisabled}
-          fullWidth={isAmountHidden}
-        />
+        {assetSelector ?? (
+          <AssetButton
+            asset={asset}
+            onClick={onAssetClick}
+            selectAssetLabel={selectAssetLabel}
+            isLoading={isLoading}
+            isError={!!assetError && !isLoading}
+            isDisabled={isDisabled}
+            fullWidth={isAmountHidden}
+          />
+        )}
         {onLock && (
           <Tooltip text={lockLabel} size="small" asChild>
             <SLockButton
@@ -243,6 +248,7 @@ export const AssetButton = ({
   return (
     <SAssetButton
       type="button"
+      data-asset-button
       className={className}
       isLoading={isLoading}
       isEmpty={!asset && !isLoading}

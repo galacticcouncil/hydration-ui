@@ -1,5 +1,6 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   Flex,
   Grid,
   Input,
@@ -8,10 +9,11 @@ import {
   ModalHeader,
   ModalRoot,
   ModalTrigger,
+  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { arraySearch } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -60,8 +62,6 @@ export type ChainAssetSelectModalProps = {
 export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = (
   props,
 ) => {
-  const { t } = useTranslation(["common", "xcm"])
-
   return (
     <ModalRoot>
       <ModalTrigger asChild>
@@ -71,13 +71,7 @@ export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = (
         />
       </ModalTrigger>
       <ModalContent onInteractOutside={(e) => e.preventDefault()}>
-        <ModalHeader
-          align="center"
-          title={t("xcm:chainAssetSelect.modal.title")}
-        />
-        <ModalBody scrollable={false} noPadding>
-          <ChainAssetSelectContent {...props} />
-        </ModalBody>
+        <ChainAssetSelectContent {...props} />
       </ModalContent>
     </ModalRoot>
   )
@@ -92,7 +86,8 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   onAssetSelect,
 }) => {
   const { t } = useTranslation(["common", "xcm"])
-  const { isMobile } = useBreakpoints()
+  const { gte } = useBreakpoints()
+  const isMobile = !gte("sm")
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
   const { getAsset } = useAssets()
@@ -103,6 +98,17 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     selectedChain ?? currentSelection?.chain ?? null,
   )
 
+  const [mobileStep, setMobileStep] = useState<"chains" | "assets">(() =>
+    currentSelection || chainAssetPairs.length === 1 ? "assets" : "chains",
+  )
+  const hasMultipleChains = chainAssetPairs.length > 1
+  const showChainScreen =
+    isMobile && hasMultipleChains && mobileStep === "chains"
+  const activeChain =
+    isMobile && chainAssetPairs.length === 1
+      ? chainAssetPairs[0]!.chain
+      : pendingChain
+
   const filteredChains = chainAssetPairs.filter(
     ({ chain }) =>
       chain.name.toLowerCase().includes(chainSearch.toLowerCase()) ||
@@ -110,9 +116,9 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   )
 
   const filteredAssetsWithRoutes = useMemo(() => {
-    if (!pendingChain) return []
+    if (!activeChain) return []
     const selectedChainPair = chainAssetPairs.find(
-      ({ chain }) => chain.key === pendingChain.key,
+      ({ chain }) => chain.key === activeChain.key,
     )
 
     const assets = selectedChainPair?.assets ?? []
@@ -141,83 +147,193 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
       assetSearch,
       ["symbol", "name"],
     )
-  }, [assetSearch, chainAssetPairs, getAsset, getDisplayAssetId, pendingChain])
+  }, [assetSearch, chainAssetPairs, getAsset, getDisplayAssetId, activeChain])
 
   const isCompatibleWalletMode =
     type === "source"
-      ? !!pendingChain && isAccountValidOnChain(account, pendingChain)
+      ? !!activeChain && isAccountValidOnChain(account, activeChain)
       : true
+
+  const assetPanel = (
+    <Flex
+      direction="column"
+      minWidth={0}
+      sx={isMobile ? { flex: 1, minHeight: 0 } : undefined}
+    >
+      {activeChain && isCompatibleWalletMode && (
+        <AssetList
+          fillHeight={isMobile}
+          items={filteredAssetsWithRoutes}
+          address={address}
+          selectedAsset={currentSelection?.asset}
+          selectedChain={activeChain}
+          setSelectedAsset={(asset) => {
+            onAssetSelect({ chain: activeChain, asset })
+          }}
+        />
+      )}
+
+      {activeChain && !isCompatibleWalletMode && (
+        <ConnectChainTile
+          layout="vertical"
+          chain={activeChain}
+          bg="transparent"
+          onConnect={() =>
+            toggle(getWalletModeByChain(activeChain), {
+              title: t("connectWallet.modal.title", {
+                chain: activeChain.name,
+              }),
+              description: t("connectWallet.modal.description", {
+                chain: activeChain.name,
+              }),
+            })
+          }
+        />
+      )}
+
+      {!filteredAssetsWithRoutes.length && (
+        <Flex flex={1} align="center" justify="center" asChild>
+          <Text align="center" fs="p5" color={getToken("text.medium")}>
+            {t("xcm:chainAssetSelect.emptyState.noAssets")}
+          </Text>
+        </Flex>
+      )}
+    </Flex>
+  )
 
   return (
     <>
-      <Grid
-        columnTemplate={["9rem 1fr", "10.25rem 1fr"]}
-        gap={["base", "l"]}
-        p="base"
+      <ModalHeader
+        align="center"
+        title={t(
+          isMobile
+            ? showChainScreen
+              ? "selectChain"
+              : "selectAsset"
+            : "xcm:chainAssetSelect.modal.title",
+        )}
+        onBack={
+          isMobile && hasMultipleChains && !showChainScreen
+            ? () => setMobileStep("chains")
+            : undefined
+        }
+        sx={{ flexShrink: 0 }}
+      />
+      <ModalBody
+        scrollable={false}
+        noPadding
+        height={isMobile ? 0 : undefined}
+        sx={{ minHeight: 0 }}
       >
-        <Input
-          placeholder={t("search.placeholder.chains")}
-          iconStart={Search}
-          value={chainSearch}
-          onChange={(e) => setChainSearch(e.target.value)}
-          customSize={isMobile ? "medium" : "large"}
-          autoComplete="off"
-        />
-        <Input
-          placeholder={t("search.placeholder.assets")}
-          iconStart={Search}
-          value={assetSearch}
-          onChange={(e) => setAssetSearch(e.target.value)}
-          customSize={isMobile ? "medium" : "large"}
-          autoComplete="off"
-        />
-      </Grid>
-      <Grid columnTemplate={["3.75rem 1fr", "11.25rem 1fr"]}>
-        <ChainList
-          items={filteredChains}
-          selectedChain={pendingChain}
-          setSelectedChain={setPendingChain}
-        />
-        <Flex direction="column">
-          {pendingChain && isCompatibleWalletMode && (
-            <AssetList
-              items={filteredAssetsWithRoutes}
-              address={address}
-              selectedAsset={currentSelection?.asset}
-              selectedChain={pendingChain}
-              setSelectedAsset={(asset) => {
-                onAssetSelect({ chain: pendingChain, asset })
-              }}
-            />
-          )}
-
-          {pendingChain && !isCompatibleWalletMode && (
-            <ConnectChainTile
-              layout="vertical"
-              chain={pendingChain}
-              bg="transparent"
-              onConnect={() =>
-                toggle(getWalletModeByChain(pendingChain), {
-                  title: t("connectWallet.modal.title", {
-                    chain: pendingChain.name,
-                  }),
-                  description: t("connectWallet.modal.description", {
-                    chain: pendingChain.name,
-                  }),
-                })
-              }
-            />
-          )}
-
-          {!filteredAssetsWithRoutes.length && (
-            <Flex flex={1} align="center" justify="center" asChild>
-              <Text align="center" fs="p5" color={getToken("text.medium")}>
-                {t("xcm:chainAssetSelect.emptyState.noAssets")}
-              </Text>
-            </Flex>
-          )}
-        </Flex>
-      </Grid>
+        {isMobile ? (
+          <Stack
+            data-onramp-step={`xcm-chain-asset-${showChainScreen ? "chains" : "assets"}`}
+            gap="base"
+            p="base"
+            height="100%"
+            sx={{ minHeight: 0 }}
+            justify="flex-start"
+          >
+            {showChainScreen ? (
+              <>
+                <Input
+                  placeholder={t("search.placeholder.chains")}
+                  aria-label={t("search.placeholder.chains")}
+                  iconStart={Search}
+                  value={chainSearch}
+                  onChange={(e) => setChainSearch(e.target.value)}
+                  customSize="medium"
+                  autoComplete="off"
+                />
+                <Box flex={1} sx={{ minHeight: 0 }}>
+                  <ChainList
+                    fillHeight
+                    variant="list"
+                    items={filteredChains}
+                    selectedChain={activeChain}
+                    setSelectedChain={(chain) => {
+                      setPendingChain(chain)
+                      setMobileStep("assets")
+                    }}
+                  />
+                </Box>
+              </>
+            ) : (
+              <Grid
+                columnTemplate={
+                  hasMultipleChains
+                    ? `${pxToRem(52)} minmax(0, 1fr)`
+                    : "minmax(0, 1fr)"
+                }
+                gap="base"
+                height="100%"
+                sx={{ minHeight: 0 }}
+              >
+                {hasMultipleChains && (
+                  <Box sx={{ minHeight: 0 }}>
+                    <ChainList
+                      fillHeight
+                      items={chainAssetPairs}
+                      selectedChain={activeChain}
+                      setSelectedChain={setPendingChain}
+                    />
+                  </Box>
+                )}
+                <Stack
+                  gap="base"
+                  minWidth={0}
+                  sx={{ minHeight: 0 }}
+                  justify="flex-start"
+                >
+                  <Input
+                    placeholder={t("search.placeholder.assets")}
+                    aria-label={t("search.placeholder.assets")}
+                    iconStart={Search}
+                    value={assetSearch}
+                    onChange={(e) => setAssetSearch(e.target.value)}
+                    customSize="medium"
+                    autoComplete="off"
+                  />
+                  {assetPanel}
+                </Stack>
+              </Grid>
+            )}
+          </Stack>
+        ) : (
+          <>
+            <Grid
+              columnTemplate={["9rem 1fr", "10.25rem 1fr"]}
+              gap={["base", "l"]}
+              p="base"
+            >
+              <Input
+                placeholder={t("search.placeholder.chains")}
+                iconStart={Search}
+                value={chainSearch}
+                onChange={(e) => setChainSearch(e.target.value)}
+                customSize="large"
+                autoComplete="off"
+              />
+              <Input
+                placeholder={t("search.placeholder.assets")}
+                iconStart={Search}
+                value={assetSearch}
+                onChange={(e) => setAssetSearch(e.target.value)}
+                customSize="large"
+                autoComplete="off"
+              />
+            </Grid>
+            <Grid columnTemplate={["3.75rem 1fr", "11.25rem 1fr"]}>
+              <ChainList
+                items={filteredChains}
+                selectedChain={activeChain}
+                setSelectedChain={setPendingChain}
+              />
+              {assetPanel}
+            </Grid>
+          </>
+        )}
+      </ModalBody>
     </>
   )
 }

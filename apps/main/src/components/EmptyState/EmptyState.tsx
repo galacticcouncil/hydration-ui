@@ -30,40 +30,44 @@ export const EmptyState: FC<Props> = ({
     <Flex
       direction="column"
       align="center"
-      gap="s"
+      gap="xl"
       mx="auto"
       py="xxxl"
       maxWidth="4xl"
       className={className}
     >
       {icon || <Image src={image} alt="Empty state" sx={{ size: "3xl" }} />}
-      <Text
-        font="primary"
-        color={getToken("text.high")}
-        fs="h7"
-        lh={1}
-        fw={500}
-        textWrap="balance"
-      >
-        {header}
-      </Text>
-      <Flex direction="column" gap="xl" align="center">
-        <Text
-          key={description}
-          color={getToken("text.medium")}
-          fs="p5"
-          lh={1.3}
-          align="center"
-          textWrap="balance"
-        >
-          {description.split(". ").map((sentence, index) => (
-            <Fragment key={index}>
-              {sentence.endsWith(".") ? sentence : `${sentence}.`}
-              <br />
-            </Fragment>
-          ))}
-        </Text>
-        {action}
+      <Flex direction="column" gap="s" align="center" width="100%">
+        {header && (
+          <Text
+            font="primary"
+            color={getToken("text.high")}
+            fs="h7"
+            lh={1}
+            fw={500}
+            textWrap="balance"
+          >
+            {header}
+          </Text>
+        )}
+        <Flex direction="column" gap="xl" align="center">
+          <Text
+            key={description}
+            color={getToken("text.medium")}
+            fs="p5"
+            lh={1.3}
+            align="center"
+            textWrap="balance"
+          >
+            {description.split(". ").map((sentence, index) => (
+              <Fragment key={index}>
+                {sentence.endsWith(".") ? sentence : `${sentence}.`}
+                <br />
+              </Fragment>
+            ))}
+          </Text>
+          {action}
+        </Flex>
       </Flex>
     </Flex>
   )

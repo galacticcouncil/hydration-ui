@@ -78,6 +78,7 @@
   "journey.status.fail": "Failed",
   "journey.status.failed": "Failed",
   "journey.status.timeout": "Timeout",
+  "history.table.protocol": "Protocol",
   "history.emptyState.noTransfers": "No transfer history found",
   "history.emptyState.connectWallet": "Please connect a wallet to view transfer history",
   "history.emptyState.empty": "No transfers found for your account",

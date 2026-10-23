@@ -1,13 +1,14 @@
-import { Plus, WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import { BookOpen, Plus, WalletIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Button,
   Flex,
   Icon,
   ScrollArea,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { pxToRem } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import {
   ChevronDown,
   ChevronLeft,
@@ -82,12 +83,17 @@ import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { useAccountsWithBalance } from "@/hooks/useAccountsWithBalance"
 import { useMultisigConfigs } from "@/hooks/useMultisigConfigs"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
+import {
+  useWeb3Connect,
+  WalletProviderEntry,
+  WalletProviderStatus,
+} from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { Wallet } from "@/types/wallet"
 import { getWalletModeName, isNovaWalletApp, toAccount } from "@/utils"
 import { filterAccounts, getFilteredAccounts } from "@/utils/accountFilter"
 import {
+  getConflictingWalletProviders,
   getConnectAllGroups,
   getSelectableWallets,
   getWalletSourceAction,
@@ -108,9 +114,19 @@ const filterWalletGroups = (groups: WalletSourceGroup[], search: string) => {
 
 export const WalletManagementContent = () => {
   const { t } = useTranslation()
-  const { account: currentAccount } = useAccount()
-  const { mode, meta, onAccountSelect, isControlled, setModalContentWidth } =
-    useWeb3ConnectContext()
+  const { account: activeAccount } = useAccount()
+  const {
+    mode,
+    meta,
+    onAccountSelect,
+    isControlled,
+    setModalContentWidth,
+    isPage,
+    accountFilter: filterPageAccount,
+    customSource,
+    onBack,
+  } = useWeb3ConnectContext()
+  const currentAccount = filterPageAccount ? null : activeAccount
   const { gte } = useBreakpoints()
   const isDesktop = gte("md")
   const { enable, disconnect } = useWeb3Enable()
@@ -146,26 +162,27 @@ export const WalletManagementContent = () => {
   const [accountFilter, setAccountFilter] = useState<WalletAccountFilterOption>(
     WalletMode.Default,
   )
-  /**
-   * Which column is on screen below `md`. Desktop shows both, but the flag is
-   * still set there so it is correct on every viewport. Opens on the accounts
-   * when one is already selected.
-   */
-  const [showAccounts, setShowAccounts] = useState(!!currentAccount)
+  // Global pickers open the selected account; embedded flows start with sources.
+  const [showAccounts, setShowAccounts] = useState(!isPage && !!currentAccount)
+  const [isCustomSourceSelected, setIsCustomSourceSelected] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
   const [accountSearchValue, setAccountSearchValue] = useState("")
   const [walletSearch, setWalletSearch] = useState("")
   const [accountSearch, setAccountSearch] = useState("")
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const [isConnectingAll, setIsConnectingAll] = useState(false)
+  const [connectionResults, setConnectionResults] = useState<
+    Partial<Record<WalletProviderType, "pending" | "connected" | "rejected">>
+  >({})
   const externalWalletForm = useExternalWalletForm()
   const isChainMode = mode !== WalletMode.Default
   // View-only accounts don't belong to a chain-specific connect
   const showExternalWallet = !isChainMode && !meta?.hideExternalWallet
   const showMultisig =
-    mode === WalletMode.Default ||
-    mode === WalletMode.Substrate ||
-    mode === WalletMode.SubstrateEVM
+    !meta?.hideMultisig &&
+    (mode === WalletMode.Default ||
+      mode === WalletMode.Substrate ||
+      mode === WalletMode.SubstrateEVM)
   const multisigConfigs = useMultisigConfigs()
   const [multisigStep, setMultisigStep] = useState<MultisigStep>("list")
 
@@ -181,6 +198,7 @@ export const WalletManagementContent = () => {
    */
   const selectSource = useCallback((source: WalletSourceId) => {
     setSelectedSource(source)
+    setIsCustomSourceSelected(false)
     setShowAccounts(true)
   }, [])
 
@@ -227,17 +245,25 @@ export const WalletManagementContent = () => {
   const isProvidersConnecting = pendingProviderTypes.length > 0
   const pendingProvider = pendingProviderTypes[0]
   const pendingWallet = pendingProvider ? getWallet(pendingProvider) : undefined
-  const errorWallet = recentProvider ? getWallet(recentProvider) : undefined
-  const hasConnectedWalletState =
-    connectedProviderTypes.length > 0 || accounts.length > 0
-  const showLogOutAll = !isChainMode && hasConnectedWalletState
+  const errorWallet =
+    recentProvider && (!modeProviders || modeProviders.includes(recentProvider))
+      ? getWallet(recentProvider)
+      : undefined
   const connectedAccountsCount = useMemo(
-    () => filterAccounts(mode)(accounts.map(toAccount)).length,
-    [accounts, mode],
+    () =>
+      filterAccounts(mode)(accounts.map(toAccount)).filter(
+        (account) => !filterPageAccount || filterPageAccount(account),
+      ).length,
+    [accounts, mode, filterPageAccount],
   )
+  const hasConnectedWalletState =
+    connectedProviderTypes.length > 0 || connectedAccountsCount > 0
+  const showLogOutAll = !isChainMode && hasConnectedWalletState
 
   const showErrorState =
-    !!error && (selectedSource === "all" || selectedSource === recentProvider)
+    !!error &&
+    (!modeProviders || !!errorWallet) &&
+    (selectedSource === "all" || selectedSource === recentProvider)
 
   const {
     recentGroups: recentWalletGroups,
@@ -266,7 +292,8 @@ export const WalletManagementContent = () => {
   const selectedWallet =
     selectedSource !== "all" &&
     selectedSource !== "recent" &&
-    !isWalletSourceGroupId(selectedSource)
+    !isWalletSourceGroupId(selectedSource) &&
+    (!modeProviders || modeProviders.includes(selectedSource))
       ? getWallet(selectedSource)
       : undefined
   const selectedWalletGroup = isWalletSourceGroupId(selectedSource)
@@ -296,6 +323,7 @@ export const WalletManagementContent = () => {
     getSelectableWallets(selectedWalletGroup, connectedProviderTypes).length > 1
 
   const showAccountPanel =
+    !!isPage ||
     connectedProviderTypes.length > 0 ||
     connectedAccountsCount > 0 ||
     isExternalWalletSelected ||
@@ -314,12 +342,13 @@ export const WalletManagementContent = () => {
   /**
    * The panel's content mounts once the columns finish opening: rendering it
    * mid-transition costs frames on the main thread the width animation needs.
-   * Mobile and reduced motion have no column transition to wait for.
+   * Embedded pages, mobile, and reduced motion keep their content mounted.
    */
   const [isPanelOpened, setIsPanelOpened] = useState(showAccountPanel)
   if (
     isPanelOpened !== showAccountPanel &&
     (!showAccountPanel ||
+      isPage ||
       !isDesktop ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches)
   )
@@ -368,7 +397,37 @@ export const WalletManagementContent = () => {
     !showAccountPanel && visibleReachableWalletCount === 0
   const isMoreWalletsListOpen = isMoreOpen || shouldAutoOpenMoreWallets
 
-  const connectAllGroups = getConnectAllGroups(allWallets)
+  const hasConnectedWalletSource = (
+    provider: WalletProviderType,
+    providers: WalletProviderEntry[] = walletProviders,
+  ) => {
+    const family = [
+      provider,
+      ...getConflictingWalletProviders(allWallets, provider),
+    ]
+
+    return providers.some(
+      ({ type, status }) =>
+        family.includes(type) &&
+        (status === WalletProviderStatus.Connected ||
+          status === WalletProviderStatus.Pending),
+    )
+  }
+
+  const connectAllGroups = getConnectAllGroups(allWallets, [
+    ...(activeAccount ? [activeAccount.provider] : []),
+    ...walletProviders
+      .filter(
+        ({ status }) =>
+          status === WalletProviderStatus.Connected ||
+          status === WalletProviderStatus.Pending,
+      )
+      .map(prop("type")),
+    ...recentlyUsedProviders,
+  ]).filter(
+    (group) =>
+      !group.providers.some((provider) => hasConnectedWalletSource(provider)),
+  )
   /**
    * Offered only before anything is connected. Once it starts it stays up as
    * a spinner until every wallet settles, even though the first to connect
@@ -379,7 +438,7 @@ export const WalletManagementContent = () => {
     !isChainMode &&
     !walletSearch &&
     (isConnectingAll ||
-      (!hasConnectedWalletState && connectAllGroups.length > 0))
+      ((!hasConnectedWalletState || isPage) && connectAllGroups.length > 0))
 
   /**
    * Accounts the forced mode allows, narrowed by the selected wallet source.
@@ -403,17 +462,27 @@ export const WalletManagementContent = () => {
           ? accounts.filter((account) => account.provider === selectedProvider)
           : accounts
 
-    return filterAccounts(mode)(sourceAccounts.map(toAccount))
-  }, [accounts, connectedProviderTypes, mode, selectedSource])
+    return filterAccounts(mode)(sourceAccounts.map(toAccount)).filter(
+      (account) => !filterPageAccount || filterPageAccount(account),
+    )
+  }, [
+    accounts,
+    connectedProviderTypes,
+    mode,
+    selectedSource,
+    filterPageAccount,
+  ])
 
   /**
+   * Flows that hide the chips keep every eligible account available in search.
    * Chips are derived from the accounts actually on screen, so a filter that
    * cannot change what is displayed is never offered. A forced mode therefore
    * renders no chips at all: one mode survives, and one chip plus All is noise.
    */
   const chipModes = useMemo(
-    () => chipModesForAccounts(modeAccounts),
-    [modeAccounts],
+    () =>
+      meta?.hideAccountFilters ? [] : chipModesForAccounts(modeAccounts, mode),
+    [meta?.hideAccountFilters, modeAccounts, mode],
   )
 
   /**
@@ -458,12 +527,17 @@ export const WalletManagementContent = () => {
 
   const handleAccountSelect = useCallback(
     (account: ReturnType<typeof toAccount>) => {
+      if (
+        !filterAccounts(mode)([account]).length ||
+        (filterPageAccount && !filterPageAccount(account))
+      )
+        return
       onAccountSelect(account)
       if (!isControlled) {
         toggle()
       }
     },
-    [isControlled, onAccountSelect, toggle],
+    [isControlled, onAccountSelect, toggle, mode, filterPageAccount],
   )
 
   const handleProviderSelect = (wallet: Wallet) => {
@@ -471,6 +545,7 @@ export const WalletManagementContent = () => {
   }
 
   const handleWalletClick = (wallet: Wallet) => {
+    if (modeProviders && !modeProviders.includes(wallet.provider)) return
     handleProviderSelect(wallet)
 
     if (
@@ -480,27 +555,54 @@ export const WalletManagementContent = () => {
     }
   }
 
-  /**
-   * Every extension pops up at once. A rejection disconnects that wallet
-   * without holding up the others.
-   */
+  /** Page flows request authorization in sequence; the global picker keeps its existing behavior. */
   const handleConnectAll = async () => {
     if (isConnectingAll) return
     setIsConnectingAll(true)
     selectSource("all")
 
-    await Promise.allSettled(
-      connectAllGroups
-        .flatMap(prop("providers"))
-        .filter((provider) => {
-          const status = getStatus(provider)
-          return (
-            status !== WalletProviderStatus.Connected &&
-            status !== WalletProviderStatus.Pending
+    const queue = connectAllGroups
+      .flatMap(prop("providers"))
+      .filter(
+        (provider) =>
+          !hasConnectedWalletSource(
+            provider,
+            useWeb3Connect.getState().providers,
+          ),
+      )
+    if (isPage) {
+      setConnectionResults({})
+      for (const provider of queue) {
+        if (
+          hasConnectedWalletSource(
+            provider,
+            useWeb3Connect.getState().providers,
           )
-        })
-        .map((provider) => enableWithDisconnectOnError(provider)),
-    )
+        ) {
+          continue
+        }
+        setConnectionResults((previous) => ({
+          ...previous,
+          [provider]: "pending",
+        }))
+        try {
+          await enableWithDisconnectOnError(provider)
+          setConnectionResults((previous) => ({
+            ...previous,
+            [provider]: "connected",
+          }))
+        } catch {
+          setConnectionResults((previous) => ({
+            ...previous,
+            [provider]: "rejected",
+          }))
+        }
+      }
+    } else {
+      await Promise.allSettled(
+        queue.map((provider) => enableWithDisconnectOnError(provider)),
+      )
+    }
 
     setIsConnectingAll(false)
   }
@@ -529,10 +631,11 @@ export const WalletManagementContent = () => {
         <WalletProviderSourceButton
           key={group.id}
           wallet={wallet}
-          active={selectedSource === wallet.provider}
+          active={!isCustomSourceSelected && selectedSource === wallet.provider}
           status={getStatus(wallet.provider)}
           pending={pendingProviderTypes.includes(wallet.provider)}
           variant={variant}
+          mode={mode}
           connectLabel={connectLabel}
           onClick={() => handleWalletClick(wallet)}
           onDisconnect={() => disconnect(wallet.provider)}
@@ -549,14 +652,16 @@ export const WalletManagementContent = () => {
         key={group.id}
         group={group}
         active={
-          selectedSource === group.id ||
-          group.providers.includes(selectedSource as WalletProviderType)
+          !isCustomSourceSelected &&
+          (selectedSource === group.id ||
+            group.providers.includes(selectedSource as WalletProviderType))
         }
         connected={connectedGroupProviders.length > 0}
         pending={group.providers.some((provider) =>
           pendingProviderTypes.includes(provider),
         )}
         variant={variant}
+        mode={mode}
         connectLabel={connectLabel}
         onClick={() => handleWalletGroupSelect(group)}
         onDisconnect={() => {
@@ -586,13 +691,16 @@ export const WalletManagementContent = () => {
       ? visibleMoreWalletGroups
       : visibleMoreWalletGroups.slice(0, moreWalletsPreviewCount)
 
-  const selectedSourceTitle = isMultisigSelected
-    ? t("multisig.title")
-    : (selectedWallet?.title ?? selectedWalletGroup?.title)
+  const selectedSourceTitle = isCustomSourceSelected
+    ? customSource?.title
+    : isMultisigSelected
+      ? t("multisig.title")
+      : (selectedWallet?.title ?? selectedWalletGroup?.title)
 
   return (
-    <SWalletManagementShell>
+    <SWalletManagementShell isPage={isPage}>
       <SModalHeader
+        closable={meta?.closable ?? !isPage}
         title={
           meta?.title ??
           (!isDesktop && isAccountsView && selectedSourceTitle
@@ -602,16 +710,36 @@ export const WalletManagementContent = () => {
               : t("provider.selectSourceWalletOnly"))
         }
         onBack={
-          !isDesktop && isAccountsView
-            ? () => setShowAccounts(false)
-            : undefined
+          !isDesktop && isAccountsView ? () => setShowAccounts(false) : onBack
         }
         description={meta?.description}
         align="center"
       />
+      {isPage && Object.entries(connectionResults).length > 0 && (
+        <Flex direction="column" gap="s" px="m" pb="m">
+          {Object.entries(connectionResults).map(([provider, status]) => (
+            <Flex key={provider} justify="space-between">
+              <Text fs="p5">
+                {getWallet(provider as WalletProviderType)?.title ?? provider}
+              </Text>
+              <Text
+                fs="p5"
+                color={getToken(
+                  status === "connected"
+                    ? "accents.success.emphasis"
+                    : "text.medium",
+                )}
+              >
+                {t(`provider.queue.${status}`)}
+              </Text>
+            </Flex>
+          ))}
+        </Flex>
+      )}
       <SModalBody noPadding scrollable={false}>
         <SLayoutGrid
           showAccountPanel={showAccountPanel}
+          isPage={isPage}
           onTransitionEnd={(event) => {
             if (
               event.target === event.currentTarget &&
@@ -637,7 +765,9 @@ export const WalletManagementContent = () => {
                   {showAccountPanel && connectedAccountsCount > 0 && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton
-                        active={selectedSource === "all"}
+                        active={
+                          !isCustomSourceSelected && selectedSource === "all"
+                        }
                         title={t("provider.allAccountsAndWallets")}
                         subtitle={t("provider.allAccountsCount", {
                           count: connectedAccountsCount,
@@ -646,6 +776,19 @@ export const WalletManagementContent = () => {
                         onClick={() => selectSource("all")}
                       />
                     </Flex>
+                  )}
+
+                  {customSource && (
+                    <WalletSourceButton
+                      title={customSource.title}
+                      icon={BookOpen}
+                      active={isCustomSourceSelected}
+                      onClick={() => {
+                        selectSource("all")
+                        setIsCustomSourceSelected(true)
+                        setShowAccounts(true)
+                      }}
+                    />
                   )}
 
                   {visibleRecentWalletGroups.length > 0 && (
@@ -818,9 +961,12 @@ export const WalletManagementContent = () => {
           <SRightPanelFrame
             aria-hidden={!showAccountPanel}
             showAccountPanel={showAccountPanel}
+            isPage={isPage}
             mobileHidden={!isAccountsView}
           >
-            {!isPanelOpened ? null : isMultisigSelected ? (
+            {!isPanelOpened ? null : isCustomSourceSelected && customSource ? (
+              <SRightColumn>{customSource.content}</SRightColumn>
+            ) : isMultisigSelected ? (
               <SRightColumn>
                 {multisigStep !== "list" && multisigConfigs.length > 0 && (
                   <Button
