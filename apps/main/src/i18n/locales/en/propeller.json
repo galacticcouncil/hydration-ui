@@ -44,7 +44,7 @@
   "withdrawals.state.settling": "Settling",
   "withdrawals.state.claimed": "Claimed",
   "withdrawals.settledProgress": "{{ settled }} ({{ pct }}%)",
-  "withdrawals.settledLabel": "Settled so far",
+  "withdrawals.settledInline": "{{ settled }} settled ({{ pct }}%)",
   "withdrawals.etaAtPace": "{{ eta }} left at current pace",
   "withdrawals.etaTypical": "usually takes {{ eta }}",
   "withdrawals.action.claim": "Claim",

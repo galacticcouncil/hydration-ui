@@ -135,10 +135,9 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
           status !== "claimable"
         ? [
             {
-              // the chip already says Settling and the row's amount is the
-              // total owed; a compact settled-so-far is all this line adds
-              label: t("withdrawals.settledLabel"),
-              value: t("withdrawals.settledProgress", {
+              // two lines, mirroring the amount column: what has settled, then
+              // when the rest is expected. The chip already says Settling.
+              value: t("withdrawals.settledInline", {
                 settled: t("common:currency", {
                   value: row.settledSoFar ?? 0,
                   symbol,
@@ -149,9 +148,8 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
                   100
                 ).toFixed(1),
               }),
-              // its own small line: appended to the value it overflowed the
-              // narrow card. The pace is measured from recent tranches and
-              // decays through stalls — "at the current pace", never a promise
+              // the pace is measured from recent tranches and decays through
+              // stalls — "at the current pace", never a promise
               bottomLabel:
                 row.etaSeconds !== null
                   ? t("withdrawals.etaAtPace", {

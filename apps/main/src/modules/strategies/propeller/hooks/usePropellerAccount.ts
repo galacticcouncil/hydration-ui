@@ -70,6 +70,9 @@ export type PropellerWithdrawalRow = {
   sourcePending: boolean
 }
 
+/** below this share settled, the trailing pace is too thin to project */
+const MIN_SETTLED_FOR_PACE = 0.1
+
 export const withdrawalRowId = (vaultAddress: string, requestId: number) =>
   `${vaultAddress}:${requestId}`
 
@@ -122,10 +125,15 @@ export const buildWithdrawalRow = ({
   // the ETA — never project a frozen pace forward
   const remainingCollateral = entry.collateralOwed - settledSoFar
   const rate = settlement?.recentRatePerBlock ?? null
+  // the keeper settles in a few large chunks; a pace measured off a first
+  // sliver (0.1% -> "~3 d") says nothing, so wait for a meaningful share
+  const settledShare =
+    entry.collateralOwed > 0 ? settledSoFar / entry.collateralOwed : 0
   const etaSeconds =
     entry.active &&
     entry.started &&
     remainingCollateral > 0 &&
+    settledShare >= MIN_SETTLED_FOR_PACE &&
     rate &&
     rate > 0 &&
     blockTimeSeconds
