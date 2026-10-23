@@ -86,7 +86,18 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // row amounts arrive already converted to the current display asset
   const displayAsset = useVaultDisplayAsset()(row.vault)
   const { symbol } = displayAsset
-  const usd = t("common:currency", { value: row.estUsd })
+  // After a partial claim the row speaks for what is still coming, not the
+  // original request: claimed = everything settled minus what is unclaimed.
+  // A closed request shows the total it paid.
+  const claimed = Math.max(
+    (row.settledSoFar ?? 0) - (row.collateralSettled ?? 0),
+    0,
+  )
+  const remaining =
+    row.state === "claimed" ? row.estEth : Math.max(row.estEth - claimed, 0)
+  const usd = t("common:currency", {
+    value: row.estEth > 0 ? (row.estUsd * remaining) / row.estEth : 0,
+  })
   const claim = useClaim()
   const [claimOpen, setClaimOpen] = useState(false)
   const hasPayoutChoice = !!row.vault.payoutAssetIds
@@ -139,12 +150,12 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
               // when the rest is expected. The chip already says Settling.
               value: t("withdrawals.settledInline", {
                 settled: t("common:currency", {
-                  value: row.settledSoFar ?? 0,
+                  value: row.collateralSettled ?? 0,
                   symbol,
                   maximumFractionDigits: 4,
                 }),
                 pct: (
-                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
+                  ((row.collateralSettled ?? 0) / (remaining || 1)) *
                   100
                 ).toFixed(1),
               }),
@@ -168,7 +179,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
     <>
       <PendingPosition
         assetId={displayAsset.id}
-        value={t("common:currency", { value: row.estEth, symbol })}
+        value={t("common:currency", { value: remaining, symbol })}
         displayValue={usd}
         isLoading={row.isSettlementLoading}
         stats={stats}
@@ -190,14 +201,20 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
               {claimPaused
                 ? t("withdrawals.action.claimPaused")
                 : row.state === "partial"
-                ? t("withdrawals.action.claimPartial", {
-                    amount: t("common:currency", {
-                      value: row.collateralSettled ?? 0,
-                      symbol,
-                      maximumFractionDigits: 4,
-                    }),
-                  })
-                : t("withdrawals.action.claim")}
+                  ? t("withdrawals.action.claimPartial", {
+                      amount: t("common:currency", {
+                        value: row.collateralSettled ?? 0,
+                        symbol,
+                        maximumFractionDigits: 4,
+                      }),
+                    })
+                  : t("withdrawals.action.claimAmount", {
+                      amount: t("common:currency", {
+                        value: row.collateralSettled ?? 0,
+                        symbol,
+                        maximumFractionDigits: 4,
+                      }),
+                    })}
             </LoadingButton>
           ) : (
             <Chip variant={statusVariants[status]} size="small">

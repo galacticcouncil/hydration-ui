@@ -48,6 +48,7 @@
   "withdrawals.etaAtPace": "{{ eta }} left at current pace",
   "withdrawals.etaTypical": "usually takes {{ eta }}",
   "withdrawals.action.claim": "Claim",
+  "withdrawals.action.claimAmount": "Claim {{ amount }}",
   "withdrawals.action.claimPaused": "Vault paused",
   "withdrawals.action.claimPartial": "Claim ≥ {{ amount }}",
   "withdrawals.claim.label": "Claim available payouts for {{symbol}} withdrawal",
