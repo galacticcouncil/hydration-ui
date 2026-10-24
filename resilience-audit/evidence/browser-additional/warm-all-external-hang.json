@@ -1,0 +1,90 @@
+{
+  "name": "warm-all-external-hang",
+  "waitMs": 35000,
+  "externalRequests": [
+    "https://hydration-api.neckwork.net/v1/status",
+    "https://api.web3modal.org/appkit/v1/config?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+    "https://grafana.hydradx.cloud/api/ds/query",
+    "https://1click.chaindefuser.com/v0/tokens",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/v2/polkadot/2034/assets/0/icon.svg",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/v2/polkadot/2034/assets/222/icon.svg",
+    "https://explorer.hydradx.cloud/graphql",
+    "https://pulse.walletconnect.org/batch?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19"
+  ],
+  "websocketTraffic": {
+    "wss://rpc-catfish-2.catfish.hydration.cloud/": {
+      "sent": 1116,
+      "received": 1140,
+      "methods": {
+        "rpc_methods": 1,
+        "chain_subscribeAllHeads": 1,
+        "chain_subscribeFinalizedHeads": 1,
+        "chain_getBlockHash": 3,
+        "chain_getHeader": 20,
+        "state_getStorageHash": 17,
+        "state_getStorage": 215,
+        "state_call": 743,
+        "system_health": 7,
+        "system_name": 1,
+        "system_properties": 1,
+        "state_getKeysPaged": 9,
+        "eth_chainId": 56,
+        "state_queryStorageAt": 9,
+        "state_getReadProof": 19,
+        "eth_call": 13
+      },
+      "closed": false
+    }
+  },
+  "allowedWebsockets": [
+    "wss://rpc-catfish-2.catfish.hydration.cloud/"
+  ],
+  "blockedWebsockets": [],
+  "pageErrors": [],
+  "errors": [
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "State loaded from storage couldn't be migrated since no migrate function was provided"
+  ],
+  "warm": {
+    "inputEditable": true,
+    "skeletons": 0
+  },
+  "elapsedMs": 71146,
+  "url": "http://127.0.0.1:4173/trade/swap/market?tab=openOrders&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+  "bodyText": "Trade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\nConnect Wallet\n\nSwap\nTrade OTC\n\nHydration\n\nHDX\n\n‌\n\n‌\n\nHDX/HOLLAR\n\n1H\n\n1D\n\n1W\n\n1M\n\nALL\n\nMarket\nLimit\nTWAP\nSell\nBalance: 0\nMAX\nHOLLAR\n$0.00\n\n1 HDX = 0.007203 HOLLAR\n\nBuy\nBalance: 0\nHDX\n$0.00\n\nConnect Wallet\n\nOpen orders\nOrder history\nAsset in / Asset out\t\nPrice\n\tType\tStatus/Progress\t\n\n\nNo orders yet\n\nSeems like you have not made any orders yet.\nHave fun trading on Hydration.\n\n\n15 256 056\n\nIntents are here!\n\nA new way to place trades that includes limit orders.\n\nYou can disable intents anytime in Trade settings.\n\nGot it",
+  "buttons": [
+    "HDX/HOLLAR",
+    "1H",
+    "1D",
+    "1W",
+    "1M",
+    "ALL",
+    "",
+    "max",
+    "HOLLAR",
+    "",
+    "1 HDX = 0.007203 HOLLAR",
+    "HDX",
+    "Connect Wallet",
+    "15 256 056",
+    "",
+    "Got it"
+  ],
+  "links": [
+    "Market",
+    "Limit",
+    "TWAP",
+    "Open orders",
+    "Order history"
+  ],
+  "inputs": 2,
+  "skeletons": 2,
+  "inputEditable": true,
+  "quoteInputValues": [
+    "1",
+    "138.444360570251"
+  ]
+}

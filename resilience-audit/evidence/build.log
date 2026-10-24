@@ -1,0 +1,1015 @@
+yarn run v1.22.22
+$ turbo build
+• turbo 2.9.6
+
+   • Packages in scope: @galacticcouncil/eslint-config, @galacticcouncil/indexer, @galacticcouncil/main, @galacticcouncil/money-market, @galacticcouncil/typescript-config, @galacticcouncil/ui, @galacticcouncil/utils, @galacticcouncil/web3-connect
+   • Running build in 8 packages
+   • Remote caching disabled
+
+@galacticcouncil/indexer:build: cache miss, executing 8799a75f6fad3e03
+@galacticcouncil/utils:build: cache hit, replaying logs 4c22076dd3b9cfa4
+@galacticcouncil/utils:build: yarn run v1.22.22
+@galacticcouncil/utils:build: warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+@galacticcouncil/utils:build: warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+@galacticcouncil/utils:build: $ tsc --build
+@galacticcouncil/utils:build: warning Cannot find a suitable global folder. Tried these: "/usr/local, /home/mrq/.yarn"
+@galacticcouncil/utils:build: Done in 3.39s.
+@galacticcouncil/ui:build: cache miss, executing 5fbfb39bcd52799e
+@galacticcouncil/indexer:build: yarn run v1.22.22
+@galacticcouncil/ui:build: yarn run v1.22.22
+@galacticcouncil/indexer:build: $ tsc --build
+@galacticcouncil/ui:build: $ yarn theme && tsc --build && storybook build
+@galacticcouncil/ui:build: $ node ./style-dictionary/build.mjs
+@galacticcouncil/ui:build: 
+@galacticcouncil/ui:build: js
+@galacticcouncil/ui:build: ✔︎ ./src/theme/tokens/light.json
+@galacticcouncil/ui:build: 
+@galacticcouncil/ui:build: js
+@galacticcouncil/ui:build: ✔︎ ./src/theme/tokens/dark.json
+@galacticcouncil/indexer:build: Done in 3.45s.
+@galacticcouncil/ui:build: 
+@galacticcouncil/ui:build: ┌  Building storybook v10.3.5
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Cleaning outputDir: storybook-static
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Loading presets
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Building manager..
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ●  Building preview..
+@galacticcouncil/ui:build: │  Vite vite v8.0.10 building client environment for production...
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ●  Storybook collects completely anonymous usage telemetry. We use it to
+@galacticcouncil/ui:build: │  shape Storybook's roadmap and prioritize features. You can learn more,
+@galacticcouncil/ui:build: │  including how to opt out, at ]8;;https://storybook.js.org/telemetryhttps://storybook.js.org/telemetry]8;;
+@galacticcouncil/ui:build: [2K@galacticcouncil/ui:build: transforming...✓ 6013 modules transformed.
+@galacticcouncil/ui:build: rendering chunks...
+@galacticcouncil/ui:build: computing gzip size...
+@galacticcouncil/ui:build: │  Vite storybook-static/iframe.html
+@galacticcouncil/ui:build: │  20.30 kB │ gzip:     5.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoBlack-CKMlCGzV.woff2
+@galacticcouncil/ui:build: │  25.34 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoRegular-CTeN_hTv.woff2
+@galacticcouncil/ui:build: │  27.28 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoSemiBold-CUjAn44b.woff2
+@galacticcouncil/ui:build: │  27.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistBold-BGsvlvzV.woff2
+@galacticcouncil/ui:build: │  29.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMonoMedium-BMSM7UeV.woff2
+@galacticcouncil/ui:build: │  31.88 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-DwBpizSx.wasm
+@galacticcouncil/ui:build: │  35.67 kB │ gzip:    16.04 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CLMJf4K_.wasm
+@galacticcouncil/ui:build: │  37.94 kB │ gzip:    16.77 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CEGA-slC.wasm
+@galacticcouncil/ui:build: │  39.00 kB │ gzip:    18.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoBold-B7K1p9QZ.woff2
+@galacticcouncil/ui:build: │  39.50 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoMedium-CsvkVblF.woff2
+@galacticcouncil/ui:build: │  39.53 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GazpachoRegular-TtB8xQCa.woff2
+@galacticcouncil/ui:build: │  39.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistRegular-DCwoJUrm.woff2
+@galacticcouncil/ui:build: │  40.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistSemiBold-DD8-KCr1.woff2
+@galacticcouncil/ui:build: │  41.32 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/GeistMedium-Bd4KHlwS.woff2
+@galacticcouncil/ui:build: │  41.37 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-DSK1FPAH.wasm
+@galacticcouncil/ui:build: │  48.28 kB │ gzip:    29.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-rcMnucsg.wasm
+@galacticcouncil/ui:build: │  118.62 kB │ gzip:    66.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-C5VqofBO.wasm
+@galacticcouncil/ui:build: │  140.61 kB │ gzip:    61.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydra_dx_wasm_bg-CJ2NnTh-.wasm
+@galacticcouncil/ui:build: │  237.26 kB │ gzip:   113.51 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton-CGmq9_dR.css
+@galacticcouncil/ui:build: │  1.02 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/iframe-DgRkbs-D.css
+@galacticcouncil/ui:build: │  1.52 kB │ gzip:     0.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView-DpXMRjWw.css
+@galacticcouncil/ui:build: │  2.66 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-RtdfEU8D.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/theming-BRXESUkc.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/secp256k1-C3Q0S50Q.js
+@galacticcouncil/ui:build: │  0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-DYQO0iU4.js
+@galacticcouncil/ui:build: │  0.08 kB │ gzip:     0.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-18-By2atc2m.js
+@galacticcouncil/ui:build: │  0.10 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box-BJe2Oumi.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ccip-BmG_r9gf.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex-Cv5Yron9.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image-Cnz6AcF0.js
+@galacticcouncil/ui:build: │  0.11 kB │ gzip:     0.10 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/smoldot-TfRK-WQT.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-C-k-EYxN2.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Icon-Ba_gtRuC.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text-wNiULNg1.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper-5pH_Wew_.js
+@galacticcouncil/ui:build: │  0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator-wLr5YAfQ.js
+@galacticcouncil/ui:build: │  0.13 kB │ gzip:     0.12 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-DTenzTrh.js
+@galacticcouncil/ui:build: │  0.14 kB │ gzip:     0.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-CYSK6WYR-VyRXazG1.js
+@galacticcouncil/ui:build: │  0.15 kB │ gzip:     0.13 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-242VQQM5-DzuN-V9p.js
+@galacticcouncil/ui:build: │  0.21 kB │ gzip:     0.18 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/formatter-EIJCOSYU-DBsv6E18.js
+@galacticcouncil/ui:build: │  0.23 kB │ gzip:     0.19 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-DPoi7TWc.js
+@galacticcouncil/ui:build: │  0.25 kB │ gzip:     0.20 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-Ck2ud-zp2.js
+@galacticcouncil/ui:build: │  0.27 kB │ gzip:     0.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-i0aWd5L9.js
+@galacticcouncil/ui:build: │  0.31 kB │ gzip:     0.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-BSJcFGRP.js
+@galacticcouncil/ui:build: │  0.32 kB │ gzip:     0.25 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/native-jAmF1RTt.js
+@galacticcouncil/ui:build: │  0.37 kB │ gzip:     0.23 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/jsx-runtime-WZfjI2gv.js
+@galacticcouncil/ui:build: │  0.42 kB │ gzip:     0.29 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CHoxfuXi.js
+@galacticcouncil/ui:build: │  0.47 kB │ gzip:     0.31 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-lMzVqf2I.js
+@galacticcouncil/ui:build: │  0.48 kB │ gzip:     0.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-BD7XfuWe.js
+@galacticcouncil/ui:build: │  0.54 kB │ gzip:     0.38 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Points.stories-CZEcE30o.js
+@galacticcouncil/ui:build: │  0.61 kB │ gzip:     0.38 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-QPojWuQR.js
+@galacticcouncil/ui:build: │  0.62 kB │ gzip:     0.39 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image-CUoF16i2.js
+@galacticcouncil/ui:build: │  0.63 kB │ gzip:     0.41 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Slider.stories-BGaejwJ9.js
+@galacticcouncil/ui:build: │  0.63 kB │ gzip:     0.39 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-SL3VIQZ3-DX4vx9Jj.js
+@galacticcouncil/ui:build: │  0.68 kB │ gzip:     0.42 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Spinner-BssZtXU2.js
+@galacticcouncil/ui:build: │  0.78 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-BUhIWscH.js
+@galacticcouncil/ui:build: │  0.79 kB │ gzip:     0.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ResponsiveScope-Di1UPqeb.js
+@galacticcouncil/ui:build: │  0.80 kB │ gzip:     0.47 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Combobox.stories-ihMsqkIx.js
+@galacticcouncil/ui:build: │  0.82 kB │ gzip:     0.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/PolkadotIdenticon-DBlZcfHg.js
+@galacticcouncil/ui:build: │  0.83 kB │ gzip:     0.51 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/HoverCard.stories-CQ--4KNs.js
+@galacticcouncil/ui:build: │  0.85 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/sm-provider-CaWA5agl.js
+@galacticcouncil/ui:build: │  0.86 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Spinner.stories-D1mVjf-E.js
+@galacticcouncil/ui:build: │  0.86 kB │ gzip:     0.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton.stories-D0gvqydQ.js
+@galacticcouncil/ui:build: │  0.89 kB │ gzip:     0.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressBar.stories-B39XYQdo.js
+@galacticcouncil/ui:build: │  0.93 kB │ gzip:     0.43 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Icon-vGCXwjhk.js
+@galacticcouncil/ui:build: │  0.94 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chain.stories-BazdKaxI.js
+@galacticcouncil/ui:build: │  0.94 kB │ gzip:     0.46 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CkYG4MzW.js
+@galacticcouncil/ui:build: │  1.04 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Summary.stories-D4aC1osl.js
+@galacticcouncil/ui:build: │  1.04 kB │ gzip:     0.52 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView.stories-BTGJDJx1.js
+@galacticcouncil/ui:build: │  1.05 kB │ gzip:     0.58 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Logo.stories-Bthnk7Hb.js
+@galacticcouncil/ui:build: │  1.08 kB │ gzip:     0.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/CopyButton.stories-DoFN01Iz.js
+@galacticcouncil/ui:build: │  1.12 kB │ gzip:     0.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountTile.stories-20Pm-x0J.js
+@galacticcouncil/ui:build: │  1.13 kB │ gzip:     0.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Expander-D3_XAvoH.js
+@galacticcouncil/ui:build: │  1.14 kB │ gzip:     0.60 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper.stories-C7F5Z1ki.js
+@galacticcouncil/ui:build: │  1.15 kB │ gzip:     0.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Image.stories-CFkZRtWT.js
+@galacticcouncil/ui:build: │  1.18 kB │ gzip:     0.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-jRWAZmH_.js
+@galacticcouncil/ui:build: │  1.21 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex-Bk3nqHn5.js
+@galacticcouncil/ui:build: │  1.24 kB │ gzip:     0.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/preload-helper-Dowy-9fu.js
+@galacticcouncil/ui:build: │  1.27 kB │ gzip:     0.74 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/VirtualizedList.stories-9UvUIXc1.js
+@galacticcouncil/ui:build: │  1.29 kB │ gzip:     0.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tooltip.stories-Dw23uTGv.js
+@galacticcouncil/ui:build: │  1.32 kB │ gzip:     0.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/easings-D7mc8sO1.js
+@galacticcouncil/ui:build: │  1.33 kB │ gzip:     0.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Pagination.stories-eG5HtMtn.js
+@galacticcouncil/ui:build: │  1.35 kB │ gzip:     0.56 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Sheet.stories-c49tpLd3.js
+@galacticcouncil/ui:build: │  1.36 kB │ gzip:     0.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TextButton.stories-CS09KbSE.js
+@galacticcouncil/ui:build: │  1.36 kB │ gzip:     0.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ScrollArea.stories-oDVatGju.js
+@galacticcouncil/ui:build: │  1.39 kB │ gzip:     0.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-D6lUmWDM2.js
+@galacticcouncil/ui:build: │  1.39 kB │ gzip:     0.69 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack-BDroh4l-.js
+@galacticcouncil/ui:build: │  1.54 kB │ gzip:     0.84 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ValueStats.stories-DCOB6BL0.js
+@galacticcouncil/ui:build: │  1.54 kB │ gzip:     0.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AnimatedValue.stories-DxjdEAPP.js
+@galacticcouncil/ui:build: │  1.57 kB │ gzip:     0.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Checkbox.stories-LMkr_qp_.js
+@galacticcouncil/ui:build: │  1.57 kB │ gzip:     0.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountInput.stories-BRIu1yEx.js
+@galacticcouncil/ui:build: │  1.61 kB │ gzip:     0.68 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ResponsiveScope.stories-BHfWAM4e.js
+@galacticcouncil/ui:build: │  1.63 kB │ gzip:     0.80 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tabs.stories-CZe_A5kp.js
+@galacticcouncil/ui:build: │  1.65 kB │ gzip:     0.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/NavigationMenu.stories-bQARIoCC.js
+@galacticcouncil/ui:build: │  1.69 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Toggle.stories-BelryNB7.js
+@galacticcouncil/ui:build: │  1.69 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Expander.stories-z0OTjOCp.js
+@galacticcouncil/ui:build: │  1.78 kB │ gzip:     0.83 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Alert.stories-CxZIRQm4.js
+@galacticcouncil/ui:build: │  1.79 kB │ gzip:     0.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Paper-FfAgnIrb.js
+@galacticcouncil/ui:build: │  1.80 kB │ gzip:     0.88 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stepper.stories-CodtNXdW.js
+@galacticcouncil/ui:build: │  1.89 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetColors.stories-UGnu6Cl0.js
+@galacticcouncil/ui:build: │  1.93 kB │ gzip:     1.06 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountAvatar.stories-BNDrwfjX.js
+@galacticcouncil/ui:build: │  1.96 kB │ gzip:     0.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/PositionCard.stories-BCOza3-K.js
+@galacticcouncil/ui:build: │  1.98 kB │ gzip:     0.84 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Select.stories-DKumowul.js
+@galacticcouncil/ui:build: │  2.05 kB │ gzip:     0.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Skeleton-74RCbzvr.js
+@galacticcouncil/ui:build: │  2.09 kB │ gzip:     1.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Notification.stories-CK7JyWfX.js
+@galacticcouncil/ui:build: │  2.12 kB │ gzip:     0.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator.stories-DtdQkEwq.js
+@galacticcouncil/ui:build: │  2.13 kB │ gzip:     0.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack-BRAqFD7_.js
+@galacticcouncil/ui:build: │  2.14 kB │ gzip:     0.88 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Label.stories-BG8cQcxU.js
+@galacticcouncil/ui:build: │  2.15 kB │ gzip:     0.82 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-U7823ltY.js
+@galacticcouncil/ui:build: │  2.18 kB │ gzip:     0.97 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Grid.stories-DhokE2Jd.js
+@galacticcouncil/ui:build: │  2.34 kB │ gzip:     0.76 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/OptionCard.stories-SNjhV2pq.js
+@galacticcouncil/ui:build: │  2.41 kB │ gzip:     0.89 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box.stories-BdaeZ5gP.js
+@galacticcouncil/ui:build: │  2.54 kB │ gzip:     0.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Prose-D7S5QFKv.js
+@galacticcouncil/ui:build: │  2.58 kB │ gzip:     1.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chain-Da4w1kaK.js
+@galacticcouncil/ui:build: │  2.59 kB │ gzip:     1.01 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/EditableText.stories-DWME5qq6.js
+@galacticcouncil/ui:build: │  2.61 kB │ gzip:     0.78 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Stack.stories-fmEG3hB9.js
+@galacticcouncil/ui:build: │  2.61 kB │ gzip:     0.71 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressCircle.stories-C72gqQ6N.js
+@galacticcouncil/ui:build: │  2.67 kB │ gzip:     0.79 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AnimatedValue-C_rG22NG.js
+@galacticcouncil/ui:build: │  2.68 kB │ gzip:     1.31 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Flex.stories-DrND5_Qx.js
+@galacticcouncil/ui:build: │  2.69 kB │ gzip:     0.81 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tabs-f7nkIzus.js
+@galacticcouncil/ui:build: │  2.72 kB │ gzip:     1.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Alert-DY6jNNN5.js
+@galacticcouncil/ui:build: │  2.77 kB │ gzip:     1.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Table.stories-jefuC5Tr.js
+@galacticcouncil/ui:build: │  2.84 kB │ gzip:     1.06 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TextButton-Qs24xtPG.js
+@galacticcouncil/ui:build: │  2.89 kB │ gzip:     1.01 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CeVLhLut.js
+@galacticcouncil/ui:build: │  2.95 kB │ gzip:     1.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text-jmgaqy7n.js
+@galacticcouncil/ui:build: │  2.95 kB │ gzip:     0.92 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Collapsible.stories-E4TT3kfQ.js
+@galacticcouncil/ui:build: │  3.04 kB │ gzip:     0.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Grid-CwPa-KS5.js
+@galacticcouncil/ui:build: │  3.06 kB │ gzip:     0.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/sha3-BK22Itid.js
+@galacticcouncil/ui:build: │  3.17 kB │ gzip:     1.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Text.stories-ybbPGmTO.js
+@galacticcouncil/ui:build: │  3.29 kB │ gzip:     0.85 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressCircle-C1CvZRbC.js
+@galacticcouncil/ui:build: │  3.32 kB │ gzip:     1.40 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ProgressBar-BV-h7QLP.js
+@galacticcouncil/ui:build: │  3.32 kB │ gzip:     1.33 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ToggleGroup.stories-BI2Wu1Ja.js
+@galacticcouncil/ui:build: │  3.33 kB │ gzip:     0.95 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/JsonView-xifTg3nP.js
+@galacticcouncil/ui:build: │  3.45 kB │ gzip:     1.40 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Points-BzrAC3zf.js
+@galacticcouncil/ui:build: │  3.51 kB │ gzip:     1.07 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-dom-Ce6FcQM5.js
+@galacticcouncil/ui:build: │  3.56 kB │ gzip:     1.35 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Separator-BNa31_a3.js
+@galacticcouncil/ui:build: │  3.60 kB │ gzip:     1.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Drawer.stories-DS57ZCKa.js
+@galacticcouncil/ui:build: │  3.69 kB │ gzip:     1.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Input.stories-TylLFUTL.js
+@galacticcouncil/ui:build: │  3.71 kB │ gzip:     1.08 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Prose.stories-CB7ARnBb.js
+@galacticcouncil/ui:build: │  3.81 kB │ gzip:     1.41 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CXFcXpyp.js
+@galacticcouncil/ui:build: │  3.86 kB │ gzip:     1.67 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-C5iUuAw0.js
+@galacticcouncil/ui:build: │  3.89 kB │ gzip:     1.44 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-Doq-tm5q2.js
+@galacticcouncil/ui:build: │  3.90 kB │ gzip:     1.73 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetLogo.stories-COaCqPsu.js
+@galacticcouncil/ui:build: │  3.92 kB │ gzip:     1.11 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/es-DiGYLgIi.js
+@galacticcouncil/ui:build: │  3.97 kB │ gzip:     1.97 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Box-cNIa-9Zd.js
+@galacticcouncil/ui:build: │  4.20 kB │ gzip:     1.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ValueStats-D0DGwGiK.js
+@galacticcouncil/ui:build: │  4.23 kB │ gzip:     1.36 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Button.stories-A5WDLFFx.js
+@galacticcouncil/ui:build: │  4.39 kB │ gzip:     1.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Modal.stories-DaHqZHUO.js
+@galacticcouncil/ui:build: │  4.54 kB │ gzip:     1.70 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AccountAvatar-BaBU3gzr.js
+@galacticcouncil/ui:build: │  4.55 kB │ gzip:     1.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/_u64-CrSVW8IS.js
+@galacticcouncil/ui:build: │  4.58 kB │ gzip:     1.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/AssetInput.stories-DCIvWi2Z.js
+@galacticcouncil/ui:build: │  4.61 kB │ gzip:     1.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chip.stories-Da-TgZYp.js
+@galacticcouncil/ui:build: │  4.72 kB │ gzip:     1.05 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-3LY4VQVK-D3bLKWIv.js
+@galacticcouncil/ui:build: │  4.83 kB │ gzip:     2.05 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Hint.stories-CIVkvreq.js
+@galacticcouncil/ui:build: │  5.04 kB │ gzip:     1.34 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Checkbox-M4DSbcdr.js
+@galacticcouncil/ui:build: │  5.26 kB │ gzip:     2.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Toggle-Bp7-NhBy.js
+@galacticcouncil/ui:build: │  5.53 kB │ gzip:     2.35 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/animations-Cb_FkikU.js
+@galacticcouncil/ui:build: │  5.77 kB │ gzip:     0.79 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/HoverCard-C6p5GF0L.js
+@galacticcouncil/ui:build: │  6.29 kB │ gzip:     2.40 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DataTable.stories-lUoEmknJ.js
+@galacticcouncil/ui:build: │  7.48 kB │ gzip:     2.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-mE7dFmCG.js
+@galacticcouncil/ui:build: │  7.52 kB │ gzip:     2.87 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TradingViewChart.stories-SXt2DgGZ.js
+@galacticcouncil/ui:build: │  7.68 kB │ gzip:     3.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/EthereumIdenticon-DUbqSJgs.js
+@galacticcouncil/ui:build: │  7.69 kB │ gzip:     2.95 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/lucide-react-CxDygOeS.js
+@galacticcouncil/ui:build: │  7.76 kB │ gzip:     3.04 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DropdownMenu.stories-CLYEmbrq.js
+@galacticcouncil/ui:build: │  7.92 kB │ gzip:     1.90 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ToggleGroup-B5t1IPWJ.js
+@galacticcouncil/ui:build: │  8.08 kB │ gzip:     2.94 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/emotion-styled-base.browser.esm-DdifMamj.js
+@galacticcouncil/ui:build: │  8.48 kB │ gzip:     4.09 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hmac-adJqG00u.js
+@galacticcouncil/ui:build: │  9.35 kB │ gzip:     4.49 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Chart.stories-NCkVDBts.js
+@galacticcouncil/ui:build: │  9.47 kB │ gzip:     3.44 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Slider-BDf5MaNm.js
+@galacticcouncil/ui:build: │  10.79 kB │ gzip:     4.25 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/icons-D2uqVL8V.js
+@galacticcouncil/ui:build: │  12.98 kB │ gzip:     4.51 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ScrollArea--q-dYS-_.js
+@galacticcouncil/ui:build: │  15.47 kB │ gzip:     4.93 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/NavigationMenu-DVzKoVbO.js
+@galacticcouncil/ui:build: │  16.11 kB │ gzip:     5.48 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Button-DG6fWUNi.js
+@galacticcouncil/ui:build: │  17.28 kB │ gzip:     3.61 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chunk-RD3KTAHR-CqJnqK2H.js
+@galacticcouncil/ui:build: │  20.76 kB │ gzip:     6.93 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-1OGhdslx.js
+@galacticcouncil/ui:build: │  22.10 kB │ gzip:     8.28 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/styles-CfLbh1kx.js
+@galacticcouncil/ui:build: │  22.73 kB │ gzip:     6.19 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/jsx-runtime-Cp0YpWcr.js
+@galacticcouncil/ui:build: │  25.36 kB │ gzip:     9.60 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-ARNGCB4t.js
+@galacticcouncil/ui:build: │  27.11 kB │ gzip:    10.54 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/VirtualizedList-BzZOP7EK.js
+@galacticcouncil/ui:build: │  27.24 kB │ gzip:     8.56 kB
+@galacticcouncil/ui:build: │  storybook-static/vite-inject-mocker-entry.js
+@galacticcouncil/ui:build: │  27.85 kB │ gzip:     9.64 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/es-LCYVYD1w.js
+@galacticcouncil/ui:build: │  27.97 kB │ gzip:     7.59 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/descriptors-B7vB5DmX-DdX8b--2.js
+@galacticcouncil/ui:build: │  29.94 kB │ gzip:     8.65 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Color-FRDS63T2-D5tqoYyW.js
+@galacticcouncil/ui:build: │  30.85 kB │ gzip:    11.57 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/secp256k1-DtXWJ2AU.js
+@galacticcouncil/ui:build: │  30.89 kB │ gzip:    12.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/TalismanIdenticon-CCHjitbq.js
+@galacticcouncil/ui:build: │  32.90 kB │ gzip:    12.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/WithTooltip-65CFNBJE-CHoKmifx.js
+@galacticcouncil/ui:build: │  33.23 kB │ gzip:    11.66 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Combobox-CvXKhHuO.js
+@galacticcouncil/ui:build: │  42.55 kB │ gzip:    14.28 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/utils-BmOhIxOd.js
+@galacticcouncil/ui:build: │  46.01 kB │ gzip:     9.19 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/Tooltip-CWcejSVB.js
+@galacticcouncil/ui:build: │  52.34 kB │ gzip:    15.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/theming-Ch6WFvUk.js
+@galacticcouncil/ui:build: │  55.01 kB │ gzip:    21.21 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/syntaxhighlighter-OH4MV7E3-CyM1nrr8.js
+@galacticcouncil/ui:build: │  76.10 kB │ gzip:    27.37 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ccip-BBUVWHJ2.js
+@galacticcouncil/ui:build: │  123.58 kB │ gzip:    34.45 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/csf-ARizGzFT.js
+@galacticcouncil/ui:build: │  151.06 kB │ gzip:    48.17 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/react-18-DWwy4GXG.js
+@galacticcouncil/ui:build: │  179.05 kB │ gzip:    56.63 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/DocsRenderer-LL677BLK-C_fyOGSX.js
+@galacticcouncil/ui:build: │  182.71 kB │ gzip:    57.99 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/metadataTypes-3qqTMbXm-aaU6jEz5.js
+@galacticcouncil/ui:build: │  225.58 kB │ gzip:    79.26 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/ts-BrIr0wW6.js
+@galacticcouncil/ui:build: │  319.86 kB │ gzip:    75.76 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/chains_polkadot-DfhP4EbA.js
+@galacticcouncil/ui:build: │  329.53 kB │ gzip:   134.32 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-BYoSMqMF.js
+@galacticcouncil/ui:build: │  337.23 kB │ gzip:    98.31 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/esm-8KRo9pHw.js
+@galacticcouncil/ui:build: │  337.97 kB │ gzip:   106.75 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-C5fn3GXG.js
+@galacticcouncil/ui:build: │  451.40 kB │ gzip:   141.44 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/components-CQQuhYYY.js
+@galacticcouncil/ui:build: │  553.89 kB │ gzip:   170.30 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydrationNext_metadata-GcKJoSB4-D28JlPtj.js
+@galacticcouncil/ui:build: │  697.97 kB │ gzip:   225.91 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydrationIce_metadata-BIAV-HuW-CgujIkXd.js
+@galacticcouncil/ui:build: │  731.18 kB │ gzip:   238.69 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hydration_metadata-DY1VsklN-qV0LUb3C.js
+@galacticcouncil/ui:build: │  772.49 kB │ gzip:   255.22 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/hub_metadata-CN_MTTeF-WOi5n1gH.js
+@galacticcouncil/ui:build: │  835.98 kB │ gzip:   265.92 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/src-BBVB4GQK.js
+@galacticcouncil/ui:build: │  942.57 kB │ gzip:   271.55 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/iframe-Cuu9MG9z.js
+@galacticcouncil/ui:build: │  1,038.21 kB │ gzip:   291.59 kB
+@galacticcouncil/ui:build: │  storybook-static/assets/dist-CnEvWNM7.js
+@galacticcouncil/ui:build: │  3,109.61 kB │ gzip: 2,330.07 kB
+@galacticcouncil/ui:build: 
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ▲  Vite [plugin builtin:vite-reporter]
+@galacticcouncil/ui:build: │  (!) Some chunks are larger than 500 kB after minification. Consider:
+@galacticcouncil/ui:build: │  - Using dynamic import() to code-split the application
+@galacticcouncil/ui:build: │  - Use build.rolldownOptions.output.codeSplitting to improve chunking:
+@galacticcouncil/ui:build: │  ]8;;https://rolldown.rs/reference/OutputOptions.codeSplittinghttps://rolldown.rs/reference/OutputOptions.codeSplitting]8;;
+@galacticcouncil/ui:build: │  - Adjust chunk size limit for this warning via
+@galacticcouncil/ui:build: │  build.chunkSizeWarningLimit.
+@galacticcouncil/ui:build: │  Vite ✓ built in 12.73s
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: ◇  Output directory:
+@galacticcouncil/ui:build: │  /tmp/hydration-ui-resilience-20261001/packages/ui/storybook-static
+@galacticcouncil/ui:build: │
+@galacticcouncil/ui:build: └  Storybook build completed successfully
+@galacticcouncil/ui:build: 
+@galacticcouncil/ui:build: Done in 27.50s.
+@galacticcouncil/web3-connect:build: cache miss, executing dd50ffb875161527
+@galacticcouncil/web3-connect:build: yarn run v1.22.22
+@galacticcouncil/web3-connect:build: $ tsc --build
+@galacticcouncil/web3-connect:build: Done in 10.17s.
+@galacticcouncil/money-market:build: cache miss, executing f412997d29eb44ca
+@galacticcouncil/money-market:build: yarn run v1.22.22
+@galacticcouncil/money-market:build: $ tsc --build
+@galacticcouncil/money-market:build: Done in 5.34s.
+@galacticcouncil/main:build: cache miss, executing 0aced76151703e29
+@galacticcouncil/main:build: yarn run v1.22.22
+@galacticcouncil/main:build: $ vite build && tsc
+@galacticcouncil/main:build: vite v8.0.10 building client environment for production...
+@galacticcouncil/main:build: [2K@galacticcouncil/main:build: transforming...✓ 9787 modules transformed.
+@galacticcouncil/main:build: rendering chunks...
+@galacticcouncil/main:build: computing gzip size...
+@galacticcouncil/main:build: build/assets/logo-K31TZ0N9.svg                      4.16 kB │ gzip:     1.86 kB
+@galacticcouncil/main:build: build/assets/LoyaltyGraph.worker-CKM4e_9w.js        4.29 kB
+@galacticcouncil/main:build: build/assets/StakedBalance-xi8rkMvz.webp            4.34 kB
+@galacticcouncil/main:build: build/assets/logo-Cr5BQHrR.svg                      4.36 kB │ gzip:     1.65 kB
+@galacticcouncil/main:build: build/assets/ProjectedAPR-D8Kg2m8x.webp             4.37 kB
+@galacticcouncil/main:build: build/assets/Caution3D-BQWfVypr.webp                4.61 kB
+@galacticcouncil/main:build: build/assets/ping.worker-4kG22f8t.js                5.97 kB
+@galacticcouncil/main:build: build/assets/ChartError-C-no07SF.webp               7.89 kB
+@galacticcouncil/main:build: build/assets/Casette-DXheiYRg.webp                  8.29 kB
+@galacticcouncil/main:build: build/assets/ReferendaEmptyState-Dj7Fwijr.webp      8.60 kB
+@galacticcouncil/main:build: build/assets/Flamingo-DmI1j7is.webp                10.19 kB
+@galacticcouncil/main:build: build/assets/WarningStatus-yeAAWXpe.webp           10.51 kB
+@galacticcouncil/main:build: build/assets/NoFunds-BSgisKJ9.png                  11.12 kB
+@galacticcouncil/main:build: build/assets/ErrorStatus-Q57NRvc2.webp             11.13 kB
+@galacticcouncil/main:build: build/assets/NoPositions-BicTfe6F.png              12.51 kB
+@galacticcouncil/main:build: build/assets/SuccessStatus-CqjQIkTH.webp           12.93 kB
+@galacticcouncil/main:build: build/assets/GigaHDXCans-zIB8dHdf.webp             13.29 kB
+@galacticcouncil/main:build: build/assets/TrackedWallet-DXUcuNGQ.webp           18.31 kB
+@galacticcouncil/main:build: build/index.html                                   21.56 kB │ gzip:     4.96 kB
+@galacticcouncil/main:build: build/assets/GazpachoBlack-CKMlCGzV.woff2          25.34 kB
+@galacticcouncil/main:build: build/assets/HollarBond-BMIjzjF0.webp              26.54 kB
+@galacticcouncil/main:build: build/assets/GeistMonoRegular-CTeN_hTv.woff2       27.28 kB
+@galacticcouncil/main:build: build/assets/GeistMonoSemiBold-CUjAn44b.woff2      27.46 kB
+@galacticcouncil/main:build: build/assets/GeistBold-BGsvlvzV.woff2              29.46 kB
+@galacticcouncil/main:build: build/assets/GeistMonoMedium-BMSM7UeV.woff2        31.88 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-DwBpizSx.wasm        35.67 kB │ gzip:    16.04 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-CLMJf4K_.wasm        37.94 kB │ gzip:    16.77 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-CEGA-slC.wasm        39.00 kB │ gzip:    18.22 kB
+@galacticcouncil/main:build: build/assets/GazpachoBold-B7K1p9QZ.woff2           39.50 kB
+@galacticcouncil/main:build: build/assets/GazpachoMedium-CsvkVblF.woff2         39.53 kB
+@galacticcouncil/main:build: build/assets/GazpachoRegular-TtB8xQCa.woff2        39.71 kB
+@galacticcouncil/main:build: build/assets/GeistRegular-DCwoJUrm.woff2           40.21 kB
+@galacticcouncil/main:build: build/assets/GeistSemiBold-DD8-KCr1.woff2          41.32 kB
+@galacticcouncil/main:build: build/assets/GeistMedium-Bd4KHlwS.woff2            41.37 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-DSK1FPAH.wasm        48.28 kB │ gzip:    29.10 kB
+@galacticcouncil/main:build: build/assets/IcePromo-D-GCnJbP.webp               103.59 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-rcMnucsg.wasm       118.62 kB │ gzip:    66.67 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-C5VqofBO.wasm       140.61 kB │ gzip:    61.49 kB
+@galacticcouncil/main:build: build/assets/hydra_dx_wasm_bg-CJ2NnTh-.wasm       237.26 kB │ gzip:   113.51 kB
+@galacticcouncil/main:build: build/assets/VendingMachine-DkaEBOTe.webp         244.20 kB
+@galacticcouncil/main:build: build/assets/index-D3T3MSiY.css                     1.59 kB │ gzip:     0.31 kB
+@galacticcouncil/main:build: build/assets/components-ktaX8x8m.css                3.68 kB │ gzip:     1.19 kB
+@galacticcouncil/main:build: build/chunk-6OhHHQY_.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-BKqpFr-K.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-CXesNZML.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-CczksluN.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-DJVj1w0M.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-DSBV82Pm2.js                            0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-G-ecr31l.js                             0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-DUW_DEy-2.js                            0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-GGLEz4Tw2.js                            0.02 kB │ gzip:     0.04 kB
+@galacticcouncil/main:build: build/chunk-BMz7Gdy_2.js                            0.03 kB │ gzip:     0.05 kB
+@galacticcouncil/main:build: build/chunk-DAS-YIw02.js                            0.03 kB │ gzip:     0.05 kB
+@galacticcouncil/main:build: build/chunk--de4qqfj2.js                            0.04 kB │ gzip:     0.06 kB
+@galacticcouncil/main:build: build/chunk-BPhTvt8y2.js                            0.04 kB │ gzip:     0.06 kB
+@galacticcouncil/main:build: build/chunk-CRqnOTto2.js                            0.04 kB │ gzip:     0.06 kB
+@galacticcouncil/main:build: build/chunk-CVeNOOK32.js                            0.04 kB │ gzip:     0.06 kB
+@galacticcouncil/main:build: build/chunk-WTFkK3yx2.js                            0.04 kB │ gzip:     0.06 kB
+@galacticcouncil/main:build: build/chunk-BtlYukuV.js                             0.05 kB │ gzip:     0.07 kB
+@galacticcouncil/main:build: build/chunk-BTkZB4An.js                             0.05 kB │ gzip:     0.07 kB
+@galacticcouncil/main:build: build/chunk-jlprGQwM2.js                            0.06 kB │ gzip:     0.07 kB
+@galacticcouncil/main:build: build/chunk-DGadJ6uQ.js                             0.06 kB │ gzip:     0.07 kB
+@galacticcouncil/main:build: build/chunk-Dv1fDA-B.js                             0.06 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-XCYBkftB2.js                            0.06 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-t6QMVdeB2.js                            0.06 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-C-g-OsA12.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-DEz0ZnMl2.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-CVAjbN2m2.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-CkvhQyR72.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-Co8aTxML.js                             0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-Cu5Ve4yM2.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-DQNKlP6s2.js                            0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-Dzkcpsdi.js                             0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-gmyZbLii.js                             0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-B1PNdGba.js                             0.07 kB │ gzip:     0.08 kB
+@galacticcouncil/main:build: build/chunk-DhJNZ0J22.js                            0.07 kB │ gzip:     0.09 kB
+@galacticcouncil/main:build: build/chunk-Cpqp-jwN2.js                            0.08 kB │ gzip:     0.10 kB
+@galacticcouncil/main:build: build/chunk-DnUr_R7V.js                             0.08 kB │ gzip:     0.10 kB
+@galacticcouncil/main:build: build/chunk-BN7eWWRS.js                             0.09 kB │ gzip:     0.11 kB
+@galacticcouncil/main:build: build/chunk-jyK2C2o0.js                             0.10 kB │ gzip:     0.10 kB
+@galacticcouncil/main:build: build/chunk-BCed1q54.js                             0.10 kB │ gzip:     0.12 kB
+@galacticcouncil/main:build: build/chunk-Dss-eqEL.js                             0.10 kB │ gzip:     0.10 kB
+@galacticcouncil/main:build: build/chunk-Bvk12Rvh.js                             0.11 kB │ gzip:     0.11 kB
+@galacticcouncil/main:build: build/chunk-D6celXjd2.js                            0.12 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-7Dm0cdww.js                             0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/main:build: build/chunk-C1QsOi3x2.js                            0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/main:build: build/chunk-CSqY8UwI2.js                            0.12 kB │ gzip:     0.11 kB
+@galacticcouncil/main:build: build/chunk-CDopqn0V.js                             0.13 kB │ gzip:     0.12 kB
+@galacticcouncil/main:build: build/chunk-BjSneVdr.js                             0.13 kB │ gzip:     0.12 kB
+@galacticcouncil/main:build: build/chunk-BQ26VcZV2.js                            0.13 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-DMPxcn8v.js                             0.13 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-hSWE4ACq.js                             0.13 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-DXyv18PG.js                             0.14 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-CBpeOOvN2.js                            0.14 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-CB8h06JO.js                             0.15 kB │ gzip:     0.15 kB
+@galacticcouncil/main:build: build/chunk-DfPPq_-d.js                             0.15 kB │ gzip:     0.15 kB
+@galacticcouncil/main:build: build/chunk-hq9Rifyv.js                             0.16 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-BWiGiaz0.js                             0.17 kB │ gzip:     0.14 kB
+@galacticcouncil/main:build: build/chunk-CygsRWiu.js                             0.17 kB │ gzip:     0.14 kB
+@galacticcouncil/main:build: build/chunk-CxXqkfOz.js                             0.17 kB │ gzip:     0.15 kB
+@galacticcouncil/main:build: build/chunk-BV_cSRHI.js                             0.18 kB │ gzip:     0.17 kB
+@galacticcouncil/main:build: build/chunk-DjjazzSj.js                             0.18 kB │ gzip:     0.14 kB
+@galacticcouncil/main:build: build/chunk-CJCO9S8P.js                             0.20 kB │ gzip:     0.16 kB
+@galacticcouncil/main:build: build/chunk-DZG8IPRG2.js                            0.20 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-PtcmW-yh.js                             0.20 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-kooe-W01.js                             0.20 kB │ gzip:     0.16 kB
+@galacticcouncil/main:build: build/chunk-BVXiDh3T.js                             0.20 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-C6P5s1gX.js                             0.21 kB │ gzip:     0.13 kB
+@galacticcouncil/main:build: build/chunk-BOGS6SgA.js                             0.21 kB │ gzip:     0.16 kB
+@galacticcouncil/main:build: build/chunk-DxL8vNjG.js                             0.21 kB │ gzip:     0.15 kB
+@galacticcouncil/main:build: build/chunk-BV3qFWQz.js                             0.23 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-DwR7K9wR.js                             0.23 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-BdFxpAKN.js                             0.23 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-C93_WDSs.js                             0.23 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-ioTka0My2.js                            0.24 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-CKUzvujm.js                             0.25 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-CO6FlmlL.js                             0.25 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-CScvYLHC2.js                            0.25 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-DAMOnCkv.js                             0.26 kB │ gzip:     0.18 kB
+@galacticcouncil/main:build: build/chunk-yDxcQTv6.js                             0.26 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-IuNIhRMl2.js                            0.26 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-C570Ls6O.js                             0.27 kB │ gzip:     0.22 kB
+@galacticcouncil/main:build: build/chunk-BApmIezq.js                             0.27 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-BpR12V9l2.js                            0.27 kB │ gzip:     0.22 kB
+@galacticcouncil/main:build: build/chunk-BmZKJo0B.js                             0.28 kB │ gzip:     0.22 kB
+@galacticcouncil/main:build: build/chunk-CWrhyISb.js                             0.29 kB │ gzip:     0.19 kB
+@galacticcouncil/main:build: build/chunk-CiDznD8l2.js                            0.30 kB │ gzip:     0.17 kB
+@galacticcouncil/main:build: build/chunk-Df5irRya.js                             0.30 kB │ gzip:     0.22 kB
+@galacticcouncil/main:build: build/chunk-BuawNX64.js                             0.31 kB │ gzip:     0.22 kB
+@galacticcouncil/main:build: build/chunk-Cs6tquOO.js                             0.32 kB │ gzip:     0.23 kB
+@galacticcouncil/main:build: build/chunk-DD_R-AdD2.js                            0.34 kB │ gzip:     0.21 kB
+@galacticcouncil/main:build: build/chunk-BpY4rx6v.js                             0.34 kB │ gzip:     0.23 kB
+@galacticcouncil/main:build: build/chunk-DpWiLJg12.js                            0.36 kB │ gzip:     0.25 kB
+@galacticcouncil/main:build: build/chunk-Bm0CQy5P.js                             0.37 kB │ gzip:     0.23 kB
+@galacticcouncil/main:build: build/chunk-X6AzxYcq.js                             0.37 kB │ gzip:     0.25 kB
+@galacticcouncil/main:build: build/chunk-DZf7zosN2.js                            0.37 kB │ gzip:     0.24 kB
+@galacticcouncil/main:build: build/chunk-D6EIOqGP2.js                            0.38 kB │ gzip:     0.25 kB
+@galacticcouncil/main:build: build/chunk-Cn0WX0PP.js                             0.38 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-COkHqn46.js                             0.39 kB │ gzip:     0.23 kB
+@galacticcouncil/main:build: build/chunk-B-1icbh0.js                             0.40 kB │ gzip:     0.26 kB
+@galacticcouncil/main:build: build/chunk-DpB8ZcnS2.js                            0.41 kB │ gzip:     0.33 kB
+@galacticcouncil/main:build: build/chunk-156EuRrB.js                             0.42 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-dRqpE6uI.js                             0.42 kB │ gzip:     0.27 kB
+@galacticcouncil/main:build: build/chunk-CVqurJLV.js                             0.42 kB │ gzip:     0.29 kB
+@galacticcouncil/main:build: build/chunk-DCiQHhBc2.js                            0.43 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-8vwo_42x2.js                            0.44 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-BE62LCHN2.js                            0.44 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-C6UFV0rW.js                             0.44 kB │ gzip:     0.31 kB
+@galacticcouncil/main:build: build/chunk-BMx7RcSa.js                             0.45 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-CczcVfGF.js                             0.45 kB │ gzip:     0.29 kB
+@galacticcouncil/main:build: build/chunk-CZdNnPXk.js                             0.45 kB │ gzip:     0.33 kB
+@galacticcouncil/main:build: build/chunk-QzPAVp7w.js                             0.45 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-DhfLYziE2.js                            0.45 kB │ gzip:     0.28 kB
+@galacticcouncil/main:build: build/chunk-CQO6svyx.js                             0.45 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-CByUm8iE.js                             0.46 kB │ gzip:     0.29 kB
+@galacticcouncil/main:build: build/chunk-BLaqAiEO.js                             0.46 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-MZ-a808K2.js                            0.48 kB │ gzip:     0.31 kB
+@galacticcouncil/main:build: build/chunk-Cc0s3P61.js                             0.48 kB │ gzip:     0.31 kB
+@galacticcouncil/main:build: build/chunk-BDVKzFrI2.js                            0.49 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-nNHOV5i22.js                            0.50 kB │ gzip:     0.35 kB
+@galacticcouncil/main:build: build/chunk-Cmo_CKXL2.js                            0.50 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-Dw_oE_bi2.js                            0.52 kB │ gzip:     0.31 kB
+@galacticcouncil/main:build: build/chunk-D2HeaUG1.js                             0.52 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-BQfHD4EE.js                             0.52 kB │ gzip:     0.29 kB
+@galacticcouncil/main:build: build/chunk-B3nkpEir2.js                            0.53 kB │ gzip:     0.30 kB
+@galacticcouncil/main:build: build/chunk-DjetZE8n2.js                            0.54 kB │ gzip:     0.36 kB
+@galacticcouncil/main:build: build/chunk-CJWAXQf82.js                            0.55 kB │ gzip:     0.34 kB
+@galacticcouncil/main:build: build/chunk-LPtldG13.js                             0.55 kB │ gzip:     0.39 kB
+@galacticcouncil/main:build: build/chunk-10Pe0AWR.js                             0.56 kB │ gzip:     0.37 kB
+@galacticcouncil/main:build: build/chunk-TjEF58LD.js                             0.56 kB │ gzip:     0.34 kB
+@galacticcouncil/main:build: build/chunk-Dz8NoxLR.js                             0.56 kB │ gzip:     0.35 kB
+@galacticcouncil/main:build: build/chunk-C_a0c03O.js                             0.58 kB │ gzip:     0.33 kB
+@galacticcouncil/main:build: build/chunk-C64h2OW-2.js                            0.59 kB │ gzip:     0.37 kB
+@galacticcouncil/main:build: build/chunk-BImloR8k.js                             0.60 kB │ gzip:     0.41 kB
+@galacticcouncil/main:build: build/chunk-CLGuH9as.js                             0.60 kB │ gzip:     0.36 kB
+@galacticcouncil/main:build: build/chunk-DLtZLVz-.js                             0.61 kB │ gzip:     0.33 kB
+@galacticcouncil/main:build: build/chunk-CEYDjg4Y.js                             0.62 kB │ gzip:     0.34 kB
+@galacticcouncil/main:build: build/chunk-iA0hIhhD.js                             0.62 kB │ gzip:     0.38 kB
+@galacticcouncil/main:build: build/chunk-CsFz6vsB.js                             0.62 kB │ gzip:     0.39 kB
+@galacticcouncil/main:build: build/chunk-DFQXAVDP.js                             0.63 kB │ gzip:     0.35 kB
+@galacticcouncil/main:build: build/chunk-8wcLQH0z.js                             0.64 kB │ gzip:     0.40 kB
+@galacticcouncil/main:build: build/chunk-B53SkqUk.js                             0.64 kB │ gzip:     0.38 kB
+@galacticcouncil/main:build: build/chunk-BqWSYSli.js                             0.65 kB │ gzip:     0.39 kB
+@galacticcouncil/main:build: build/chunk-CTyOHEtw.js                             0.65 kB │ gzip:     0.36 kB
+@galacticcouncil/main:build: build/chunk-DbsPsZie.js                             0.71 kB │ gzip:     0.33 kB
+@galacticcouncil/main:build: build/chunk-CwmWDrAV2.js                            0.71 kB │ gzip:     0.40 kB
+@galacticcouncil/main:build: build/chunk-02aTb7ts2.js                            0.74 kB │ gzip:     0.44 kB
+@galacticcouncil/main:build: build/chunk-CKrGdyAU2.js                            0.75 kB │ gzip:     0.47 kB
+@galacticcouncil/main:build: build/chunk-DTegPXVO2.js                            0.77 kB │ gzip:     0.45 kB
+@galacticcouncil/main:build: build/chunk-CkcDXqDt.js                             0.87 kB │ gzip:     0.51 kB
+@galacticcouncil/main:build: build/chunk-BaOT6MRd.js                             0.89 kB │ gzip:     0.53 kB
+@galacticcouncil/main:build: build/chunk-yFdSXyGw2.js                            0.90 kB │ gzip:     0.45 kB
+@galacticcouncil/main:build: build/chunk-fkgAkf4h.js                             0.93 kB │ gzip:     0.53 kB
+@galacticcouncil/main:build: build/chunk-Bs3sIlGV.js                             0.94 kB │ gzip:     0.56 kB
+@galacticcouncil/main:build: build/chunk-D_m82hWD2.js                            0.94 kB │ gzip:     0.56 kB
+@galacticcouncil/main:build: build/chunk-Btp38srO2.js                            0.94 kB │ gzip:     0.48 kB
+@galacticcouncil/main:build: build/chunk-Q-Ik_3P_.js                             0.95 kB │ gzip:     0.55 kB
+@galacticcouncil/main:build: build/chunk-B1hQuJfg2.js                            0.95 kB │ gzip:     0.49 kB
+@galacticcouncil/main:build: build/chunk-8jgrXdeN2.js                            1.00 kB │ gzip:     0.60 kB
+@galacticcouncil/main:build: build/chunk-BWzuG6ET.js                             1.01 kB │ gzip:     0.57 kB
+@galacticcouncil/main:build: build/chunk-Dg2I2a4o2.js                            1.03 kB │ gzip:     0.49 kB
+@galacticcouncil/main:build: build/chunk-D01FMufd2.js                            1.13 kB │ gzip:     0.58 kB
+@galacticcouncil/main:build: build/chunk-JCY1_EEt.js                             1.17 kB │ gzip:     0.56 kB
+@galacticcouncil/main:build: build/chunk-Dx588D-r.js                             1.17 kB │ gzip:     0.63 kB
+@galacticcouncil/main:build: build/chunk-C7p_A-FC.js                             1.19 kB │ gzip:     0.68 kB
+@galacticcouncil/main:build: build/chunk-B8T-iuSV.js                             1.19 kB │ gzip:     0.66 kB
+@galacticcouncil/main:build: build/chunk-CJCiuS532.js                            1.23 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-vI2zEQvL.js                             1.23 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-CQ7JLyTQ.js                             1.24 kB │ gzip:     0.43 kB
+@galacticcouncil/main:build: build/chunk-C6na_-A5.js                             1.27 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-BdCGZdNf.js                             1.29 kB │ gzip:     0.57 kB
+@galacticcouncil/main:build: build/chunk-Vi2LKVs_.js                             1.33 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-BWTRW__Q2.js                            1.35 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-BQgxecYN.js                             1.37 kB │ gzip:     0.74 kB
+@galacticcouncil/main:build: build/chunk-9svF7QtP.js                             1.37 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-BW0MWYOb2.js                            1.38 kB │ gzip:     0.66 kB
+@galacticcouncil/main:build: build/chunk-DgSeT-Cy2.js                            1.38 kB │ gzip:     0.68 kB
+@galacticcouncil/main:build: build/chunk-nkyX2RXw2.js                            1.42 kB │ gzip:     0.69 kB
+@galacticcouncil/main:build: build/chunk-C8cAzBF_.js                             1.43 kB │ gzip:     0.74 kB
+@galacticcouncil/main:build: build/chunk-BLR9CBrw2.js                            1.45 kB │ gzip:     0.76 kB
+@galacticcouncil/main:build: build/chunk-BI61G2VO.js                             1.48 kB │ gzip:     0.76 kB
+@galacticcouncil/main:build: build/chunk-tTV4xTdS.js                             1.49 kB │ gzip:     0.74 kB
+@galacticcouncil/main:build: build/chunk-aFSSPddb.js                             1.52 kB │ gzip:     0.75 kB
+@galacticcouncil/main:build: build/chunk-CYf_bJ6h.js                             1.52 kB │ gzip:     0.76 kB
+@galacticcouncil/main:build: build/chunk-ClbYgm5I2.js                            1.53 kB │ gzip:     0.84 kB
+@galacticcouncil/main:build: build/chunk-CT0ws0sC2.js                            1.53 kB │ gzip:     0.70 kB
+@galacticcouncil/main:build: build/chunk-CJrUMn592.js                            1.60 kB │ gzip:     0.75 kB
+@galacticcouncil/main:build: build/chunk-_Adz1zTp2.js                            1.62 kB │ gzip:     0.83 kB
+@galacticcouncil/main:build: build/chunk-CfVma8q_.js                             1.62 kB │ gzip:     0.74 kB
+@galacticcouncil/main:build: build/chunk-CkAKRJzi2.js                            1.65 kB │ gzip:     0.73 kB
+@galacticcouncil/main:build: build/chunk-CChq-I942.js                            1.68 kB │ gzip:     0.80 kB
+@galacticcouncil/main:build: build/chunk-DXlDkGdj.js                             1.71 kB │ gzip:     0.86 kB
+@galacticcouncil/main:build: build/chunk-Dpa4WxXA.js                             1.74 kB │ gzip:     0.89 kB
+@galacticcouncil/main:build: build/chunk-f7cjGbnu2.js                            1.74 kB │ gzip:     0.83 kB
+@galacticcouncil/main:build: build/chunk-GFNaLS_g2.js                            1.77 kB │ gzip:     0.82 kB
+@galacticcouncil/main:build: build/chunk-0mZTTT2a.js                             1.85 kB │ gzip:     0.90 kB
+@galacticcouncil/main:build: build/chunk-CWEYp8Z6.js                             1.86 kB │ gzip:     0.88 kB
+@galacticcouncil/main:build: build/chunk-2cvMQOmD.js                             1.91 kB │ gzip:     0.94 kB
+@galacticcouncil/main:build: build/chunk-Bel8mP9g.js                             1.93 kB │ gzip:     0.92 kB
+@galacticcouncil/main:build: build/chunk-B8uV36sZ.js                             1.95 kB │ gzip:     0.94 kB
+@galacticcouncil/main:build: build/chunk-B0E0nH_F.js                             1.96 kB │ gzip:     0.94 kB
+@galacticcouncil/main:build: build/chunk-UwxBSDmo.js                             1.96 kB │ gzip:     0.80 kB
+@galacticcouncil/main:build: build/chunk-BizABkPc.js                             1.99 kB │ gzip:     0.91 kB
+@galacticcouncil/main:build: build/chunk-o6jJ7olU.js                             2.00 kB │ gzip:     1.03 kB
+@galacticcouncil/main:build: build/chunk-DR75xeuk.js                             2.03 kB │ gzip:     1.00 kB
+@galacticcouncil/main:build: build/chunk-CX6R-8rY2.js                            2.05 kB │ gzip:     0.76 kB
+@galacticcouncil/main:build: build/chunk-CTCtr9oP.js                             2.06 kB │ gzip:     0.99 kB
+@galacticcouncil/main:build: build/chunk-Bwsuw1Vc2.js                            2.07 kB │ gzip:     0.95 kB
+@galacticcouncil/main:build: build/chunk-CeQ70ms1.js                             2.08 kB │ gzip:     0.96 kB
+@galacticcouncil/main:build: build/chunk-0g3oDrIN.js                             2.08 kB │ gzip:     0.99 kB
+@galacticcouncil/main:build: build/chunk-7ftrhzo_.js                             2.08 kB │ gzip:     0.88 kB
+@galacticcouncil/main:build: build/chunk-CidumOyt.js                             2.09 kB │ gzip:     0.98 kB
+@galacticcouncil/main:build: build/chunk-DnZiiIMk.js                             2.10 kB │ gzip:     0.94 kB
+@galacticcouncil/main:build: build/chunk-CaQ6n0Ld.js                             2.11 kB │ gzip:     1.00 kB
+@galacticcouncil/main:build: build/chunk-BBbBk_fg.js                             2.14 kB │ gzip:     0.98 kB
+@galacticcouncil/main:build: build/chunk-CYEbaWsX2.js                            2.18 kB │ gzip:     1.06 kB
+@galacticcouncil/main:build: build/chunk-Dno86nCm.js                             2.18 kB │ gzip:     0.95 kB
+@galacticcouncil/main:build: build/chunk-DAFt7al4.js                             2.20 kB │ gzip:     1.10 kB
+@galacticcouncil/main:build: build/chunk-8Ka4f2hY2.js                            2.21 kB │ gzip:     1.04 kB
+@galacticcouncil/main:build: build/chunk-BOjHAn4H2.js                            2.22 kB │ gzip:     0.92 kB
+@galacticcouncil/main:build: build/chunk-Ci-T-XPY2.js                            2.23 kB │ gzip:     0.99 kB
+@galacticcouncil/main:build: build/chunk-o0UXV7DY2.js                            2.30 kB │ gzip:     1.06 kB
+@galacticcouncil/main:build: build/chunk-B65mYHG42.js                            2.33 kB │ gzip:     0.99 kB
+@galacticcouncil/main:build: build/chunk-5t38h1z72.js                            2.33 kB │ gzip:     0.98 kB
+@galacticcouncil/main:build: build/chunk-R6VX00jL2.js                            2.34 kB │ gzip:     1.01 kB
+@galacticcouncil/main:build: build/chunk-Cj7v3_682.js                            2.39 kB │ gzip:     1.01 kB
+@galacticcouncil/main:build: build/chunk-Du67tIDa.js                             2.40 kB │ gzip:     1.03 kB
+@galacticcouncil/main:build: build/chunk-D3542by62.js                            2.41 kB │ gzip:     1.11 kB
+@galacticcouncil/main:build: build/chunk-DPDyKfpO.js                             2.46 kB │ gzip:     1.02 kB
+@galacticcouncil/main:build: build/chunk-DCzdktf5.js                             2.46 kB │ gzip:     1.05 kB
+@galacticcouncil/main:build: build/chunk-DDJ38Gt-2.js                            2.51 kB │ gzip:     1.13 kB
+@galacticcouncil/main:build: build/chunk-Bb12N7An.js                             2.51 kB │ gzip:     1.28 kB
+@galacticcouncil/main:build: build/chunk-8Mlrq2jZ.js                             2.53 kB │ gzip:     1.21 kB
+@galacticcouncil/main:build: build/chunk-6MtcScEm2.js                            2.54 kB │ gzip:     1.05 kB
+@galacticcouncil/main:build: build/chunk-fHRNSRcz2.js                            2.55 kB │ gzip:     1.14 kB
+@galacticcouncil/main:build: build/chunk-DYZB3Bh5.js                             2.55 kB │ gzip:     1.17 kB
+@galacticcouncil/main:build: build/chunk-LDjNo0qb2.js                            2.57 kB │ gzip:     1.02 kB
+@galacticcouncil/main:build: build/chunk-CKGGSc8v2.js                            2.57 kB │ gzip:     1.20 kB
+@galacticcouncil/main:build: build/chunk-Sns2sL03.js                             2.58 kB │ gzip:     1.07 kB
+@galacticcouncil/main:build: build/chunk-C8RT3_CW.js                             2.62 kB │ gzip:     1.21 kB
+@galacticcouncil/main:build: build/chunk-BdiSbIC2.js                             2.65 kB │ gzip:     1.25 kB
+@galacticcouncil/main:build: build/chunk-jmO1phZv2.js                            2.65 kB │ gzip:     1.16 kB
+@galacticcouncil/main:build: build/chunk-DfW5aQyj.js                             2.68 kB │ gzip:     1.20 kB
+@galacticcouncil/main:build: build/chunk-DoodZk5M2.js                            2.73 kB │ gzip:     1.14 kB
+@galacticcouncil/main:build: build/chunk-lgydlouj2.js                            2.73 kB │ gzip:     1.30 kB
+@galacticcouncil/main:build: build/chunk-DYmvD8M82.js                            2.74 kB │ gzip:     1.20 kB
+@galacticcouncil/main:build: build/chunk-D1tueTZU2.js                            2.74 kB │ gzip:     1.26 kB
+@galacticcouncil/main:build: build/chunk-B4jFQ4u-.js                             2.75 kB │ gzip:     0.98 kB
+@galacticcouncil/main:build: build/chunk-Cxe12tYO2.js                            2.75 kB │ gzip:     1.10 kB
+@galacticcouncil/main:build: build/chunk-DpN805RT.js                             2.77 kB │ gzip:     1.16 kB
+@galacticcouncil/main:build: build/chunk-CbBiYwZU.js                             2.77 kB │ gzip:     1.17 kB
+@galacticcouncil/main:build: build/chunk-CgThgXZd.js                             2.78 kB │ gzip:     1.16 kB
+@galacticcouncil/main:build: build/chunk-DcKEdQPo.js                             2.80 kB │ gzip:     1.15 kB
+@galacticcouncil/main:build: build/chunk-tdnEaJAm2.js                            2.81 kB │ gzip:     1.28 kB
+@galacticcouncil/main:build: build/chunk-CF2nnCTY.js                             2.83 kB │ gzip:     1.39 kB
+@galacticcouncil/main:build: build/chunk-qw6WYJOj.js                             2.85 kB │ gzip:     1.45 kB
+@galacticcouncil/main:build: build/chunk-FWQ4BDBc.js                             2.89 kB │ gzip:     1.23 kB
+@galacticcouncil/main:build: build/chunk-Ft3B5uAI.js                             2.89 kB │ gzip:     1.16 kB
+@galacticcouncil/main:build: build/chunk-CyEyMxXV2.js                            2.90 kB │ gzip:     1.14 kB
+@galacticcouncil/main:build: build/chunk-BavOa25x.js                             2.91 kB │ gzip:     1.23 kB
+@galacticcouncil/main:build: build/chunk-CscuMQD52.js                            2.91 kB │ gzip:     1.36 kB
+@galacticcouncil/main:build: build/chunk-CjORE4bA.js                             2.93 kB │ gzip:     1.18 kB
+@galacticcouncil/main:build: build/chunk-o7M0nzxo.js                             2.94 kB │ gzip:     0.96 kB
+@galacticcouncil/main:build: build/chunk-BVwk54ne2.js                            2.95 kB │ gzip:     1.26 kB
+@galacticcouncil/main:build: build/chunk-CRX272ar.js                             2.96 kB │ gzip:     1.01 kB
+@galacticcouncil/main:build: build/chunk-bWnekc-C.js                             2.97 kB │ gzip:     1.31 kB
+@galacticcouncil/main:build: build/chunk-C2LCAPMm.js                             2.99 kB │ gzip:     1.50 kB
+@galacticcouncil/main:build: build/chunk-vQrDZpIi.js                             3.01 kB │ gzip:     1.11 kB
+@galacticcouncil/main:build: build/chunk-sKvIn9-c.js                             3.02 kB │ gzip:     1.42 kB
+@galacticcouncil/main:build: build/chunk-D91EbJ4o2.js                            3.06 kB │ gzip:     1.40 kB
+@galacticcouncil/main:build: build/chunk-Cy2y3q88.js                             3.07 kB │ gzip:     1.18 kB
+@galacticcouncil/main:build: build/chunk-BQD9QJ5O.js                             3.08 kB │ gzip:     1.17 kB
+@galacticcouncil/main:build: build/chunk-C215NR3h.js                             3.09 kB │ gzip:     1.46 kB
+@galacticcouncil/main:build: build/chunk-Dsf9Y30L.js                             3.17 kB │ gzip:     1.47 kB
+@galacticcouncil/main:build: build/chunk-DMMWntBO2.js                            3.17 kB │ gzip:     1.36 kB
+@galacticcouncil/main:build: build/chunk-DQvuu_2f.js                             3.20 kB │ gzip:     1.29 kB
+@galacticcouncil/main:build: build/chunk-DkTDrtbf2.js                            3.21 kB │ gzip:     1.32 kB
+@galacticcouncil/main:build: build/chunk-DDLs0NZv.js                             3.23 kB │ gzip:     1.27 kB
+@galacticcouncil/main:build: build/chunk-B4d4Ar2k.js                             3.28 kB │ gzip:     1.41 kB
+@galacticcouncil/main:build: build/chunk-DTRcnreS2.js                            3.28 kB │ gzip:     1.43 kB
+@galacticcouncil/main:build: build/chunk-D9YMTwKU2.js                            3.28 kB │ gzip:     1.23 kB
+@galacticcouncil/main:build: build/chunk-CQCd81dq2.js                            3.38 kB │ gzip:     1.11 kB
+@galacticcouncil/main:build: build/chunk-CniriBdU2.js                            3.40 kB │ gzip:     1.43 kB
+@galacticcouncil/main:build: build/chunk-C50obF73.js                             3.44 kB │ gzip:     1.32 kB
+@galacticcouncil/main:build: build/chunk-Pc_RX197.js                             3.48 kB │ gzip:     1.53 kB
+@galacticcouncil/main:build: build/chunk-OyZbQja82.js                            3.53 kB │ gzip:     1.44 kB
+@galacticcouncil/main:build: build/chunk-C7mo8Vh5.js                             3.60 kB │ gzip:     1.59 kB
+@galacticcouncil/main:build: build/chunk-CsjIDi04.js                             3.71 kB │ gzip:     1.30 kB
+@galacticcouncil/main:build: build/chunk-CAEDcev72.js                            3.82 kB │ gzip:     1.53 kB
+@galacticcouncil/main:build: build/chunk-DbtG6keq.js                             3.83 kB │ gzip:     1.58 kB
+@galacticcouncil/main:build: build/chunk-hd1Yho36.js                             3.87 kB │ gzip:     1.58 kB
+@galacticcouncil/main:build: build/chunk-BUnN1PS3.js                             3.87 kB │ gzip:     1.47 kB
+@galacticcouncil/main:build: build/chunk-ClHJBuHR2.js                            3.97 kB │ gzip:     1.77 kB
+@galacticcouncil/main:build: build/chunk-B_QcRD_c.js                             3.97 kB │ gzip:     1.51 kB
+@galacticcouncil/main:build: build/chunk-NyjcoviN2.js                            4.05 kB │ gzip:     1.52 kB
+@galacticcouncil/main:build: build/chunk-BkvFVLQV.js                             4.07 kB │ gzip:     1.72 kB
+@galacticcouncil/main:build: build/chunk-DHZaqTyK2.js                            4.09 kB │ gzip:     1.46 kB
+@galacticcouncil/main:build: build/chunk-DwoLX97L2.js                            4.13 kB │ gzip:     1.81 kB
+@galacticcouncil/main:build: build/chunk-CWY0A4RB2.js                            4.15 kB │ gzip:     1.82 kB
+@galacticcouncil/main:build: build/chunk-BLK8cocB2.js                            4.19 kB │ gzip:     1.63 kB
+@galacticcouncil/main:build: build/chunk-B1xXiTKD.js                             4.35 kB │ gzip:     1.65 kB
+@galacticcouncil/main:build: build/chunk-DgJgoSMe.js                             4.37 kB │ gzip:     1.97 kB
+@galacticcouncil/main:build: build/chunk-BmB75pFa2.js                            4.42 kB │ gzip:     1.63 kB
+@galacticcouncil/main:build: build/chunk-hhPx0T-j.js                             4.44 kB │ gzip:     2.09 kB
+@galacticcouncil/main:build: build/chunk-DOt2l4UH2.js                            4.47 kB │ gzip:     2.17 kB
+@galacticcouncil/main:build: build/chunk-CdF50Np1.js                             4.58 kB │ gzip:     1.87 kB
+@galacticcouncil/main:build: build/chunk-ZJEIv_K62.js                            4.64 kB │ gzip:     1.42 kB
+@galacticcouncil/main:build: build/chunk-CPY14rkV2.js                            4.68 kB │ gzip:     1.73 kB
+@galacticcouncil/main:build: build/chunk-CsZMhWne2.js                            4.69 kB │ gzip:     1.84 kB
+@galacticcouncil/main:build: build/chunk-0R0qLIQt.js                             4.79 kB │ gzip:     1.98 kB
+@galacticcouncil/main:build: build/chunk-cvs9gwuj2.js                            4.86 kB │ gzip:     1.73 kB
+@galacticcouncil/main:build: build/chunk-DvHKQQVR2.js                            4.88 kB │ gzip:     1.85 kB
+@galacticcouncil/main:build: build/chunk-C6dEE0Re2.js                            4.89 kB │ gzip:     1.46 kB
+@galacticcouncil/main:build: build/chunk-JcL0iyZf.js                             4.99 kB │ gzip:     2.22 kB
+@galacticcouncil/main:build: build/chunk-REIxjZJ3.js                             5.11 kB │ gzip:     1.95 kB
+@galacticcouncil/main:build: build/chunk-DiYUVFCw.js                             5.12 kB │ gzip:     2.29 kB
+@galacticcouncil/main:build: build/chunk-DJgZ5C6d.js                             5.15 kB │ gzip:     2.00 kB
+@galacticcouncil/main:build: build/chunk-2Ews4WmA.js                             5.17 kB │ gzip:     2.35 kB
+@galacticcouncil/main:build: build/chunk-DJLiIp4L2.js                            5.34 kB │ gzip:     1.95 kB
+@galacticcouncil/main:build: build/chunk-C71sU3A52.js                            5.49 kB │ gzip:     1.88 kB
+@galacticcouncil/main:build: build/chunk-CSjhU3s4.js                             5.59 kB │ gzip:     2.26 kB
+@galacticcouncil/main:build: build/chunk-DSZt5csg.js                             5.59 kB │ gzip:     2.40 kB
+@galacticcouncil/main:build: build/chunk-Dr7dYfQf.js                             5.60 kB │ gzip:     2.33 kB
+@galacticcouncil/main:build: build/chunk-inz6E5ns.js                             5.62 kB │ gzip:     1.51 kB
+@galacticcouncil/main:build: build/chunk-DrAqOIEk2.js                            5.69 kB │ gzip:     1.91 kB
+@galacticcouncil/main:build: build/chunk-BXir4TTy.js                             5.70 kB │ gzip:     2.00 kB
+@galacticcouncil/main:build: build/chunk-z6m9DzEM.js                             5.71 kB │ gzip:     2.23 kB
+@galacticcouncil/main:build: build/chunk-CrmVXWyj.js                             5.95 kB │ gzip:     2.29 kB
+@galacticcouncil/main:build: build/chunk-KI5FWwDK.js                             5.95 kB │ gzip:     2.19 kB
+@galacticcouncil/main:build: build/chunk-6wkXEnoW.js                             6.09 kB │ gzip:     2.49 kB
+@galacticcouncil/main:build: build/chunk-CmCuzLBk.js                             6.26 kB │ gzip:     1.93 kB
+@galacticcouncil/main:build: build/chunk-DC3yS_YP.js                             6.29 kB │ gzip:     2.51 kB
+@galacticcouncil/main:build: build/chunk-Bvo4_xNe.js                             6.33 kB │ gzip:     2.83 kB
+@galacticcouncil/main:build: build/chunk-JsWtAe3Z2.js                            6.53 kB │ gzip:     2.33 kB
+@galacticcouncil/main:build: build/chunk-CdZYIK6H2.js                            6.68 kB │ gzip:     2.67 kB
+@galacticcouncil/main:build: build/chunk-DoYWnPxJ2.js                            6.69 kB │ gzip:     2.18 kB
+@galacticcouncil/main:build: build/chunk-DpDPT0tP.js                             6.76 kB │ gzip:     2.80 kB
+@galacticcouncil/main:build: build/chunk-XSH7F-Af.js                             6.81 kB │ gzip:     2.94 kB
+@galacticcouncil/main:build: build/chunk-BwIzyIBS.js                             6.92 kB │ gzip:     2.80 kB
+@galacticcouncil/main:build: build/chunk-Ctb8QFEE.js                             6.95 kB │ gzip:     2.90 kB
+@galacticcouncil/main:build: build/chunk-bj9nysSA.js                             7.07 kB │ gzip:     2.55 kB
+@galacticcouncil/main:build: build/chunk-DOhF6d4V2.js                            7.09 kB │ gzip:     3.04 kB
+@galacticcouncil/main:build: build/chunk-DCmCzqSJ.js                             7.21 kB │ gzip:     2.91 kB
+@galacticcouncil/main:build: build/chunk-BFnR6udN.js                             7.21 kB │ gzip:     3.08 kB
+@galacticcouncil/main:build: build/chunk-D07sFOAe.js                             7.39 kB │ gzip:     2.86 kB
+@galacticcouncil/main:build: build/chunk-D__dLfx8.js                             7.49 kB │ gzip:     2.84 kB
+@galacticcouncil/main:build: build/chunk-D5eQax2C2.js                            7.50 kB │ gzip:     2.21 kB
+@galacticcouncil/main:build: build/chunk-C-fT5xnb.js                             7.65 kB │ gzip:     2.86 kB
+@galacticcouncil/main:build: build/chunk-Cyulq66L.js                             7.66 kB │ gzip:     3.16 kB
+@galacticcouncil/main:build: build/chunk-C4usloqi2.js                            7.75 kB │ gzip:     2.33 kB
+@galacticcouncil/main:build: build/chunk-Mium33nE.js                             7.83 kB │ gzip:     3.47 kB
+@galacticcouncil/main:build: build/chunk-CgAjyQms2.js                            7.83 kB │ gzip:     3.00 kB
+@galacticcouncil/main:build: build/chunk-BIIeMk4u2.js                            7.88 kB │ gzip:     2.98 kB
+@galacticcouncil/main:build: build/chunk-CsxJIMjv.js                             8.04 kB │ gzip:     2.98 kB
+@galacticcouncil/main:build: build/chunk-Cmk83jJF2.js                            8.05 kB │ gzip:     3.38 kB
+@galacticcouncil/main:build: build/chunk-Bbl2uOZx2.js                            8.19 kB │ gzip:     2.69 kB
+@galacticcouncil/main:build: build/chunk-D3AHcc2f2.js                            8.23 kB │ gzip:     3.72 kB
+@galacticcouncil/main:build: build/chunk-D6zcNKtX.js                             8.72 kB │ gzip:     3.20 kB
+@galacticcouncil/main:build: build/chunk-CoY5FKyc.js                             9.08 kB │ gzip:     2.72 kB
+@galacticcouncil/main:build: build/chunk-D3jkz_m_.js                             9.36 kB │ gzip:     4.48 kB
+@galacticcouncil/main:build: build/chunk-D4rIc6UP.js                             9.67 kB │ gzip:     3.13 kB
+@galacticcouncil/main:build: build/chunk-DAUFmLWI.js                            10.14 kB │ gzip:     3.02 kB
+@galacticcouncil/main:build: build/chunk-CubF6W0_.js                            10.41 kB │ gzip:     2.74 kB
+@galacticcouncil/main:build: build/chunk-BK2I5tUT2.js                           10.62 kB │ gzip:     2.74 kB
+@galacticcouncil/main:build: build/chunk-C6dGn9ZR.js                            10.67 kB │ gzip:     4.04 kB
+@galacticcouncil/main:build: build/chunk-DebaqLXd.js                            10.89 kB │ gzip:     3.68 kB
+@galacticcouncil/main:build: build/chunk-DKpK4VqF.js                            10.98 kB │ gzip:     3.70 kB
+@galacticcouncil/main:build: build/chunk-DJ0pQsOk.js                            11.04 kB │ gzip:     3.65 kB
+@galacticcouncil/main:build: build/chunk-CqxXbD8x2.js                           11.49 kB │ gzip:     4.10 kB
+@galacticcouncil/main:build: build/chunk-CZonm94O.js                            11.88 kB │ gzip:     4.26 kB
+@galacticcouncil/main:build: build/chunk-C6GpIXsX.js                            11.96 kB │ gzip:     4.23 kB
+@galacticcouncil/main:build: build/chunk-BP0Hwta22.js                           12.07 kB │ gzip:     4.06 kB
+@galacticcouncil/main:build: build/chunk-DVYcDaTs.js                            12.68 kB │ gzip:     4.78 kB
+@galacticcouncil/main:build: build/chunk-DuJlvGZs2.js                           12.72 kB │ gzip:     3.68 kB
+@galacticcouncil/main:build: build/chunk-CNGo0lpO2.js                           13.04 kB │ gzip:     4.55 kB
+@galacticcouncil/main:build: build/chunk-hhb2lCAA2.js                           13.17 kB │ gzip:     4.57 kB
+@galacticcouncil/main:build: build/chunk-An87-yJ72.js                           13.22 kB │ gzip:     4.94 kB
+@galacticcouncil/main:build: build/chunk-7xUidJk82.js                           13.81 kB │ gzip:     3.95 kB
+@galacticcouncil/main:build: build/chunk-C4Po42GB2.js                           14.60 kB │ gzip:     6.06 kB
+@galacticcouncil/main:build: build/chunk-CDkLbPoC.js                            14.60 kB │ gzip:     5.36 kB
+@galacticcouncil/main:build: build/chunk-XE-8LmXO.js                            15.66 kB │ gzip:     6.27 kB
+@galacticcouncil/main:build: build/chunk-CY70DNdz2.js                           15.70 kB │ gzip:     4.06 kB
+@galacticcouncil/main:build: build/chunk-MQnaFyV5.js                            15.74 kB │ gzip:     3.23 kB
+@galacticcouncil/main:build: build/chunk-DdOhUbPV.js                            16.05 kB │ gzip:     5.56 kB
+@galacticcouncil/main:build: build/chunk-BbkQ2IG8.js                            16.10 kB │ gzip:     4.23 kB
+@galacticcouncil/main:build: build/chunk-CByjwAWP.js                            16.17 kB │ gzip:     6.08 kB
+@galacticcouncil/main:build: build/chunk-CAnY2xvD2.js                           17.01 kB │ gzip:     4.29 kB
+@galacticcouncil/main:build: build/chunk-DFs2pnRB2.js                           17.07 kB │ gzip:     6.62 kB
+@galacticcouncil/main:build: build/chunk-CCi-fZky.js                            17.51 kB │ gzip:     6.22 kB
+@galacticcouncil/main:build: build/chunk-CswaPhzf2.js                           17.90 kB │ gzip:     4.65 kB
+@galacticcouncil/main:build: build/chunk-B8nM79G6.js                            19.78 kB │ gzip:     5.74 kB
+@galacticcouncil/main:build: build/chunk-Bowa4Mou2.js                           21.32 kB │ gzip:     5.44 kB
+@galacticcouncil/main:build: build/chunk-BVtrGWZk.js                            21.96 kB │ gzip:     5.56 kB
+@galacticcouncil/main:build: build/chunk-Cgfqu6zG.js                            22.07 kB │ gzip:     6.00 kB
+@galacticcouncil/main:build: build/chunk-C2cDhGGQ2.js                           22.49 kB │ gzip:     9.57 kB
+@galacticcouncil/main:build: build/chunk-CYNYAKdo.js                            22.74 kB │ gzip:     5.95 kB
+@galacticcouncil/main:build: build/chunk-Bx8zySOW.js                            22.80 kB │ gzip:     8.19 kB
+@galacticcouncil/main:build: build/chunk-CcUBx74U.js                            22.96 kB │ gzip:     7.01 kB
+@galacticcouncil/main:build: build/chunk-B5vpNKEe.js                            23.34 kB │ gzip:     5.95 kB
+@galacticcouncil/main:build: build/chunk-CpS6NVbX2.js                           23.55 kB │ gzip:     5.52 kB
+@galacticcouncil/main:build: build/chunk-BwZckViC2.js                           24.52 kB │ gzip:     9.19 kB
+@galacticcouncil/main:build: build/chunk-D1wzSsb72.js                           26.47 kB │ gzip:     8.72 kB
+@galacticcouncil/main:build: build/chunk-C550OryL2.js                           27.91 kB │ gzip:     7.56 kB
+@galacticcouncil/main:build: build/chunk-B2mD9SVr2.js                           27.94 kB │ gzip:     2.81 kB
+@galacticcouncil/main:build: build/chunk-DN5nzT9i2.js                           29.09 kB │ gzip:    10.93 kB
+@galacticcouncil/main:build: build/chunk-8vQmQWBS.js                            29.87 kB │ gzip:     8.59 kB
+@galacticcouncil/main:build: build/chunk-LyvgMMGd.js                            30.60 kB │ gzip:    12.05 kB
+@galacticcouncil/main:build: build/chunk-Bv7NxPzq.js                            31.92 kB │ gzip:     8.49 kB
+@galacticcouncil/main:build: build/chunk-eefEeznN.js                            32.44 kB │ gzip:    11.99 kB
+@galacticcouncil/main:build: build/chunk-OgmtryHL2.js                           33.07 kB │ gzip:     7.43 kB
+@galacticcouncil/main:build: build/chunk-CeFZtN9j.js                            33.23 kB │ gzip:     9.75 kB
+@galacticcouncil/main:build: build/chunk-CnADToTR.js                            33.59 kB │ gzip:    11.49 kB
+@galacticcouncil/main:build: build/chunk-BrBsN7Ec.js                            34.08 kB │ gzip:     9.73 kB
+@galacticcouncil/main:build: build/chunk-CwQlEpz5.js                            35.49 kB │ gzip:    10.75 kB
+@galacticcouncil/main:build: build/chunk-e13mNXAF.js                            36.05 kB │ gzip:    11.59 kB
+@galacticcouncil/main:build: build/chunk-Zz4wJQUT2.js                           39.06 kB │ gzip:    11.10 kB
+@galacticcouncil/main:build: build/chunk-CR8nRR9g2.js                           39.32 kB │ gzip:    11.16 kB
+@galacticcouncil/main:build: build/chunk-Co-2bo2S2.js                           40.38 kB │ gzip:     9.21 kB
+@galacticcouncil/main:build: build/chunk-kYoyypam2.js                           40.99 kB │ gzip:    11.94 kB
+@galacticcouncil/main:build: build/chunk-CRe4t_tK2.js                           41.22 kB │ gzip:    15.19 kB
+@galacticcouncil/main:build: build/chunk-Ch7b3fY4.js                            44.04 kB │ gzip:    11.67 kB
+@galacticcouncil/main:build: build/chunk-ULvXEvqI.js                            45.80 kB │ gzip:    15.28 kB
+@galacticcouncil/main:build: build/chunk-DvwucIvA2.js                           45.98 kB │ gzip:    14.09 kB
+@galacticcouncil/main:build: build/chunk-DbqYOHIC2.js                           47.23 kB │ gzip:    10.53 kB
+@galacticcouncil/main:build: build/chunk-6aMzK213.js                            48.43 kB │ gzip:    17.58 kB
+@galacticcouncil/main:build: build/chunk-Dm_8DEuR2.js                           48.92 kB │ gzip:    15.70 kB
+@galacticcouncil/main:build: build/chunk-uJbWiGEa2.js                           53.65 kB │ gzip:    17.36 kB
+@galacticcouncil/main:build: build/chunk-BFSco1Lt2.js                           53.96 kB │ gzip:    12.79 kB
+@galacticcouncil/main:build: build/chunk-B0gtQzxO2.js                           54.61 kB │ gzip:     9.78 kB
+@galacticcouncil/main:build: build/chunk-BxRwuUD5.js                            56.73 kB │ gzip:    18.09 kB
+@galacticcouncil/main:build: build/chunk-BmztZSi42.js                           65.45 kB │ gzip:    19.74 kB
+@galacticcouncil/main:build: build/chunk-Dc9xcPRW2.js                           67.24 kB │ gzip:    25.06 kB
+@galacticcouncil/main:build: build/chunk-Du-QSdGP.js                            75.85 kB │ gzip:    21.68 kB
+@galacticcouncil/main:build: build/chunk-CWehdWZv.js                            77.03 kB │ gzip:    16.60 kB
+@galacticcouncil/main:build: build/chunk-BScUPTRL2.js                           83.29 kB │ gzip:    19.86 kB
+@galacticcouncil/main:build: build/chunk-BvZ6BIU42.js                           96.14 kB │ gzip:    29.81 kB
+@galacticcouncil/main:build: build/chunk-CYH9mTgh.js                           114.67 kB │ gzip:    30.21 kB
+@galacticcouncil/main:build: build/chunk-DLrDmAvo.js                           119.77 kB │ gzip:    32.90 kB
+@galacticcouncil/main:build: build/chunk-ASHyYjSo.js                           127.22 kB │ gzip:    44.31 kB
+@galacticcouncil/main:build: build/chunk-bmlk54ru.js                           132.27 kB │ gzip:    36.99 kB
+@galacticcouncil/main:build: build/chunk-B6t-2Tsu.js                           132.29 kB │ gzip:    40.62 kB
+@galacticcouncil/main:build: build/chunk-DSEk2a6O2.js                          137.14 kB │ gzip:    39.94 kB
+@galacticcouncil/main:build: build/chunk-VWcc_eY3.js                           147.09 kB │ gzip:    45.32 kB
+@galacticcouncil/main:build: build/chunk-BTq1S6ME.js                           186.09 kB │ gzip:    60.10 kB
+@galacticcouncil/main:build: build/chunk-CoqS9kyG2.js                          219.93 kB │ gzip:    42.27 kB
+@galacticcouncil/main:build: build/chunk-dzw9gycq.js                           225.53 kB │ gzip:    79.18 kB
+@galacticcouncil/main:build: build/assets/index-DBVR5P3m.js                    239.98 kB │ gzip:    73.82 kB
+@galacticcouncil/main:build: build/chunk-jfqngRTO.js                           264.64 kB │ gzip:    76.07 kB
+@galacticcouncil/main:build: build/chunk-CqrYuyqy.js                           298.98 kB │ gzip:    91.62 kB
+@galacticcouncil/main:build: build/chunk-Dd0vyWKX2.js                          329.46 kB │ gzip:   134.22 kB
+@galacticcouncil/main:build: build/chunk-BAPPb7uW2.js                          410.76 kB │ gzip:   104.62 kB
+@galacticcouncil/main:build: build/chunk-Cqelut2f2.js                          471.00 kB │ gzip:   144.64 kB
+@galacticcouncil/main:build: build/chunk-BUIO8iBk.js                           697.91 kB │ gzip:   225.84 kB
+@galacticcouncil/main:build: build/chunk-BdDdu-sU.js                           731.13 kB │ gzip:   238.61 kB
+@galacticcouncil/main:build: build/chunk-B6DxL13g.js                           772.44 kB │ gzip:   255.15 kB
+@galacticcouncil/main:build: build/chunk-Dj8hmD2a.js                           812.81 kB │ gzip:   257.18 kB
+@galacticcouncil/main:build: build/chunk-DMTMSjqt.js                           835.93 kB │ gzip:   265.84 kB
+@galacticcouncil/main:build: build/chunk-0TjLgY0q.js                           961.81 kB │ gzip:   275.27 kB
+@galacticcouncil/main:build: build/chunk-DmtyAOcZ.js                         1,062.40 kB │ gzip:   282.97 kB
+@galacticcouncil/main:build: build/chunk-DUTzzZMA2.js                        3,109.29 kB │ gzip: 2,329.87 kB
+@galacticcouncil/main:build: 
+@galacticcouncil/main:build: 
+@galacticcouncil/main:build:  WARN  [plugin builtin:vite-reporter] 
+@galacticcouncil/main:build: (!) Some chunks are larger than 500 kB after minification. Consider:
+@galacticcouncil/main:build: - Using dynamic import() to code-split the application
+@galacticcouncil/main:build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+@galacticcouncil/main:build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+@galacticcouncil/main:build: 
+@galacticcouncil/main:build: ✓ built in 7.97s
+@galacticcouncil/main:build: Done in 38.27s.
+
+ Tasks:    6 successful, 6 total
+Cached:    1 cached, 6 total
+  Time:    1m22.076s 
+
+Done in 82.27s.

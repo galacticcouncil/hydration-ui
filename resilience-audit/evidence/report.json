@@ -1,0 +1,258 @@
+{
+  "title": "Hydration UI dependency resilience audit",
+  "checkedAt": "2026-10-01",
+  "snapshot": {
+    "checkout": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+    "packages": {
+      "typescript": "5.7.3",
+      "react": "19.2.5",
+      "react-dom": "19.2.5",
+      "@tanstack/react-query": "5.101.4",
+      "@tanstack/query-core": "5.101.4",
+      "@tanstack/react-router": "1.170.10",
+      "polkadot-api": "2.2.2",
+      "viem": "2.56.8",
+      "@galacticcouncil/common": "1.2.0",
+      "@galacticcouncil/descriptors": "2.9.0",
+      "@galacticcouncil/sdk-next": "2.3.2",
+      "@galacticcouncil/xc": "2.1.0",
+      "@galacticcouncil/xc-cfg": "2.7.0",
+      "@galacticcouncil/xc-core": "2.6.0",
+      "@galacticcouncil/xc-sdk": "2.5.0",
+      "@galacticcouncil/xc-swap": "0.9.0",
+      "@galacticcouncil/xc-scan": "0.5.0"
+    }
+  },
+  "verdict": "Fails the directive: external asset metadata can block cold startup despite healthy Hydration RPC. Other confirmed gaps affect isolated features or wallet availability.",
+  "scope": "Latest upstream master and exact frozen yarn.lock dependency artifacts; locally built production UI, not an identified live deployment. Audit only, application sources unchanged.",
+  "findings": [
+    {
+      "priority": "P1",
+      "id": "metadata-boot",
+      "title": "Asset metadata CDN gates cold startup",
+      "scope": "entire application with fresh or mismatched asset cache",
+      "trigger": "Metadata fetch or response body never settles; or HTTP 200 has invalid JSON shape",
+      "cause": "assetsQuery awaits assetMetadataQuery inside Promise.all; cold registry uses suspense; factory has no deadline and trusts items.map outside catch",
+      "evidence": [
+        "apps/main/src/api/assets.ts:162",
+        "apps/main/src/api/metadata.ts:18",
+        "apps/main/src/providers/AssetRegistryGate.tsx:25",
+        "apps/main/src/routes/__root.tsx:81",
+        "packages/utils/src/lib/AssetMetadataFactory.ts:54"
+      ],
+      "verification": "15 factory/query/registry fault assertions; production browser shows malformed metadata root error and hanging metadata leaves 40 skeletons and readonly swap fields at 35s, while Hydration RPC returns thousands of responses.",
+      "fix": "Build registry from chain data and default singleton metadata immediately; warm and enrich icons independently; validate payloads and bound optional requests."
+    },
+    {
+      "priority": "P1",
+      "id": "wallet-provider-coupling",
+      "title": "Pending WalletConnect hides healthy wallet accounts",
+      "scope": "wallet restoration, account selection and signing",
+      "trigger": "Reown cloud config or usage request hangs while WalletConnect is enabled or restored",
+      "cause": "AppKit ready waits without timeout; account selector switches every account to provider loader if any provider is pending; eager restore awaits wallets sequentially",
+      "evidence": [
+        "packages/web3-connect/src/wallets/ReownWalletConnect/index.ts:70",
+        "packages/web3-connect/src/components/content/AccountSelectContent.tsx:80",
+        "packages/web3-connect/src/components/content/AccountSelectContent.tsx:153",
+        "packages/web3-connect/src/hooks/useWeb3EagerEnable.ts:45"
+      ],
+      "verification": "Exact AppKit 1.8.19 config and usage resolve fallback on rejection but stay pending on hang; broader UI impact traced in source.",
+      "fix": "Bound readiness and isolate pending status by provider; display already available accounts; restore independent providers concurrently."
+    },
+    {
+      "priority": "P2",
+      "id": "oneclick-poisoned-promise",
+      "title": "Failed 1Click registry stays cached after recovery",
+      "scope": "cross-chain swap and recovery to Hydration inside selected form",
+      "trigger": "Token-registry rejection followed by service recovery; hanging registry with external destination selected at startup",
+      "cause": "XcSwapClient caches rejected or pending token promise; selection loading disables both asset pickers and makes amount fields readonly",
+      "evidence": [
+        "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSelection.ts:39",
+        "apps/main/src/modules/trade/swap/sections/XcSwap/XcSwapFields.tsx:213",
+        "packages/ui/src/components/AssetInput/AssetInput.tsx:150",
+        "packages/ui/src/components/AssetInput/AssetInput.tsx:237"
+      ],
+      "verification": "Exact xc-swap 0.9.0 still throws initial failure after mocked service recovery; underlying service called once.",
+      "fix": "Clear cached rejected token promises, add a request deadline, keep Hydration choices interactive while remote choices load."
+    },
+    {
+      "priority": "P2",
+      "id": "other-chain-balances",
+      "title": "Other-chain outages become verified empty balances or endless loading",
+      "scope": "affected external chain portfolio and selected XCM transfer; Hydration queries remain independent",
+      "trigger": "All balance RPC calls reject; or NEAR fetch/subscription first emission hangs",
+      "cause": "Chain.getBalances removes rejected requests and succeeds with []; raw NEAR fetch has no deadline; combined subscriptions wait every asset",
+      "evidence": [
+        "apps/main/src/api/portfolio/multichain.ts:105",
+        "apps/main/src/api/portfolio/multichain.ts:246",
+        "apps/main/src/api/xcm.ts:265"
+      ],
+      "verification": "Exact xc-core 2.6.0 NEAR balance query resolves [] on rejected fetch and remains pending with silent fetch.",
+      "fix": "Return per-asset and per-chain availability; reject total failure; preserve stale balances with status; bound fetch and first subscription emission."
+    },
+    {
+      "priority": "P2",
+      "id": "unlock-coupling",
+      "title": "Optional vote history blocks chain-only GIGA unlocks",
+      "scope": "native unlock action for accounts with OpenGov lock",
+      "trigger": "Subsquare or Neckwork proxy fails or hangs",
+      "cause": "OpenGov unlock query requires external votes, and native unlock query awaits it before calculating matured GIGA unstaking positions; missing result becomes zero",
+      "evidence": [
+        "apps/main/src/api/democracy.ts:342",
+        "apps/main/src/api/locks.ts:47",
+        "apps/main/src/api/locks.ts:77",
+        "apps/main/src/api/locks.ts:127",
+        "apps/main/src/modules/portfolio/overview/MyAssets/AssetDetailUnlock.tsx:35"
+      ],
+      "verification": "Source tracing; no wallet transaction submitted.",
+      "fix": "Calculate independent chain-only GIGA unlocks separately; mark vote-history-dependent amounts unavailable without inferring unlock permission."
+    },
+    {
+      "priority": "P2",
+      "id": "apy-aggregate-loading",
+      "title": "A hanging optional yield source suppresses all external APY displays",
+      "scope": "borrow APY columns and net APY; lending chain reads and transactions remain available",
+      "trigger": "DeFiLlama, Kamino, or Neckwork yield request never completes",
+      "cause": "No request deadline; aggregate loading returns no APY rows until every source settles; cached fallback executes only after rejection",
+      "evidence": [
+        "apps/main/src/api/borrow/hooks.ts:107",
+        "apps/main/src/api/borrow/hooks.ts:114",
+        "apps/main/src/api/external/defillama.ts:45",
+        "apps/main/src/api/external/kamino.ts:33"
+      ],
+      "verification": "Source tracing.",
+      "fix": "Bound enrichment requests and display available asset yields independently."
+    },
+    {
+      "priority": "P2",
+      "id": "unknown-as-zero",
+      "title": "Supply modal converts unknown external yield to 0 percent",
+      "scope": "financial display during a yield-source outage",
+      "trigger": "External yield request rejects without valid cache",
+      "cause": "Failure returns null but supply selector converts null APY to string zero",
+      "evidence": [
+        "apps/main/src/states/externalApy.ts:74",
+        "packages/money-market/src/store/poolSelectors.ts:201",
+        "packages/money-market/src/components/transactions/supply/SupplyModalContent.tsx:332"
+      ],
+      "verification": "Source tracing; main APY table already preserves unavailable status.",
+      "fix": "Keep unknown APY nullable throughout transaction summaries and render unavailable."
+    },
+    {
+      "priority": "P2",
+      "id": "history-empty",
+      "title": "Unavailable trade and lending history appears empty",
+      "scope": "historical displays; current on-chain orders remain available",
+      "trigger": "History endpoint fails, including when health endpoint still succeeds",
+      "cause": "History wrappers omit errors and default missing rows to empty arrays",
+      "evidence": [
+        "apps/main/src/api/borrow/moneyMarketEvents.ts:72",
+        "apps/main/src/modules/borrow/history/BorrowHistoryTable.tsx:53",
+        "apps/main/src/modules/trade/orders/TradeOrders/lib/useHistoryData.ts:35"
+      ],
+      "verification": "Source tracing; individual paths may be located by filename if hierarchy changes.",
+      "fix": "Distinguish unavailable history from a successful empty response and show retry."
+    },
+    {
+      "priority": "P3",
+      "id": "late-subscription-cleanup",
+      "title": "Async XCM subscription can complete after cleanup",
+      "scope": "obsolete RPC subscriptions and callbacks during chain or address switching",
+      "trigger": "Unmount or selection change before async subscription setup resumes",
+      "cause": "Cleanup checks current subscription variable; there is no canceled guard for late assignment",
+      "evidence": [
+        "apps/main/src/api/xcm.ts:265",
+        "apps/main/src/api/xcm.ts:295"
+      ],
+      "verification": "Exact SDK source tracing.",
+      "fix": "Use a cancellation or generation guard; unsubscribe immediately on late completion and ignore obsolete callbacks."
+    },
+    {
+      "priority": "P3",
+      "id": "indexer-deadline",
+      "title": "Indexer sync timeout depends on another render",
+      "scope": "stale post-transaction account and history displays",
+      "trigger": "Reachable indexer stops advancing and status data remains unchanged",
+      "cause": "Date.now deadline checked during render without a timer; successful status probe marks alive regardless of lag",
+      "evidence": [
+        "apps/main/src/api/neckworkSync.ts:57",
+        "apps/main/src/states/neckwork.ts:23"
+      ],
+      "verification": "Source tracing; conditional on absence of incidental re-render.",
+      "fix": "Schedule a real deadline timer and detect indexer lag separately from HTTP reachability."
+    },
+    {
+      "id": "oneclick-submit-coupling",
+      "priority": "P1",
+      "title": "Hanging cross-chain submission keeps Hydration swap button busy after destination change",
+      "scope": "shared market swap form following a cross-chain submit attempt; app navigation remains available",
+      "trigger": "1Click quote or firm quote never completes, then user switches back to a Hydration destination",
+      "cause": "Cross-chain mutation awaits requests without a deadline and aggregate isSubmitting includes it for every selected destination; changing selection resets form fields without canceling that mutation",
+      "evidence": [
+        "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts:56",
+        "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useSubmitXcSwap.ts:85",
+        "apps/main/src/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSubmit.ts:118",
+        "apps/main/src/modules/trade/swap/sections/XcSwap/XcSwapProvider.tsx:245",
+        "packages/ui/src/components/Button/Button.tsx:87"
+      ],
+      "verification": "Source tracing of UI state coupling; actual ESM 1Click SDK and xc-swap quote helper fault-tested with Axios adapter mocks; no signed transactions.",
+      "fix": "Bound and cancel quote/build requests; scope busy state to selected operation; invalidate obsolete request generations on selection change."
+    },
+    {
+      "id": "intent-status-deadline",
+      "priority": "P2",
+      "title": "IntentScan outage leaves cross-chain settlement monitoring unavailable",
+      "scope": "settlement toast for submitted cross-chain order; independent on-chain transactions remain available",
+      "trigger": "https://explorer-intent.play.hydration.cloud/api/orders/{sequence} rejects or hangs",
+      "cause": "Status is read from IntentScan, not directly from 1Click status. Rejection resolves null and keeps submitted/unknown state for later polling; hang remains running without a request deadline. Six-hour record expiry only checked when processing starts.",
+      "evidence": [
+        "packages/utils/src/helpers/intentscan.ts:1",
+        "apps/main/src/modules/transactions/utils/toasts/intents.ts:26",
+        "apps/main/src/modules/transactions/utils/toasts/processors.ts:311",
+        "apps/main/src/modules/transactions/hooks/useProcessTransactionToasts.ts:132"
+      ],
+      "verification": "Source tracing; no submitted transaction or live status request.",
+      "fix": "Bound status requests, retry with cancellation, display monitoring unavailable separately from settlement outcome, preserve tracking identifiers."
+    }
+  ],
+  "existingProtections": [
+    "Neckwork health has two-second deadline and does not gate application startup.",
+    "Neckwork health failures switch eligible trade displays to legacy Grafana/indexer sources.",
+    "Current DCA/intent orders and ordinary swap routing use Hydration RPC.",
+    "Money-market contract reads use Hydration EVM transport, not separate Ethereum RPC.",
+    "XCM context setup uses bundled configuration and existing Hydration pool context; no proven external startup gate.",
+    "Portfolio balance queries run independently by chain.",
+    "Hydration destination selection bypasses external token loading.",
+    "Main APY displays distinguish missing yield; supply modal is an exception.",
+    "Browser rejected 1Click /v0/tokens while Hydration-to-Hydration swap still generated a live quote. Earlier cross-chain pending submission is a separate UI coupling."
+  ],
+  "checks": {
+    "frozenInstall": "passed, --ignore-scripts",
+    "build": "yarn build passed, all 6 workspace tasks",
+    "lint": "yarn lint passed, all 11 tasks",
+    "existingTests": "5 files, 34 tests passed",
+    "metadataFaults": "15 assertions passed with healthy chain mocks",
+    "dependencyFaults": "5 checks confirmed against exact installed artifacts",
+    "browserMatrix": {
+      "productionBundle": true,
+      "freshContexts": true,
+      "observedSeconds": 35,
+      "hydrationHttpAndWsPermitted": true,
+      "baseline": "editable swap inputs and live quote",
+      "allExternalImmediateFailures": "editable Hydration swap inputs and live quote; chart fails visibly",
+      "allExternalSilentHangs": "40 skeletons, readonly inputs despite active Hydration RPC",
+      "metadataSilentHang": "40 skeletons, readonly inputs despite active Hydration RPC",
+      "metadataMalformedSuccessfulJson": "root error screen despite active Hydration RPC",
+      "evidence": "browser-verified/browser-results.json",
+      "signedTransactions": "none"
+    },
+    "oneClickSupplement": "audit/oneclick-faults.mjs: 27 assertions; actual ESM token/quote/status methods with mocked transport; Axios timeout zero and quote helper drops cancel handle. Current UI settlement status uses IntentScan, not SDK status method."
+  },
+  "nextWorkOrder": [
+    "Decouple CDN metadata from required asset registry startup.",
+    "Bound optional-service requests and first subscription emissions with cancellation.",
+    "Isolate wallet provider loading and restoration; clear failed 1Click registry promises.",
+    "Preserve unavailable/stale data states and independent chain-only unlock paths.",
+    "Add cold and cached browser fault matrix for immediate failures, hanging requests, corrupt successful responses, individual and simultaneous failures."
+  ]
+}
