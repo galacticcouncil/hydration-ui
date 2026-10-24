@@ -1,6 +1,7 @@
 import { OptionCard, Stack } from "@galacticcouncil/ui/components"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { SnowbridgeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/SnowbridgeOptions"
 import { WormholeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/WormholeOptions"
@@ -13,6 +14,7 @@ import {
   BRIDGE_ICON,
   BRIDGE_LABEL,
   BRIDGE_TIME,
+  SNOWBRIDGE_PAUSED,
 } from "@/modules/xcm/transfer/utils/bridge"
 import { XcmTag } from "@/states/transactions"
 
@@ -21,6 +23,7 @@ type BridgeSelectorProps = {
 }
 
 export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
+  const { t } = useTranslation(["xcm"])
   const { watch, setValue } = useFormContext<XcmFormValues>()
   const [destAsset, bridgeProvider] = watch(["destAsset", "bridgeProvider"])
 
@@ -52,6 +55,19 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
               />
             )
           case BridgeEntryKind.Snowbridge:
+            if (SNOWBRIDGE_PAUSED) {
+              return (
+                <OptionCard
+                  key={BridgeEntryKind.Snowbridge}
+                  label={BRIDGE_LABEL[XcmTag.Snowbridge] ?? XcmTag.Snowbridge}
+                  description={t("bridge.paused")}
+                  value=""
+                  disabled
+                  isActive={false}
+                  onClick={() => undefined}
+                />
+              )
+            }
             return (
               <SnowbridgeOptions
                 key={BridgeEntryKind.Snowbridge}

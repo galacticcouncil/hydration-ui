@@ -70,6 +70,18 @@ export const isSnowbridgeSubTag = (tag: string | null | undefined): boolean =>
 export const isSnowbridgeTag = (tag: string | null | undefined): boolean =>
   tag === XcmTag.Snowbridge || isSnowbridgeSubTag(tag)
 
+// Snowbridge is paused: an XCM executor bug on Polkadot Asset Hub
+// (paritytech/polkadot-sdk#10384, fix in #11910 backported but not yet
+// enacted) burns Snowbridge transfers in transit. Revert to `false` once the
+// Asset Hub runtime upgrade carrying the fix is enacted.
+export const SNOWBRIDGE_PAUSED = true
+
+export const isPausedBridgeTag = (tag: string | null | undefined): boolean =>
+  SNOWBRIDGE_PAUSED && isSnowbridgeTag(tag)
+
+export const isPausedBridgeRoute = (route: AssetRoute | null): boolean =>
+  SNOWBRIDGE_PAUSED && isSnowbridgeRoute(route)
+
 export const pickSnowbridgeVariants = (
   routes: AssetRoute[],
 ): {
@@ -93,8 +105,14 @@ export const resolveRouteBuilderArgs = <T extends string | Asset>(
   destAsset: T,
   tag: string | undefined,
 ): { tag: string | undefined; destAsset: T | undefined } => {
+  // A paused provider tag must never reach the SDK builder — dropping it
+  // here keeps deep-linked or stale form state from routing over it.
+  const requestedTag = isPausedBridgeTag(tag) ? undefined : tag
+
   const validTag =
-    !tag || routes.some((r) => (r.tags ?? []).includes(tag)) ? tag : undefined
+    !requestedTag || routes.some((r) => (r.tags ?? []).includes(requestedTag))
+      ? requestedTag
+      : undefined
 
   const candidates = validTag
     ? routes.filter((r) => (r.tags ?? []).includes(validTag))
@@ -119,6 +137,7 @@ export function shouldPreserveSnowbridgeSubSelection(
   currentProvider: string | null,
   destPair: ChainAssetPair,
 ): boolean {
+  if (SNOWBRIDGE_PAUSED) return false
   if (!isSnowbridgeSubTag(currentProvider)) return false
   return destPair.routes.some((r) =>
     (r.tags ?? []).includes(currentProvider as string),
@@ -129,16 +148,19 @@ export function resolveValidBridgeProvider(
   currentProvider: string | null,
   matchingRoutes: AssetRoute[],
 ): string | null {
-  const isCurrentValid = matchingRoutes.some(
-    (r) => getPrimaryBridgeTag(r) === currentProvider,
-  )
+  const isCurrentValid =
+    !isPausedBridgeTag(currentProvider) &&
+    matchingRoutes.some((r) => getPrimaryBridgeTag(r) === currentProvider)
   if (isCurrentValid) return currentProvider
 
   // Lowest BRIDGE_PRIORITY wins, so Basejump still beats the bridges and the
   // auto-claiming Wormhole route (NttExecutor) is the default over the manual
-  // one.
+  // one. Paused providers are never auto-selected.
   const [fallbackTag = null] = sortBy(
-    matchingRoutes.map(getPrimaryBridgeTag).filter(isNonNullish),
+    matchingRoutes
+      .map(getPrimaryBridgeTag)
+      .filter(isNonNullish)
+      .filter((tag) => !isPausedBridgeTag(tag)),
     (tag) => BRIDGE_PRIORITY[tag] ?? 99,
   )
 

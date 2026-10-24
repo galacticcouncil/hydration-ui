@@ -11,6 +11,8 @@
   "wrap.toast.success": "Wrapped {{ symbol }} on {{ srcChain }}",
   "bridge.wormhole": "Wormhole",
   "bridge.snowbridge": "Snowbridge",
+  "bridge.snowbridgePausedShort": "Snowbridge (paused)",
+  "bridge.paused": "Snowbridge is temporarily paused — transfers are at risk of loss due to an upstream Asset Hub issue.",
   "bridge.basejump": "Instant Transfer",
   "chainAssetSelect.button.selectAssetChain": "Select asset & chain",
   "chainAssetSelect.emptyState.noAssets": "No assets found",

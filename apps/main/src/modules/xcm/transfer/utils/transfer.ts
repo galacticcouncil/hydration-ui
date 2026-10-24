@@ -30,6 +30,7 @@ import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprov
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
+  isPausedBridgeRoute,
   resolveRouteBuilderArgs,
   WORMHOLE_FAMILY_TAGS,
 } from "@/modules/xcm/transfer/utils/bridge"
@@ -114,7 +115,14 @@ export const resolveBestDestRoute = (
       r.destination.asset.key === destAsset?.key,
   )
 
-  return foundRoute ?? first(validRoutes) ?? null
+  // Prefer an unpaused route for the fallback default so the form doesn't
+  // auto-land on a paused bridge, but keep explicit selections intact.
+  return (
+    foundRoute ??
+    validRoutes.find((r) => !isPausedBridgeRoute(r)) ??
+    first(validRoutes) ??
+    null
+  )
 }
 
 export const isDestRouteSynced = (
@@ -126,6 +134,32 @@ export const isDestRouteSynced = (
   bestRoute.destination.chain.key === destChain?.key &&
   bestRoute.destination.asset.key === destAsset?.key
 
+// Mirrors the SDK's ConfigBuilder build(): filter by tag when one is given,
+// then take the first route delivering the destination asset. Used to know
+// which route the transfer query would actually resolve to — with no tag the
+// SDK silently picks the first match, which may be a paused bridge.
+export const resolveSdkRoute = (
+  destPair: ChainAssetPair | null | undefined,
+  destAsset: Asset | null | undefined,
+  bridgeProvider: string | null | undefined,
+): AssetRoute | null => {
+  if (!destPair || !destAsset) return null
+
+  const { tag } = resolveRouteBuilderArgs(
+    destPair.routes,
+    destAsset,
+    bridgeProvider ?? undefined,
+  )
+
+  const candidates = tag
+    ? destPair.routes.filter((r) => (r.tags ?? []).includes(tag))
+    : destPair.routes
+
+  return (
+    candidates.find((r) => r.destination.asset.key === destAsset.key) ?? null
+  )
+}
+
 export const resolveSelectedRoute = (
   destPair: ChainAssetPair | null | undefined,
   destAsset: Asset | null | undefined,
@@ -133,9 +167,9 @@ export const resolveSelectedRoute = (
 ): AssetRoute | null => {
   if (!destPair || !destAsset) return null
 
-  const candidates = destPair.routes.filter(
-    (r) => r.destination.asset.key === destAsset.key,
-  )
+  const candidates = destPair.routes
+    .filter((r) => r.destination.asset.key === destAsset.key)
+    .filter((r) => !isPausedBridgeRoute(r))
   if (!candidates.length) return null
 
   const { tag } = resolveRouteBuilderArgs(

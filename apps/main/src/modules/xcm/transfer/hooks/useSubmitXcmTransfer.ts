@@ -15,7 +15,10 @@ import {
 } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
+import {
+  isPausedBridgeRoute,
+  resolveRouteBuilderArgs,
+} from "@/modules/xcm/transfer/utils/bridge"
 import {
   assertTransferValues,
   buildXcmTx,
@@ -92,6 +95,10 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       )
 
       const { origin } = destPair.build(validDstAsset, tag)
+
+      // Backstop: a paused bridge must never be submitted, whatever state
+      // the form or a deep link carried in.
+      invariant(!isPausedBridgeRoute(origin.route), t("bridge.paused"))
 
       const calls = await transfer.buildCalls(srcAmount)
       const transferCall = calls.at(-1)

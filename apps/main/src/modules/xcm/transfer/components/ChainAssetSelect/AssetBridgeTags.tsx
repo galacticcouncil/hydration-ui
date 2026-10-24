@@ -6,6 +6,7 @@ import {
   getPrimaryBridgeTag,
   isSnowbridgeRoute,
   isWormholeFamilyTag,
+  SNOWBRIDGE_PAUSED,
 } from "@/modules/xcm/transfer/utils/bridge"
 
 export type AssetBridgeTagsProps = {
@@ -29,8 +30,10 @@ export const AssetBridgeTags: React.FC<AssetBridgeTagsProps> = ({ route }) => {
         </Chip>
       )}
       {showSnowbridge && (
-        <Chip variant="info" size="small">
-          {t("xcm:bridge.snowbridge")}
+        <Chip variant={SNOWBRIDGE_PAUSED ? "warning" : "info"} size="small">
+          {SNOWBRIDGE_PAUSED
+            ? t("xcm:bridge.snowbridgePausedShort")
+            : t("xcm:bridge.snowbridge")}
         </Chip>
       )}
     </Flex>

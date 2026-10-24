@@ -6,6 +6,7 @@ import {
   BRIDGE_PRIORITY,
   getPrimaryBridgeTag,
   pickSnowbridgeVariants,
+  SNOWBRIDGE_PAUSED,
 } from "@/modules/xcm/transfer/utils/bridge"
 import { XcmTag } from "@/states/transactions"
 
@@ -58,9 +59,15 @@ export const useBridgeOptions = (
       tags,
       flatMap((tag): BridgeEntry[] => {
         if (tag === XcmTag.Snowbridge) {
-          return hasSnowbridgeChoice
-            ? [{ kind: BridgeEntryKind.Snowbridge, v2, v1 }]
-            : []
+          if (hasSnowbridgeChoice) {
+            return [{ kind: BridgeEntryKind.Snowbridge, v2, v1 }]
+          }
+          // While paused, still surface a single-variant Snowbridge route so
+          // the selector can show it as disabled instead of hiding it.
+          if (SNOWBRIDGE_PAUSED && (v2 || v1)) {
+            return [{ kind: BridgeEntryKind.Snowbridge, v2, v1 }]
+          }
+          return []
         }
         if (tag === XcmTag.NttExecutor || tag === XcmTag.Wormhole) {
           if (!hasWormholeChoice)

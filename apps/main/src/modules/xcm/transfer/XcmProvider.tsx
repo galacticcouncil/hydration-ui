@@ -13,6 +13,7 @@ import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { prop, unique } from "remeda"
 
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
@@ -23,10 +24,14 @@ import {
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
-import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import {
+  XcmAlert,
+  XcmContext,
+} from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
+  isPausedBridgeRoute,
   resolveValidBridgeProvider,
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
@@ -42,6 +47,7 @@ import {
   isDestRouteSynced,
   requiresEvmBinding,
   resolveBestDestRoute,
+  resolveSdkRoute,
   resolveSelectedRoute,
 } from "@/modules/xcm/transfer/utils/transfer"
 import { useProviderRpcUrlStore } from "@/states/provider"
@@ -51,6 +57,7 @@ type XcmProviderProps = {
 }
 
 export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
+  const { t } = useTranslation(["xcm"])
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
@@ -143,6 +150,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     [destPair, destAsset, bridgeProvider],
   )
 
+  // The route the SDK would resolve right now — Snowbridge when the provider
+  // selection is unset or stale, even if the pair also has unpaused routes.
+  // Keep the pair selectable so the pause reason stays visible, but never
+  // build a transfer over a paused bridge.
+  const isPausedSdkRoute = isPausedBridgeRoute(
+    resolveSdkRoute(destPair, destAsset, bridgeProvider),
+  )
+
   const requiresBinding = requiresEvmBinding(
     selectedRoute,
     destChain,
@@ -227,10 +242,10 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const isDestSynced = isDestRouteSynced(bestDestRoute, destChain, destAsset)
 
   const transferArgs = useMemo(() => {
-    if (!isDestSynced) return null
+    if (!isDestSynced || isPausedSdkRoute) return null
 
     return getXcmTransferArgs(account, values)
-  }, [account, isDestSynced, values])
+  }, [account, isDestSynced, isPausedSdkRoute, values])
 
   const {
     transfer: xcmTransfer,
@@ -241,10 +256,22 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     report,
   } = useXcmTransfer(form, transferArgs)
 
-  const { alerts, isLoading: isLoadingAlerts } = useXcmTransferAlerts(
-    form,
-    report,
-    requiresBinding,
+  const { alerts: transferAlerts, isLoading: isLoadingAlerts } =
+    useXcmTransferAlerts(form, report, requiresBinding)
+
+  const alerts = useMemo<XcmAlert[]>(
+    () =>
+      isPausedSdkRoute
+        ? [
+            {
+              key: "bridge-paused",
+              message: t("bridge.paused"),
+              severity: "error",
+            },
+            ...transferAlerts,
+          ]
+        : transferAlerts,
+    [t, isPausedSdkRoute, transferAlerts],
   )
 
   useEffect(() => {
