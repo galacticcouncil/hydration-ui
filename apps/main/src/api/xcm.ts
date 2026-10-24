@@ -67,11 +67,14 @@ export const useCrossChainConfig = () => {
 
       // Wormhole carries basejump with it — basejump routes hop through the
       // wormhole stack — but basejump can also be pulled on its own.
+      // Snowbridge V1 routes carry the Snowbridge tag too, so one tag pulls
+      // both versions.
       const disabledBridgeTags = [
         ...(ENV.VITE_WORMHOLE_DISABLED
           ? [XcmTag.Wormhole, XcmTag.Basejump]
           : []),
         ...(ENV.VITE_BASEJUMP_DISABLED ? [XcmTag.Basejump] : []),
+        ...(ENV.VITE_SNOWBRIDGE_DISABLED ? [XcmTag.Snowbridge] : []),
       ]
 
       if (disabledBridgeTags.length) {
