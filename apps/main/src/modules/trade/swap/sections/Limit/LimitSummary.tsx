@@ -1,5 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Flex,
   Summary,
@@ -13,8 +11,10 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { clamp } from "remeda"
 
+import { HealthFactorResult } from "@/api/aave"
 import { maxIntentDurationQuery } from "@/api/intents"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import {
   EXPIRY_MS,
@@ -63,7 +63,12 @@ export const LimitSummary: FC<Props> = ({ healthFactor }) => {
       {healthFactor?.isSignificantChange && (
         <SwapSummaryRow
           label={t("healthFactor")}
-          content={<HealthFactorChange {...healthFactor} />}
+          content={
+            <HealthFactorChange
+              current={healthFactor.current}
+              projected={healthFactor.future}
+            />
+          }
         />
       )}
       <SwapSummaryRow

@@ -1,5 +1,5 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HexString } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
   Call,

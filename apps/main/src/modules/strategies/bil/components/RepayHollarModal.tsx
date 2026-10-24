@@ -1,4 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
   Box,
@@ -17,6 +16,7 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useRepayHollarForm } from "@/modules/strategies/bil/components/RepayHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
@@ -125,7 +125,12 @@ export const RepayHollarModal = ({ open, onClose }: Props) => {
             >
               <SummaryRow
                 label={t("common:healthFactor")}
-                content={<HealthFactorChange {...healthFactor} />}
+                content={
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                }
               />
             </Summary>
           )}

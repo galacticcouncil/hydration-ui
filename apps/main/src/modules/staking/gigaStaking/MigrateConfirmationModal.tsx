@@ -1,4 +1,3 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Button,
   Flex,
@@ -9,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { millisecondsInDay } from "date-fns/constants"
 import { Trans, useTranslation } from "react-i18next"

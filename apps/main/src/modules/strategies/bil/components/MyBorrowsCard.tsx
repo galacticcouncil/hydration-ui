@@ -1,4 +1,3 @@
-import { HealthFactorNumber } from "@galacticcouncil/money-market/components"
 import {
   Box,
   Button,
@@ -14,6 +13,7 @@ import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorNumber } from "@/modules/money-market/HealthFactorNumber"
 import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import {
   SBorrowPanel,
@@ -82,7 +82,9 @@ export const MyBorrowsCard = () => {
             <Text fs="p5" color={getToken("text.medium")}>
               {t("common:healthFactor")}:
             </Text>
-            <HealthFactorNumber value={healthFactorValue} fontSize="p4" />
+            <Text fs="p4" fw={700}>
+              <HealthFactorNumber value={healthFactorValue} />
+            </Text>
           </Flex>
           <Flex align="center" gap="s">
             <Text fs="p5" color={getToken("text.medium")}>
@@ -152,7 +154,7 @@ export const MyBorrowsCard = () => {
               wrap
               size="medium"
               isLoading={isAvailableToBorrowLoading}
-              label={t("borrow:borrow.available")}
+              label={t("borrow:summary.availableToBorrow")}
               value={t("common:currency", {
                 value: availableUsd,
                 symbol: t("bil.borrows.unit"),

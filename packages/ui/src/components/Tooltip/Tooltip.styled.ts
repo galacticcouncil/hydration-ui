@@ -38,19 +38,29 @@ const sizeVariants = createVariants<TooltipSize>((theme) => ({
 }))
 
 export const SContent = styled(Content, {
-  shouldForwardProp: (prop) => prop !== "size",
-})<{ size?: TooltipSize }>(({ theme, size = "medium" }) => [
-  css`
-    z-index: ${theme.zIndices.tooltip};
+  shouldForwardProp: (prop) => prop !== "size" && prop !== "paper",
+})<{ size?: TooltipSize; paper?: boolean }>(
+  ({ theme, size = "medium", paper }) => [
+    css`
+      z-index: ${theme.zIndices.tooltip};
 
-    max-width: ${theme.sizes["4xl"]};
+      max-width: ${theme.sizes["4xl"]};
 
-    background: ${theme.details.tooltips};
+      background: ${theme.details.tooltips};
 
-    ${floatingScaleAnimation(theme)};
-  `,
-  sizeVariants(size),
-])
+      ${floatingScaleAnimation(theme)};
+    `,
+    sizeVariants(size),
+    paper &&
+      css`
+        background: ${theme.surfaces.themeBasePalette.surfaceHigh};
+        border: 1px solid ${theme.details.borders};
+        box-shadow:
+          0px 3px 9px 0px rgba(0, 0, 0, 0.04),
+          0px 14px 37px 0px rgba(0, 0, 0, 0.04);
+      `,
+  ],
+)
 
 export const tooltipTextFontSize: Record<TooltipSize, "p4" | "p5" | "p6"> = {
   small: "p6",

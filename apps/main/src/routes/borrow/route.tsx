@@ -1,31 +1,23 @@
-import { CustomMarket } from "@galacticcouncil/money-market/utils"
-import { createFileRoute } from "@tanstack/react-router"
+import { markets } from "@galacticcouncil/money-market/core"
+import type { CustomMarket } from "@galacticcouncil/money-market/types"
+import { createFileRoute, retainSearchParams } from "@tanstack/react-router"
 import z from "zod"
 
-import { getPageMeta } from "@/config/navigation"
-import { BorrowContextProvider } from "@/modules/borrow/BorrowContextProvider"
-import { SubpageLayout } from "@/modules/layout/SubpageLayout"
+import { MoneyMarketLayout } from "@/modules/money-market/MoneyMarketLayout"
 
 const searchSchema = z.object({
-  market: z.enum(CustomMarket).optional().catch(undefined),
+  market: z
+    .custom<CustomMarket>(
+      (value) => typeof value === "string" && Object.hasOwn(markets, value),
+    )
+    .optional()
+    .catch(undefined),
 })
 
-export type BorrowSearchParams = z.infer<typeof searchSchema>
-
-const Page = () => (
-  <BorrowContextProvider>
-    <SubpageLayout />
-  </BorrowContextProvider>
-)
-
 export const Route = createFileRoute("/borrow")({
-  component: Page,
+  component: MoneyMarketLayout,
   validateSearch: searchSchema,
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("borrow", i18n.t),
-  }),
+  // breadcrumb links carry only a path, so keep the selected market on them
+  search: { middlewares: [retainSearchParams(["market"])] },
+  staticData: { crumb: true },
 })
