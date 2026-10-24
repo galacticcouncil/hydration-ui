@@ -49,6 +49,7 @@ export const LINKS = {
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
+  perps: "/trade/perps",
   staking: "/staking",
   stakingOld: "/staking-old",
   stakingGigaStake: "/staking",
@@ -138,6 +139,7 @@ export const NAVIGATION: NavigationItem[] = [
         ],
       },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
+      { key: "perps", to: LINKS.perps, icon: GoalIcon },
     ],
   },
   {
@@ -309,6 +311,10 @@ export const getMenuTranslations = (t: TFunction) =>
     otc: {
       title: t("navigation.otc.title"),
       description: t("navigation.otc.description"),
+    },
+    perps: {
+      title: t("navigation.perps.title"),
+      description: t("navigation.perps.description"),
     },
     // stats: {
     //   title: t("navigation.stats.title"),

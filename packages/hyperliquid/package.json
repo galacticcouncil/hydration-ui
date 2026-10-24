@@ -1,0 +1,25 @@
+{
+  "name": "@galacticcouncil/hyperliquid",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./*": "./src/*/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --build",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "dependencies": {
+    "@nktkas/hyperliquid": "^0.33.3",
+    "@tanstack/react-query": "5.101.4",
+    "viem": "^2.55.4"
+  },
+  "devDependencies": {
+    "@galacticcouncil/eslint-config": "*",
+    "@galacticcouncil/typescript-config": "*"
+  }
+}

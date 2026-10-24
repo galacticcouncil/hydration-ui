@@ -225,6 +225,8 @@
   "navigation.pools.title": "Pools",
   "navigation.otc.description": "Trade directly with other users",
   "navigation.otc.title": "Trade OTC",
+  "navigation.perps.description": "Trade perpetual futures on Hyperliquid",
+  "navigation.perps.title": "Perps",
   "navigation.referrals.title": "Referrals",
   "navigation.staking.description": "",
   "navigation.staking.title": "Staking",
