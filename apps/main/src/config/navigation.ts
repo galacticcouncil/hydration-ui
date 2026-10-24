@@ -1,6 +1,7 @@
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  BlendIcon,
   BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
@@ -59,6 +60,7 @@ export const LINKS = {
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
+  borrowMultiply: "/borrow/multiply",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsTreasury: "/stats/treasury",
@@ -148,6 +150,7 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
+      { key: "borrowMultiply", to: LINKS.borrowMultiply, icon: BlendIcon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
     ],
   },
@@ -345,6 +348,10 @@ export const getMenuTranslations = (t: TFunction) =>
     borrowMarkets: {
       title: t("navigation.borrowMarkets.title"),
       description: t("navigation.borrowMarkets.description"),
+    },
+    borrowMultiply: {
+      title: t("navigation.borrowMultiply.title"),
+      description: "",
     },
     borrowHistory: {
       title: t("navigation.borrowHistory.title"),

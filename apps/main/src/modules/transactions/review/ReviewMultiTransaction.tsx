@@ -21,7 +21,7 @@ import {
   MultiTransaction,
   SingleTransaction,
   TransactionCommon,
-  TSuccessResult,
+  TTransactionResult,
   useTransactionsStore,
 } from "@/states/transactions"
 import { getErrorMessage } from "@/utils/errors"
@@ -38,7 +38,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const toasts = useToasts()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [transactionResults, setTransactionResults] = useState<
-    TSuccessResult[]
+    TTransactionResult[]
   >([])
   const [currentConfig, setCurrentConfig] = useState<SingleTransaction | null>(
     null,
