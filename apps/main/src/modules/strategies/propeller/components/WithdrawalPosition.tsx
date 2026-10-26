@@ -50,32 +50,12 @@ const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
   return now >= eligibleAt
 }
 
-/**
- * A partial claim is worth surfacing when a QUARTER of the request has freed
- * (claiming in quarters is a sane rhythm), or when the freed amount is large
- * in absolute terms (a whale's 5% should not wait for 25%). Below both, the
- * button only invites gas-wasting dust claims; the final claim always shows.
- */
-const PARTIAL_CLAIM_MIN_FRACTION = 0.25
-const PARTIAL_CLAIM_MIN_USD = 1_000
-
 /** coarse on purpose: the pace wobbles, so minutes beat false precision */
 const formatEta = (seconds: number) => {
   if (seconds < 90) return "~1 min"
   if (seconds < 5400) return `~${Math.round(seconds / 60)} min`
   if (seconds < 172800) return `~${Math.round(seconds / 3600)} h`
   return `~${Math.round(seconds / 86400)} d`
-}
-
-const partialClaimWorthwhile = (row: PropellerWithdrawalRow) => {
-  const unclaimed = row.collateralSettled ?? 0
-  const owed = row.collateralOwed ?? 0
-  if (unclaimed <= 0) return false
-  const price = row.estEth > 0 ? row.estUsd / row.estEth : 0
-  return (
-    (owed > 0 && unclaimed / owed >= PARTIAL_CLAIM_MIN_FRACTION) ||
-    unclaimed * price >= PARTIAL_CLAIM_MIN_USD
-  )
 }
 
 type WithdrawalPositionProps = {
@@ -87,18 +67,10 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // row amounts arrive already converted to the current display asset
   const displayAsset = useVaultDisplayAsset()(row.vault)
   const { symbol } = displayAsset
-  // After a partial claim the row speaks for what is still coming, not the
-  // original request: claimed = everything settled minus what is unclaimed.
-  // A closed request shows the total it paid.
-  const claimed = Math.max(
-    (row.settledSoFar ?? 0) - (row.collateralSettled ?? 0),
-    0,
-  )
-  const remaining =
-    row.state === "claimed" ? row.estEth : Math.max(row.estEth - claimed, 0)
-  const usd = t("common:currency", {
-    value: row.estEth > 0 ? (row.estUsd * remaining) / row.estEth : 0,
-  })
+  // estEth already speaks for what is still coming on an open request (owed
+  // minus earlier partial claims) and for the total paid on a closed one
+  const remaining = row.estEth
+  const usd = t("common:currency", { value: row.estUsd })
   const claim = useClaim()
   const [claimOpen, setClaimOpen] = useState(false)
   const hasPayoutChoice = !!row.vault.payoutAssetIds
@@ -123,15 +95,9 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // keeper to start the unwind — say so instead of a dead countdown
   const state =
     row.state === "cooldown" && cooldownElapsed ? "pending" : row.state
-  const rawStatus = getWithdrawalStateLabel({ ...row, state })
-  // demote claimable back to settling while the freed amount is not worth a claim
-  const status =
-    rawStatus === "claimable" &&
-    row.state === "partial" &&
-    row.surplusHollar <= 0 &&
-    !partialClaimWorthwhile(row)
-      ? "settling"
-      : rawStatus
+  // anything settled is claimable: the contract takes any amount, so the UI
+  // never holds a partial claim back
+  const status = getWithdrawalStateLabel({ ...row, state })
   const stats =
     state === "cooldown"
       ? [
