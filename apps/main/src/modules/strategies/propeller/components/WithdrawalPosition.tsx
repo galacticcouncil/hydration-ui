@@ -114,18 +114,6 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
     ),
   )
   const claimPaused = vaultStats?.paused === true
-  // the contract keeps only when the unwind may start; the request came one
-  // withdrawal delay earlier (exact while the delay is unchanged). It tells
-  // apart otherwise identical rows, quietly, on the USD line.
-  const amountMeta =
-    vaultStats === undefined
-      ? usd
-      : t("withdrawals.amountMeta", {
-          usd,
-          requested: new Date(
-            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
-          ),
-        })
   const cooldownElapsed = useCooldownElapsed(
     row.eligibleAt,
     row.state === "cooldown",
@@ -187,6 +175,20 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
           ]
         : undefined
 
+  // the contract keeps only when the unwind may start; the request came one
+  // withdrawal delay earlier (exact while the delay is unchanged). It tells
+  // apart otherwise identical rows, quietly, on the USD line — only where no
+  // stat competes for the width: an in-progress row already says when.
+  const amountMeta =
+    vaultStats === undefined || stats !== undefined
+      ? usd
+      : t("withdrawals.amountMeta", {
+          usd,
+          requested: new Date(
+            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
+          ),
+        })
+
   return (
     <>
       <PendingPosition
@@ -220,11 +222,11 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
                         maximumFractionDigits: 4,
                       }),
                     })
-                  : t("withdrawals.action.claimAmount", {
+                  : // formatted exactly like the amount column beside it
+                    t("withdrawals.action.claimAmount", {
                       amount: t("common:currency", {
                         value: row.collateralSettled ?? 0,
                         symbol,
-                        maximumFractionDigits: 4,
                       }),
                     })}
             </LoadingButton>
