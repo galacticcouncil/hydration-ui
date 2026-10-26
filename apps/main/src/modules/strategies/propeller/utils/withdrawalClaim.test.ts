@@ -1,4 +1,9 @@
-import { decodeFunctionData, type PublicClient, zeroAddress } from "viem"
+import {
+  decodeFunctionData,
+  type PublicClient,
+  toFunctionSelector,
+  zeroAddress,
+} from "viem"
 import { describe, expect, it, vi } from "vitest"
 
 import {
@@ -39,6 +44,31 @@ const prepare = (client: ReturnType<typeof mockClient>) =>
   )
 
 describe("Withdrawal claim batch", () => {
+  it("claims exactly the prepared amount on vaults that take one", async () => {
+    const exactVault = "0x0000000000000000000000000000000000000009"
+    const implementation = "0x00000000000000000000000000000000000000aa"
+    const client = {
+      ...mockClient(10n, 0n),
+      getStorageAt: vi.fn(
+        async () => `0x${"0".repeat(24)}${implementation.slice(2)}`,
+      ),
+      getCode: vi.fn(
+        async () =>
+          `0x6080${toFunctionSelector("claim(uint256,address,uint256)").slice(2)}00`,
+      ),
+    }
+    const result = await prepareWithdrawalClaim(
+      client as unknown as PublicClient,
+      exactVault,
+      requestId,
+      owner,
+    )
+    expect(client.getCode).toHaveBeenCalledWith({ address: implementation })
+    expect(
+      decodeFunctionData({ abi: VAULT_ABI, data: result.calls[0]!.data }),
+    ).toEqual({ functionName: "claim", args: [7n, owner, 10n] })
+  })
+
   it("combines collateral and HOLLAR into ordered calls for the same request", async () => {
     const client = mockClient(10n, 2n)
     const result = await prepare(client)

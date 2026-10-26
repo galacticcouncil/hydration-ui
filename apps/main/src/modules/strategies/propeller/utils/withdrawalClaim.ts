@@ -2,6 +2,7 @@ import {
   encodeFunctionData,
   type Hex,
   type PublicClient,
+  toFunctionSelector,
   zeroAddress,
 } from "viem"
 
@@ -9,6 +10,40 @@ import {
   MAIN_DEBT_ABI,
   VAULT_ABI,
 } from "@/modules/strategies/propeller/config/abi"
+
+const ERC1967_IMPLEMENTATION_SLOT =
+  "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+const EXACT_CLAIM = toFunctionSelector("claim(uint256,address,uint256)").slice(
+  2,
+)
+const exactClaimByVault = new Map<string, Promise<boolean>>()
+
+/**
+ * Whether the deployed vault claims an exact amount. The older claim pays
+ * everything settled at execution, so a tranche landing between preparing and
+ * including a claim reaches the wallet unsold, as the collateral itself.
+ */
+export const readClaimTakesAmount = (client: PublicClient, vault: Hex) => {
+  const key = vault.toLowerCase()
+  const cached = exactClaimByVault.get(key)
+  if (cached) return cached
+  const read = (async () => {
+    try {
+      const slot = await client.getStorageAt({
+        address: vault,
+        slot: ERC1967_IMPLEMENTATION_SLOT,
+      })
+      const implementation =
+        slot && BigInt(slot) !== 0n ? (`0x${slot.slice(-40)}` as Hex) : vault
+      const code = await client.getCode({ address: implementation })
+      return !!code && code.includes(EXACT_CLAIM)
+    } catch {
+      return false
+    }
+  })()
+  exactClaimByVault.set(key, read)
+  return read
+}
 
 export const prepareWithdrawalClaim = async (
   client: PublicClient,
@@ -38,6 +73,7 @@ export const prepareWithdrawalClaim = async (
     throw new Error("Withdrawal does not belong to the connected account")
   }
   const collateral = redemption[8] ? redemption[6] : 0n
+  const exact = await readClaimTakesAmount(client, vaultAddress)
   const surplusHollar =
     mainDebt === zeroAddress
       ? 0n
@@ -56,7 +92,10 @@ export const prepareWithdrawalClaim = async (
             data: encodeFunctionData({
               abi: VAULT_ABI,
               functionName: "claim",
-              args: [BigInt(requestId), receiver],
+              // exactly what the batch sells after it; older vaults pay all
+              args: exact
+                ? [BigInt(requestId), receiver, collateral]
+                : [BigInt(requestId), receiver],
             }),
             abi: VAULT_ABI,
           },
