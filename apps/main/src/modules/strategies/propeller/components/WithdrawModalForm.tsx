@@ -16,6 +16,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { type Hex } from "viem"
@@ -105,7 +106,14 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
     symbol,
     decimals,
   })
-  const { control, handleSubmit, watch, formState } = form
+  const { control, handleSubmit, watch, formState, setValue } = form
+  // MAX means "every share", not "this many ETH": the display rate moves, so
+  // comparing the typed amount to a fresh maximum can leave dust or fail
+  // validation for a block. Follow the maximum while MAX stays chosen.
+  const [maxChosen, setMaxChosen] = useState(false)
+  useEffect(() => {
+    if (maxChosen) setValue("amount", maxAssets, { shouldValidate: true })
+  }, [maxChosen, maxAssets, setValue])
 
   const amount = watch("amount")
   // the shares actually escrowed for a typed display-asset amount
@@ -114,14 +122,17 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
     .div(exchangeRate)
     .toFixed(decimals, Big.roundDown)
 
-  const canSubmit = formState.isValid && !redeem.isPending && !blockedReason
+  // an amount below one share unit would submit requestRedeem(0) and revert
+  const redeemsShares = maxChosen || Big(sharesIn).gt(0)
+  const canSubmit =
+    formState.isValid && redeemsShares && !redeem.isPending && !blockedReason
   const showCarryNotice = carry > 0 && !blockedReason
 
   // the balance grows as earnings are funded; asking for everything shown
   // submits the EXACT share balance, never a round-trip through the rate
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
-    const isMax = Big(amount).gte(maxAssets)
+    const isMax = maxChosen || Big(amount).gte(maxAssets)
     redeem.mutate({
       shareAmount: isMax
         ? shareBalance
@@ -150,15 +161,21 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                     icon: <AssetLogo id={displayAsset.id} />,
                   }}
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    setMaxChosen(false)
+                    field.onChange(value)
+                  }}
                   balance={{
                     label: t("common:withdrawableBalance"),
                     value: t("common:number", { value: maxAssets }),
-                    onMax: () => field.onChange(maxAssets),
-                    onPercentage: (percent) =>
-                      field.onChange(
-                        percentageOf(maxAssets, percent, decimals),
-                      ),
+                    onMax: () => {
+                      setMaxChosen(true)
+                      field.onChange(maxAssets)
+                    },
+                    onPercentage: (percent) => {
+                      setMaxChosen(percent >= 100)
+                      field.onChange(percentageOf(maxAssets, percent, decimals))
+                    },
                     isMaxDisabled: Big(maxAssets).lte(0),
                   }}
                   amountError={fieldState.error?.message}

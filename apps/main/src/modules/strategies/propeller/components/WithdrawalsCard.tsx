@@ -5,7 +5,7 @@ import {
   Pagination,
   Stack,
 } from "@galacticcouncil/ui/components"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { WithdrawalPosition } from "@/modules/strategies/propeller/components/WithdrawalPosition"
@@ -32,6 +32,14 @@ export const WithdrawalsCard = ({ rows }: Props) => {
   const { t } = useTranslation("propeller")
   const [page, setPage] = useState(1)
   const sortedRows = useMemo(() => sortWithdrawals(rows), [rows])
+  // a new request sorts behind claimable rows: jump back to the first page so
+  // it is never created out of sight
+  const newestId = rows.reduce((max, row) => Math.max(max, row.requestId), -1)
+  const seenNewest = useRef(newestId)
+  useEffect(() => {
+    if (newestId > seenNewest.current) setPage(1)
+    seenNewest.current = newestId
+  }, [newestId])
 
   if (rows.length === 0) return null
 

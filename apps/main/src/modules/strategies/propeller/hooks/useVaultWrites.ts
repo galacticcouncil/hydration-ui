@@ -536,7 +536,15 @@ export function useDeposit(
         { leading: [trade.tx.decodedCall], atomic: true },
       )
       // the deposit cannot be simulated before the swap, so dry-run the batch
-      const dryRunError = await getDryRunError(rpc, account?.address ?? "", tx)
+      // best, not papi's finalized default: a just-received pay asset must count
+      const dryRunError = await getDryRunError(
+        rpc,
+        account?.address ?? "",
+        tx,
+        {
+          at: "best",
+        },
+      )
       if (dryRunError)
         throw new Error(`Deposit dry run failed: ${dryRunError.name}`)
 
@@ -825,12 +833,13 @@ export function useClaim(options: VaultWriteOptions = {}) {
       requestId,
       payoutAssetId = vault.assetId,
     }: ClaimVariables) => {
-      const { calls, collateral, surplusHollar } = await prepareWithdrawalClaim(
-        evm,
-        vault.vaultAddress,
-        requestId,
-        evmAddress,
-      )
+      const { calls, collateral, surplusHollar, complete } =
+        await prepareWithdrawalClaim(
+          evm,
+          vault.vaultAddress,
+          requestId,
+          evmAddress,
+        )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
       const sell = await buildSell(vault, payoutAssetId, collateral)
       const payouts = describePayouts(
@@ -842,7 +851,12 @@ export function useClaim(options: VaultWriteOptions = {}) {
       )
       const claim = {
         title: t("withdrawals.claim.title"),
-        description: t("withdrawals.claim.description", { payouts }),
+        description: t(
+          complete
+            ? "withdrawals.claim.descriptionFinal"
+            : "withdrawals.claim.description",
+          { payouts },
+        ),
         toasts: {
           submitted: t("withdrawals.claim.submitted"),
           success: t("withdrawals.claim.success"),
@@ -871,7 +885,11 @@ export function useClaim(options: VaultWriteOptions = {}) {
         trailing: sell ? [sell] : [],
       })
       if (sell) {
-        const dryRunError = await getDryRunError(rpc, address, tx)
+        // the claimable tranche can be newer than finalized; papi's default
+        // (finalized) would see nothing to sell and fail a claim that succeeds
+        const dryRunError = await getDryRunError(rpc, address, tx, {
+          at: "best",
+        })
         if (dryRunError)
           throw new Error(`Claim dry run failed: ${dryRunError.name}`)
       }
