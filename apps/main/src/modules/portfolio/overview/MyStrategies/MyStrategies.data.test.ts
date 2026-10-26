@@ -170,10 +170,12 @@ describe("Juicer portfolio withdrawal entitlement", () => {
     ).toBe("1")
   })
 
-  it("subtracts previous partial claims without counting ready collateral twice", () => {
+  it("takes estEth as is: it already excludes previous partial claims", () => {
+    // owed 1, claimed 0.4, ready 0.3 -> 0.6 still coming (0.3 of it claimable)
     expect(
       remaining({
         state: "partial",
+        estEth: 0.6,
         settledSoFar: 0.7,
         collateralSettled: 0.3,
       }),
@@ -191,6 +193,7 @@ describe("Juicer portfolio withdrawal entitlement", () => {
     expect(
       remaining({
         state: "settled",
+        estEth: 0.6,
         settledSoFar: 1,
         collateralSettled: 0.6,
       }),
@@ -209,15 +212,8 @@ describe("Juicer portfolio withdrawal entitlement", () => {
     ).toBe("0")
   })
 
-  it("clamps rounding or stale overclaims instead of showing a negative holding", () => {
-    expect(
-      remaining({
-        state: "partial",
-        estEth: 0.3,
-        settledSoFar: 0.7,
-        collateralSettled: 0.3,
-      }),
-    ).toBe("0")
+  it("clamps a rounding-negative entitlement instead of showing a negative holding", () => {
+    expect(remaining({ state: "partial", estEth: -0.000001 })).toBe("0")
   })
 })
 

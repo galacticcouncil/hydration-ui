@@ -55,12 +55,9 @@ export const getJuicerRemainingCollateral = (
   row: PropellerWithdrawalRow,
 ): string => {
   if (row.state === "claimed") return "0"
-
-  // settledSoFar includes both previous claims and collateral ready to claim.
-  // Only previous claims leave the entitlement; ready collateral stays in it.
-  const claimed = Big(row.settledSoFar ?? 0).minus(row.collateralSettled ?? 0)
-  const remaining = Big(row.estEth).minus(claimed.gt(0) ? claimed : 0)
-  return remaining.gt(0) ? remaining.toString() : "0"
+  // estEth on an open request already excludes earlier partial claims and
+  // keeps collateral that is ready to claim — the same amount the row shows
+  return Big(row.estEth).gt(0) ? Big(row.estEth).toString() : "0"
 }
 
 export const useMyJuicerPositions = () => {
