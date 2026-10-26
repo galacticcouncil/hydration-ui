@@ -114,6 +114,18 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
     ),
   )
   const claimPaused = vaultStats?.paused === true
+  // the contract keeps only when the unwind may start; the request came one
+  // withdrawal delay earlier (exact while the delay is unchanged). It tells
+  // apart otherwise identical rows, quietly, on the USD line.
+  const amountMeta =
+    vaultStats === undefined
+      ? usd
+      : t("withdrawals.amountMeta", {
+          usd,
+          requested: new Date(
+            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
+          ),
+        })
   const cooldownElapsed = useCooldownElapsed(
     row.eligibleAt,
     row.state === "cooldown",
@@ -180,7 +192,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
       <PendingPosition
         assetId={displayAsset.id}
         value={t("common:currency", { value: remaining, symbol })}
-        displayValue={usd}
+        displayValue={amountMeta}
         isLoading={row.isSettlementLoading}
         stats={stats}
         status={

@@ -39,6 +39,7 @@
   "positions.accruingTooltip": "You have earned {{ amount }} since the last harvest. It will be added to your balance automatically.",
   "positions.action.withdraw": "Withdraw",
   "withdrawals.title": "Withdrawals",
+  "withdrawals.amountMeta": "{{ usd }} · {{ requested, date(format: 'MMM d, HH:mm') }}",
   "withdrawals.state.pending": "Waiting for unwind",
   "withdrawals.state.claimable": "Claim ready",
   "withdrawals.state.settling": "Settling",
