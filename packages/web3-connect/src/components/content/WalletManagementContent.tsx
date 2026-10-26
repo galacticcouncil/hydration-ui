@@ -322,21 +322,20 @@ export const WalletManagementContent = () => {
     !!selectedWalletGroup &&
     getSelectableWallets(selectedWalletGroup, connectedProviderTypes).length > 1
 
-  const showAccountPanel =
-    !!isPage ||
-    connectedProviderTypes.length > 0 ||
-    connectedAccountsCount > 0 ||
-    isExternalWalletSelected ||
-    isMultisigSelected ||
-    isProvidersConnecting ||
-    showSelectedWalletConnectState ||
-    showWalletGroupChainSelectState ||
-    showErrorState
+  const showAccountPanel = isPage
+    ? showAccounts
+    : connectedProviderTypes.length > 0 ||
+      connectedAccountsCount > 0 ||
+      isExternalWalletSelected ||
+      isMultisigSelected ||
+      isProvidersConnecting ||
+      showSelectedWalletConnectState ||
+      showWalletGroupChainSelectState ||
+      showErrorState
+  const showAllAccounts =
+    (isPage || showAccountPanel) && connectedAccountsCount > 0
 
-  /**
-   * Derived from `showAccountPanel` rather than synced by an effect, so an
-   * emptied panel falls back to the wallet list on its own.
-   */
+  /** Global pickers fall back when emptied; embedded flows switch on selection. */
   const isAccountsView = showAccounts && showAccountPanel
 
   /**
@@ -676,7 +675,7 @@ export const WalletManagementContent = () => {
   const moreWalletsPreviewCount = 2
   // The title only separates more wallets from the sections above it
   const isMoreWalletsOnlySection =
-    !(showAccountPanel && connectedAccountsCount > 0) &&
+    !showAllAccounts &&
     visibleReachableWalletCount === 0 &&
     !showConnectAll &&
     visibleDeeplinkedWalletGroups.length === 0 &&
@@ -710,7 +709,9 @@ export const WalletManagementContent = () => {
               : t("provider.selectSourceWalletOnly"))
         }
         onBack={
-          !isDesktop && isAccountsView ? () => setShowAccounts(false) : onBack
+          (isPage || !isDesktop) && isAccountsView
+            ? () => setShowAccounts(false)
+            : onBack
         }
         description={meta?.description}
         align="center"
@@ -749,7 +750,7 @@ export const WalletManagementContent = () => {
               setIsPanelOpened(true)
           }}
         >
-          <SSourceColumn mobileHidden={isAccountsView}>
+          <SSourceColumn mobileHidden={isAccountsView} isPage={isPage}>
             {!isChainMode && (
               <SSearchInput
                 value={walletSearchValue}
@@ -762,7 +763,7 @@ export const WalletManagementContent = () => {
             <SSourceScrollFrame hasFooter={showLogOutAll}>
               <ScrollArea viewportRef={sourceViewportRef}>
                 <SScrollAreaContent direction="column" gap="base">
-                  {showAccountPanel && connectedAccountsCount > 0 && (
+                  {showAllAccounts && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton
                         active={

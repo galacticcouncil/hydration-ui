@@ -12,7 +12,7 @@ import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 type PanelProps = { showAccountPanel: boolean; isPage?: boolean }
 
-type MobileColumnProps = { mobileHidden: boolean }
+type MobileColumnProps = { mobileHidden: boolean; isPage?: boolean }
 
 const shouldForwardProp = (prop: string) =>
   prop !== "showAccountPanel" && prop !== "isPage"
@@ -99,10 +99,12 @@ export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
     overflow: hidden;
 
     ${mq("md")} {
-      grid-template-columns: ${showAccountPanel
-        ? `${pxToRem(isPage ? 172 : 200)} calc(100% - ${pxToRem(isPage ? 172 : 200)} - ${theme.space.s})`
-        : "100% 0px"};
-      gap: ${showAccountPanel ? theme.space.s : 0};
+      grid-template-columns: ${isPage
+        ? "100%"
+        : showAccountPanel
+          ? `${pxToRem(200)} calc(100% - ${pxToRem(200)} - ${theme.space.s})`
+          : "100% 0px"};
+      gap: ${!isPage && showAccountPanel ? theme.space.s : 0};
     }
 
     @media (prefers-reduced-motion: no-preference) {
@@ -118,7 +120,7 @@ export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
 export const SSourceColumn = styled(Flex, {
   shouldForwardProp: shouldForwardColumnProp,
 })<MobileColumnProps>(
-  ({ theme, mobileHidden }) => css`
+  ({ theme, mobileHidden, isPage }) => css`
     flex-direction: column;
     gap: ${theme.space.base};
 
@@ -133,6 +135,7 @@ export const SSourceColumn = styled(Flex, {
     }
 
     ${mq("md")} {
+      display: ${isPage && mobileHidden ? "none" : "flex"};
       max-height: 100%;
     }
   `,
@@ -232,7 +235,7 @@ export const SRightPanelFrame = styled(Box, {
     }
 
     ${mq("md")} {
-      display: flex;
+      display: ${isPage && !showAccountPanel ? "none" : "flex"};
       flex-direction: column;
       height: 100%;
       /* hidden panel must not size the grid row */
