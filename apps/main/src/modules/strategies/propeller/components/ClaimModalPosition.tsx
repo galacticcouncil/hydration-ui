@@ -23,7 +23,12 @@ export const ClaimModalPosition: FC<ClaimModalPositionProps> = ({ row }) => {
         {row.isSettlementLoading ? (
           <Skeleton width={120} />
         ) : (
-          t("currency", { value: row.estEth, symbol: displayAsset.symbol })
+          // what this claim pays, like the row's Claim button: after a
+          // partial claim the original request overstates it
+          t("currency", {
+            value: row.collateralSettled ?? row.estEth,
+            symbol: displayAsset.symbol,
+          })
         )}
       </Text>
     </Flex>
