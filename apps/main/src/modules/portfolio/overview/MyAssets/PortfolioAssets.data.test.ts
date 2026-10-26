@@ -45,6 +45,7 @@ const POSITIONS: StrategyPosition[] = [
     shareSymbol: "BIL",
     pendingEarnings: null,
     pendingWithdrawal: null,
+    pendingWithdrawalValue: null,
     isPendingWithdrawalEstimate: false,
     recoveryHollar: null,
     recoveryPending: false,
@@ -85,6 +86,7 @@ const POSITIONS: StrategyPosition[] = [
     rateKind: "apr",
     shareAmount: asset.amount,
     shareSymbol: asset.symbol,
+    pendingWithdrawalValue: asset.pendingWithdrawal ? "900" : null,
     isPendingWithdrawalEstimate: !!asset.pendingWithdrawal,
     recoveryHollar: null,
     recoveryPending: false,
@@ -125,6 +127,14 @@ describe("combined portfolio assets", () => {
       ])
     },
   )
+
+  it("keeps a Juicer withdrawal in its row until claimed", () => {
+    const result = mergePortfolioAssets([], POSITIONS, getAsset)
+    const tbtc = result.find((row) => row.strategyPosition?.symbol === "tBTC")
+    // 0.04 still in the position + 0.01 withdrawing; $3600 + $900
+    expect(tbtc?.total).toBe("0.05")
+    expect(tbtc?.totalDisplay).toBe("4500")
+  })
 
   it("keeps wallet ETH and tBTC and gives their Juicer positions unique rows", () => {
     const result = mergePortfolioAssets(

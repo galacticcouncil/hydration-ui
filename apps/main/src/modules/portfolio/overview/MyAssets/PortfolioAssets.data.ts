@@ -1,3 +1,5 @@
+import Big from "big.js"
+
 import { TAssetData } from "@/api/assets"
 import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import {
@@ -32,10 +34,20 @@ export const mergePortfolioAssets = (
     (asset) => !representedShareAssets.has(asset.id),
   )
   const strategyAssets = positions.map<MyAsset>((position) => {
+    // a Juicer withdrawal stays the user's until claimed: its escrowed shares
+    // leave the position, so the row adds what is still coming back
     const amount =
       position.strategy === "juicer"
-        ? position.underlyingAmount
+        ? Big(position.underlyingAmount ?? 0)
+            .plus(position.pendingWithdrawal ?? 0)
+            .toString()
         : position.shareAmount
+    const totalDisplay =
+      position.strategy === "juicer" && position.pendingWithdrawalValue
+        ? Big(position.value ?? 0)
+            .plus(position.pendingWithdrawalValue)
+            .toString()
+        : position.value
     // Live Juicer and supplied BIL need share-specific transfer checks.
     const walletHolding =
       position.status === "wallet"
@@ -52,7 +64,7 @@ export const mergePortfolioAssets = (
         position.strategy === "juicer" ? "Juicer" : "Brazilian Invoice Loans",
       origin: null,
       total: amount ?? "0",
-      totalDisplay: position.value ?? undefined,
+      totalDisplay: totalDisplay ?? undefined,
       transferable: transferable ?? "0",
       transferableDisplay,
       canStake: false,

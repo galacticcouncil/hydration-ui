@@ -41,6 +41,8 @@ export type StrategyPosition = {
   /** juicer yield not harvested yet; funded earnings are already in amount */
   pendingEarnings: string | null
   pendingWithdrawal: string | null
+  /** USD of pendingWithdrawal: escrowed in the vault, so in no wallet balance */
+  pendingWithdrawalValue: string | null
   isPendingWithdrawalEstimate: boolean
   recoveryHollar: string | null
   recoveryPending: boolean
@@ -97,6 +99,14 @@ export const useMyJuicerPositions = () => {
     )
     const recoveryPending = withdrawals.some((row) => row.sourcePending)
     const hasPendingWithdrawal = pendingWithdrawal.gt(0)
+    // estUsd prices what is still coming, as pendingWithdrawal counts it
+    const pendingWithdrawalValue = withdrawals.reduce(
+      (sum, row) =>
+        Big(getJuicerRemainingCollateral(row)).gt(0)
+          ? sum.plus(row.estUsd)
+          : sum,
+      Big(0),
+    )
     const pendingYield = position?.pendingYield ?? null
     const hasPosition = (position?.shares ?? 0) > 0
     const isWithdrawing =
@@ -146,6 +156,10 @@ export const useMyJuicerPositions = () => {
         pendingWithdrawal: hasPendingWithdrawal
           ? pendingWithdrawal.toString()
           : null,
+        pendingWithdrawalValue:
+          hasPendingWithdrawal && hasPrice
+            ? pendingWithdrawalValue.toString()
+            : null,
         isPendingWithdrawalEstimate: withdrawals.some(
           (row) =>
             row.isEstimate && Big(getJuicerRemainingCollateral(row)).gt(0),
@@ -235,6 +249,7 @@ export const useMyBilPositions = () => {
         shareSymbol: bil.symbol,
         pendingEarnings: null,
         pendingWithdrawal: null,
+        pendingWithdrawalValue: null,
         isPendingWithdrawalEstimate: false,
         recoveryHollar: null,
         recoveryPending: false,
