@@ -38,6 +38,7 @@ import {
 } from "@/api/xcm"
 import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
@@ -59,7 +60,6 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
-import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 
@@ -426,7 +426,7 @@ export const WithdrawOnchainForm: FC = () => {
             ))}
           </InputSuggestions>
         </Stack>
-        <XcmSummary />
+        <OnrampTransferSummary />
         <Separator />
         <XcmFooter
           isSubmitting={submit.isPending}

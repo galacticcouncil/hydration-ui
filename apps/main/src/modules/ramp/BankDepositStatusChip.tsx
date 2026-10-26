@@ -16,6 +16,7 @@ import {
   Icon,
 } from "@galacticcouncil/ui/components"
 import { ComponentType, FC } from "react"
+import { capitalize } from "remeda"
 
 import { DepositStatus, RailStatus } from "./deposit.mock"
 
@@ -54,7 +55,7 @@ export const BankDepositStatusChip: FC<BankDepositStatusChipProps> = ({
   return (
     <Chip variant={variant} size={size} rounded>
       <Icon component={icon} size={size === "large" ? "m" : "s"} aria-hidden />
-      {status}
+      {capitalize(status)}
     </Chip>
   )
 }

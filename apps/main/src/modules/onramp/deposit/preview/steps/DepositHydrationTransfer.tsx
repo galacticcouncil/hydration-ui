@@ -127,6 +127,7 @@ export const DepositHydrationTransfer: FC<DepositHydrationTransferProps> = ({
           key={`${source.provider}:${source.address}`}
           assetId="0"
           lockAsset
+          showTransferSummary
           sourceAccount={source}
           defaultRecipient={
             isHydrationDepositSource(source, receiver) ? receiver : undefined
@@ -155,7 +156,7 @@ export const DepositHydrationTransfer: FC<DepositHydrationTransferProps> = ({
                         variant="secondary"
                         outline
                         size="micro"
-                        sx={{ py: "base" }}
+                        sx={{ py: "base", px: "m" }}
                         uppercase
                         disabled={pending}
                         onClick={changeSource}

@@ -1,6 +1,7 @@
 import DepositEmptyLounger from "@galacticcouncil/ui/assets/images/DepositEmptyLounger.webp"
 import {
   Box,
+  Button,
   DataTable,
   DataTableRef,
   Paper,
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next"
 
 import { EmptyState, SearchEmptyState } from "@/components/EmptyState"
 import { TabItem, TabMenu } from "@/components/TabMenu"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useXcScan } from "@/modules/xcm/history/useXcScan"
 
 import { SPortfolioDepositTableContainer } from "./PortfolioDepositPreview.styled"
@@ -37,14 +39,15 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
 }) => {
   const { t } = useTranslation(["onramp", "xcm"])
   const { account } = useAccount()
+  const setModal = useOnrampModal((state) => state.setModal)
   const { isMobile } = useBreakpoints()
   const address = account?.address ?? ""
-  const { data, isLoading } = useXcScan(address)
-  const columns = usePortfolioTransferHistoryColumns()
+  const { data, isLoading, chainMetadata } = useXcScan(address)
+  const columns = usePortfolioTransferHistoryColumns(chainMetadata)
   const tableRef = useRef<DataTableRef>(null)
   const journeys = useMemo(
-    () => filterPortfolioTransferHistory(data, filter, search),
-    [data, filter, search],
+    () => filterPortfolioTransferHistory(data, filter, search, chainMetadata),
+    [data, filter, search, chainMetadata],
   )
   const loading = !!address && isLoading && !data.length
 
@@ -69,6 +72,15 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
               ? "xcm:history.emptyState.empty"
               : "xcm:history.emptyState.connectWallet",
           )}
+          action={
+            <Button
+              size="medium"
+              variant="secondary"
+              onClick={() => setModal("deposit")}
+            >
+              {t("deposit.portfolio.empty.cta")}
+            </Button>
+          }
         />
       </Box>
     )

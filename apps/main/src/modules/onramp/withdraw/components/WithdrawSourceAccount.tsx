@@ -43,7 +43,7 @@ export const WithdrawSourceAccount: FC<WithdrawSourceAccountProps> = ({
               size="micro"
               uppercase
               disabled={disabled}
-              sx={{ py: "base" }}
+              sx={{ py: "base", px: "m" }}
               onClick={onChange}
             >
               {t("common:change")}

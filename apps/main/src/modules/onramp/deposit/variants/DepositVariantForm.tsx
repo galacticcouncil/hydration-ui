@@ -1,5 +1,4 @@
 import {
-  Collapsible,
   ModalFooter,
   Separator,
   Stack,
@@ -18,7 +17,7 @@ type DepositVariantFormProps = {
   amount: ReactNode
   destination: ReactNode
   routeOptions: ReactNode
-  details: ReactNode
+  summary: ReactNode
   notices: ReactNode
   footer: ReactNode
   onBack: () => void
@@ -31,7 +30,7 @@ export const DepositVariantForm: FC<DepositVariantFormProps> = ({
   amount,
   destination,
   routeOptions,
-  details,
+  summary,
   notices,
   footer,
   onBack,
@@ -78,16 +77,12 @@ export const DepositVariantForm: FC<DepositVariantFormProps> = ({
             {destination}
           </Stack>
           {routeOptions}
-          <Stack px="xl" pb="l" gap="m">
-            {notices}
-            <Collapsible
-              label={t("deposit.variants.details")}
-              actionLabel={t("deposit.variants.show")}
-              actionLabelWhenOpen={t("deposit.variants.hide")}
-            >
-              {details}
-            </Collapsible>
-          </Stack>
+          {summary}
+          {notices && (
+            <Stack px="xl" pb="l" gap="m">
+              {notices}
+            </Stack>
+          )}
         </Stack>
       </DepositScrollBody>
       <Separator />

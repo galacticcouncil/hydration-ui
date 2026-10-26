@@ -72,6 +72,14 @@ export const BankWithdrawReview: FC<BankWithdrawReviewProps> = ({
             label: t("bankWithdraw.review.rail"),
             content: t(`bankWithdraw.rail.${quote.currency}`),
           },
+          {
+            label: t("bankTransfer.review.additionalFees"),
+            content: t("bankV2.deposit.providerQuote"),
+          },
+          {
+            label: t("bankV2.deposit.arrival"),
+            content: t("bankTransfer.review.arrivalUnavailable"),
+          },
         ]}
       />
       <Alert description={t("bankWithdraw.review.indicative")} />

@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { Children, FC, ReactNode } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -22,9 +23,20 @@ import {
 } from "@/modules/xcm/transfer/utils/bridge"
 import { toDecimal } from "@/utils/formatting"
 
-export const XcmSummary = () => {
-  const { t } = useTranslation(["common", "xcm"])
-  const { transfer, call, alerts, isLoading, transferArgs } = useXcmProvider()
+type XcmSummaryProps = {
+  children?: ReactNode
+  withFeeContext?: boolean
+  hideUnavailable?: boolean
+}
+
+export const XcmSummary: FC<XcmSummaryProps> = ({
+  children,
+  withFeeContext = false,
+  hideUnavailable = false,
+}) => {
+  const { t } = useTranslation(["common", "xcm", "onramp"])
+  const { transfer, call, alerts, isLoading, isLoadingTransfer, transferArgs } =
+    useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
 
@@ -55,7 +67,13 @@ export const XcmSummary = () => {
     !!origin?.route && isOmniRoute(origin.route) && !!destChain?.isZec()
   const isDestFeeAmountBound = isSnowbridge || isOmniWithdrawal
 
-  const { data: amountDestFee } = useQuery(
+  const {
+    data: amountDestFee,
+    isLoading: isLoadingDestFee,
+    isFetching: isFetchingDestFee,
+    isPlaceholderData: isDestFeePlaceholder,
+    isError: isDestFeeError,
+  } = useQuery(
     xcmDestinationFeeQuery(
       isDestFeeAmountBound ? transfer : null,
       srcAmount,
@@ -66,13 +84,18 @@ export const XcmSummary = () => {
   // Snowbridge V2 and Omni withdrawal fees are volume-based — read the
   // amount-aware value from the query instead of the build-time snapshot.
   const effectiveDestFee = isDestFeeAmountBound
-    ? amountDestFee
+    ? isDestFeePlaceholder || isDestFeeError
+      ? undefined
+      : amountDestFee
     : destination?.fee
 
   const sourceFeeValue = (() => {
-    if (!source) return null
+    if (!source)
+      return withFeeContext && !hideUnavailable
+        ? t("xcm:summary.feeEstimationNotAvailable")
+        : null
     if (source.fee.amount === 0n)
-      return t("xcm:summary.feeEstimationNotAvailable")
+      return hideUnavailable ? null : t("xcm:summary.feeEstimationNotAvailable")
     return t("currency", {
       value: toDecimal(source.fee.amount, source.fee.decimals),
       symbol: source.fee.originSymbol,
@@ -87,7 +110,10 @@ export const XcmSummary = () => {
   })()
 
   const destFeeValue = (() => {
-    if (!effectiveDestFee) return null
+    if (!effectiveDestFee)
+      return withFeeContext && !hideUnavailable
+        ? t("xcm:summary.feeEstimationNotAvailable")
+        : null
     if (effectiveDestFee.amount === 0n)
       return t("xcm:summary.destinationFee.free")
     return t("currency", {
@@ -96,13 +122,27 @@ export const XcmSummary = () => {
     })
   })()
 
-  const { data: approvalFee, isLoading: isLoadingApprovalFee } =
-    useEvmApprovalFee(call)
+  const {
+    data: approvalFee,
+    isLoading: isLoadingApprovalFee,
+    isFetching: isFetchingApprovalFee,
+    isPlaceholderData: isApprovalFeePlaceholder,
+    isError: isApprovalFeeError,
+  } = useEvmApprovalFee(call)
 
   const isEvmSourceChain = !!srcChain && isAnyEvmChain(srcChain)
 
   const approvalFeeValue = (() => {
-    if (!approvalFee || !isEvmSourceChain) return null
+    if (
+      approvalFee === null ||
+      approvalFee === undefined ||
+      !isEvmSourceChain ||
+      isApprovalFeePlaceholder ||
+      isApprovalFeeError
+    )
+      return withFeeContext && !hideUnavailable
+        ? t("xcm:summary.feeEstimationNotAvailable")
+        : null
     return t("currency", {
       value: toDecimal(approvalFee, srcChain.evmChain.nativeCurrency.decimals),
       symbol: srcChain.evmChain.nativeCurrency.symbol,
@@ -111,6 +151,35 @@ export const XcmSummary = () => {
 
   const hasErrorAlerts = alerts.some((a) => a.severity === "error")
   const isTransferValid = !!transfer && formState.isValid && !hasErrorAlerts
+  const isLoadingFees = hideUnavailable ? isLoadingTransfer : isLoading
+  const isLoadingApproval =
+    isLoadingFees ||
+    (!isApprovalFeeError &&
+      (isLoadingApprovalFee ||
+        (isApprovalFeePlaceholder && isFetchingApprovalFee)))
+  const isLoadingDestination =
+    isLoadingFees ||
+    (isDestFeeAmountBound &&
+      !isDestFeeError &&
+      (isLoadingDestFee || (isDestFeePlaceholder && isFetchingDestFee)))
+  const showApprovalFee =
+    call &&
+    isEvmSourceChain &&
+    isEvmApproveCall(call) &&
+    (!hideUnavailable || approvalFeeValue !== null || isLoadingApproval)
+  const showSourceFee =
+    !hideUnavailable || sourceFeeValue !== null || isLoadingFees
+  const showDestinationFee =
+    !hideUnavailable || destFeeValue !== null || isLoadingDestination
+
+  if (
+    !showApprovalFee &&
+    !showSourceFee &&
+    !showDestinationFee &&
+    Children.toArray(children).length === 0
+  ) {
+    return null
+  }
 
   return (
     <CollapsibleRoot open={isTransferValid}>
@@ -120,23 +189,32 @@ export const XcmSummary = () => {
           px="xl"
           withLeadingSeparator
         >
-          {call && isEvmSourceChain && isEvmApproveCall(call) && (
+          {showApprovalFee && (
             <SummaryRow
-              label={t("xcm:summary.approvalFee")}
-              loading={isLoading || isLoadingApprovalFee}
+              label={
+                withFeeContext
+                  ? t("onramp:transferSummary.approvalFeeIncluded")
+                  : t("xcm:summary.approvalFee")
+              }
+              loading={isLoadingApproval}
               content={approvalFeeValue}
             />
           )}
-          <SummaryRow
-            label={t("xcm:summary.sourceFee")}
-            loading={isLoading}
-            content={sourceFeeValue}
-          />
-          <SummaryRow
-            label={destFeeLabel}
-            loading={isLoading}
-            content={destFeeValue}
-          />
+          {showSourceFee && (
+            <SummaryRow
+              label={t("xcm:summary.sourceFee")}
+              loading={isLoadingFees}
+              content={sourceFeeValue}
+            />
+          )}
+          {showDestinationFee && (
+            <SummaryRow
+              label={destFeeLabel}
+              loading={isLoadingDestination}
+              content={destFeeValue}
+            />
+          )}
+          {children}
         </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>

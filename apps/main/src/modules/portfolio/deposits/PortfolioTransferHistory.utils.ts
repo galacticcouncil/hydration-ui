@@ -1,12 +1,13 @@
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 
-import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
+import type { XcScanChains } from "@/api/xcScanMetadata"
 import {
   FAILED_STATUSES,
   PENDING_STATUSES,
   SUCCESS_STATUSES,
   WAITING_STATUSES,
 } from "@/modules/xcm/history/utils/journey"
+import { getJourneyChainName } from "@/modules/xcm/history/utils/metadata"
 
 export type PortfolioTransferFilter =
   | "all"
@@ -18,6 +19,7 @@ export const filterPortfolioTransferHistory = (
   journeys: readonly XcJourney[],
   filter: PortfolioTransferFilter,
   search: string,
+  chains: XcScanChains = {},
 ): XcJourney[] => {
   const query = search.trim().toLowerCase()
   return journeys.filter((journey) => {
@@ -36,8 +38,8 @@ export const filterPortfolioTransferHistory = (
 
     return [
       ...journey.assets.map((asset) => asset.symbol ?? ""),
-      resolveChainFromUrn(journey.origin)?.name ?? journey.origin,
-      resolveChainFromUrn(journey.destination)?.name ?? journey.destination,
+      getJourneyChainName(journey.origin, chains),
+      getJourneyChainName(journey.destination, chains),
       journey.from,
       journey.to,
       journey.fromFormatted,

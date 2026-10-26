@@ -368,6 +368,14 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
                         content: t("bankV2.deposit.destination"),
                       },
                       { label: t("bankV2.deposit.wallet"), content: wallet },
+                      {
+                        label: t("bankV2.deposit.costs"),
+                        content: t("bankV2.deposit.providerQuote"),
+                      },
+                      {
+                        label: t("bankV2.deposit.arrival"),
+                        content: t("bankTransfer.review.arrivalUnavailable"),
+                      },
                     ]}
                   />
                   <Collapsible

@@ -1,25 +1,14 @@
-import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import {
-  AccountTile,
   Alert,
   Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Flex,
-  Icon,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  HYDRATION_CHAIN_KEY,
-  shortenAccountAddress,
-} from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import {
   Account,
-  AccountWalletAvatar,
   WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
@@ -32,6 +21,7 @@ import { useTranslation } from "react-i18next"
 import { neckworkClient } from "@/api/neckwork"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useDepositRecipientReadiness } from "@/modules/onramp/deposit/hooks/useDepositRecipientReadiness"
+import { SDepositSourceAccount } from "@/modules/onramp/deposit/preview/steps/DepositHydrationTransfer.styled"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -79,7 +69,6 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
   const {
     current,
     eligible,
-    eligibleAccounts,
     receiverAddress,
     symbol,
     ready,
@@ -157,105 +146,54 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
             {hydration?.name}
           </Text>
         </Flex>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            asChild
-            disabled={disabled || !eligibleAccounts.length}
-          >
-            <Button
-              variant="ghost"
-              width="100%"
-              aria-label={t("deposit.guided.receivingAccount")}
-              sx={{
-                height: "auto",
-                p: "m",
-                borderRadius: "m",
-                gridTemplateColumns: "minmax(0, 1fr)",
-              }}
-            >
-              <Flex align="center" gap="m" width="100%">
-                {current && (
-                  <AccountWalletAvatar
-                    address={current.displayAddress}
-                    provider={current.provider}
-                    size={36}
-                  />
-                )}
-                <Stack gap="s" flex={1} minWidth={0} align="start">
-                  <Text fs="p3" fw={500} truncate>
-                    {current?.name ?? t("deposit.guided.selectReceiver")}
-                  </Text>
-                  {current && (
-                    <Text fs="p5" color={getToken("text.medium")}>
-                      {shortenAccountAddress(current.displayAddress)}
-                    </Text>
-                  )}
-                </Stack>
-                <Icon component={CaretDown} size="s" />
-              </Flex>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            size="small"
-            sideOffset={6}
-            collisionPadding={12}
-            sx={{
-              width: "var(--radix-dropdown-menu-trigger-width)",
-              maxHeight: "var(--radix-dropdown-menu-content-available-height)",
-              overflowY: "auto",
-            }}
-          >
-            {eligibleAccounts.map((account) => (
-              <DropdownMenuItem
-                key={`${account.provider}:${account.address}`}
-                asChild
+        {current ? (
+          <SDepositSourceAccount
+            name={current.name}
+            address={current.displayAddress}
+            walletLogoSrc={getWallet(current.provider)?.logo}
+            width="100%"
+            minWidth={0}
+            action={
+              <Button
+                type="button"
+                variant="secondary"
+                outline
+                size="micro"
+                uppercase
+                sx={{ py: "base", px: "m" }}
+                disabled={disabled}
+                onClick={() => setConnecting(true)}
               >
-                <AccountTile
-                  name={`${getWallet(account.provider)?.title ?? ""} · ${account.name}`}
-                  address={account.displayAddress}
-                  walletLogoSrc={getWallet(account.provider)?.logo}
-                  active={
-                    current?.provider === account.provider &&
-                    current.address === account.address
-                  }
-                  width="100%"
-                  sx={{ textAlign: "left" }}
-                  onClick={disabled ? undefined : () => setCandidate(account)}
-                />
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          variant="transparent"
-          size="small"
-          disabled={disabled}
-          onClick={() => setConnecting(true)}
-        >
-          {t("deposit.guided.connectReceiver")}
-        </Button>
-        {selection && current && (
-          <Alert
-            variant={
-              readinessError || needsActivation || bindingActivation
-                ? "warning"
-                : "info"
+                {t("common:change")}
+              </Button>
             }
-            description={t(
-              readinessError
-                ? "deposit.v3.destination.unavailable"
-                : needsActivation
-                  ? "deposit.v3.destination.activation"
-                  : bindingActivation
-                    ? "deposit.v3.destination.binding"
-                    : canContinue
-                      ? "deposit.v3.destination.ready"
-                      : "deposit.v3.destination.check",
-              { symbol: symbol ?? "" },
-            )}
           />
+        ) : (
+          <Button
+            type="button"
+            variant="tertiary"
+            width="100%"
+            disabled={disabled}
+            onClick={() => setConnecting(true)}
+          >
+            {t("common:connectWallet")}
+          </Button>
         )}
+        {selection &&
+          current &&
+          (readinessError || needsActivation || bindingActivation) && (
+            <Alert
+              variant="warning"
+              description={t(
+                readinessError
+                  ? "deposit.v3.destination.unavailable"
+                  : needsActivation
+                    ? "deposit.v3.destination.activation"
+                    : "deposit.v3.destination.binding",
+                { symbol: symbol ?? "" },
+              )}
+            />
+          )}
         {!selection && (
           <Text fs="p5" color={getToken("text.medium")}>
             {t("deposit.guided.chooseSourceFirst")}

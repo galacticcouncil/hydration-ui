@@ -207,7 +207,7 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
                   },
                   {
                     label: t("bankV2.deposit.arrival"),
-                    content: t("bankV2.deposit.providerTiming"),
+                    content: t("bankTransfer.review.arrivalUnavailable"),
                   },
                 ]}
               />
@@ -346,6 +346,14 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
                   {
                     label: t("bankV2.deposit.wallet"),
                     content: BANK_DEPOSIT_PREVIEW_WALLET,
+                  },
+                  {
+                    label: t("bankV2.deposit.costs"),
+                    content: t("bankV2.deposit.providerQuote"),
+                  },
+                  {
+                    label: t("bankV2.deposit.arrival"),
+                    content: t("bankTransfer.review.arrivalUnavailable"),
                   },
                 ]}
               />

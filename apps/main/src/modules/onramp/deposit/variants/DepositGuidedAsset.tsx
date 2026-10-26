@@ -98,7 +98,7 @@ export const DepositGuidedAsset: FC = () => {
             activeStepIndex={selected ? 1 : 0}
           />
           <Stack gap="s" justify="flex-start">
-            <Text as="h3" fs="h7" fw={500}>
+            <Text as="h3" fs="h7" fw={500} font="primary">
               {selected
                 ? t("deposit.guided.networkHeading", {
                     symbol: selected.asset.originSymbol,

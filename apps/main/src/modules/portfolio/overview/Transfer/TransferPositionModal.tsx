@@ -51,6 +51,7 @@ import {
   useTransferPosition,
 } from "@/modules/portfolio/overview/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPositionModal.submit"
+import { TransferPositionSummary } from "@/modules/portfolio/overview/Transfer/TransferPositionSummary"
 import { isErc20AToken, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -62,6 +63,7 @@ type Props = {
   readonly lockAsset?: boolean
   readonly onAssetClick?: () => void
   readonly onPendingChange?: (pending: boolean) => void
+  readonly showTransferSummary?: boolean
   readonly onBack?: () => void
   readonly onClose: () => void
 }
@@ -74,6 +76,7 @@ export const TransferPositionModal: FC<Props> = ({
   lockAsset = false,
   onAssetClick,
   onPendingChange,
+  showTransferSummary = false,
   onBack,
   onClose,
 }) => {
@@ -221,7 +224,15 @@ export const TransferPositionModal: FC<Props> = ({
 
   return (
     <FormProvider {...form}>
-      <form
+      <Box
+        as="form"
+        display={showTransferSummary ? "flex" : undefined}
+        flex={showTransferSummary ? 1 : undefined}
+        sx={
+          showTransferSummary
+            ? { flexDirection: "column", minHeight: 0 }
+            : undefined
+        }
         onSubmit={form.handleSubmit((values) => {
           const active = useWeb3Connect.getState().account
           if (
@@ -243,7 +254,12 @@ export const TransferPositionModal: FC<Props> = ({
             onBack={onBack}
           />
         )}
-        <ModalBody sx={{ py: 0 }}>
+        <ModalBody
+          sx={{
+            py: 0,
+            ...(showTransferSummary && { overflowY: "auto", minHeight: 0 }),
+          }}
+        >
           <ModalContentDivider />
           <Box py="l" width="100%">
             <AssetSelectFormField<TransferPositionFormValues>
@@ -321,6 +337,14 @@ export const TransferPositionModal: FC<Props> = ({
             </Summary>
           )}
           <ModalContentDivider />
+          {showTransferSummary && (
+            <TransferPositionSummary
+              asset={asset}
+              amount={amount}
+              address={address}
+              isSourceCurrent={isSourceCurrent}
+            />
+          )}
         </ModalBody>
         <ModalFooter
           display="grid"
@@ -381,7 +405,7 @@ export const TransferPositionModal: FC<Props> = ({
             {t("common:confirm")}
           </LoadingButton>
         </ModalFooter>
-      </form>
+      </Box>
     </FormProvider>
   )
 }

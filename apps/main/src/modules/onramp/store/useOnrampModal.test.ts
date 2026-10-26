@@ -87,6 +87,39 @@ describe("on-chain deposit design variants", () => {
     },
   )
 
+  it.each(["guided", "simple"] as const)(
+    "opens a portfolio asset in %s with its source chain already selected",
+    (flow) => {
+      const assetIntent = { chainKey: "bifrost", assetKey: "bnc" }
+      modal().openOnchain(flow, { assetIntent })
+
+      expect(modal()).toMatchObject({
+        modal: "depositOnchainPreview",
+        depositFlow: flow,
+      })
+      expect(journey()).toMatchObject({
+        active: true,
+        phase: "sources",
+        assetIntent,
+        selection: null,
+        amount: "",
+      })
+    },
+  )
+
+  it("does not replace a pending transfer with a portfolio asset selection", () => {
+    journey().setSubmitted(transfer)
+    modal().openOnchain("guided", {
+      assetIntent: { chainKey: "bifrost", assetKey: "bnc" },
+    })
+
+    expect(journey()).toMatchObject({
+      phase: "tracking",
+      submitted: transfer,
+      assetIntent: null,
+    })
+  })
+
   it("keeps a confirmed connected recipient when changing designs, while clearing old source and amount", () => {
     wallet.account = recipient
     wallet.accounts = [recipient]

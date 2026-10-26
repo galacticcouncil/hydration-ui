@@ -91,7 +91,7 @@ export const DepositSources = () => {
               lazy={false}
               sx={{ size: "3xl", objectFit: "contain", mx: "auto" }}
             />
-            <Text as="h3" fs="h7" fw={500}>
+            <Text as="h3" fs="h7" fw={500} font="primary">
               {wallets.isConnecting
                 ? t("deposit.wallets.approve", { wallet: currentName })
                 : t(

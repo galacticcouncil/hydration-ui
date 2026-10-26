@@ -13,6 +13,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import type { XcScanChains } from "@/api/xcScanMetadata"
 import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
@@ -23,16 +24,14 @@ import {
   getTransferAsset,
   getTransferUsdValue,
 } from "@/modules/xcm/history/utils/assets"
-import {
-  isJourneyPendingClaim,
-  resolveChainFromUrn,
-} from "@/modules/xcm/history/utils/claim"
+import { isJourneyPendingClaim } from "@/modules/xcm/history/utils/claim"
 import {
   FAILED_STATUSES,
   getFormattedAddresses,
   getJourneyExplorerLink,
   SUCCESS_STATUSES,
 } from "@/modules/xcm/history/utils/journey"
+import { getJourneyChainName } from "@/modules/xcm/history/utils/metadata"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
@@ -40,7 +39,7 @@ import { PortfolioDepositStatus } from "./PortfolioDepositStatus"
 
 const columnHelper = createColumnHelper<XcJourney>()
 
-export const usePortfolioTransferHistoryColumns = () => {
+export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
   const { t } = useTranslation(["common", "xcm"])
   const { isMobile } = useBreakpoints()
   const pendingCorrelationIds = usePendingClaimsStore(
@@ -105,10 +104,9 @@ export const usePortfolioTransferHistoryColumns = () => {
               </Text>
               {isMobile ? (
                 <Text fs="p6" color="text.medium" truncate>
-                  {resolveChainFromUrn(journey.origin)?.name ?? journey.origin}
+                  {getJourneyChainName(journey.origin, chains)}
                   {" → "}
-                  {resolveChainFromUrn(journey.destination)?.name ??
-                    journey.destination}
+                  {getJourneyChainName(journey.destination, chains)}
                 </Text>
               ) : usd > 0 ? (
                 <Text fs="p6" color="text.medium">
@@ -135,7 +133,7 @@ export const usePortfolioTransferHistoryColumns = () => {
               <JourneyChainLogo networkUrn={urn} />
               <Stack gap="xs">
                 <Text fs="p5" fw={500}>
-                  {resolveChainFromUrn(urn)?.name ?? urn}
+                  {getJourneyChainName(urn, chains)}
                 </Text>
                 <AccountIdentity
                   fs="p6"
@@ -239,5 +237,5 @@ export const usePortfolioTransferHistoryColumns = () => {
           amountColumn,
         ]
       : columns
-  }, [t, isMobile, pendingCorrelationIds])
+  }, [t, isMobile, pendingCorrelationIds, chains])
 }

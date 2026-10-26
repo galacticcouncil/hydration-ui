@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
@@ -28,7 +29,6 @@ import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmT
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
-import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
 
 export const DepositOnchainForm = () => {
@@ -159,7 +159,7 @@ export const DepositOnchainForm = () => {
             })}
           </Text>
         </Stack>
-        <XcmSummary />
+        <OnrampTransferSummary />
         <Separator />
         <XcmFooter
           isSubmitting={submit.isPending}

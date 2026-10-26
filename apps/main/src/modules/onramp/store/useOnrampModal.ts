@@ -7,7 +7,10 @@ import {
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { create } from "zustand"
 
-import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
+import {
+  DepositAssetIntent,
+  useDepositJourneyStore,
+} from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawAssetSelection } from "@/modules/onramp/withdraw/WithdrawAssetSelect.utils"
 
@@ -45,7 +48,11 @@ type OnrampModalState = {
   setModal: (modal: OnrampModalType | null) => void
   openOnchain: (
     flow: DepositFlow,
-    options?: { resume?: boolean; txHash?: string },
+    options?: {
+      resume?: boolean
+      txHash?: string
+      assetIntent?: DepositAssetIntent
+    },
   ) => void
 }
 
@@ -153,8 +160,9 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       journey.start(suggested)
     }
     if (useDepositJourneyStore.getState().phase !== "tracking") {
-      if (flow === "guided") journey.setPhase("catalog")
-      if (flow === "simple") journey.setPhase("assets")
+      if (options?.assetIntent) journey.setAssetIntent(options.assetIntent)
+      else if (flow === "guided") journey.setPhase("catalog")
+      else if (flow === "simple") journey.setPhase("assets")
     }
     set({ modal: "depositOnchainPreview", depositFlow: flow })
   },

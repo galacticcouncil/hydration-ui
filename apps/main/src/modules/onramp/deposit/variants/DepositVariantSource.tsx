@@ -23,6 +23,7 @@ import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositS
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
+import { SDepositSourceAccount } from "@/modules/onramp/deposit/preview/steps/DepositHydrationTransfer.styled"
 import { DepositPreviewForm } from "@/modules/onramp/deposit/preview/steps/DepositPreviewForm"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { DepositGuidedDestination } from "@/modules/onramp/deposit/variants/DepositGuidedDestination"
@@ -43,7 +44,7 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
   onBack,
   inlineDestination = false,
 }) => {
-  const { t } = useTranslation("onramp")
+  const { t } = useTranslation(["onramp", "common"])
   const { papi } = useRpcProvider()
   const { sourceChainAssetPairs } = useXcmProvider()
   const { getValues, reset } = useFormContext<XcmFormValues>()
@@ -110,14 +111,17 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
     },
     [pair, asset, setAccount, reset, getValues, inlineDestination],
   )
-  const hasSelection =
-    selection?.chainKey === pair?.chain.key &&
-    selection?.assetKey === asset?.key &&
-    compatible.some(
-      (account) =>
-        account.provider === selection?.account.provider &&
-        account.address === selection.account.address,
-    )
+  const selectedSource =
+    selection &&
+    selection.chainKey === pair?.chain.key &&
+    selection.assetKey === asset?.key
+      ? compatible.find(
+          (account) =>
+            account.provider === selection.account.provider &&
+            account.address === selection.account.address,
+        )
+      : undefined
+  const hasSelection = !!selectedSource
   const preferred = getPreferredDepositSourceAccount(
     compatible,
     activeAccount,
@@ -128,7 +132,13 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
     if (inlineDestination && !connecting && !hasSelection && preferred)
       select(preferred)
   }, [inlineDestination, connecting, hasSelection, preferred, select])
-  if (pair && asset && (connecting || !compatible.length))
+  if (
+    pair &&
+    asset &&
+    (connecting ||
+      !compatible.length ||
+      (inlineDestination && !hasSelection && !preferred))
+  )
     return (
       <Web3ConnectPage
         neckwork={neckworkClient}
@@ -155,10 +165,37 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
   const content = (disabled = false) => (
     <Stack
       data-onramp-step="deposit-variant-source"
-      gap="l"
+      gap={inlineDestination && selectedSource ? "base" : "l"}
       justify="flex-start"
     >
-      {pair && asset ? (
+      {inlineDestination && selectedSource ? (
+        <>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("deposit.quick.sourceWallet")}
+          </Text>
+          <SDepositSourceAccount
+            name={`${getWallet(selectedSource.provider)?.title ?? ""} · ${selectedSource.name}`}
+            address={selectedSource.displayAddress}
+            walletLogoSrc={getWallet(selectedSource.provider)?.logo}
+            width="100%"
+            minWidth={0}
+            action={
+              <Button
+                type="button"
+                variant="secondary"
+                outline
+                size="micro"
+                uppercase
+                sx={{ py: "base", px: "m" }}
+                disabled={disabled}
+                onClick={() => setConnecting(true)}
+              >
+                {t("common:change")}
+              </Button>
+            }
+          />
+        </>
+      ) : pair && asset ? (
         <>
           <Text fs="p4" color={getToken("text.medium")}>
             {t("deposit.variants.sourceDescription", {

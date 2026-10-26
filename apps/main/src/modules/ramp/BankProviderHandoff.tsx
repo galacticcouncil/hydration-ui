@@ -1,5 +1,6 @@
 import errorStatus from "@galacticcouncil/ui/assets/images/ErrorStatusPlain.webp"
 import review3D from "@galacticcouncil/ui/assets/images/Review3D.webp"
+import reviewClock3D from "@galacticcouncil/ui/assets/images/ReviewClock3D.webp"
 import successStatus from "@galacticcouncil/ui/assets/images/SuccessStatusPlain.webp"
 import warningStatus from "@galacticcouncil/ui/assets/images/WarningStatusPlain.webp"
 import {
@@ -71,7 +72,9 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
                 ? errorStatus
                 : view === "moreInfo"
                   ? warningStatus
-                  : review3D
+                  : view === "review"
+                    ? reviewClock3D
+                    : review3D
           }
           alt=""
           aria-hidden

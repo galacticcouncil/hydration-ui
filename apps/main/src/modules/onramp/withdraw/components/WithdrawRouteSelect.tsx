@@ -115,7 +115,7 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
             />
           )}
           <Stack gap="s" justify="flex-start">
-            <Text as="h3" fs="h7" fw={500}>
+            <Text as="h3" fs="h7" fw={500} font="primary">
               {selected
                 ? t("withdraw.guided.network.heading", {
                     symbol: selected.asset.originSymbol,

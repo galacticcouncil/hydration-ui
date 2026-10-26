@@ -25,6 +25,7 @@ import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { ChainLogo } from "@/components/ChainLogo"
 import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
@@ -39,8 +40,8 @@ import {
 } from "@/modules/onramp/deposit/preview/DepositTransfer.utils"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { DepositVariantForm } from "@/modules/onramp/deposit/variants/DepositVariantForm"
+import { useOnrampReceiveEstimate } from "@/modules/onramp/hooks/useOnrampReceiveEstimate"
 import { DepositVariant } from "@/modules/onramp/store/useOnrampModal"
-import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
 import {
   insertOptimisticJourney,
@@ -49,13 +50,8 @@ import {
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import {
-  BRIDGE_LABEL,
-  BRIDGE_TIME,
-  getPrimaryBridgeTag,
-} from "@/modules/xcm/transfer/utils/bridge"
+import { getPrimaryBridgeTag } from "@/modules/xcm/transfer/utils/bridge"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
-import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
 import { XcmTag } from "@/states/transactions"
 
@@ -80,7 +76,6 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   const { account } = useAccount()
   const {
     transfer,
-    call,
     selectedRoute,
     isConnectedAccountValid,
     isLoadingSrcBalances,
@@ -88,23 +83,15 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   } = useXcmProvider()
   const { watch, handleSubmit, getValues, reset, formState } =
     useFormContext<XcmFormValues>()
-  const [
-    srcChain,
-    srcAsset,
-    destAsset,
-    destChain,
-    destAccount,
-    destAddress,
-    destAmount,
-  ] = watch([
-    "srcChain",
-    "srcAsset",
-    "destAsset",
-    "destChain",
-    "destAccount",
-    "destAddress",
-    "destAmount",
-  ])
+  const [srcChain, srcAsset, destAsset, destChain, destAccount, destAddress] =
+    watch([
+      "srcChain",
+      "srcAsset",
+      "destAsset",
+      "destChain",
+      "destAccount",
+      "destAddress",
+    ])
   const selection = useDepositJourneyStore((state) => state.selection)
   const destinationConfirmed = useDepositJourneyStore(
     (state) => state.destinationConfirmed,
@@ -199,6 +186,9 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
     onError: (message) => setSubmissionError(message),
   })
   const error = submissionError || submit.error?.message
+  const hasNotices =
+    (!isSourceCompatible && !!selection) || requiresClaim || !!error
+  const receiveEstimate = useOnrampReceiveEstimate()
   const back =
     onBack ?? (() => setPhase(variant === "guided" ? "sources" : "assets"))
   const changeSource = (row: DepositBalanceRow, signer: Account) => {
@@ -337,85 +327,48 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
                 />
               </Stack>
             )}
-            <Flex align="center" justify="space-between" gap="m">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("deposit.variants.youReceive")}
-              </Text>
-              <Text fs="p3" fw={500}>
-                {recipientReady && !isLoadingTransfer && destAmount
-                  ? t("common:currency", {
-                      value: destAmount,
-                      symbol: arrivingToken,
-                    })
-                  : "—"}
-              </Text>
-            </Flex>
           </>
         }
         routeOptions={<DepositRouteSelect enabled={isSourceCompatible} />}
         notices={
-          <>
-            {!isSourceCompatible && selection && (
-              <Alert
-                variant="warning"
-                description={t("deposit.flow.amount.sourceChanged")}
-                action={
-                  selectedAccount && (
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      onClick={() => setAccount(selectedAccount)}
-                    >
-                      {t("deposit.flow.amount.useSource")}
-                    </Button>
-                  )
-                }
-              />
-            )}
-            {requiresClaim && (
-              <Alert
-                variant="info"
-                description={t("deposit.v3.amount.claimRequired")}
-              />
-            )}
-            {error && (
-              <Alert
-                variant="error"
-                title={t("deposit.v3.amount.retryTitle")}
-                description={t("deposit.v3.amount.retryDescription", { error })}
-              />
-            )}
-          </>
+          hasNotices ? (
+            <>
+              {!isSourceCompatible && selection && (
+                <Alert
+                  variant="warning"
+                  description={t("deposit.flow.amount.sourceChanged")}
+                  action={
+                    selectedAccount && (
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={() => setAccount(selectedAccount)}
+                      >
+                        {t("deposit.flow.amount.useSource")}
+                      </Button>
+                    )
+                  }
+                />
+              )}
+              {requiresClaim && (
+                <Alert
+                  variant="info"
+                  description={t("deposit.v3.amount.claimRequired")}
+                />
+              )}
+              {error && (
+                <Alert
+                  variant="error"
+                  title={t("deposit.v3.amount.retryTitle")}
+                  description={t("deposit.v3.amount.retryDescription", {
+                    error,
+                  })}
+                />
+              )}
+            </>
+          ) : null
         }
-        details={
-          <Stack gap="m" pt="m">
-            <Flex justify="space-between" gap="m">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("deposit.flow.amount.route")}
-              </Text>
-              <Text fs="p5">
-                {bridgeTag ? (BRIDGE_LABEL[bridgeTag] ?? bridgeTag) : "XCM"}
-              </Text>
-            </Flex>
-            <Flex justify="space-between" gap="m">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("deposit.flow.amount.eta")}
-              </Text>
-              <Text fs="p5">
-                {(bridgeTag && BRIDGE_TIME[bridgeTag]) ||
-                  t("deposit.flow.amount.etaUnavailable")}
-              </Text>
-            </Flex>
-            <Text fs="p5" color={getToken("text.low")}>
-              {call && isEvmApproveCall(call)
-                ? t("deposit.v3.amount.approvalSteps", {
-                    symbol: srcAsset?.originSymbol,
-                  })
-                : t("deposit.v3.amount.approvals")}
-            </Text>
-            <XcmSummary />
-          </Stack>
-        }
+        summary={<OnrampTransferSummary />}
         footer={
           <XcmFooter
             isSubmitting={submit.isPending}
@@ -523,10 +476,12 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
             {t("deposit.v3.amount.expectedToken")}
           </Text>
           <Text fs="p2" fw={600}>
-            {t("common:currency", {
-              value: !isLoadingTransfer && destAmount ? destAmount : "0",
-              symbol: arrivingToken,
-            })}
+            {!receiveEstimate.isLoading && receiveEstimate.amount
+              ? t("common:currency", {
+                  value: receiveEstimate.amount,
+                  symbol: arrivingToken,
+                })
+              : "—"}
           </Text>
           {requiresClaim && (
             <Alert
@@ -539,36 +494,12 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         <Stack px="xl" py="m" gap="s">
           <Flex justify="space-between" gap="m">
             <Text fs="p5" color={getToken("text.medium")}>
-              {t("deposit.flow.amount.route")}
-            </Text>
-            <Text fs="p5">
-              {bridgeTag ? (BRIDGE_LABEL[bridgeTag] ?? bridgeTag) : "XCM"}
-            </Text>
-          </Flex>
-          <Flex justify="space-between" gap="m">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("deposit.flow.amount.eta")}
-            </Text>
-            <Text fs="p5">
-              {(bridgeTag && BRIDGE_TIME[bridgeTag]) ||
-                t("deposit.flow.amount.etaUnavailable")}
-            </Text>
-          </Flex>
-          <Flex justify="space-between" gap="m">
-            <Text fs="p5" color={getToken("text.medium")}>
               {t("deposit.flow.amount.signing")}
             </Text>
             <Text fs="p5">
               {selection && getWallet(selection.account.provider)?.title}
             </Text>
           </Flex>
-          <Text fs="p5" color={getToken("text.low")}>
-            {call && isEvmApproveCall(call)
-              ? t("deposit.v3.amount.approvalSteps", {
-                  symbol: srcAsset?.originSymbol,
-                })
-              : t("deposit.v3.amount.approvals")}
-          </Text>
           {error && (
             <Alert
               variant="error"
@@ -577,7 +508,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
             />
           )}
         </Stack>
-        <XcmSummary />
+        <OnrampTransferSummary showReceive={false} />
         <Separator />
         <XcmFooter
           isSubmitting={submit.isPending}

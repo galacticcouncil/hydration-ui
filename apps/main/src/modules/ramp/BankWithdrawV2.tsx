@@ -1,7 +1,6 @@
 import { ChevronRight, LandmarkIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
-  Collapsible,
   Flex,
   Icon,
   ModalBody,
@@ -223,37 +222,33 @@ export const BankWithdrawV2: FC<BankWithdrawV2Props> = ({
                     label: t("bankV2.withdraw.review.currency"),
                     content: currency,
                   },
+                  {
+                    label: t("bankV2.withdraw.review.sampleFee"),
+                    content: t("common:currency", {
+                      value: activeQuote.fee,
+                      symbol: "HOLLAR",
+                    }),
+                  },
+                  {
+                    label: t("bankV2.withdraw.review.settlement"),
+                    content: t("common:currency", {
+                      value: settlement,
+                      symbol: "USDC",
+                    }),
+                  },
+                  {
+                    label: t("bankTransfer.review.additionalFees"),
+                    content: t("bankV2.deposit.providerQuote"),
+                  },
+                  {
+                    label: t("bankV2.deposit.arrival"),
+                    content: t("bankTransfer.review.arrivalUnavailable"),
+                  },
                 ]}
               />
-              <Collapsible
-                label={t("bankV2.withdraw.review.estimateDetails")}
-                actionLabel={t("bankV2.withdraw.details.show")}
-                actionLabelWhenOpen={t("bankV2.withdraw.details.hide")}
-              >
-                <Stack gap="m" pt="m">
-                  <Summary
-                    rows={[
-                      {
-                        label: t("bankV2.withdraw.review.sampleFee"),
-                        content: t("common:currency", {
-                          value: activeQuote.fee,
-                          symbol: "HOLLAR",
-                        }),
-                      },
-                      {
-                        label: t("bankV2.withdraw.review.settlement"),
-                        content: t("common:currency", {
-                          value: settlement,
-                          symbol: "USDC",
-                        }),
-                      },
-                    ]}
-                  />
-                  <Text fs="p6" color={getToken("text.medium")}>
-                    {t("bankV2.withdraw.review.feeDescription")}
-                  </Text>
-                </Stack>
-              </Collapsible>
+              <Text fs="p6" color={getToken("text.medium")}>
+                {t("bankV2.withdraw.review.feeDescription")}
+              </Text>
               <Text fs="p5" color={getToken("text.medium")} lh={1.4}>
                 {t("bankV2.withdraw.review.previewDescription")}
               </Text>

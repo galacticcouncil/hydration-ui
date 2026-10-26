@@ -133,6 +133,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
           key={`${source.provider}:${source.address}:${assetId}`}
           assetId={assetId}
           lockAsset={flow === "simple"}
+          showTransferSummary
           sourceAccount={source}
           onPendingChange={reportPending}
           onAssetClick={flow === "simple" ? chooseRoute : back}
