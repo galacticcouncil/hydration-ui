@@ -115,14 +115,16 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
             {
               // two lines, mirroring the amount column: what has settled, then
               // when the rest is expected. The chip already says Settling.
+              // progress of the whole withdrawal, claimed parts included,
+              // so a partial claim never makes it look like it went back to 0%
               value: t("withdrawals.settledInline", {
                 settled: t("common:currency", {
-                  value: row.collateralSettled ?? 0,
+                  value: row.settledSoFar ?? 0,
                   symbol,
                   maximumFractionDigits: 4,
                 }),
                 pct: (
-                  ((row.collateralSettled ?? 0) / (remaining || 1)) *
+                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
                   100
                 ).toFixed(1),
               }),
