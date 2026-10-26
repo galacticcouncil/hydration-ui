@@ -38,15 +38,16 @@ const statusVariants: Record<
  * saying "Cooldown" after its own countdown has visibly expired.
  */
 const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
-  const [elapsed, setElapsed] = useState(() => Date.now() >= eligibleAt)
+  const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    if (!inCooldown || elapsed) return
-    const id = setInterval(() => {
-      if (Date.now() >= eligibleAt) setElapsed(true)
-    }, 3_000)
-    return () => clearInterval(id)
-  }, [eligibleAt, inCooldown, elapsed])
-  return elapsed
+    if (!inCooldown) return
+    // flip exactly when the countdown reaches zero, never "1s ago"; re-arms
+    // when a reorg moves the request (and with it eligibleAt)
+    const wait = Math.max(eligibleAt - Date.now(), 0)
+    const id = setTimeout(() => setNow(Date.now()), wait)
+    return () => clearTimeout(id)
+  }, [eligibleAt, inCooldown])
+  return now >= eligibleAt
 }
 
 /**
