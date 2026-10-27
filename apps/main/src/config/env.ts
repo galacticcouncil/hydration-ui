@@ -18,6 +18,7 @@ const schema = z.object({
   VITE_WORMHOLE_DISABLED: coerceToBoolean,
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_DISABLED: coerceToBoolean,
+  VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
 })
 
 export const ENV = schema.parse(import.meta.env)

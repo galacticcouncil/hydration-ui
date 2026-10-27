@@ -47,6 +47,7 @@
   "summary.withdrawalFee": "Withdrawal fee",
   "snowbridge.version.v2": "V2",
   "snowbridge.version.v1": "V1",
+  "snowbridge.inbound.disabled.banner": "Snowbridge transfers from Ethereum to Hydration are temporarily paused due to an outage. Please use Wormhole routes instead. Transfers already in progress are safe and will be delivered once it's resolved. Transfers from Hydration to Ethereum are unaffected.",
   "wormhole.autoClaim": "Claim automatically",
   "wormhole.autoClaim.tooltip": "Automatically claims tokens on the destination once the bridge completes. Includes a delivery fee.",
   "wormhole.disabled.banner": "Wormhole transfers are temporarily unavailable while we migrate from MRL to Hydration's native Wormhole deployment. All funds are safe and will be migrated automatically. No user action is required.",
