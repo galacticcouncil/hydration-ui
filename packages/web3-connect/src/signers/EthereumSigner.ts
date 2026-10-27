@@ -142,6 +142,8 @@ export class EthereumSigner {
       this.publicClient = evmClient.getProvider() as PublicClient
     }
 
+    await this.walletClient.switchChain({ id: evmClient.chain.id })
+
     return chain
   }
 

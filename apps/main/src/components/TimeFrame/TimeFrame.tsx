@@ -61,6 +61,7 @@ export const TimeFrame: FC<TimeFrameProps> = ({
           items={timeFrameOptions}
           value={timeFrame.type}
           variant="transparent"
+          outline={false}
           size="micro"
           onValueChange={(type) =>
             onChange(

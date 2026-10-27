@@ -12,6 +12,7 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { QuotedPriceBinding } from "@/modules/trade/swap/lib/quotedPrice.hook"
 import {
@@ -48,13 +49,16 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
 
+  const tradeAmountIn =
+    order && sellAsset
+      ? scaleHuman(order.tradeAmountIn, sellAsset.decimals)
+      : ""
+  const [tradeAmountInDisplay, { isValid: isPriceValid }] =
+    useDisplayAssetPrice(sellAsset?.id ?? "", tradeAmountIn)
+
   if (!sellAsset || !buyAsset || (!order && !isLoading)) {
     return null
   }
-
-  const tradeAmountIn = order
-    ? scaleHuman(order.tradeAmountIn, sellAsset.decimals)
-    : ""
 
   return (
     <div>
@@ -69,11 +73,13 @@ export const DcaSummary: FC<Props> = ({ order, isLoading, quotedPrice }) => {
                   ? "trade:dca.summary.openBudget.description"
                   : "trade:dca.summary.limitedBudget.description"
               }
+              context={isPriceValid ? "withPrice" : undefined}
               values={{
                 sellAmount: t("currency", {
                   value: tradeAmountIn,
                   symbol: sellAsset.symbol,
                 }),
+                sellAmountDisplay: tradeAmountInDisplay,
                 buySymbol: buyAsset.symbol,
                 frequency: t("interval", { value: frequency }),
                 duration: t("interval", { value: duration }),
