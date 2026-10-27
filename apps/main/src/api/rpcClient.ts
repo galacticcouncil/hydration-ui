@@ -27,6 +27,7 @@ export type TFeatureFlags = {
   bilEnabled: boolean
   isIceEnabled: boolean
   juicerEnabled: boolean
+  looperEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -115,6 +116,7 @@ const getProviderData = async (
       bilEnabled: true,
       isIceEnabled: true,
       juicerEnabled,
+      looperEnabled: !!ENV.VITE_LOOPER_FACTORY_ADDRESS,
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }
