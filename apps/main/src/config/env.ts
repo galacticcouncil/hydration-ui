@@ -26,6 +26,10 @@ const schema = z.object({
     .regex(/^(0x[0-9a-fA-F]{40})?$/)
     .default(""),
   VITE_REWARDS_DISTRIBUTOR_URL: z.url().or(z.literal("")).default(""),
+  VITE_LOOPER_FACTORY_ADDRESS: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/)
+    .optional(),
 })
 
 export const ENV = schema.parse(import.meta.env)

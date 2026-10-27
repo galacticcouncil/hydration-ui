@@ -1,0 +1,15 @@
+### What is Multiply?
+
+Multiply supplies your collateral to the money market, borrows against it and buys more of the same collateral with what it borrows. It repeats this, step by step, until your position reaches the leverage you chose. Your yield on the collateral is multiplied, and so is your exposure to its price against the borrowed asset.
+
+### How your position builds
+
+Each step settles through an intent, so the position builds over a minute or two instead of in one transaction. You can follow its progress under **My positions**. While a position is building or unwinding, deposits, withdrawals and closing wait until it finishes.
+
+### Fees
+
+The swaps that build your position are paid from a small fee budget you fund when you open it. Whatever is left is returned when you close the position.
+
+### Risks
+
+A leveraged position can be liquidated. If the collateral's price falls far enough against the borrowed asset that the health factor drops below 1, part of the position is liquidated. The higher the leverage, the smaller the price drop it takes — check the liquidation price before you open a position.

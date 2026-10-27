@@ -53,7 +53,7 @@ const vaultWriteTxOptions = (
     ? { onSuccess: options.onSuccess, resolveOn: "success" }
     : undefined
 
-interface BatchEvmCall {
+export interface BatchEvmCall {
   to: Hex
   data: Hex
   abi: Abi
@@ -86,7 +86,7 @@ function buildCancelResupplyCalls(
   ]
 }
 
-function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
+export function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   const rpc = useRpcProvider()
 
   const { account } = useAccount()
@@ -134,7 +134,7 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   const buildBatchCalls = useCallback(
-    async (calls: BatchEvmCall[]) => {
+    async (calls: BatchEvmCall[], callGas = EVM_CALL_GAS) => {
       if (calls.length === 0) {
         throw new Error("buildBatchCalls called with no calls")
       }
@@ -142,7 +142,7 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
         await estimateGasLimit({
           evm: rpc.evm,
-          gasLimit: EVM_CALL_GAS.toString(),
+          gasLimit: callGas.toString(),
         })
 
       const evmCalls = calls.map(({ to, data, abi }) => ({
@@ -167,8 +167,8 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   )
 
   const buildBatchTx = useCallback(
-    async (calls: BatchEvmCall[]) => {
-      const batchInner = await buildBatchCalls(calls)
+    async (calls: BatchEvmCall[], callGas?: bigint) => {
+      const batchInner = await buildBatchCalls(calls, callGas)
       return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
     },
     [buildBatchCalls, rpc],
@@ -179,8 +179,9 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
       invalidateQueries: string[][] = [[BIL_QUERY_KEY_PREFIX]],
+      callGas?: bigint,
     ) => {
-      const batchTx = await buildBatchTx(calls)
+      const batchTx = await buildBatchTx(calls, callGas)
 
       return createTransaction(
         { tx: batchTx, toasts, invalidateQueries },
