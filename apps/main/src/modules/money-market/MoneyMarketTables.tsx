@@ -145,7 +145,9 @@ export const ApyCell: FC<ApyTextProps & { rate: ApyRate; side: ApySide }> = ({
       <Text as="span" fw={500} color={getToken("text.high")} {...textProps}>
         {percent(rate.total)}
       </Text>
-      {hasBreakdown && <ApyTooltip parts={rate.parts} side={side} />}
+      {hasBreakdown && (
+        <ApyTooltip parts={rate.parts} total={rate.total} side={side} />
+      )}
     </Flex>
   )
 }

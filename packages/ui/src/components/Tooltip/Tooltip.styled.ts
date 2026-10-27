@@ -51,6 +51,12 @@ export const SContent = styled(Content, {
       ${floatingScaleAnimation(theme)};
     `,
     sizeVariants(size),
+    !paper &&
+      css`
+        html.light & {
+          background: color-mix(in srgb, ${theme.details.tooltips}, white 35%);
+        }
+      `,
     paper &&
       css`
         background: ${theme.surfaces.themeBasePalette.surfaceHigh};

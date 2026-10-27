@@ -15,6 +15,8 @@ const CONCURRENCY = 8
 const OVERRIDES = {
   4: "#627eea",
   20: "#627eea",
+  // vDOT logo reads yellow; pink, lighter than DOT's magenta to stay distinct.
+  15: "#f472b6",
 }
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
