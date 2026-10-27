@@ -8,7 +8,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { Navigate } from "@tanstack/react-router"
+import { Navigate, useSearch } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { type Hex } from "viem"
@@ -55,7 +55,11 @@ const PropellerVaultContent = () => {
   // below md the grid stacks into one column, so the page splits into tabs
   const { gte } = useBreakpoints()
   const stacked = !gte("md")
-  const [tab, setTab] = useState<"overview" | "positions">("overview")
+  // a portfolio Claim opens the page at Withdrawals, which lives in this tab
+  const { section } = useSearch({ from: "/strategies/juicer/" })
+  const [tab, setTab] = useState<"overview" | "positions">(
+    section === "withdrawals" ? "positions" : "overview",
+  )
   const hasUserData = positions.length > 0 || withdrawals.length > 0
   const showOverview = !stacked || !hasUserData || tab === "overview"
   const showPositions = !stacked || (hasUserData && tab === "positions")
