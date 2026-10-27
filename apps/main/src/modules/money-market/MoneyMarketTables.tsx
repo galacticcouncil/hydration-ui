@@ -713,7 +713,7 @@ export const ReserveTable = <T extends { reserve: ReserveSummary }>({
         p="xl"
         sx={{ flexWrap: "wrap" }}
       >
-        <Text as="h2" fs="p2" fw={500} font="primary">
+        <Text as="h2" fs="p2" fw={500} font="primary" sx={{ flexGrow: 999 }}>
           {title}
         </Text>
         {actions}

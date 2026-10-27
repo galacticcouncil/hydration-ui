@@ -2,7 +2,7 @@ import {
   useMoneyMarket,
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
-import { Modal, ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
+import { Modal, ModalHeader } from "@galacticcouncil/ui/components"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Address } from "viem"
@@ -10,6 +10,7 @@ import { Address } from "viem"
 import { AddStablepoolLiquidityWrapper } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 import { RemoveMoneyMarketLiquidity } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity"
 import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
+import { SActionModalBody } from "@/modules/money-market/actions/ActionModal.styled"
 import { actionRoute } from "@/modules/money-market/actions/actionRoute"
 import { BorrowForm } from "@/modules/money-market/actions/BorrowForm"
 import { ClaimRewardsForm } from "@/modules/money-market/actions/ClaimRewardsForm"
@@ -31,15 +32,14 @@ type Props = {
   readonly children: ReactNode
 }
 
-/**
- * The dialog every money-market action opens in. The body does not scroll and
- * there is no footer - each form carries its own submit button, so the same
- * form also works inline on a page.
- */
 export const ActionModal: FC<Props> = ({ open, onClose, title, children }) => (
-  <Modal open={open} onOpenChange={(open) => !open && onClose()}>
+  <Modal
+    open={open}
+    onOpenChange={(open) => !open && onClose()}
+    variant="popup"
+  >
     <ModalHeader title={title} />
-    <ModalBody scrollable={false}>{children}</ModalBody>
+    <SActionModalBody scrollable={false}>{children}</SActionModalBody>
   </Modal>
 )
 

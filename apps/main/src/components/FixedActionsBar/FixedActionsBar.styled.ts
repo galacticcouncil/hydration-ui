@@ -1,28 +1,26 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
-import { css, styled } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
-export const SPoolDetailsActionsContainer = styled(Flex)(
+export const SFixedActionsBar = styled(Flex)(
   ({ theme }) => css`
     position: fixed;
-    left: 0;
-    bottom: 0px;
+    inset: auto 0 0;
     z-index: 3;
-    height: 72px;
-    padding: 12px;
-    width: calc(100% - 0px);
+    height: ${pxToRem(60)};
+    padding: ${theme.space.base} ${theme.space.m};
     backdrop-filter: blur(6px);
+    border-top: 1px solid ${theme.details.borders};
     background: linear-gradient(
       0deg,
       ${theme.surfaces.themeBasePalette.background} 2.59%,
-      rgba(3, 8, 22, 0) 89.06%
+      transparent 89.06%
     );
 
     ${mq("md")} {
-      position: unset;
+      position: static;
       height: auto;
       padding: 0;
-      width: auto;
       backdrop-filter: none;
       background: transparent;
     }

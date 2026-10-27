@@ -2,7 +2,7 @@ import { Flex, Text } from "@galacticcouncil/ui/components"
 import { ReactNode } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { SPoolDetailsActionsContainer } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeader.styled"
+import { FixedActionsBar } from "@/components/FixedActionsBar"
 
 export type PoolDetailsHeaderShellProps = {
   logoId: string | string[]
@@ -33,8 +33,8 @@ export const PoolDetailsHeaderShell = ({
       {badges}
     </Flex>
 
-    <SPoolDetailsActionsContainer align="center" gap="m">
+    <FixedActionsBar align="center" gap="m">
       {actions}
-    </SPoolDetailsActionsContainer>
+    </FixedActionsBar>
   </Flex>
 )

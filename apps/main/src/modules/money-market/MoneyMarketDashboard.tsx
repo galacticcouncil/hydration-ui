@@ -91,8 +91,6 @@ const TableStats: FC<{ isLoading: boolean; stats: [string, ReactNode][] }> = ({
   isLoading,
   stats,
 }) => (
-  // grows into the row it wraps onto, spreading the stats across it; on
-  // mobile it always takes its own row under the title
   <Flex
     justify="space-between"
     gap="l"
@@ -318,7 +316,7 @@ export const MoneyMarketDashboard: FC = () => {
   })
 
   return (
-    <Stack gap="xxl">
+    <Stack gap="xl">
       <ScrollArea
         orientation="horizontal"
         horizontalEdgeOffset="var(--layout-gutter)"
@@ -543,7 +541,7 @@ export const MoneyMarketDashboard: FC = () => {
       </Grid>
 
       <OpenActionModal open={open} onClose={() => setOpen(null)} />
-      <Modal open={riskOpen} onOpenChange={setRiskOpen}>
+      <Modal open={riskOpen} onOpenChange={setRiskOpen} variant="popup">
         <ModalHeader align="center" title={t("borrow:risk.title")} />
         <ModalBody scrollable={false}>
           {acc && (

@@ -47,6 +47,7 @@ import { useTranslation } from "react-i18next"
 import { Address } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { FixedActionsBar } from "@/components/FixedActionsBar"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import {
   OpenAction,
@@ -161,8 +162,11 @@ const ReserveDetail: FC<{
   const { gte } = useBreakpoints()
   const stacked = !gte("md")
   const [tab, setTab] = useState<"overview" | "position">("overview")
+  // positions can hold reserves the user has fully exited, at zero
   const hasPosition = !!account?.positions.some(
-    (p) => p.underlyingAsset === reserve.underlyingAsset,
+    (p) =>
+      p.underlyingAsset === reserve.underlyingAsset &&
+      (Big(p.underlyingBalance).gt(0) || Big(p.variableBorrows).gt(0)),
   )
   const showOverview = !stacked || !hasPosition || tab === "overview"
   const showPosition = !stacked || (hasPosition && tab === "position")
@@ -202,7 +206,7 @@ const ReserveDetail: FC<{
   )
 
   return (
-    <Stack gap="xxl">
+    <Stack gap="xl">
       <Flex align="center" justify="space-between" gap="xxl" wrap>
         <ReserveTitle reserve={reserve} />
         <ReserveActions reserve={reserve} hollar={hollar} />
@@ -842,10 +846,12 @@ const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
       }[action],
   )
 
+  // pinned to the bottom of the screen on mobile, as on the pool detail page
   return (
-    <Flex align="center" gap="base">
+    <FixedActionsBar align="center" gap="base">
       <Button
         size="medium"
+        width={["100%", "auto"]}
         disabled={lead === "borrow" && !canBorrow}
         onClick={() => setOpen({ action: lead, asset })}
       >
@@ -861,7 +867,7 @@ const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
         />
       )}
       <OpenActionModal open={open} onClose={() => setOpen(null)} />
-    </Flex>
+    </FixedActionsBar>
   )
 }
 
