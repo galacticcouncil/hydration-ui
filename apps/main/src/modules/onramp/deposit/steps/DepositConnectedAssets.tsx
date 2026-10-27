@@ -14,7 +14,6 @@ import {
   Input,
   ModalBody,
   ScrollArea,
-  Spinner,
   Stack,
   Text,
   VirtualizedList,
@@ -27,6 +26,7 @@ import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { useDepositDiscovery } from "@/modules/onramp/deposit/hooks/useDepositDiscovery"
@@ -143,6 +143,7 @@ export const DepositConnectedAssets = () => {
                   aria-label={t("deposit.onchain.search.chains")}
                   value={chainSearch}
                   onChange={(event) => setChainSearch(event.target.value)}
+                  sx={{ flexShrink: 0 }}
                 />
               )}
               <Button
@@ -151,6 +152,7 @@ export const DepositConnectedAssets = () => {
                 aria-label={t("deposit.onchain.allChains")}
                 borderRadius={isMobile ? "m" : undefined}
                 height={isMobile ? pxToRem(44) : undefined}
+                sx={{ flexShrink: 0 }}
                 onClick={() => setChainKey(null)}
               >
                 {isMobile ? (
@@ -159,18 +161,27 @@ export const DepositConnectedAssets = () => {
                   t("deposit.onchain.allChains")
                 )}
               </Button>
-              <Box flex={1} sx={{ minHeight: 0 }}>
-                <ChainList
-                  items={visiblePairs}
-                  selectedChain={selectedChain}
-                  setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
-                  fillHeight
-                />
-              </Box>
+              {visiblePairs.length > 0 && (
+                <Box
+                  height={pxToRem(visiblePairs.length * (isMobile ? 48 : 40))}
+                  flex="0 1 auto"
+                  sx={{ minHeight: 0 }}
+                >
+                  <ChainList
+                    items={visiblePairs}
+                    selectedChain={selectedChain}
+                    setSelectedChain={(chain) =>
+                      setChainKey(chain?.key ?? null)
+                    }
+                    fillHeight
+                  />
+                </Box>
+              )}
               {sourceChainAssetPairs.length > fundedPairs.length && (
                 <Button
                   variant="muted"
                   size="small"
+                  sx={{ flexShrink: 0 }}
                   aria-label={t(
                     showMoreChains
                       ? "deposit.connected.fewerChains"
@@ -225,20 +236,16 @@ export const DepositConnectedAssets = () => {
               )}
             </Flex>
             <Box flex={1} sx={{ minHeight: 0 }}>
-              <ScrollArea height="100%" hideScrollbar>
+              <ScrollArea
+                height="100%"
+                hideScrollbar
+                aria-busy={data.scanning && !browsingUnowned}
+              >
                 <Stack gap="base" justify="flex-start">
                   {showMoreChains && !browsingUnowned && (
                     <Text fs="p5" px="l" color={getToken("text.medium")}>
                       {t("deposit.connected.moreChainsHint")}
                     </Text>
-                  )}
-                  {data.scanning && (
-                    <Flex gap="base" align="center" px="l" py="base">
-                      <Spinner size="xs" />
-                      <Text fs="p5" color={getToken("text.medium")}>
-                        {t("deposit.flow.assets.scanning")}
-                      </Text>
-                    </Flex>
                   )}
                   {data.failed > 0 && (
                     <Alert
@@ -334,6 +341,9 @@ export const DepositConnectedAssets = () => {
                         )}
                       </Stack>
                     )
+                  )}
+                  {data.scanning && !browsingUnowned && (
+                    <DepositAssetListSkeleton count={rows.length ? 2 : 3} />
                   )}
                 </Stack>
               </ScrollArea>
