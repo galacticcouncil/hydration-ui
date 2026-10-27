@@ -1,7 +1,10 @@
 import {
   Chip,
   type ChipProps,
+  Flex,
   LoadingButton,
+  Text,
+  ValueStatsLabel,
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { type FC, useEffect, useState } from "react"
@@ -113,8 +116,18 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
       : status === "pending" && etaLine
         ? [
             {
-              label: t("withdrawals.eta.label"),
-              value: row.reserveShort ? t("withdrawals.eta.reserveShort") : eta,
+              // label above the value at every width: beside the value and
+              // the chip, the label leaves a narrow phone no room
+              value: (
+                <Flex direction="column" align="flex-end">
+                  <ValueStatsLabel>
+                    {t("withdrawals.eta.label")}
+                  </ValueStatsLabel>
+                  <Text as="span" whiteSpace="nowrap">
+                    {row.reserveShort ? t("withdrawals.eta.reserveShort") : eta}
+                  </Text>
+                </Flex>
+              ),
               tooltip: row.reserveShort
                 ? t("withdrawals.eta.reserveTooltip")
                 : undefined,
