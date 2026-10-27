@@ -60,6 +60,11 @@ export type PropellerWithdrawalRow = {
   /** Full collateral entitlement, estimated until the unwind starts. */
   estEth: number
   estUsd: number
+  /** the whole withdrawal, the same from request to the last claim */
+  totalEth: number
+  totalUsd: number
+  /** already claimed from an open request; 0 once it is closed */
+  claimedEth: number
   isEstimate?: boolean
   state: WithdrawalRowState
   collateralOwed?: number
@@ -128,6 +133,10 @@ export const buildWithdrawalRow = ({
     ? entry.collateralOwed - (entry.active ? entry.claimedCollateral : 0)
     : entry.shares * exchangeRate
 
+  const totalCollateral = entry.started
+    ? entry.collateralOwed
+    : entry.shares * exchangeRate
+
   // collateral units, like the pace: owed minus settled once started,
   // the shares' current value before
   const remainingCollateral = entry.started
@@ -162,6 +171,9 @@ export const buildWithdrawalRow = ({
     amountShares: entry.shares,
     estEth: estCollateral * baseRate,
     estUsd: estCollateral * price,
+    totalEth: totalCollateral * baseRate,
+    totalUsd: totalCollateral * price,
+    claimedEth: (entry.active ? entry.claimedCollateral : 0) * baseRate,
     isEstimate: !entry.started,
     state,
     collateralOwed: entry.collateralOwed * baseRate,

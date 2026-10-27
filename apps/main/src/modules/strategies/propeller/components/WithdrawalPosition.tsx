@@ -43,10 +43,9 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // row amounts arrive already converted to the current display asset
   const displayAsset = useVaultDisplayAsset()(row.vault)
   const { symbol } = displayAsset
-  // estEth already speaks for what is still coming on an open request (owed
-  // minus earlier partial claims) and for the total paid on a closed one
-  const remaining = row.estEth
-  const usd = t("common:currency", { value: row.estUsd })
+  // the whole withdrawal from request to the last claim, so a partial claim
+  // never reads as the amount shrinking; the USD line says what was claimed
+  const usd = t("common:currency", { value: row.totalUsd })
   const claim = useClaim()
   const [claimOpen, setClaimOpen] = useState(false)
   const hasPayoutChoice = !!row.vault.payoutAssetIds
@@ -121,36 +120,52 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
           ]
         : undefined
 
+  // a settling row's stat already counts claimed parts in its progress; a
+  // row with a Claim button has no stat, so it says what was claimed
+  const claimed =
+    row.claimedEth > 0 && stats === undefined
+      ? t("withdrawals.claimedSoFar", {
+          amount: t("common:currency", {
+            value: row.claimedEth,
+            symbol,
+            maximumFractionDigits: 4,
+          }),
+        })
+      : null
+  // a partly claimable row has its Claim button where the estimate goes, so
+  // the rest's estimate moves to the USD line
+  const rest =
+    status === "claimable" && row.state === "partial"
+      ? row.reserveShort
+        ? t("withdrawals.eta.reserve")
+        : eta
+          ? t("withdrawals.eta.rest", { eta })
+          : null
+      : null
   // the contract keeps only when the unwind may start; the request came one
   // withdrawal delay earlier (exact while the delay is unchanged). It tells
-  // apart otherwise identical rows, quietly, on the USD line — only where no
-  // stat competes for the width: an in-progress row already says when.
-  // A partly claimable row has its Claim button where the estimate goes, so
-  // the rest's estimate takes the date's place on the USD line.
+  // apart otherwise identical rows, quietly, on the USD line — only where
+  // nothing else does: an in-progress row already says when.
   const amountMeta =
-    status === "claimable" &&
-    row.state === "partial" &&
-    (eta || row.reserveShort)
-      ? t("withdrawals.amountMetaRest", {
+    claimed || rest || vaultStats === undefined || stats !== undefined
+      ? // a narrow phone wraps the line between its parts, never inside one
+        [usd, claimed, rest]
+          .filter((part): part is string => !!part)
+          .map((part) => part.replace(/ /g, "\u00a0"))
+          // the dot stays with the part before it
+          .join("\u00a0· ")
+      : t("withdrawals.amountMeta", {
           usd,
-          rest: row.reserveShort
-            ? t("withdrawals.eta.reserve")
-            : t("withdrawals.eta.rest", { eta }),
+          requested: new Date(
+            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
+          ),
         })
-      : vaultStats === undefined || stats !== undefined
-        ? usd
-        : t("withdrawals.amountMeta", {
-            usd,
-            requested: new Date(
-              row.eligibleAt - vaultStats.withdrawalDelay * 1000,
-            ),
-          })
 
   return (
     <>
       <PendingPosition
         assetId={displayAsset.id}
-        value={t("common:currency", { value: remaining, symbol })}
+        value={t("common:currency", { value: row.totalEth, symbol })}
         displayValue={amountMeta}
         stats={stats}
         status={
@@ -178,8 +193,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
                         maximumFractionDigits: 4,
                       }),
                     })
-                  : // formatted exactly like the amount column beside it
-                    t("withdrawals.action.claimAmount", {
+                  : t("withdrawals.action.claimAmount", {
                       amount: t("common:currency", {
                         value: row.collateralSettled ?? 0,
                         symbol,

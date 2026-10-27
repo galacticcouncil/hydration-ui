@@ -116,4 +116,13 @@ describe("Withdrawal amount", () => {
   it("keeps the full amount once the request is claimed", () => {
     expect(row(PACE, { claimedCollateral: 1, active: false }).estEth).toBe(1)
   })
+
+  it("shows the whole withdrawal and what was claimed from it", () => {
+    const open = row(PACE, { claimedCollateral: 0.25 })
+    expect(open.totalEth).toBe(1)
+    expect(open.claimedEth).toBe(0.25)
+    const closed = row(PACE, { claimedCollateral: 1, active: false })
+    expect(closed.totalEth).toBe(1)
+    expect(closed.claimedEth).toBe(0)
+  })
 })
