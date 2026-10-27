@@ -53,8 +53,16 @@ export const mergePortfolioAssets = (
       position.status === "wallet"
         ? assets.find((asset) => asset.id === position.transferAssetId)
         : undefined
-    const transferable = walletHolding?.transferable
-    const transferableDisplay = walletHolding?.transferableDisplay
+    // Juicer shares move freely (Send), so the live position is transferable;
+    // a withdrawal's escrowed shares are not
+    const juicerTransferable =
+      position.strategy === "juicer" && position.underlyingAmount !== null
+    const transferable = juicerTransferable
+      ? (position.underlyingAmount ?? undefined)
+      : walletHolding?.transferable
+    const transferableDisplay = juicerTransferable
+      ? (position.value ?? undefined)
+      : walletHolding?.transferableDisplay
 
     return {
       ...getAsset(position.assetId),

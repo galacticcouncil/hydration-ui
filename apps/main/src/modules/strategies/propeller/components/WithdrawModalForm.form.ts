@@ -7,7 +7,7 @@ import { refine, z } from "zod/v4"
 
 import i18n from "@/i18n"
 import { isExactAmount } from "@/modules/strategies/propeller/utils/amount"
-import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
+import { positive, required } from "@/utils/validators"
 
 export type WithdrawFormValues = {
   amount: string
@@ -33,7 +33,7 @@ export const useWithdrawForm = ({
   symbol,
   decimals,
 }: UseWithdrawFormParams) => {
-  const { t } = useTranslation("propeller")
+  const { t } = useTranslation(["propeller", "common"])
 
   const schema = z.object({
     amount: required
@@ -43,7 +43,14 @@ export const useWithdrawForm = ({
           error: t("amount.precision", { decimals }),
         }),
       )
-      .check(validateFieldMaxBalance(maxBalance))
+      // a position, not a wallet balance: "insufficient balance" misleads
+      .check(
+        refine<string>((value) => Big(value || "0").lte(maxBalance || "0"), {
+          error: t("withdraw.validation.overPosition", {
+            amount: t("common:currency", { value: maxBalance, symbol }),
+          }),
+        }),
+      )
       .check(
         refine<string>((value) => Big(value || "0").gte(minRedeem), {
           error: t("withdraw.validation.belowMin", {

@@ -106,6 +106,8 @@ export const DepositForm = ({
   const deposit = useDeposit(vault, {
     onSuccess: () => {
       deposit.reset()
+      // the spent amount would otherwise read "Insufficient balance"
+      form.reset()
       onSuccess?.()
     },
   })

@@ -117,5 +117,5 @@ export const prepareWithdrawalClaim = async (
   ]
   // the whole debt slice is repaid: nothing more can settle before inclusion
   const complete = redemption[3] > 0n && redemption[5] >= redemption[3]
-  return { calls, collateral, surplusHollar, complete }
+  return { calls, collateral, surplusHollar, complete, exact }
 }

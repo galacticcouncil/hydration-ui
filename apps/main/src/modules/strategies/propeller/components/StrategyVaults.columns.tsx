@@ -129,7 +129,10 @@ export const useStrategyVaultColumns = (
                 color={getToken("text.tint.quart")}
                 display={["none", null, "block"]}
               >
-                {t("common:percent", { value: stats.remainingPct })}
+                {/* the bar shows what is left, so the figure says so too */}
+                {t("strategy.capacityLeft", {
+                  pct: t("common:percent", { value: stats.remainingPct }),
+                })}
               </Text>
             </Flex>
             <ProgressBar

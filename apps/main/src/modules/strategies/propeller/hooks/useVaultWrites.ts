@@ -483,6 +483,8 @@ export function useDeposit(
         const bindStep = {
           tx: rpc.papi.tx.EVMAccounts.bind_evm_address(),
           stepTitle: t("propeller:deposit.step.bind"),
+          title: t("propeller:deposit.bind.title"),
+          description: t("propeller:deposit.bind.description"),
           toasts: {
             submitted: t("propeller:deposit.bind.toast.submitted"),
             success: t("propeller:deposit.bind.toast.success"),
@@ -610,10 +612,26 @@ export function useRequestRedeem(
         symbol: displayAmount === undefined ? shareSymbol : symbol,
         maximumFractionDigits: 4,
       })
-      return submitTx(vaultAddress, data, [...VAULT_ABI], {
-        submitted: t("propeller:withdraw.toast.submitted", { amount }),
-        success: t("propeller:withdraw.toast.success", { amount }),
-      })
+      return submitTx(
+        vaultAddress,
+        data,
+        [...VAULT_ABI],
+        {
+          submitted: t("propeller:withdraw.toast.submitted", { amount }),
+          success: t("propeller:withdraw.toast.success", { amount }),
+        },
+        {
+          title: t("propeller:withdraw.review.title"),
+          // MAX sends the "every share" value (2^256 - 1) the call data shows
+          // in full; say what it means before it reads as a bug
+          description: t(
+            isMax
+              ? "propeller:withdraw.review.max"
+              : "propeller:withdraw.review.amount",
+            { amount },
+          ),
+        },
+      )
     },
   })
 }
@@ -750,14 +768,15 @@ export function useClaim(options: VaultWriteOptions = {}) {
         ? t("common:currency", {
             value: formatUnits(minAmountOut, payout.decimals),
             symbol: payout.symbol,
-            maximumFractionDigits: payout.decimals,
+            // a review, not a ledger: six places pin it to a fraction of a cent
+            maximumFractionDigits: 6,
           })
         : t("common:currency", {
             value: Big(formatUnits(collateral, decimals))
               .times(getRate(vault) ?? "1")
               .toString(),
             symbol: getDisplayAsset(vault).symbol,
-            maximumFractionDigits: decimals,
+            maximumFractionDigits: 6,
           })
     return [
       ...(collateral > 0n ? [collateralPayout] : []),
@@ -833,7 +852,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
       requestId,
       payoutAssetId = vault.assetId,
     }: ClaimVariables) => {
-      const { calls, collateral, surplusHollar, complete } =
+      const { calls, collateral, surplusHollar, complete, exact } =
         await prepareWithdrawalClaim(
           evm,
           vault.vaultAddress,
@@ -851,11 +870,19 @@ export function useClaim(options: VaultWriteOptions = {}) {
       )
       const claim = {
         title: t("withdrawals.claim.title"),
+        // an exact claim pays only this; an older vault's claim pays all
+        // settled at execution, and a sell sized before then leaves the
+        // newer tranche unsold, as the collateral itself
         description: t(
-          complete
+          complete || exact
             ? "withdrawals.claim.descriptionFinal"
-            : "withdrawals.claim.description",
-          { payouts },
+            : sell
+              ? "withdrawals.claim.descriptionUnsold"
+              : "withdrawals.claim.description",
+          {
+            payouts,
+            collateral: getAssetWithFallback(vault.assetId).symbol,
+          },
         ),
         toasts: {
           submitted: t("withdrawals.claim.submitted"),

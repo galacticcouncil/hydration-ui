@@ -183,12 +183,15 @@ describe("combined portfolio assets", () => {
     expect(result.some((row) => row.id === "55")).toBe(false)
   })
 
-  it("does not invent live Juicer or supplied BIL transferable balances", () => {
+  it("does not invent a supplied BIL transferable balance", () => {
     const live = POSITIONS.map((position) => ({
       ...position,
     }))
     const result = mergePortfolioAssets([], live, getAsset)
-    expect(result.every((row) => !row.strategyTransferableKnown)).toBe(true)
+    expect(
+      result.find((row) => row.strategyPosition?.strategy === "bil")
+        ?.strategyTransferableKnown,
+    ).toBe(false)
     expect(
       result.find((row) => row.strategyPosition?.strategy === "bil")
         ?.strategyPosition?.borrowedValue,
@@ -197,6 +200,16 @@ describe("combined portfolio assets", () => {
       result.find((row) => row.strategyPosition?.id === POSITIONS[1]!.id)
         ?.strategyPosition?.pendingEarnings,
     ).toBe("0.0012")
+  })
+
+  it("lets a live Juicer position transfer, but not its withdrawal", () => {
+    const result = mergePortfolioAssets([], POSITIONS, getAsset)
+    const btc = result.find((row) => row.id === "test:juicer:tBTC")
+    // Send moves the position's shares; the 0.01 in withdrawal stays escrowed
+    expect(btc?.transferable).toBe("0.04")
+    expect(btc?.transferableDisplay).toBe("3600")
+    expect(btc?.total).toBe("0.05")
+    expect(btc?.strategyTransferableKnown).toBe(true)
   })
 
   it("uses the actual raw BIL wallet transfer balance when available", () => {

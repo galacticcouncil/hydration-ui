@@ -46,6 +46,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               assetValue,
               usdValue,
               apy,
+              deployedFraction,
               accrualPaused,
               pendingYield,
               harvestStatus,
@@ -136,10 +137,18 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
                               : t("common:percent", { value: apy })}
                           </Text>
                         }
+                        // the rate is pooled: collateral still awaiting
+                        // deployment lowers everyone's rate, so say how much
+                        // of the vault is at work instead of a bare caveat
                         bottomLabel={
                           accrualPaused
                             ? t("positions.accrualPausedNote")
-                            : t("positions.col.netApy.note")
+                            : deployedFraction !== null &&
+                                deployedFraction < 0.995
+                              ? t("positions.col.netApy.deployed", {
+                                  value: deployedFraction * 100,
+                                })
+                              : t("positions.col.netApy.note")
                         }
                       />
                     </>
