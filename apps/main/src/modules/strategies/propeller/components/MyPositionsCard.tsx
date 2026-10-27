@@ -79,7 +79,7 @@ export const MyPositionsCard = ({ positions, onWithdraw }: Props) => {
               return (
                 <PositionCard
                   key={vault.vaultAddress}
-                  columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(176)}), 1fr))`}
+                  columns={`repeat(auto-fit, minmax(min(100%, ${pxToRem(96)}), 1fr))`}
                   logo={
                     <AssetLogo id={displayAsset.id} size="medium" hideChain />
                   }
