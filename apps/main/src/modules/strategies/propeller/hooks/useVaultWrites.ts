@@ -335,11 +335,13 @@ export function useDeposit(
   })
 
   // the swap has landed: whatever goes wrong now, its collateral is in the wallet
+  // named as the wallet and the deposit picker list it (2-Pool-GETH)
+  const heldSymbol = getAssetWithFallback(assetId).symbol
   const interrupted = (delivered: bigint | undefined) =>
     delivered === undefined
-      ? t("propeller:deposit.swap.interrupted.unknown")
+      ? t("propeller:deposit.swap.interrupted.unknown", { symbol: heldSymbol })
       : t("propeller:deposit.swap.interrupted", {
-          amount: formatAmount(formatUnits(delivered, decimals)),
+          amount: formatAmount(formatUnits(delivered, decimals), heldSymbol),
         })
 
   /** Deposits exactly what the swap delivered, in one atomic approve and deposit batch. */

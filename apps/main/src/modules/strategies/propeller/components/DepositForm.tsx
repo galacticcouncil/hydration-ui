@@ -352,9 +352,8 @@ export const DepositForm = ({
                   variant="error"
                   description={
                     isSwap
-                      ? t("deposit.swap.failed", {
-                          symbol: collateralDisplay.symbol,
-                        })
+                      ? // what the wallet actually holds and the picker lists
+                        t("deposit.swap.failed", { symbol: collateral.symbol })
                       : t("deposit.failed")
                   }
                 />

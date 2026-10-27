@@ -168,7 +168,7 @@
   "deposit.swap.delivered": "Depositing {{ amount }}.",
   "deposit.swap.delivered.clamped": "Depositing {{ amount }} of {{ delivered }} delivered; {{ rest }} stays in your wallet",
   "deposit.swap.interrupted": "Your swap went through - {{ amount }} is in your wallet. Deposit it from the Juicer form.",
-  "deposit.swap.interrupted.unknown": "Your swap went through, but the deposit didn't. Deposit the GETH in your wallet from the Juicer form.",
+  "deposit.swap.interrupted.unknown": "Your swap went through, but the deposit didn't. Deposit the {{ symbol }} in your wallet from the Juicer form.",
   "deposit.swapStep.toast.submitted": "Swapping {{ amountIn }} to {{ symbol }}...",
   "deposit.swapStep.toast.success": "{{ amountIn }} swapped to {{ symbol }}",
   "deposit.swapStep.timeout": "The swap hasn't been confirmed on-chain yet. Please try again.",
