@@ -12,6 +12,7 @@ export const propellerQueryKeys = {
   claim: () => [PROPELLER_QUERY_KEY_PREFIX, "claim"],
   vault,
   vaultStats: (vaultAddress: string) => [...vault(vaultAddress), "stats"],
+  baseRate: (vaultAddress: string) => [...vault(vaultAddress), "base-rate"],
   depositCapacity: (vaultAddress: string) => [
     ...vault(vaultAddress),
     "deposit-capacity",

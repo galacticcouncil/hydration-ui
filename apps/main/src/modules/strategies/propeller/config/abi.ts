@@ -379,6 +379,13 @@ export const MAIN_DEBT_ABI = parseAbi([
   "function claimSurplus(uint256 id) returns (uint256 amount)",
 ])
 
+/** the money market's own valuation, the one the vault prices collateral with */
+export const PRICE_ORACLE_ABI = parseAbi([
+  "function ADDRESSES_PROVIDER() view returns (address)",
+  "function getPriceOracle() view returns (address)",
+  "function getAssetPrice(address asset) view returns (uint256)",
+])
+
 export const FEE_CONTROLLER_ABI = parseAbi([
   "function protocolFeeBps(address vault) view returns (uint16)",
 ])

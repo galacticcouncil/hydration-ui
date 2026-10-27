@@ -1,27 +1,70 @@
-import { useQueries } from "@tanstack/react-query"
+import { getAddressFromAssetId } from "@galacticcouncil/utils"
+import { queryOptions, useQueries } from "@tanstack/react-query"
 import Big from "big.js"
+import { type Hex } from "viem"
 
-import { spotPriceQuery } from "@/api/spotPrice"
+import { PRICE_ORACLE_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
   vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
-import { stabilizeRate } from "@/modules/strategies/propeller/utils/stableRate"
+import { POOL_ADDRESS } from "@/modules/strategies/propeller/constants"
+import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 /**
- * Collateral -> base-asset spot rate per vault (GETH -> ETH). "1" for vaults
- * whose collateral is the display asset, null while the rate is loading —
- * callers must hold amounts back rather than show them in the wrong unit.
+ * Collateral -> base-asset rate per vault (GETH -> ETH) from the money-market
+ * oracle: the valuation the vault itself prices collateral with. The SDK spot
+ * drifts over a long session (a live app read 1/0.984 while a fresh context
+ * read 1.0173), so every ETH amount would be off by ~0.1%.
+ */
+const baseRateQuery = (
+  { isReady, evm }: TProviderContext,
+  vault: PropellerVaultConfig,
+) =>
+  queryOptions({
+    queryKey: propellerQueryKeys.baseRate(vault.vaultAddress),
+    enabled: isReady && !!vault.baseAssetId,
+    queryFn: async () => {
+      const read = <T>(
+        address: Hex,
+        functionName: "ADDRESSES_PROVIDER" | "getPriceOracle",
+      ) =>
+        evm.readContract({
+          address,
+          abi: PRICE_ORACLE_ABI,
+          functionName,
+        }) as Promise<T>
+      const provider = await read<Hex>(POOL_ADDRESS, "ADDRESSES_PROVIDER")
+      const oracle = await read<Hex>(provider, "getPriceOracle")
+      const price = (assetId: string) =>
+        evm.readContract({
+          address: oracle,
+          abi: PRICE_ORACLE_ABI,
+          functionName: "getAssetPrice",
+          args: [getAddressFromAssetId(assetId) as Hex],
+        })
+      const [collateral, base] = await Promise.all([
+        price(vault.assetId),
+        price(vault.baseAssetId ?? ""),
+      ])
+      if (base === 0n) throw new Error("No oracle price for the base asset")
+      return Big(collateral.toString()).div(base.toString()).toString()
+    },
+    refetchInterval: 30_000,
+  })
+
+/**
+ * Collateral -> base-asset rate per vault. "1" for vaults whose collateral is
+ * the display asset, null while the rate is loading — callers must hold
+ * amounts back rather than show them in the wrong unit.
  */
 export const useBaseRates = () => {
   const rpc = useRpcProvider()
-  const prices = useQueries({
-    queries: PROPELLER_VAULTS.map((vault) =>
-      spotPriceQuery(rpc, vault.assetId, vault.baseAssetId ?? ""),
-    ),
+  const rates = useQueries({
+    queries: PROPELLER_VAULTS.map((vault) => baseRateQuery(rpc, vault)),
   })
 
   return {
@@ -30,13 +73,9 @@ export const useBaseRates = () => {
       const index = PROPELLER_VAULTS.findIndex(
         (v) => v.vaultAddress === vault.vaultAddress,
       )
-      const query = prices[index]
-      const spot = query?.data?.spotPrice
-      return spot
-        ? stabilizeRate(vault.vaultAddress, spot, query.dataUpdatedAt)
-        : null
+      return rates[index]?.data ?? null
     },
-    isLoading: prices.some(
+    isLoading: rates.some(
       (q, i) => PROPELLER_VAULTS[i]?.baseAssetId && q.isLoading,
     ),
   }
