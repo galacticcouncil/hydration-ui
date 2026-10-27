@@ -42,7 +42,7 @@
   "positions.action.withdraw": "Withdraw",
   "withdrawals.title": "Withdrawals",
   "withdrawals.amountMeta": "{{ usd }} · {{ requested, date(format: 'MMM d, HH:mm') }}",
-  "withdrawals.state.pending": "Waiting for unwind",
+  "withdrawals.state.pending": "Queued",
   "withdrawals.state.claimable": "Claim ready",
   "withdrawals.state.settling": "Settling",
   "withdrawals.state.claimed": "Claimed",
@@ -110,7 +110,6 @@
   "withdraw.validation.tooSmall": "Too small to withdraw",
   "withdraw.cta.unavailable": "Withdrawals unavailable",
   "withdraw.blocked.paused": "The vault is paused. Withdrawal requests are temporarily unavailable.",
-  "withdrawals.state.cooldown": "Cooldown",
   "withdrawals.recoveryPending": "Further HOLLAR recovery pending",
   "strategy.apyEstimate": [
     "Indicative annual carry assuming all collateral is deployed at current rates and source leverage, after source and Main borrowing costs and harvest fees.",

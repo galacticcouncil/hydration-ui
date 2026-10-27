@@ -30,14 +30,14 @@ describe("Compact withdrawal status", () => {
       }),
     ).toBe("claimed")
   })
-  it("keeps cooldown visible until settlement", () => {
+  it("shows the cooldown as queued, like a request waiting for its unwind", () => {
     expect(
       getWithdrawalStateLabel({
         state: "cooldown",
         collateralSettled: 0,
         surplusHollar: 0,
       }),
-    ).toBe("cooldown")
+    ).toBe("pending")
   })
   it("shows settling when partial settlement is not currently claimable", () => {
     expect(

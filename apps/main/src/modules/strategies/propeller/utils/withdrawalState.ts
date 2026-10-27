@@ -16,9 +16,9 @@ export const getWithdrawalStateLabel = (
   const settled = row.collateralSettled ?? 0
   if (settled >= CLAIM_DUST || (row.state === "settled" && settled > 0))
     return "claimable"
-  if (row.state === "cooldown") return "cooldown"
   // a fully repaid request whose collateral is not released yet is still
   // settling, not waiting for its unwind to start
   if (row.state === "partial" || row.state === "settled") return "settling"
+  // the cooldown and the wait for the unwind look the same to the user: queued
   return "pending"
 }
