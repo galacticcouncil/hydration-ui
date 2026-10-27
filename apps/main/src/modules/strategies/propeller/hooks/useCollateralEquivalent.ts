@@ -7,6 +7,7 @@ import {
   type PropellerVaultConfig,
   vaultDisplayAssetId,
 } from "@/modules/strategies/propeller/config/vaults"
+import { stabilizeRate } from "@/modules/strategies/propeller/utils/stableRate"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -29,7 +30,11 @@ export const useBaseRates = () => {
       const index = PROPELLER_VAULTS.findIndex(
         (v) => v.vaultAddress === vault.vaultAddress,
       )
-      return prices[index]?.data?.spotPrice ?? null
+      const query = prices[index]
+      const spot = query?.data?.spotPrice
+      return spot
+        ? stabilizeRate(vault.vaultAddress, spot, query.dataUpdatedAt)
+        : null
     },
     isLoading: prices.some(
       (q, i) => PROPELLER_VAULTS[i]?.baseAssetId && q.isLoading,
