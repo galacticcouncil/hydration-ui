@@ -95,6 +95,7 @@ export const buildWithdrawalRow = ({
   ahead = 0,
   sinceLastSettleSeconds = null,
   shortfall,
+  now = 0,
 }: {
   vault: PropellerVaultConfig
   entry: QueueEntry
@@ -108,6 +109,8 @@ export const buildWithdrawalRow = ({
   /** since this request's latest tranche; null before its first */
   sinceLastSettleSeconds?: number | null
   shortfall?: Omit<Parameters<typeof reserveCoversExit>[0], "collateral">
+  /** wall clock, ms: the live countdown flips on it, so the estimate must too */
+  now?: number
 }): PropellerWithdrawalRow => {
   const settledSoFar = entry.claimedCollateral + entry.collateralSettled
   const state = withdrawalState({
@@ -136,7 +139,10 @@ export const buildWithdrawalRow = ({
         pace,
         remaining: remainingCollateral,
         ahead,
-        cooldownLeftSeconds: (entry.eligibleAt - entry.observedAt) / 1000,
+        // a lagging node serves an older block: never count cooldown the
+        // row's own countdown already shows as over
+        cooldownLeftSeconds:
+          (entry.eligibleAt - Math.max(entry.observedAt, now)) / 1000,
         started: entry.started,
         sinceLastSettleSeconds,
       })
@@ -288,6 +294,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
               ? Number(settleLogs.head - lastTranche) * blockTimeSeconds
               : null,
           shortfall,
+          now: Date.now(),
         })
       })
     }),

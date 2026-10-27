@@ -75,6 +75,18 @@ describe("Claimable estimate", () => {
     expect(waiting.claimableInSeconds).toBe(360)
   })
 
+  it("counts cooldown from the later of the block and the wall clock", () => {
+    const waiting = { started: false, collateralSettled: 0, eligibleAt: 61_000 }
+    // the node's block is 60 s behind the clock, which already passed eligibility
+    expect(
+      row(PACE, { ...waiting, observedAt: 1_000 }, { now: 61_000 })
+        .claimableInSeconds,
+    ).toBe(300)
+    expect(
+      row(PACE, { ...waiting, observedAt: 1_000 }).claimableInSeconds,
+    ).toBe(360)
+  })
+
   it("stays empty without a pace, once stalled or when claimed", () => {
     expect(row(null).claimableInSeconds).toBeNull()
     expect(
