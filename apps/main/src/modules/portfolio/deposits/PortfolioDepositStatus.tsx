@@ -39,7 +39,7 @@ export const PortfolioDepositStatus: FC<PortfolioDepositStatusProps> = ({
   const { t } = useTranslation("onramp")
   const { variant, icon } = statusAppearance[status]
   return (
-    <Chip variant={variant} size="small" rounded>
+    <Chip variant={variant} size="medium" rounded>
       <Icon component={icon} size={12} aria-hidden />
       {label ??
         (compact && (status === "awaiting" || status === "attention")

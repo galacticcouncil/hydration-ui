@@ -1,8 +1,7 @@
-import { ChevronRightIcon } from "@galacticcouncil/ui/assets/icons"
 import {
+  Amount,
   ExternalLink,
   Flex,
-  Icon,
   Stack,
   TableRowAction,
   Text,
@@ -18,7 +17,6 @@ import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
-import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
   getTransferAsset,
@@ -70,13 +68,11 @@ export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
         {isOptimisticJourney(journey) ? (
           <TableRowAction size="small" disabled>
             {t("details")}
-            <Icon component={ChevronRightIcon} size="s" aria-hidden />
           </TableRowAction>
         ) : (
           <TableRowAction size="small" asChild>
             <ExternalLink href={getJourneyExplorerLink(journey)}>
               {t("details")}
-              <Icon component={ChevronRightIcon} size="s" aria-hidden />
             </ExternalLink>
           </TableRowAction>
         )}
@@ -93,27 +89,28 @@ export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
         return (
           <Flex gap="base" align="center" minWidth={0}>
             <JourneyAssetLogo assetKey={asset.asset} size="small" />
-            <Stack gap="xs" minWidth={0}>
-              <Text fs="p5" fw={500} truncate>
-                {isMobile
-                  ? asset.symbol
-                  : t("currency", {
-                      value: toDecimal(asset.amount, asset.decimals),
-                      symbol: asset.symbol,
-                    })}
-              </Text>
-              {isMobile ? (
-                <Text fs="p6" color="text.medium" truncate>
+            {isMobile ? (
+              <Stack gap="xs" justify="flex-start" minWidth={0}>
+                <Text fs="p5" fw={500} lh={1} truncate>
+                  {asset.symbol}
+                </Text>
+                <Text fs="p6" lh={1} color="text.medium" truncate>
                   {getJourneyChainName(journey.origin, chains)}
                   {" → "}
                   {getJourneyChainName(journey.destination, chains)}
                 </Text>
-              ) : usd > 0 ? (
-                <Text fs="p6" color="text.medium">
-                  {t("currency", { value: usd })}
-                </Text>
-              ) : null}
-            </Stack>
+              </Stack>
+            ) : (
+              <Amount
+                value={t("currency", {
+                  value: toDecimal(asset.amount, asset.decimals),
+                  symbol: asset.symbol,
+                })}
+                displayValue={
+                  usd > 0 ? t("currency", { value: usd }) : undefined
+                }
+              />
+            )}
           </Flex>
         )
       },
@@ -131,16 +128,17 @@ export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
           return (
             <Flex align="center" gap="base">
               <JourneyChainLogo networkUrn={urn} />
-              <Stack gap="xs">
-                <Text fs="p5" fw={500}>
+              <Flex direction="column" gap="xs">
+                <Text fs="p5" fw={500} lh={1}>
                   {getJourneyChainName(urn, chains)}
                 </Text>
                 <AccountIdentity
                   fs="p6"
+                  lh={1}
                   color="text.medium"
                   address={address}
                 />
-              </Stack>
+              </Flex>
             </Flex>
           )
         },
@@ -149,31 +147,6 @@ export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
     const statusColumn = columnHelper.accessor("status", {
       header: t("status"),
       cell: ({ row }) => renderStatus(row.original),
-    })
-    const protocolColumn = columnHelper.accessor("originProtocol", {
-      id: "protocol",
-      header: t("xcm:history.table.protocol"),
-      meta: { gteBp: "lg" },
-      cell: ({ row }) => (
-        <Flex align="center" gap="s">
-          {[
-            ...new Set(
-              [row.original.originProtocol, row.original.destinationProtocol]
-                .filter(Boolean)
-                .map((protocol) => protocol.toLowerCase()),
-            ),
-          ].map((protocol, index) => (
-            <Flex key={protocol} align="center" gap="s">
-              {index > 0 && (
-                <Text fs="p5" color="text.medium">
-                  +
-                </Text>
-              )}
-              <JourneyProtocol protocol={protocol} fs="p5" />
-            </Flex>
-          ))}
-        </Flex>
-      ),
     })
     const dateColumn = columnHelper.accessor("sentAt", {
       id: "date",
@@ -223,7 +196,6 @@ export const usePortfolioTransferHistoryColumns = (chains: XcScanChains) => {
       assetColumn,
       ...chainColumns,
       statusColumn,
-      protocolColumn,
       dateColumn,
       actionColumn,
     ]
