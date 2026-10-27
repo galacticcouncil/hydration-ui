@@ -24,16 +24,16 @@ import { useTranslation } from "react-i18next"
 import { TitleWithSearch } from "@/components/TitleWithSearch"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { useNavigateToReserve } from "@/modules/money-market/hooks"
+import { isHollar } from "@/modules/money-market/reserves/reserves"
+import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import {
   NoData,
-  ReadError,
   ReserveApyCell,
   ReserveAsset,
-} from "@/modules/money-market/MoneyMarketTables"
-import { useResolveReserveApy } from "@/modules/money-market/ReserveApyProvider"
-import { isHollar } from "@/modules/money-market/reserves"
-import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+} from "@/modules/money-market/table/cells"
+import { ReadError } from "@/modules/money-market/table/ReserveTable"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
 const right = { meta: { sx: { textAlign: "right" } } } as const

@@ -37,7 +37,7 @@ import {
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
-import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import { useUserAddress } from "@/modules/money-market/hooks"
 import { useRpcProvider } from "@/providers/rpcProvider"
 

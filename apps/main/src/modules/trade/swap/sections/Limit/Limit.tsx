@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from "react"
 import { FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import { TradeFormShell } from "@/modules/trade/swap/components/TradeFormShell/TradeFormShell"
 import { TradeFormSubmit } from "@/modules/trade/swap/components/TradeFormSubmit"
 import { LimitFields } from "@/modules/trade/swap/sections/Limit/LimitFields"

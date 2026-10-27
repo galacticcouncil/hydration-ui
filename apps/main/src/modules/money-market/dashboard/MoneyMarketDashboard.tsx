@@ -38,28 +38,33 @@ import {
   OpenAction,
   OpenActionModal,
 } from "@/modules/money-market/actions/ActionModal"
+import { toSupplyRows } from "@/modules/money-market/dashboard/toSupplyRows"
+import {
+  byUsdDesc,
+  usePositions,
+} from "@/modules/money-market/dashboard/usePositions"
 import {
   HealthFactorNumber,
   HF_UNBOUNDED,
-} from "@/modules/money-market/HealthFactorNumber"
-import { HealthFactorRisk } from "@/modules/money-market/HealthFactorRisk"
+} from "@/modules/money-market/health-factor/HealthFactorNumber"
+import { HealthFactorRisk } from "@/modules/money-market/health-factor/HealthFactorRisk"
+import { useFormattedHealthFactor } from "@/modules/money-market/health-factor/useFormattedHealthFactor"
 import { useUserAddress } from "@/modules/money-market/hooks"
+import { isHollar } from "@/modules/money-market/reserves/reserves"
+import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import {
-  borrowedColumns,
   BorrowRow,
   NetApyValue,
-  ReserveTable,
   RowAction,
-  suppliedColumns,
   SupplyRow,
+} from "@/modules/money-market/table/cells"
+import {
+  borrowedColumns,
+  suppliedColumns,
   toBorrowColumns,
   toSupplyColumns,
-} from "@/modules/money-market/MoneyMarketTables"
-import { isHollar } from "@/modules/money-market/reserves"
-import { toSupplyRows } from "@/modules/money-market/toSupplyRows"
-import { useFormattedHealthFactor } from "@/modules/money-market/useFormattedHealthFactor"
-import { byUsdDesc, usePositions } from "@/modules/money-market/usePositions"
-import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+} from "@/modules/money-market/table/columns"
+import { ReserveTable } from "@/modules/money-market/table/ReserveTable"
 
 type Side = "supply" | "borrow"
 

@@ -34,7 +34,7 @@ import { healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
-import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import {
   TransferPositionFormValues,
   useTransferPosition,

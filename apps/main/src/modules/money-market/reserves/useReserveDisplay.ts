@@ -5,7 +5,7 @@ import {
   ReserveDisplay,
   reserveDisplay,
   ReserveDisplayInput,
-} from "@/modules/money-market/reserveDisplay"
+} from "@/modules/money-market/reserves/reserveDisplay"
 import { useAssets } from "@/providers/assetsProvider"
 
 /**

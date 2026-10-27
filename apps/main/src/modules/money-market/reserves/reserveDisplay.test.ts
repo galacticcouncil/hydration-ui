@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest"
 import {
   reserveDisplay,
   ReserveDisplayRegistry,
-} from "@/modules/money-market/reserveDisplay"
+} from "@/modules/money-market/reserves/reserveDisplay"
 
 const ADDRESS = "0x0000000000000000000000000000000000000001"
 const HOLLAR_TOKEN = "0x531a654d1696ED52e7275A8cede955E82620f99a"

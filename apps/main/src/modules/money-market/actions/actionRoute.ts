@@ -3,11 +3,11 @@ import type {
   ReserveSummary,
 } from "@galacticcouncil/money-market/types"
 
-import type { RowAction } from "@/modules/money-market/MoneyMarketTables"
 import {
   isPoolShareReserve,
   isSwapInReserve,
-} from "@/modules/money-market/reserves"
+} from "@/modules/money-market/reserves/reserves"
+import type { RowAction } from "@/modules/money-market/table/cells"
 
 export type ActionRoute =
   | "addStablepool"

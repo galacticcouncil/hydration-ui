@@ -20,9 +20,9 @@ import { RepayForm } from "@/modules/money-market/actions/RepayForm"
 import { SupplyForm } from "@/modules/money-market/actions/SupplyForm"
 import { useRefreshMarket } from "@/modules/money-market/actions/useRefreshMarket"
 import { WithdrawForm } from "@/modules/money-market/actions/WithdrawForm"
-import type { RowAction } from "@/modules/money-market/MoneyMarketTables"
-import { reserveAssetId } from "@/modules/money-market/reserves"
-import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
+import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import type { RowAction } from "@/modules/money-market/table/cells"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

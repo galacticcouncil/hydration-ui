@@ -4,7 +4,7 @@ import { getPageMeta } from "@/config/navigation"
 import {
   ReserveCrumb,
   ReserveDetailPage,
-} from "@/modules/money-market/ReserveDetailPage"
+} from "@/modules/money-market/reserve/ReserveDetailPage"
 
 const RouteComponent = () => {
   const { address } = useParams({ from: "/borrow/markets/$address" })

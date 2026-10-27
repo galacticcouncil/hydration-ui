@@ -32,8 +32,8 @@ import { useRepayForm } from "@/modules/money-market/actions/RepayForm.form"
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useSpendable } from "@/modules/money-market/actions/useSpendable"
 import { useUserAddress } from "@/modules/money-market/hooks"
-import { reserveAssetId } from "@/modules/money-market/reserves"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 
 type Props = {
   readonly asset: Address

@@ -53,24 +53,26 @@ import {
   OpenAction,
   OpenActionModal,
 } from "@/modules/money-market/actions/ActionModal"
-import { ApySide } from "@/modules/money-market/ApyTooltip"
-import { CapProgressCircle } from "@/modules/money-market/CapProgressCircle"
+import { ApySide } from "@/modules/money-market/apy/ApyTooltip"
 import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market/hooks"
-import { InterestRateModelChart } from "@/modules/money-market/InterestRateModelChart"
+import { CapProgressCircle } from "@/modules/money-market/reserve/CapProgressCircle"
+import { InterestRateModelChart } from "@/modules/money-market/reserve/InterestRateModelChart"
+import { MyPosition } from "@/modules/money-market/reserve/MyPosition"
+import { ReserveRatesChart } from "@/modules/money-market/reserve/ReserveRatesChart"
+import { reserveDisplay } from "@/modules/money-market/reserves/reserveDisplay"
+import { isHollar } from "@/modules/money-market/reserves/reserves"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import {
   ActionsCell,
   OnRowAction,
-  ReadError,
   ReserveApyCell,
   ReserveAsset,
-  ReserveDataTable,
   RowAction,
-} from "@/modules/money-market/MoneyMarketTables"
-import { MyPosition } from "@/modules/money-market/MyPosition"
-import { reserveDisplay } from "@/modules/money-market/reserveDisplay"
-import { ReserveRatesChart } from "@/modules/money-market/ReserveRatesChart"
-import { isHollar } from "@/modules/money-market/reserves"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+} from "@/modules/money-market/table/cells"
+import {
+  ReadError,
+  ReserveDataTable,
+} from "@/modules/money-market/table/ReserveTable"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Row = { reserve: ReserveSummary }

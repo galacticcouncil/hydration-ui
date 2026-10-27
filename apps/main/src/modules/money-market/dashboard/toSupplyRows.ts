@@ -9,7 +9,7 @@ import {
   isPoolShareReserve,
   isSwapInReserve,
   reserveAssetId,
-} from "@/modules/money-market/reserves"
+} from "@/modules/money-market/reserves/reserves"
 
 export type ToSupplyRow = {
   reserve: Pick<ReserveSummary, "underlyingAsset" | "isIsolated">

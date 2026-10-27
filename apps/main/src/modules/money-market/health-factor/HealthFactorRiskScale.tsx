@@ -2,14 +2,14 @@ import { Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { SFloatingValue } from "@/modules/money-market/HealthFactorRiskInfo.styled"
+import { SFloatingValue } from "@/modules/money-market/health-factor/HealthFactorRiskInfo.styled"
 import {
   SContainer,
   SCurrentValueMarker,
   SCurrentValueWrapper,
   SHealthFactorBar,
   SLiquidationMarker,
-} from "@/modules/money-market/HealthFactorRiskScale.styled"
+} from "@/modules/money-market/health-factor/HealthFactorRiskScale.styled"
 
 type HealthFactorRiskScaleProps = {
   healthFactor: string

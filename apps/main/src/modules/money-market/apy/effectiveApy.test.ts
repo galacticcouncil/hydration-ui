@@ -9,7 +9,7 @@ import {
   ReserveApy,
   reserveApy,
   toNetApyPositions,
-} from "@/modules/money-market/effectiveApy"
+} from "@/modules/money-market/apy/effectiveApy"
 
 const UNAVAILABLE = { status: "unavailable" }
 

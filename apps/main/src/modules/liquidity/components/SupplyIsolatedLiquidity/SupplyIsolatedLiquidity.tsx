@@ -40,9 +40,9 @@ import {
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { getApyLabel } from "@/modules/money-market/apy/useApyBreakdownItems"
 import { CollateralState } from "@/modules/money-market/CollateralState"
-import { getApyLabel } from "@/modules/money-market/useApyBreakdownItems"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useAssets } from "@/providers/assetsProvider"
 import { formatApyPercent } from "@/utils/formatApyPercent"
 

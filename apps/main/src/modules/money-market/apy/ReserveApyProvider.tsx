@@ -33,18 +33,18 @@ import {
   gatherAdjustedApys,
   HydrationSupplyApys,
   vaultAprReading,
-} from "@/modules/money-market/adjustedApys"
+} from "@/modules/money-market/apy/adjustedApys"
 import {
   ConstituentFeed,
   FeedSource,
   feedSource,
   poolProportion,
-} from "@/modules/money-market/constituents"
+} from "@/modules/money-market/apy/constituents"
 import {
   AdjustedApys,
   ReserveApy,
   reserveApy,
-} from "@/modules/money-market/effectiveApy"
+} from "@/modules/money-market/apy/effectiveApy"
 import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { isStableSwap, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"

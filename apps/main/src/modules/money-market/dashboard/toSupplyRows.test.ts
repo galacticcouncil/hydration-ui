@@ -5,7 +5,10 @@ import type {
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { describe, expect, it } from "vitest"
 
-import { ToSupplyRow, toSupplyRows } from "@/modules/money-market/toSupplyRows"
+import {
+  ToSupplyRow,
+  toSupplyRows,
+} from "@/modules/money-market/dashboard/toSupplyRows"
 
 const ADDRESS = "0x0000000000000000000000000000000000000001"
 

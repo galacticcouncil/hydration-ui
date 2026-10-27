@@ -16,9 +16,9 @@ import { FC } from "react"
 import { BreadcrumbBar } from "@/modules/layout/components/BreadcrumbBar"
 import { Container, MainContent } from "@/modules/layout/components/Content"
 import { SubNavBar } from "@/modules/layout/components/SubNavBar"
+import { ReserveApyProvider } from "@/modules/money-market/apy/ReserveApyProvider"
 import { EModeSelect } from "@/modules/money-market/EModeSelect"
 import { DEFAULT_MARKET } from "@/modules/money-market/hooks"
-import { ReserveApyProvider } from "@/modules/money-market/ReserveApyProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const MARKET_ITEMS = Object.values(markets).map((m) => ({

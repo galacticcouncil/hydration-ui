@@ -7,8 +7,8 @@ import {
   feedSource,
   poolProportion,
   resolveConstituents,
-} from "@/modules/money-market/constituents"
-import { adjustedApy } from "@/modules/money-market/effectiveApy"
+} from "@/modules/money-market/apy/constituents"
+import { adjustedApy } from "@/modules/money-market/apy/effectiveApy"
 
 const VDOT = "15"
 const POOL = "690"

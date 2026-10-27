@@ -5,7 +5,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { MAX_DISPLAY_HF } from "@/modules/money-market/constants"
-import { useFormattedHealthFactor } from "@/modules/money-market/useFormattedHealthFactor"
+import { useFormattedHealthFactor } from "@/modules/money-market/health-factor/useFormattedHealthFactor"
 
 /** The package reports "-1" when there is no debt, i.e. the health factor is unbounded. */
 export const HF_UNBOUNDED = "-1"

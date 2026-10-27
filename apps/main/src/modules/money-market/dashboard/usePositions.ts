@@ -11,9 +11,9 @@ import {
   isNetApyLoading,
   NetApyState,
   toNetApyPositions,
-} from "@/modules/money-market/effectiveApy"
-import type { SuppliedRow } from "@/modules/money-market/MoneyMarketTables"
-import { useResolveReserveApy } from "@/modules/money-market/ReserveApyProvider"
+} from "@/modules/money-market/apy/effectiveApy"
+import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
+import type { SuppliedRow } from "@/modules/money-market/table/cells"
 
 export const byUsdDesc =
   <T>(usd: (row: T) => string | undefined) =>

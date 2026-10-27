@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
-import { MoneyMarketDashboard } from "@/modules/money-market/MoneyMarketDashboard"
+import { MoneyMarketDashboard } from "@/modules/money-market/dashboard/MoneyMarketDashboard"
 
 const searchSchema = z.object({
   supplyCategory: z

@@ -32,9 +32,9 @@ import { useSupplyForm } from "@/modules/money-market/actions/SupplyForm.form"
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useSpendable } from "@/modules/money-market/actions/useSpendable"
 import { useUserAddress } from "@/modules/money-market/hooks"
-import { ReserveApyCell } from "@/modules/money-market/MoneyMarketTables"
-import { reserveAssetId } from "@/modules/money-market/reserves"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { ReserveApyCell } from "@/modules/money-market/table/cells"
 
 type Props = {
   readonly asset: Address

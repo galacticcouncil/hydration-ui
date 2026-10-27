@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
-import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 
 import { useGigaHDXBorrow } from "./GigaHDXBorrow.utils"
 

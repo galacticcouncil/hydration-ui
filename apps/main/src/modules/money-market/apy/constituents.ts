@@ -3,7 +3,7 @@ import Big from "big.js"
 import { ASSET_ID_TO_DEFILLAMA_ID } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID } from "@/api/external/kamino"
 import type { ExternalApyReadingStatus } from "@/api/external/reading"
-import type { ApyConstituent } from "@/modules/money-market/effectiveApy"
+import type { ApyConstituent } from "@/modules/money-market/apy/effectiveApy"
 
 export type FeedKind = NonNullable<ApyConstituent["feed"]>["kind"]
 

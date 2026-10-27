@@ -31,8 +31,8 @@ import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useUserAddress } from "@/modules/money-market/hooks"
-import { ReserveApyCell } from "@/modules/money-market/MoneyMarketTables"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { ReserveApyCell } from "@/modules/money-market/table/cells"
 
 type Props = {
   readonly asset: Address

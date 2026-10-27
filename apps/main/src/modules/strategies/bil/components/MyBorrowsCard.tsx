@@ -13,7 +13,7 @@ import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorNumber } from "@/modules/money-market/HealthFactorNumber"
+import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import {
   SBorrowPanel,

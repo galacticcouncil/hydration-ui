@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest"
 import {
   isPoolShareReserve,
   isSwapInReserve,
-} from "@/modules/money-market/reserves"
+} from "@/modules/money-market/reserves/reserves"
 
 const ADDRESS = "0x0000000000000000000000000000000000000001"
 

@@ -44,7 +44,7 @@ import {
 } from "@/modules/money-market/actions/HeaderSelect"
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useUserAddress } from "@/modules/money-market/hooks"
-import { reserveAssetId } from "@/modules/money-market/reserves"
+import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
 
 type Props = {
   readonly onSubmitted?: () => void

@@ -11,9 +11,9 @@ import {
   SScaleBar,
   SScaleBarFill,
   SScaleBarStripes,
-} from "@/modules/money-market/HealthFactorLtvScale.styled"
-import { SFloatingValue } from "@/modules/money-market/HealthFactorRiskInfo.styled"
-import { useFormattedLtv } from "@/modules/money-market/useFormattedLtv"
+} from "@/modules/money-market/health-factor/HealthFactorLtvScale.styled"
+import { SFloatingValue } from "@/modules/money-market/health-factor/HealthFactorRiskInfo.styled"
+import { useFormattedLtv } from "@/modules/money-market/health-factor/useFormattedLtv"
 
 type LTVContentProps = {
   loanToValue: string

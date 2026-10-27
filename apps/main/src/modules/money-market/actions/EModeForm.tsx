@@ -32,7 +32,7 @@ import { HeaderSelect } from "@/modules/money-market/actions/HeaderSelect"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useUserAddress } from "@/modules/money-market/hooks"
-import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 
 type Props = {
   readonly initialCategoryId?: number

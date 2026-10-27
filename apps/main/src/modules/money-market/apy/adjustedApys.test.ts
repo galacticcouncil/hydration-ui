@@ -5,8 +5,8 @@ import {
   gatherAdjustedApys,
   GatherAdjustedApysInput,
   vaultAprReading,
-} from "@/modules/money-market/adjustedApys"
-import { ConstituentFeed } from "@/modules/money-market/constituents"
+} from "@/modules/money-market/apy/adjustedApys"
+import { ConstituentFeed } from "@/modules/money-market/apy/constituents"
 
 const VDOT = "15"
 const POOL = "690"

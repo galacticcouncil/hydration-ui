@@ -6,14 +6,14 @@ import {
   ConstituentFeed,
   PoolAsset,
   resolveConstituents,
-} from "@/modules/money-market/constituents"
+} from "@/modules/money-market/apy/constituents"
 import {
   adjustedApy,
   AdjustedApyInput,
   AdjustedApys,
   ApyRate,
   ReserveApy,
-} from "@/modules/money-market/effectiveApy"
+} from "@/modules/money-market/apy/effectiveApy"
 
 export type VaultAprReading =
   | { status: "known"; apr: string }

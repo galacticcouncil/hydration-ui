@@ -6,7 +6,7 @@ import type {
 import {
   isPoolShareReserve,
   reserveAssetId,
-} from "@/modules/money-market/reserves"
+} from "@/modules/money-market/reserves/reserves"
 
 type RegistryAsset = { id: string; name: string; symbol: string }
 

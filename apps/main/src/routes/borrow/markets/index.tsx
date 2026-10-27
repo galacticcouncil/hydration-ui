@@ -3,7 +3,7 @@ import z from "zod"
 
 import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
-import { MarketsPage } from "@/modules/money-market/MarketsPage"
+import { MarketsPage } from "@/modules/money-market/markets/MarketsPage"
 
 const searchSchema = z.object({
   sort: dataTableSortSchema,

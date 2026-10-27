@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { swapTabLink } from "@/config/navigation"
-import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import { getMaxSlippageThreshold } from "@/modules/trade/swap/sections/XcSwap/lib/slippageThreshold"
 import { useIsIceEnabled } from "@/states/intents"
 import { useToasts } from "@/states/toasts"

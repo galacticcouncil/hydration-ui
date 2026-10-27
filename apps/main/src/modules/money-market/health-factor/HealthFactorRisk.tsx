@@ -2,11 +2,11 @@ import { Stack, Text } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorLtvScale } from "@/modules/money-market/HealthFactorLtvScale"
-import { HealthFactorRiskInfo } from "@/modules/money-market/HealthFactorRiskInfo"
-import { HealthFactorRiskScale } from "@/modules/money-market/HealthFactorRiskScale"
-import { useFormattedHealthFactor } from "@/modules/money-market/useFormattedHealthFactor"
-import { useFormattedLtv } from "@/modules/money-market/useFormattedLtv"
+import { HealthFactorLtvScale } from "@/modules/money-market/health-factor/HealthFactorLtvScale"
+import { HealthFactorRiskInfo } from "@/modules/money-market/health-factor/HealthFactorRiskInfo"
+import { HealthFactorRiskScale } from "@/modules/money-market/health-factor/HealthFactorRiskScale"
+import { useFormattedHealthFactor } from "@/modules/money-market/health-factor/useFormattedHealthFactor"
+import { useFormattedLtv } from "@/modules/money-market/health-factor/useFormattedLtv"
 
 type HealthFactorRiskProps = {
   readonly healthFactor: string

@@ -24,17 +24,14 @@ import { useQuery } from "@tanstack/react-query"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { RatePoint, reserveRatesQuery } from "@/api/grafana/reserveRates"
 import { ChartState } from "@/components/ChartState"
 import { ChartTimeRange } from "@/components/ChartTimeRange/ChartTimeRange"
 import {
   ApyChartTimeRangeOption,
   apyChartTimeRangeOptions,
-} from "@/modules/money-market/ApyChart.utils"
-import {
-  RatePoint,
-  reserveRatesQuery,
-} from "@/modules/money-market/reserveRates"
-import { SDrawIn } from "@/modules/money-market/ReserveRatesChart.styled"
+} from "@/modules/money-market/reserve/ApyChart.utils"
+import { SDrawIn } from "@/modules/money-market/reserve/ReserveRatesChart.styled"
 
 type SeriesKey = "supply" | "borrow"
 

@@ -6,8 +6,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAssetColor } from "@/hooks/useAssetColor"
-import { ApyPart } from "@/modules/money-market/effectiveApy"
-import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+import { ApyPart } from "@/modules/money-market/apy/effectiveApy"
+import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 
 export type ApySide = "supply" | "borrow"
 

@@ -26,16 +26,16 @@ import {
   OpenAction,
   OpenActionModal,
 } from "@/modules/money-market/actions/ActionModal"
-import { ApyRate } from "@/modules/money-market/effectiveApy"
+import { ApyRate } from "@/modules/money-market/apy/effectiveApy"
+import { useReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { useUserAddress } from "@/modules/money-market/hooks"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import {
   ApyCell,
   CollateralSwitch,
   NoData,
-  ReadError,
-} from "@/modules/money-market/MoneyMarketTables"
-import { useReserveApy } from "@/modules/money-market/ReserveApyProvider"
-import { useReserveDisplay } from "@/modules/money-market/useReserveDisplay"
+} from "@/modules/money-market/table/cells"
+import { ReadError } from "@/modules/money-market/table/ReserveTable"
 
 const ratio = (part: Big.BigSource, whole: Big.BigSource) =>
   Big(whole).gt(0) ? Big(part).div(whole).toFixed() : "0"

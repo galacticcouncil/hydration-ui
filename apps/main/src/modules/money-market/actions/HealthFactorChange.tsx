@@ -9,7 +9,7 @@ import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/modules/money-market/constants"
 import {
   HealthFactorNumber,
   toDisplayedHealthFactor,
-} from "@/modules/money-market/HealthFactorNumber"
+} from "@/modules/money-market/health-factor/HealthFactorNumber"
 
 type Props = {
   readonly current?: string

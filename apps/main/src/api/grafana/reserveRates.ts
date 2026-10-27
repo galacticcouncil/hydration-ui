@@ -6,7 +6,7 @@ import { fetchGrafana } from "@/api/grafana/fetchGrafana"
 import {
   ApyChartTimeRangeOption,
   getApyChartTimeRange,
-} from "@/modules/money-market/ApyChart.utils"
+} from "@/modules/money-market/reserve/ApyChart.utils"
 
 import reserveRates from "./reserveRates.sql?raw"
 
