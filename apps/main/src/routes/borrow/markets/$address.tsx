@@ -1,6 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router"
 
 import { getPageMeta } from "@/config/navigation"
+import { ReserveDetailPageSkeleton } from "@/modules/money-market/MoneyMarketSkeletons"
 import {
   ReserveCrumb,
   ReserveDetailPage,
@@ -14,7 +15,8 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute("/borrow/markets/$address")({
   component: RouteComponent,
-  staticData: { crumb: ReserveCrumb },
+  pendingComponent: ReserveDetailPageSkeleton,
+  staticData: { crumb: ReserveCrumb, pendingNavBar: "breadcrumb" },
   head: ({
     match: {
       context: { i18n },

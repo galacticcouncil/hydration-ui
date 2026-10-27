@@ -33,6 +33,7 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import {
   ClaimRewardsFormValues,
   useClaimRewardsForm,
@@ -238,17 +239,19 @@ export const ClaimRewardsForm: FC<Props> = ({ onSubmitted }) => {
       )}
       <Divider />
       <Stack gap="base" pt="xl">
-        <LoadingButton
-          type="submit"
-          size="large"
-          width="100%"
-          isLoading={isAssessing || mutation.isPending}
-          disabled={!canSubmit}
-        >
-          {reward !== ALL && row
-            ? t("claim.symbol", { symbol: row.rewardTokenSymbol })
-            : t("claim.all")}
-        </LoadingButton>
+        <AuthorizedAction size="large" width="100%">
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={isAssessing || mutation.isPending}
+            disabled={!canSubmit}
+          >
+            {reward !== ALL && row
+              ? t("claim.symbol", { symbol: row.rewardTokenSymbol })
+              : t("claim.all")}
+          </LoadingButton>
+        </AuthorizedAction>
       </Stack>
     </form>
   )

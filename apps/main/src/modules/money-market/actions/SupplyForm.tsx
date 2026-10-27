@@ -26,6 +26,7 @@ import { Address, formatUnits, parseUnits } from "viem"
 
 import { useAccountBalances } from "@/api/balances"
 import { AssetLogo } from "@/components/AssetLogo"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useSupplyForm } from "@/modules/money-market/actions/SupplyForm.form"
@@ -206,16 +207,18 @@ export const SupplyForm: FC<Props> = ({ asset, onSubmitted }) => {
           }
           loading={isAssessing}
         />
-        <SummaryRow
-          label={t("summary.healthFactor")}
-          content={
-            <HealthFactorChange
-              current={current.data?.account.healthFactor}
-              projected={assessment.data?.projection.account.healthFactor}
-            />
-          }
-          loading={isAssessing || current.isPending}
-        />
+        {user && (
+          <SummaryRow
+            label={t("summary.healthFactor")}
+            content={
+              <HealthFactorChange
+                current={current.data?.account.healthFactor}
+                projected={assessment.data?.projection.account.healthFactor}
+              />
+            }
+            loading={isAssessing || current.isPending}
+          />
+        )}
         {findings.length > 0 && (
           <Stack gap="base" py="base">
             <Controller
@@ -234,15 +237,17 @@ export const SupplyForm: FC<Props> = ({ asset, onSubmitted }) => {
       </Summary>
       <Divider />
       <Stack gap="base" pt="xl">
-        <LoadingButton
-          type="submit"
-          size="large"
-          width="100%"
-          isLoading={isAssessing || mutation.isPending}
-          disabled={!canSubmit}
-        >
-          {t("supply")}
-        </LoadingButton>
+        <AuthorizedAction size="large" width="100%">
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={isAssessing || mutation.isPending}
+            disabled={!canSubmit}
+          >
+            {t("supply")}
+          </LoadingButton>
+        </AuthorizedAction>
       </Stack>
     </form>
   )

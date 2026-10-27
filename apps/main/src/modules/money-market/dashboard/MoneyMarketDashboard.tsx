@@ -55,6 +55,7 @@ import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useRes
 import {
   BorrowRow,
   NetApyValue,
+  NoData,
   RowAction,
   SupplyRow,
 } from "@/modules/money-market/table/cells"
@@ -341,6 +342,13 @@ export const MoneyMarketDashboard: FC = () => {
             label={t("borrow:netWorth")}
             wrap
             value={usd(acc?.netWorthUsd)}
+            customValue={
+              user ? undefined : (
+                <ValueStatsValue size="large" fixedSize>
+                  <NoData />
+                </ValueStatsValue>
+              )
+            }
           />
           <ValueStats
             size="large"
@@ -350,7 +358,11 @@ export const MoneyMarketDashboard: FC = () => {
             wrap
             customValue={
               <ValueStatsValue size="large" fixedSize>
-                <NetApyValue netApy={netApy} figure="netApy" />
+                {user ? (
+                  <NetApyValue netApy={netApy} figure="netApy" />
+                ) : (
+                  <NoData />
+                )}
               </ValueStatsValue>
             }
           />
@@ -363,10 +375,10 @@ export const MoneyMarketDashboard: FC = () => {
             customValue={
               <Flex align="center" gap="base">
                 <ValueStatsValue size="large" fixedSize>
-                  {acc && isHealthFactorValid ? (
+                  {user && acc && isHealthFactorValid ? (
                     <HealthFactorNumber value={acc.healthFactor} />
                   ) : (
-                    "-"
+                    <NoData />
                   )}
                 </ValueStatsValue>
                 {acc && isHealthFactorValid && (
@@ -421,10 +433,11 @@ export const MoneyMarketDashboard: FC = () => {
         columnTemplate={["1fr", null, null, "1fr 1fr"]}
         gap="xl"
         align="start"
+        mt="l"
       >
         <Stack gap="xl" sx={column("supply")}>
           <ReserveTable
-            title="Your supplies"
+            title="My supplies"
             empty={user ? "Nothing supplied yet." : "Connect a wallet."}
             actions={
               (accountLoading || supplied.length > 0) && (
@@ -493,7 +506,7 @@ export const MoneyMarketDashboard: FC = () => {
         </Stack>
         <Stack gap="xl" sx={column("borrow")}>
           <ReserveTable
-            title="Your borrows"
+            title="My borrows"
             empty={user ? "Nothing borrowed yet." : "Connect a wallet."}
             actions={
               (accountLoading || borrowed.length > 0) && (

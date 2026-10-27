@@ -27,7 +27,6 @@ import {
   ProgressCircle,
   ScrollArea,
   Separator,
-  Spinner,
   Stack,
   Summary,
   Text,
@@ -55,6 +54,7 @@ import {
 } from "@/modules/money-market/actions/ActionModal"
 import { ApySide } from "@/modules/money-market/apy/ApyTooltip"
 import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market/hooks"
+import { ReserveDetailPageSkeleton } from "@/modules/money-market/MoneyMarketSkeletons"
 import { CapProgressCircle } from "@/modules/money-market/reserve/CapProgressCircle"
 import { InterestRateModelChart } from "@/modules/money-market/reserve/InterestRateModelChart"
 import { MyPosition } from "@/modules/money-market/reserve/MyPosition"
@@ -98,13 +98,7 @@ export const ReserveDetailPage: FC<{ address: string }> = ({ address }) => {
   const { market } = useMoneyMarket()
 
   if (reserves.error) return <ReadError error={reserves.error} />
-  if (!reserves.data) {
-    return (
-      <Flex justify="center" p="xl">
-        <Spinner />
-      </Flex>
-    )
-  }
+  if (!reserves.data) return <ReserveDetailPageSkeleton />
 
   const reserve = findReserve(reserves.data, address)
 

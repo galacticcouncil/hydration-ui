@@ -4,6 +4,7 @@ import z from "zod"
 import { getPageMeta } from "@/config/navigation"
 import { dataTableSortSchema } from "@/form/dataTableSortSchema"
 import { MarketsPage } from "@/modules/money-market/markets/MarketsPage"
+import { MarketsPageSkeleton } from "@/modules/money-market/MoneyMarketSkeletons"
 
 const searchSchema = z.object({
   sort: dataTableSortSchema,
@@ -12,6 +13,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/borrow/markets/")({
   component: MarketsPage,
+  pendingComponent: MarketsPageSkeleton,
   validateSearch: searchSchema,
   head: ({
     match: {

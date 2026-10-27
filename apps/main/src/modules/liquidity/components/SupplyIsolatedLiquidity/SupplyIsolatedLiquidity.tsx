@@ -27,6 +27,7 @@ import {
   TAssetWithBalance,
   useAssetSelectModalAssets,
 } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
@@ -42,6 +43,7 @@ import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { getApyLabel } from "@/modules/money-market/apy/useApyBreakdownItems"
 import { CollateralState } from "@/modules/money-market/CollateralState"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useAssets } from "@/providers/assetsProvider"
 import { formatApyPercent } from "@/utils/formatApyPercent"
@@ -123,6 +125,7 @@ const SupplyIsolatedLiquidityBody = ({
 }) => {
   const { t } = useTranslation(["common", "liquidity", "borrow", "trade"])
   const { symbol } = useReserveDisplay(summary)
+  const user = useUserAddress()
   const {
     form,
     maxBalance,
@@ -200,16 +203,18 @@ const SupplyIsolatedLiquidityBody = ({
                 />
               }
             />
-            <SummaryRow
-              label={t("healthFactor")}
-              loading={isAssessing}
-              content={
-                <HealthFactorChange
-                  current={currentHealthFactor}
-                  projected={projectedHealthFactor}
-                />
-              }
-            />
+            {user && (
+              <SummaryRow
+                label={t("healthFactor")}
+                loading={isAssessing}
+                content={
+                  <HealthFactorChange
+                    current={currentHealthFactor}
+                    projected={projectedHealthFactor}
+                  />
+                }
+              />
+            )}
           </Summary>
 
           <CollapsibleRoot open={isTradeOpen}>
@@ -268,17 +273,19 @@ const SupplyIsolatedLiquidityBody = ({
         </ModalBody>
         <Separator />
         <ModalFooter>
-          <LoadingButton
-            type="submit"
-            size="large"
-            width="100%"
-            isLoading={isTradeLoading || isAssessing}
-            disabled={isBlockedSupply || !form.formState.isValid}
-          >
-            {t("borrow:supply.withSymbol", {
-              symbol,
-            })}
-          </LoadingButton>
+          <AuthorizedAction size="large" width="100%">
+            <LoadingButton
+              type="submit"
+              size="large"
+              width="100%"
+              isLoading={isTradeLoading || isAssessing}
+              disabled={isBlockedSupply || !form.formState.isValid}
+            >
+              {t("borrow:supply.withSymbol", {
+                symbol,
+              })}
+            </LoadingButton>
+          </AuthorizedAction>
         </ModalFooter>
       </form>
     </FormProvider>

@@ -26,6 +26,7 @@ import { spotPriceQuery } from "@/api/spotPrice"
 import { Trade } from "@/api/trade"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
@@ -103,7 +104,8 @@ const RemoveMoneyMarketLiquidityForm = (
     isLoadingMaxBalance,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
   const { closable, onBack, receiveAssets, title } = props
-  const accountSummary = useAccountSummary(useUserAddress())
+  const user = useUserAddress()
+  const accountSummary = useAccountSummary(user)
 
   const {
     formState: { isValid },
@@ -205,19 +207,21 @@ const RemoveMoneyMarketLiquidityForm = (
           </Flex>
           <Summary separator={<ModalContentDivider />} withLeadingSeparator>
             {split && <TradeLimitRow type={TradeLimitType.Liquidity} />}
-            <SummaryRow
-              label={t("common:healthFactor")}
-              content={
-                <HealthFactorChange
-                  current={
-                    healthFactor?.current ??
-                    accountSummary.data?.account.healthFactor
-                  }
-                  intermediate={intermediateHealthFactor?.future}
-                  projected={healthFactor?.future}
-                />
-              }
-            />
+            {user && (
+              <SummaryRow
+                label={t("common:healthFactor")}
+                content={
+                  <HealthFactorChange
+                    current={
+                      healthFactor?.current ??
+                      accountSummary.data?.account.healthFactor
+                    }
+                    intermediate={intermediateHealthFactor?.future}
+                    projected={healthFactor?.future}
+                  />
+                }
+              />
+            )}
           </Summary>
           {!split && (
             <CollapsibleRoot open={isTradeOpen}>
@@ -246,21 +250,23 @@ const RemoveMoneyMarketLiquidityForm = (
                 }
               />
             )}
-            <LoadingButton
-              type="submit"
-              size="large"
-              width="100%"
-              isLoading={mutation.isPending}
-              disabled={
-                !isValid ||
-                !isHealthFactorCheckSatisfied ||
-                isLoadingMaxBalance ||
-                isTradePending ||
-                mutation.isPending
-              }
-            >
-              {title ?? t("removeLiquidity")}
-            </LoadingButton>
+            <AuthorizedAction size="large" width="100%">
+              <LoadingButton
+                type="submit"
+                size="large"
+                width="100%"
+                isLoading={mutation.isPending}
+                disabled={
+                  !isValid ||
+                  !isHealthFactorCheckSatisfied ||
+                  isLoadingMaxBalance ||
+                  isTradePending ||
+                  mutation.isPending
+                }
+              >
+                {title ?? t("removeLiquidity")}
+              </LoadingButton>
+            </AuthorizedAction>
           </Flex>
         </ModalFooter>
       </form>

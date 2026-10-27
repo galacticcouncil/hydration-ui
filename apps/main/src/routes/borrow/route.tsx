@@ -19,5 +19,6 @@ export const Route = createFileRoute("/borrow")({
   validateSearch: searchSchema,
   // breadcrumb links carry only a path, so keep the selected market on them
   search: { middlewares: [retainSearchParams(["market"])] },
-  staticData: { crumb: true },
+  // the layout shows the sub nav or the breadcrumb, never both
+  staticData: { crumb: true, pendingNavBar: "subnav" },
 })

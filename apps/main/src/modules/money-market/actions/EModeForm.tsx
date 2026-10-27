@@ -26,6 +26,7 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useEModeForm } from "@/modules/money-market/actions/EModeForm.form"
 import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HeaderSelect } from "@/modules/money-market/actions/HeaderSelect"
@@ -190,16 +191,18 @@ export const EModeForm: FC<Props> = ({ initialCategoryId, onSubmitted }) => {
           }
           loading={isAssessing || isCurrentLoading}
         />
-        <SummaryRow
-          label={t("summary.healthFactor")}
-          content={
-            <HealthFactorChange
-              current={current.data?.account.healthFactor}
-              projected={assessment.data?.projection.account.healthFactor}
-            />
-          }
-          loading={isAssessing || isCurrentLoading}
-        />
+        {user && (
+          <SummaryRow
+            label={t("summary.healthFactor")}
+            content={
+              <HealthFactorChange
+                current={current.data?.account.healthFactor}
+                projected={assessment.data?.projection.account.healthFactor}
+              />
+            }
+            loading={isAssessing || isCurrentLoading}
+          />
+        )}
         {findings.length > 0 && (
           <Stack gap="base" py="base">
             <Controller
@@ -218,15 +221,17 @@ export const EModeForm: FC<Props> = ({ initialCategoryId, onSubmitted }) => {
       </Summary>
       <Divider />
       <Stack gap="base" pt="xl">
-        <LoadingButton
-          type="submit"
-          size="large"
-          width="100%"
-          isLoading={isAssessing || mutation.isPending}
-          disabled={!canSubmit}
-        >
-          {submitLabel}
-        </LoadingButton>
+        <AuthorizedAction size="large" width="100%">
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={isAssessing || mutation.isPending}
+            disabled={!canSubmit}
+          >
+            {submitLabel}
+          </LoadingButton>
+        </AuthorizedAction>
       </Stack>
     </form>
   )

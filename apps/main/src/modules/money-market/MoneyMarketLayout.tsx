@@ -4,11 +4,13 @@ import {
   useMoneyMarket,
 } from "@galacticcouncil/money-market/react"
 import type { CustomMarket } from "@galacticcouncil/money-market/types"
-import { Flex, Select, Spinner } from "@galacticcouncil/ui/components"
+import { Flex, Select } from "@galacticcouncil/ui/components"
 import {
   Outlet,
   useMatch,
+  useMatches,
   useNavigate,
+  useRouter,
   useSearch,
 } from "@tanstack/react-router"
 import { FC } from "react"
@@ -64,12 +66,24 @@ export const MoneyMarketLayout: FC = () => {
           </ReserveApyProvider>
         </MoneyMarketProvider>
       ) : (
-        <Flex justify="center" p="xl">
-          <Spinner />
-        </Flex>
+        <>
+          {isReserve ? <BreadcrumbBar /> : <SubNavBar />}
+          <MainContent>
+            <PendingPage />
+          </MainContent>
+        </>
       )}
     </Container>
   )
+}
+
+/** The matched page's skeleton while the RPC connects. */
+const PendingPage: FC = () => {
+  const router = useRouter()
+  const leaf = useMatches().at(-1)
+  const Pending =
+    leaf && router.routesById[leaf.routeId]?.options.pendingComponent
+  return Pending ? <Pending /> : null
 }
 
 /** Sits in the sub nav strip, so every page shares it. */

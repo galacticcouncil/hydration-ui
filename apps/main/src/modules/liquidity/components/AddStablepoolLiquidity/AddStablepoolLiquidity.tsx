@@ -39,6 +39,7 @@ import { spotPriceQuery } from "@/api/spotPrice"
 import { useStableSwapTradability } from "@/api/stableswap"
 import { Trade } from "@/api/trade"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
@@ -429,17 +430,19 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
       </ModalBody>
       <ModalFooter sx={{ pt: 0 }}>
-        <LoadingButton
-          type="submit"
-          size="large"
-          width="100%"
-          isLoading={isTradeLoading}
-          disabled={isSubmitDisabled}
-        >
-          {isJoinFarms
-            ? t("liquidity.add.modal.submitAndjoinFarms")
-            : (title ?? t("liquidity.add.modal.submit"))}
-        </LoadingButton>
+        <AuthorizedAction size="large" width="100%">
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={isTradeLoading}
+            disabled={isSubmitDisabled}
+          >
+            {isJoinFarms
+              ? t("liquidity.add.modal.submitAndjoinFarms")
+              : (title ?? t("liquidity.add.modal.submit"))}
+          </LoadingButton>
+        </AuthorizedAction>
       </ModalFooter>
     </form>
   )
@@ -473,7 +476,8 @@ const AddStablepoolLiquiditySummary = ({
   isTradeLoading: boolean
 }) => {
   const rpc = useRpcProvider()
-  const accountSummary = useAccountSummary(useUserAddress())
+  const user = useUserAddress()
+  const accountSummary = useAccountSummary(user)
   const { getAssetWithFallback, getErc20AToken } = useAssets()
   const { t } = useTranslation(["liquidity", "common", "trade"])
 
@@ -517,7 +521,7 @@ const AddStablepoolLiquiditySummary = ({
             />
           }
         />
-        {erc20Id && (
+        {erc20Id && user && (
           <SummaryRow
             label={t("common:healthFactor")}
             content={

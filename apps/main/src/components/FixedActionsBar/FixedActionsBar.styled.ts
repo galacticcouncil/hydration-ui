@@ -23,6 +23,7 @@ export const SFixedActionsBar = styled(Flex)(
       padding: 0;
       backdrop-filter: none;
       background: transparent;
+      border: none;
     }
   `,
 )

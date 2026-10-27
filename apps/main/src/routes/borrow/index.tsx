@@ -3,6 +3,7 @@ import { z } from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
 import { MoneyMarketDashboard } from "@/modules/money-market/dashboard/MoneyMarketDashboard"
+import { MoneyMarketDashboardSkeleton } from "@/modules/money-market/MoneyMarketSkeletons"
 
 const searchSchema = z.object({
   supplyCategory: z
@@ -13,6 +14,7 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/borrow/")({
   component: MoneyMarketDashboard,
+  pendingComponent: MoneyMarketDashboardSkeleton,
   validateSearch: searchSchema,
   head: ({
     match: {
