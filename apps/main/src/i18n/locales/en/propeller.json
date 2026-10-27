@@ -63,6 +63,7 @@
   "withdrawals.claim.title": "Claim withdrawal",
   "withdrawals.claim.description": "Claiming {{ payouts }} — plus anything that settles before the transaction confirms.",
   "withdrawals.claim.descriptionFinal": "Claiming {{ payouts }}.",
+  "withdrawals.claim.atLeast": "at least {{ amount }}",
   "withdrawals.claim.descriptionUnsold": "Claiming {{ payouts }}. Anything more that settles before this confirms arrives as {{ collateral }}.",
   "withdrawals.claim.submitted": "Claiming withdrawal payouts...",
   "withdrawals.claim.success": "Withdrawal claimed",

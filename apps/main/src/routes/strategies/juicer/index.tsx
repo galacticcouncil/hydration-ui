@@ -7,6 +7,8 @@ import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaul
 
 const searchSchema = z.object({
   asset: z.string().optional(),
+  /** opens the page at that section, e.g. a portfolio Claim at Withdrawals */
+  section: z.enum(["withdrawals"]).optional(),
 })
 
 export const Route = createFileRoute("/strategies/juicer/")({

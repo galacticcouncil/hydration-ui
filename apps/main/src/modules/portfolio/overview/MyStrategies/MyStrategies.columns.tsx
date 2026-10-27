@@ -280,7 +280,9 @@ export const StrategyPositionCta = ({
   if (position.action === "claim") {
     return (
       <Button variant="emphasis" outline size={size} asChild>
-        <Link {...link}>{t("common:claim")}</Link>
+        <Link {...link} search={{ ...link.search, section: "withdrawals" }}>
+          {t("common:claim")}
+        </Link>
       </Button>
     )
   }

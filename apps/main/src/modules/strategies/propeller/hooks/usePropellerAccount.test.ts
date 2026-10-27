@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { buildWithdrawalRow } from "./usePropellerAccount"
+import { buildWithdrawalRow, sortWithdrawalRows } from "./usePropellerAccount"
 
 vi.mock("@galacticcouncil/utils", () => ({
   GETH_ASSET_ID: "4200",
@@ -124,5 +124,13 @@ describe("Withdrawal amount", () => {
     const closed = row(PACE, { claimedCollateral: 1, active: false })
     expect(closed.totalEth).toBe(1)
     expect(closed.claimedEth).toBe(0)
+  })
+})
+
+describe("Withdrawal order", () => {
+  it("puts the latest request first across vaults, whose ids count apart", () => {
+    const ethOld = { requestId: 42, eligibleAt: 1_000 }
+    const btcNew = { requestId: 1, eligibleAt: 2_000 }
+    expect(sortWithdrawalRows([ethOld, btcNew])).toEqual([btcNew, ethOld])
   })
 })

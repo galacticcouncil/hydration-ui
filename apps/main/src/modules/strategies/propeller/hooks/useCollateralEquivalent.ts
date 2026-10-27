@@ -20,12 +20,17 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
  * drifts over a long session (a live app read 1/0.984 while a fresh context
  * read 1.0173), so every ETH amount would be off by ~0.1%.
  */
-const baseRateQuery = (
+export const baseRateQuery = (
   { isReady, evm }: TProviderContext,
   vault: PropellerVaultConfig,
+  /** the rate as of a past block, which never changes; the live one if unset */
+  blockNumber?: bigint,
 ) =>
   queryOptions({
-    queryKey: propellerQueryKeys.baseRate(vault.vaultAddress),
+    queryKey:
+      blockNumber === undefined
+        ? propellerQueryKeys.baseRate(vault.vaultAddress)
+        : propellerQueryKeys.baseRateAt(vault.vaultAddress, blockNumber),
     enabled: isReady && !!vault.baseAssetId,
     queryFn: async () => {
       const read = <T>(
@@ -36,6 +41,7 @@ const baseRateQuery = (
           address,
           abi: PRICE_ORACLE_ABI,
           functionName,
+          blockNumber,
         }) as Promise<T>
       const provider = await read<Hex>(POOL_ADDRESS, "ADDRESSES_PROVIDER")
       const oracle = await read<Hex>(provider, "getPriceOracle")
@@ -45,6 +51,7 @@ const baseRateQuery = (
           abi: PRICE_ORACLE_ABI,
           functionName: "getAssetPrice",
           args: [getAddressFromAssetId(assetId) as Hex],
+          blockNumber,
         })
       const [collateral, base] = await Promise.all([
         price(vault.assetId),
@@ -53,7 +60,8 @@ const baseRateQuery = (
       if (base === 0n) throw new Error("No oracle price for the base asset")
       return Big(collateral.toString()).div(base.toString()).toString()
     },
-    refetchInterval: 30_000,
+    refetchInterval: blockNumber === undefined ? 30_000 : false,
+    staleTime: blockNumber === undefined ? undefined : Infinity,
   })
 
 /**

@@ -13,6 +13,11 @@ export const propellerQueryKeys = {
   vault,
   vaultStats: (vaultAddress: string) => [...vault(vaultAddress), "stats"],
   baseRate: (vaultAddress: string) => [...vault(vaultAddress), "base-rate"],
+  baseRateAt: (vaultAddress: string, blockNumber: bigint) => [
+    ...vault(vaultAddress),
+    "base-rate",
+    blockNumber.toString(),
+  ],
   depositCapacity: (vaultAddress: string) => [
     ...vault(vaultAddress),
     "deposit-capacity",

@@ -6,6 +6,7 @@ import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
+import { baseRateQuery } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
   type QueueEntry,
@@ -25,6 +26,7 @@ import {
   claimableInSeconds,
   measureSettlePace,
   reserveCoversExit,
+  type SettleLog,
   type SettlePace,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
@@ -197,11 +199,29 @@ export const debtPerCollateral = (
     ? mainDebtUsd / totalCollateral
     : null
 
+/**
+ * Newest request first across every vault. Request ids count per vault, so
+ * they only break ties; the time the unwind may start orders the rest.
+ */
 export const sortWithdrawalRows = <
-  T extends Pick<PropellerWithdrawalRow, "requestId">,
+  T extends Pick<PropellerWithdrawalRow, "requestId" | "eligibleAt">,
 >(
   rows: T[],
-): T[] => [...rows].sort((a, b) => b.requestId - a.requestId)
+): T[] =>
+  [...rows].sort(
+    (a, b) => b.eligibleAt - a.eligibleAt || b.requestId - a.requestId,
+  )
+
+/** The block of a request's latest non-empty tranche; null before its first. */
+const lastTrancheBlock = (
+  logs: SettleLog[] | undefined,
+  requestId: number,
+): bigint | null =>
+  (logs ?? [])
+    .filter((l) => l.requestId === requestId && l.collateral > 0)
+    .reduce<
+      bigint | null
+    >((last, l) => (last === null || l.blockNumber > last ? l.blockNumber : last), null)
 
 /** The user's positions and withdrawal rows across every vault. */
 export const usePropellerAccount = (evmAddress: Hex | undefined) => {
@@ -231,6 +251,33 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
       vaultSettleLogsQuery(rpc, vault, decimalsOf(vault)),
     ),
   })
+  // a closed withdrawal keeps the ETH value it settled at, not today's rate:
+  // the oracle as of its last tranche (unknown past the scan window)
+  const closedRates = PROPELLER_VAULTS.flatMap((vault, i) =>
+    vault.baseAssetId
+      ? userQueues[i]!.filter((entry) => !entry.active).flatMap((entry) => {
+          const block = lastTrancheBlock(
+            settleLogQueries[i]?.data?.logs,
+            entry.requestId,
+          )
+          return block === null ? [] : [{ vault, entry, block }]
+        })
+      : [],
+  )
+  const closedRateQueries = useQueries({
+    queries: closedRates.map(({ vault, block }) =>
+      baseRateQuery(rpc, vault, block),
+    ),
+  })
+  const closedRateOf = (vault: PropellerVaultConfig, requestId: number) => {
+    const index = closedRates.findIndex(
+      (c) =>
+        c.vault.vaultAddress === vault.vaultAddress &&
+        c.entry.requestId === requestId,
+    )
+    const rate = closedRateQueries[index]?.data
+    return rate ? Number(rate) : null
+  }
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
   const blockTimeSeconds = blockTimeMs ? blockTimeMs / 1000 : null
 
@@ -283,26 +330,21 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         debtPerCollateral: debtPerCollateral(stats?.mainDebtUsd, stats?.tvl),
       }
       return (userQueues[i] ?? []).map((entry) => {
-        const lastTranche = settleLogs?.logs
-          .filter((l) => l.requestId === entry.requestId && l.collateral > 0)
-          .reduce<
-            bigint | null
-          >((last, l) => (last === null || l.blockNumber > last ? l.blockNumber : last), null)
+        const lastTranche = lastTrancheBlock(settleLogs?.logs, entry.requestId)
         return buildWithdrawalRow({
           vault,
           entry,
           exchangeRate: market?.stats?.exchangeRate ?? 1,
           price: market?.price ?? 0,
-          baseRate: market?.baseRate ? Number(market.baseRate) : 1,
+          baseRate:
+            (!entry.active && closedRateOf(vault, entry.requestId)) ||
+            (market?.baseRate ? Number(market.baseRate) : 1),
           pace,
           ahead: queued
             .filter((q) => q.requestId < entry.requestId)
             .reduce((sum, q) => sum + q.remaining, 0),
           sinceLastSettleSeconds:
-            lastTranche !== null &&
-            lastTranche !== undefined &&
-            settleLogs &&
-            blockTimeSeconds
+            lastTranche !== null && settleLogs && blockTimeSeconds
               ? Number(settleLogs.head - lastTranche) * blockTimeSeconds
               : null,
           shortfall,

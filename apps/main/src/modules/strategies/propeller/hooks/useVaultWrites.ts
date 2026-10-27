@@ -122,8 +122,10 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
         queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
         // the immediate refetch can re-read a gateway node still serving the
         // pre-transaction state, and settlement logs land a scan behind — tap
-        // again once the lag has passed so rows reflect the chain in seconds
-        setTimeout(() => invalidateVault(vaultAddress), 4_000)
+        // again as the lag passes (one node trailed by ~15 s on 0.lark) so
+        // the position and the form never offer a balance already withdrawn
+        for (const delay of [4_000, 8_000, 15_000])
+          setTimeout(() => invalidateVault(vaultAddress), delay)
         onWriteSuccess?.()
       },
       resolveOn: "success",
@@ -765,7 +767,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
     const payout = getAssetWithFallback(payoutAssetId)
     const { decimals } = getAssetWithFallback(vault.assetId)
     const minAmountOut = sell ? readSellLimit(sell)?.minAmountOut : undefined
-    const collateralPayout =
+    const minimum =
       minAmountOut !== undefined
         ? t("common:currency", {
             value: formatUnits(minAmountOut, payout.decimals),
@@ -773,13 +775,20 @@ export function useClaim(options: VaultWriteOptions = {}) {
             // a review, not a ledger: six places pin it to a fraction of a cent
             maximumFractionDigits: 6,
           })
-        : t("common:currency", {
-            value: Big(formatUnits(collateral, decimals))
-              .times(getRate(vault) ?? "1")
-              .toString(),
-            symbol: getDisplayAsset(vault).symbol,
-            maximumFractionDigits: 6,
-          })
+        : null
+    // a swap's minimum is its slippage floor, not what arrives; the 1:1
+    // unwrap's minimum is exactly what arrives
+    const collateralPayout = minimum
+      ? getPayoutSell(vault, payoutAssetId) === "swap"
+        ? t("withdrawals.claim.atLeast", { amount: minimum })
+        : minimum
+      : t("common:currency", {
+          value: Big(formatUnits(collateral, decimals))
+            .times(getRate(vault) ?? "1")
+            .toString(),
+          symbol: getDisplayAsset(vault).symbol,
+          maximumFractionDigits: 6,
+        })
     return [
       ...(collateral > 0n ? [collateralPayout] : []),
       ...(surplusHollar > 0n ? [formatSurplus(surplusHollar)] : []),

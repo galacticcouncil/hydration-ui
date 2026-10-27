@@ -5,6 +5,7 @@ import {
   Pagination,
   Stack,
 } from "@galacticcouncil/ui/components"
+import { useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,6 +14,7 @@ import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hook
 import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
 
 const WITHDRAWALS_PAGE_SIZE = 5
+const WITHDRAWALS_SECTION_ID = "withdrawals"
 
 /** Claimable first, then unclaimed; newest first within each group. */
 const sortWithdrawals = (rows: PropellerWithdrawalRow[]) =>
@@ -21,6 +23,8 @@ const sortWithdrawals = (rows: PropellerWithdrawalRow[]) =>
       Number(getWithdrawalStateLabel(b) === "claimable") -
         Number(getWithdrawalStateLabel(a) === "claimable") ||
       Number(a.state === "claimed") - Number(b.state === "claimed") ||
+      // request ids count per vault: order by time across vaults
+      b.eligibleAt - a.eligibleAt ||
       b.requestId - a.requestId,
   )
 
@@ -34,12 +38,26 @@ export const WithdrawalsCard = ({ rows }: Props) => {
   const sortedRows = useMemo(() => sortWithdrawals(rows), [rows])
   // a new request sorts behind claimable rows: jump back to the first page so
   // it is never created out of sight
-  const newestId = rows.reduce((max, row) => Math.max(max, row.requestId), -1)
-  const seenNewest = useRef(newestId)
+  // (ids count per vault, so the newest is the latest request time)
+  const newest = rows.reduce((max, row) => Math.max(max, row.eligibleAt), -1)
+  const seenNewest = useRef(newest)
   useEffect(() => {
-    if (newestId > seenNewest.current) setPage(1)
-    seenNewest.current = newestId
-  }, [newestId])
+    if (newest > seenNewest.current) setPage(1)
+    seenNewest.current = newest
+  }, [newest])
+
+  // a portfolio Claim lands here: on a phone the card sits far below the
+  // fold, so bring it into view once, when its rows have loaded
+  const { section } = useSearch({ from: "/strategies/juicer/" })
+  const scrolled = useRef(false)
+  const hasRows = rows.length > 0
+  useEffect(() => {
+    if (section !== "withdrawals" || !hasRows || scrolled.current) return
+    scrolled.current = true
+    document
+      .getElementById(WITHDRAWALS_SECTION_ID)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [section, hasRows])
 
   if (rows.length === 0) return null
 
@@ -51,7 +69,11 @@ export const WithdrawalsCard = ({ rows }: Props) => {
   )
 
   return (
-    <Card>
+    <Card
+      id={WITHDRAWALS_SECTION_ID}
+      // clear the sticky header when scrolled to
+      sx={{ scrollMarginTop: "calc(3.375rem + 1rem)" }}
+    >
       <CardHeader>
         <CardTitle>{t("withdrawals.title")}</CardTitle>
       </CardHeader>
