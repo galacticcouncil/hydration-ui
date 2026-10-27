@@ -8,7 +8,7 @@ const unixNow = () => Math.floor(Date.now() / 1000)
  * The timestamp every derivation in the react layer is evaluated against, in
  * unix seconds, advanced every `tickInterval` milliseconds.
  *
- * This is the one place in the package that reads a clock (ADR-0004): `core` is
+ * This is the one place in the package that reads a clock: `core` is
  * pure and takes a timestamp, so the clock has to live at the edge, and this is
  * the edge. The value it returns is deliberately *not* a cache dimension — it
  * never reaches a query key, so a tick re-runs the memo that derives over

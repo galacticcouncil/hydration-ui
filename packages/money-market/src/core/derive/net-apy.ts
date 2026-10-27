@@ -5,9 +5,9 @@ import { Decimal } from "@/core/big"
  * side in USD and the rate that side runs at.
  *
  * The rates are the caller's. The package reports only a reserve's base APY and
- * never learns which reserves are adjusted (ADR-0005), so whoever composes the
+ * never learns which reserves are adjusted, so whoever composes the
  * effective APY passes it in here, as a fraction in a decimal string
- * (ADR-0006). `null` says the rate is unavailable, which is not zero.
+ *. `null` says the rate is unavailable, which is not zero.
  */
 export type NetApyPosition = {
   suppliedUsd: string
@@ -38,7 +38,7 @@ export type NetApySummary = {
  * be on nothing, but both halves still stand.
  *
  * Nothing here reads a clock, and every number out is a plain fixed-point
- * decimal string produced with `toFixed` (ADR-0006).
+ * decimal string produced with `toFixed`.
  */
 export function summarizeNetApy(positions: NetApyPosition[]): NetApySummary {
   let supplied = Decimal(0)

@@ -3,11 +3,11 @@ import { CustomMarket, MarketDescriptor } from "@/types"
 /**
  * The three deployed markets, as plain data.
  *
- * No chain id lives here (ADR-0003): every one of these pools is on Hydration,
+ * No chain id lives here: every one of these pools is on Hydration,
  * and the descriptor's job is to name contracts, not networks. The wagmi
  * `Config` the caller passes alongside a descriptor is what decides which
  * network is read — pairing the two is the only guard against reading the
- * wrong one (ADR-0010).
+ * wrong one.
  */
 export const markets: { readonly [K in CustomMarket]: MarketDescriptor } = {
   hydration_v3: {

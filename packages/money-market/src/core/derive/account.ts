@@ -35,8 +35,8 @@ import type {
  * cannot join.
  *
  * Nothing here reads a clock — balances accrue to the timestamp the caller
- * passes (ADR-0004) — and every number out is a plain fixed-point decimal
- * string in human units, produced with `toFixed` (ADR-0006).
+ * passes — and every number out is a plain fixed-point decimal
+ * string in human units, produced with `toFixed`.
  */
 export type SummarizeAccountRequest = {
   /** Chain state for the market: the reserves and its base currency. */
@@ -338,7 +338,7 @@ function accumulate(
     // Upstream wraps the quotient in its zero-decimal BigNumber, which does
     // nothing — BigNumber.js applies DECIMAL_PLACES to `div`, not to its
     // constructor — so it keeps twenty places the contracts never hold
-    // (ADR-0008: the divergence is deliberate and not a retuned expectation).
+    // (the divergence is deliberate and not a retuned expectation).
     ltv: weightedLtv.gt(0) ? Integer(weightedLtv).div(collateral) : Integer(0),
     liquidationThreshold: weightedLiquidationThreshold.gt(0)
       ? Integer(weightedLiquidationThreshold).div(collateral)

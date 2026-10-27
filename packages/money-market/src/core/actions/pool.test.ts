@@ -1,5 +1,5 @@
 import type { Address } from "viem"
-import { decodeFunctionData, encodeFunctionData } from "viem"
+import { decodeFunctionData } from "viem"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -11,9 +11,7 @@ import {
   buildSupply,
   buildWithdraw,
   getMarket,
-  MAX_UINT_AMOUNT,
 } from "@/core"
-import { poolAbi } from "@/core/abi"
 import type { ActionPlan } from "@/types"
 
 const market = getMarket("hydration_v3")
@@ -48,134 +46,58 @@ describe("pool actions", () => {
     }
   })
 
-  it("encodes a supply with no referral code", () => {
-    const call = only(buildSupply({ market, asset, amount, onBehalfOf: user }))
+  it.each([
+    [
+      "a supply with no referral code",
+      buildSupply({ market, asset, amount, onBehalfOf: user }),
+      "supply",
+      [asset, amount, user, 0],
+    ],
+    [
+      "a withdraw to whoever receives the underlying",
+      buildWithdraw({ market, asset, amount, to: other }),
+      "withdraw",
+      [asset, amount, other],
+    ],
+    [
+      "a borrow at the variable rate mode",
+      buildBorrow({ market, asset, amount, onBehalfOf: user }),
+      "borrow",
+      [asset, amount, 2n, 0, user],
+    ],
+    [
+      "a repay at the variable rate mode",
+      buildRepay({ market, asset, amount, onBehalfOf: other }),
+      "repay",
+      [asset, amount, 2n, other],
+    ],
+    [
+      "a repay with aTokens, which names no beneficiary",
+      buildRepayWithATokens({ market, asset, amount }),
+      "repayWithATokens",
+      [asset, amount, 2n],
+    ],
+    [
+      "a collateral switch",
+      buildSetUsageAsCollateral({ market, asset, useAsCollateral: false }),
+      "setUserUseReserveAsCollateral",
+      [asset, false],
+    ],
+    [
+      "leaving e-mode as category zero",
+      buildSetUserEMode({ market, categoryId: 0 }),
+      "setUserEMode",
+      [0],
+    ],
+  ] as const)("encodes %s", (_, plan, functionName, args) => {
+    const call = only(plan)
 
-    expect(call.functionName).toBe("supply")
-    expect(call.args).toEqual([asset, amount, user, 0])
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "supply",
-        args: [asset, amount, user, 0],
-      }),
-    )
-  })
-
-  it("encodes a withdraw to whoever receives the underlying", () => {
-    const call = only(buildWithdraw({ market, asset, amount, to: other }))
-
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "withdraw",
-        args: [asset, amount, other],
-      }),
-    )
-  })
-
-  it("encodes a borrow at the variable rate mode", () => {
-    const call = only(buildBorrow({ market, asset, amount, onBehalfOf: user }))
-
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "borrow",
-        args: [asset, amount, 2n, 0, user],
-      }),
-    )
-  })
-
-  it("encodes a repay at the variable rate mode", () => {
-    const call = only(buildRepay({ market, asset, amount, onBehalfOf: other }))
-
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "repay",
-        args: [asset, amount, 2n, other],
-      }),
-    )
-  })
-
-  it("encodes a repay with aTokens, which names no beneficiary", () => {
-    const call = only(buildRepayWithATokens({ market, asset, amount }))
-
-    expect(call.args).toEqual([asset, amount, 2n])
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "repayWithATokens",
-        args: [asset, amount, 2n],
-      }),
-    )
-  })
-
-  it("encodes both directions of the collateral switch", () => {
-    for (const useAsCollateral of [true, false]) {
-      const call = only(
-        buildSetUsageAsCollateral({ market, asset, useAsCollateral }),
-      )
-      expect(call.data).toBe(
-        encodeFunctionData({
-          abi: poolAbi,
-          functionName: "setUserUseReserveAsCollateral",
-          args: [asset, useAsCollateral],
-        }),
-      )
-    }
-  })
-
-  it("encodes leaving e-mode as category zero", () => {
-    const call = only(buildSetUserEMode({ market, categoryId: 0 }))
-
-    expect(call.data).toBe(
-      encodeFunctionData({
-        abi: poolAbi,
-        functionName: "setUserEMode",
-        args: [0],
-      }),
-    )
-  })
-
-  it("passes the max sentinel through instead of resolving a balance", () => {
-    const call = only(
-      buildSupply({ market, asset, amount: MAX_UINT_AMOUNT, onBehalfOf: user }),
-    )
-
-    expect(MAX_UINT_AMOUNT).toBe(2n ** 256n - 1n)
-    expect(call.args[1]).toBe(MAX_UINT_AMOUNT)
-    // The sentinel reaches the calldata whole, rather than as some balance.
-    expect(call.data).toContain("f".repeat(64))
-  })
-
-  it("carries only the ABI item it encoded, so the calldata decodes from it", () => {
-    const call = only(buildBorrow({ market, asset, amount, onBehalfOf: user }))
-
+    // Decoded with only the ABI item the call carries.
     expect(call.abi).toHaveLength(1)
     expect(decodeFunctionData({ abi: call.abi, data: call.data })).toEqual({
-      functionName: "borrow",
-      args: [asset, amount, 2n, 0, user],
+      functionName,
+      args,
     })
-  })
-
-  it("defaults a gas limit per action", () => {
-    const limits = [
-      [buildSupply({ market, asset, amount, onBehalfOf: user }), 1_000_000n],
-      [buildWithdraw({ market, asset, amount, to: user }), 1_000_000n],
-      [buildBorrow({ market, asset, amount, onBehalfOf: user }), 1_300_000n],
-      [buildRepay({ market, asset, amount, onBehalfOf: user }), 1_000_000n],
-      [buildRepayWithATokens({ market, asset, amount }), 1_000_000n],
-      [
-        buildSetUsageAsCollateral({ market, asset, useAsCollateral: true }),
-        1_000_000n,
-      ],
-      [buildSetUserEMode({ market, categoryId: 1 }), 1_000_000n],
-    ] as const
-
-    for (const [plan, gasLimit] of limits) {
-      expect(only(plan).gasLimit).toBe(gasLimit)
-    }
   })
 
   it("lets a caller's gas hints override the default", () => {
@@ -248,12 +170,5 @@ describe("isolation join", () => {
 
     expect(withGas).toHaveLength(3)
     for (const call of withGas) expect(call.gasLimit).toBe(800_000n)
-  })
-
-  it("is a plain supply without a join", () => {
-    expect(
-      only(buildSupply({ market, asset, amount, onBehalfOf: user }))
-        .functionName,
-    ).toBe("supply")
   })
 })

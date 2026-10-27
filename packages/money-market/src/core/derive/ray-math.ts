@@ -1,5 +1,5 @@
 /**
- * Aave's fixed-point primitives as exact integer math (ADR-0006).
+ * Aave's fixed-point primitives as exact integer math.
  *
  * Ray/wad arithmetic is integer arithmetic — Solidity has no decimals — so this
  * layer is `bigint`, not Big.js and not BigNumber.js. Every division truncates

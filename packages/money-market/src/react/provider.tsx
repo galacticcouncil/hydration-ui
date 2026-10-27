@@ -10,7 +10,7 @@ export const DEFAULT_TICK_INTERVAL = 60_000
  * The transport and the market it addresses, held as one value.
  *
  * Pairing them is the only guard the package has against reading the wrong network
- * (ADR-0010): mainnet and testnet are indistinguishable from the EVM side, so
+ *: mainnet and testnet are indistinguishable from the EVM side, so
  * there is nothing to verify at runtime. The provider makes the pairing once
  * and every hook takes it from here, which is why neither half can be defaulted
  * and why the `Config` is not allowed to come from anywhere else.

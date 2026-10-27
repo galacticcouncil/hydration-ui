@@ -25,18 +25,18 @@ import type {
  *
  * - **No effective APY on the summary.** Base APY and incentive APRs are
  *   reported separately and not composed here, because they are denominated in
- *   different assets and a single number hides which one moved (ADR-0005,
- *   ADR-0009). An account's net APY over rates the caller supplies is a
+ *   different assets and a single number hides which one moved.
+ *   An account's net APY over rates the caller supplies is a
  *   different thing, and lives in `summarizeNetApy`.
  * - **No APY override.** v1 overwrote Aave's rate with an app-supplied yield
  *   for some reserves; this reports what the interest-rate model says and leaves
- *   composition to the app (ADR-0005). Expect a divergence from the live UI on
+ *   composition to the app. Expect a divergence from the live UI on
  *   an overridden reserve — that is the design, not a porting bug.
  * - **No clock read.** Interest is accrued to the timestamp the caller passes
- *   (ADR-0004).
+ *  .
  *
  * Every number out is a plain fixed-point decimal string in human units,
- * produced with `toFixed` so no exponent notation can leak (ADR-0006).
+ * produced with `toFixed` so no exponent notation can leak.
  */
 export type SummarizeReservesRequest = {
   reserves: Reserve[]
@@ -216,7 +216,7 @@ function summarizeReserve(
     ),
     eModeLiquidationBonus: bonus(reserve.eModeLiquidationBonus),
 
-    // Per reward, not composed with the base APY here (ADR-0005, ADR-0009).
+    // Per reward, not composed with the base APY here.
     supplyIncentives: incentives
       ? incentiveAprs({
           reserve,

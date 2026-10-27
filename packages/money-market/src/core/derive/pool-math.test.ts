@@ -163,7 +163,7 @@ describe("pool math", () => {
   })
 
   it("returns a health factor of -1 when there is neither collateral nor debt", () => {
-    // -1 means "no debt" and nothing else (ADR-0006). An empty position is
+    // -1 means "no debt" and nothing else. An empty position is
     // still an unliquidatable one, not a missing user.
     const healthFactor = calculateHealthFactorFromBalances({
       collateralBalanceMarketReferenceCurrency: 0,

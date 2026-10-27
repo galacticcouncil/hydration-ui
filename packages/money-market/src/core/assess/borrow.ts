@@ -41,7 +41,7 @@ export type BorrowAssessment = {
 
 /**
  * What borrowing `amount` of `asset` would do, Hollar included. Blockers
- * mirror `ValidationLogic.validateBorrow` (ADR-0011) — including a frozen
+ * mirror `ValidationLogic.validateBorrow` — including a frozen
  * reserve, which v1's regular borrow let through.
  */
 export function assessBorrow({

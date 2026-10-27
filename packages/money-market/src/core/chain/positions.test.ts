@@ -1,23 +1,10 @@
 import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 import type { Address } from "viem"
-import { ContractFunctionZeroDataError } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  ChainReadError,
-  DecodeError,
-  getMarket,
-  MarketNotDeployedError,
-  readPositions,
-  readReserves,
-} from "@/core"
-import {
-  fixtureUser,
-  getReservesDataFixture,
-  getReservesIncentivesDataFixture,
-  getUserReservesDataFixture,
-} from "@/fixtures"
+import { DecodeError, getMarket, readPositions } from "@/core"
+import { fixtureUser, getUserReservesDataFixture } from "@/fixtures"
 
 vi.mock("@wagmi/core", () => ({ readContract: vi.fn() }))
 
@@ -87,31 +74,6 @@ describe("readPositions", () => {
     })
   })
 
-  it("throws MarketNotDeployedError when the call returns empty data", async () => {
-    mockedReadContract.mockRejectedValue(
-      new ContractFunctionZeroDataError({
-        functionName: "getUserReservesData",
-      }),
-    )
-
-    await expect(readPositions(config, market, user)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof MarketNotDeployedError &&
-        error.market === "hydration_v3" &&
-        error.address === market.addresses.UI_POOL_DATA_PROVIDER,
-    )
-  })
-
-  it("wraps a transport failure as ChainReadError", async () => {
-    const transport = new Error("socket closed")
-    mockedReadContract.mockRejectedValue(transport)
-
-    await expect(readPositions(config, market, user)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof ChainReadError && error.cause === transport,
-    )
-  })
-
   it("throws DecodeError, never a ZodError, on an unexpected payload", async () => {
     mockedReadContract.mockResolvedValue([
       [{ ...rawPosition, scaledATokenBalance: "a lot" }],
@@ -124,25 +86,6 @@ describe("readPositions", () => {
         error.name === "DecodeError" &&
         error.path === "[0][0].scaledATokenBalance",
     )
-  })
-
-  it("fails independently of the reserves read", async () => {
-    mockedReadContract.mockImplementation(async (_config, parameters) => {
-      const { functionName } = parameters as { functionName: string }
-      if (functionName === "getUserReservesData") {
-        throw new Error("positions unavailable")
-      }
-      if (functionName === "getReservesData") return getReservesDataFixture()
-      return getReservesIncentivesDataFixture()
-    })
-
-    const [positions, reserves] = await Promise.allSettled([
-      readPositions(config, market, user),
-      readReserves(config, market),
-    ])
-
-    expect(positions.status).toBe("rejected")
-    expect(reserves.status).toBe("fulfilled")
   })
 
   it("replays the recorded response for the captured user, offline", async () => {

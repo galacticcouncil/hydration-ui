@@ -10,7 +10,7 @@ import type { Finding, PositionSummary, ReserveSummary } from "@/types"
 
 /**
  * The rules more than one action reports, written once so two actions can
- * never disagree on them (ADR-0011). Each returns a list of zero or one
+ * never disagree on them. Each returns a list of zero or one
  * findings, so an assessment composes them by spreading.
  */
 

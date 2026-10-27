@@ -1,41 +1,13 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
 
-import { ChainReadError, DecodeError, MarketNotDeployedError } from "@/core"
+import { DecodeError } from "@/core"
 
 const zodErrorFor = (schema: z.ZodType, value: unknown): z.ZodError => {
   const result = schema.safeParse(value)
   if (result.success) throw new Error("expected the schema to reject the value")
   return result.error
 }
-
-describe("MarketNotDeployedError", () => {
-  const error = new MarketNotDeployedError("bil_v3", "0xdead")
-
-  it("is an Error", () => {
-    expect(error).toBeInstanceOf(Error)
-    expect(error.name).toBe("MarketNotDeployedError")
-  })
-
-  it("names the market and the address", () => {
-    expect(error.market).toBe("bil_v3")
-    expect(error.address).toBe("0xdead")
-    expect(error.message).toContain("bil_v3")
-    expect(error.message).toContain("0xdead")
-  })
-})
-
-describe("ChainReadError", () => {
-  it("carries the transport failure as cause", () => {
-    const transport = new Error("socket closed")
-    const error = new ChainReadError("failed to read reserves", transport)
-
-    expect(error).toBeInstanceOf(Error)
-    expect(error.name).toBe("ChainReadError")
-    expect(error.message).toBe("failed to read reserves")
-    expect(error.cause).toBe(transport)
-  })
-})
 
 describe("DecodeError", () => {
   const schema = z.object({

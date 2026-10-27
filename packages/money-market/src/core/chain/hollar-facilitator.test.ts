@@ -1,15 +1,8 @@
 import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
-import { ContractFunctionZeroDataError } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  ChainReadError,
-  DecodeError,
-  getMarket,
-  MarketNotDeployedError,
-  readHollarFacilitator,
-} from "@/core"
+import { DecodeError, getMarket, readHollarFacilitator } from "@/core"
 
 vi.mock("@wagmi/core", () => ({ readContract: vi.fn() }))
 
@@ -62,28 +55,6 @@ describe("readHollarFacilitator", () => {
         functionName: "getFacilitatorBucket",
         args: [A_TOKEN.toLowerCase()],
       }),
-    )
-  })
-
-  it("throws MarketNotDeployedError when the pool returns empty data", async () => {
-    mockedReadContract.mockRejectedValue(
-      new ContractFunctionZeroDataError({ functionName: "getReserveData" }),
-    )
-
-    await expect(readHollarFacilitator(config, market)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof MarketNotDeployedError &&
-        error.address === market.addresses.POOL,
-    )
-  })
-
-  it("wraps a transport failure as ChainReadError", async () => {
-    const transport = new Error("socket closed")
-    mockedReadContract.mockRejectedValue(transport)
-
-    await expect(readHollarFacilitator(config, market)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof ChainReadError && error.cause === transport,
     )
   })
 

@@ -29,7 +29,7 @@ import type {
  *   `emissionEndTimestamp` against `incentivesLastUpdateTimestamp`, which is a
  *   fact about when the reserve was last touched and says nothing about
  *   whether the emission is still running. On a quiet reserve that check keeps
- *   reporting an APR long after emissions stopped (ADR-0009).
+ *   reporting an APR long after emissions stopped.
  * - **A reward that pays nothing is absent, not zero.** Upstream emits an
  *   entry with `incentiveAPR: '0'` for an expired, unconfigured or zero-rate
  *   emission, which a UI then has to filter. This returns an empty list.

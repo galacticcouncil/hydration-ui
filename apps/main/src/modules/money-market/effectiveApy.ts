@@ -11,7 +11,7 @@ import Big from "big.js"
 import { Address } from "viem"
 
 /**
- * One term of an effective APY, as a fraction string (ADR-0006). `assetId`
+ * One term of an effective APY, as a fraction string. `assetId`
  * names whose logo and label the breakdown row shows.
  */
 export type ApyPart = {

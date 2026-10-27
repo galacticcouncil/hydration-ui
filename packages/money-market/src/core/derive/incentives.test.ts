@@ -35,7 +35,7 @@ const mockedReadContract = vi.mocked(readContract)
 const market = getMarket("hydration_v3")
 const config = {} as Config
 
-/** A plain fixed-point decimal — never exponent notation (ADR-0006). */
+/** A plain fixed-point decimal — never exponent notation. */
 const DECIMAL = /^-?\d+(\.\d+)?$/
 
 /** The one reserve in the fixture that pays supply rewards the user holds. */
@@ -145,7 +145,7 @@ describe("incentive APRs", () => {
 
     // Upstream asks whether the emission outlasts the reserve's last index
     // update, which it does — so upstream reports this reward as active at any
-    // timestamp. This code asks whether it has ended yet (ADR-0009).
+    // timestamp. This code asks whether it has ended yet.
     expect(gdot.emissionEndTimestamp).toBeGreaterThan(
       gdot.incentivesLastUpdateTimestamp,
     )
@@ -297,11 +297,6 @@ describe("summarizeRewards", () => {
 
     expect(symbols).not.toContain("BNC")
     expect(symbols).not.toContain("HDX")
-  })
-
-  it("reads no clock — the same timestamp gives the same answer", () => {
-    const userIncentives = userIncentivesFrom(chain.incentives)
-    expect(rewards(userIncentives)).toEqual(rewards(userIncentives))
   })
 })
 

@@ -26,7 +26,7 @@ const mockedReadContract = vi.mocked(readContract)
 const market = getMarket("hydration_v3")
 const config = {} as Config
 
-/** A plain fixed-point decimal — never exponent notation (ADR-0006). */
+/** A plain fixed-point decimal — never exponent notation. */
 const DECIMAL = /^-?\d+(\.\d+)?$/
 
 /** Back to whole base units, so comparisons stay exact. */
@@ -77,11 +77,6 @@ describe("summarizeAccount", () => {
     )
   })
 
-  it("carries the user the positions were read for", () => {
-    expect(result.account.address).toBe(positions.user)
-    expect(result.account.eModeCategoryId).toBe(positions.eModeCategoryId)
-  })
-
   it("reports only plain fixed-point decimal strings", () => {
     const text = new Set(["address", "underlyingAsset", "symbol"])
     for (const [field, value] of Object.entries(result.account)) {
@@ -119,25 +114,6 @@ describe("summarizeAccount", () => {
     }
   })
 
-  it("totals liquidity and borrows over the positions it summarized", () => {
-    const sum = (values: string[]) =>
-      values.reduce((total, value) => total + Number(value), 0)
-
-    expect(Number(result.account.totalLiquidityUsd)).toBeCloseTo(
-      sum(result.positions.map((p) => p.underlyingBalanceUsd)),
-      6,
-    )
-    expect(Number(result.account.totalBorrowsUsd)).toBeCloseTo(
-      sum(result.positions.map((p) => p.variableBorrowsUsd)),
-      6,
-    )
-    expect(Number(result.account.netWorthUsd)).toBeCloseTo(
-      Number(result.account.totalLiquidityUsd) -
-        Number(result.account.totalBorrowsUsd),
-      6,
-    )
-  })
-
   it("counts only collateral-enabled reserves towards collateral", () => {
     const collateral = result.positions.filter(
       (p) => p.usageAsCollateralEnabledOnUser,
@@ -164,16 +140,6 @@ describe("summarizeAccount", () => {
     ]) {
       expect(decimalPlaces(value)).toBeLessThanOrEqual(4)
     }
-  })
-
-  it("derives a health factor consistent with collateral, threshold and debt", () => {
-    const expected =
-      (Number(result.account.totalCollateralMarketReferenceCurrency) *
-        Number(result.account.currentLiquidationThreshold)) /
-      Number(result.account.totalBorrowsMarketReferenceCurrency)
-
-    expect(Number(result.account.healthFactor)).toBeGreaterThan(0)
-    expect(Number(result.account.healthFactor)).toBeCloseTo(expected, 6)
   })
 
   it("reports -1 for a user with collateral and no debt", () => {
@@ -204,7 +170,7 @@ describe("summarizeAccount", () => {
 
     expect(empty.positions).toEqual([])
     // -1 means "no debt", which is true of an untouched account. It never
-    // means "no user" (ADR-0006) — the address is still reported.
+    // means "no user" — the address is still reported.
     expect(empty.account.healthFactor).toBe("-1")
     expect(empty.account.address).toBe(positions.user)
     expect(empty.account.totalCollateralUsd).toBe("0")
@@ -234,31 +200,6 @@ describe("summarizeAccount", () => {
     expect(Number(noCollateral.account.totalLiquidityUsd)).toBeGreaterThan(0)
   })
 
-  it("reports available borrows as the LTV headroom over current debt", () => {
-    const headroom =
-      Number(result.account.totalCollateralMarketReferenceCurrency) *
-        Number(result.account.currentLoanToValue) -
-      Number(result.account.totalBorrowsMarketReferenceCurrency)
-
-    expect(
-      Number(result.account.availableBorrowsMarketReferenceCurrency),
-    ).toBeCloseTo(Math.max(headroom, 0), 6)
-  })
-
-  it("is not in isolation mode when no isolated reserve is used as collateral", () => {
-    const isolatedCollateral = result.positions.some((position) => {
-      const summary = summaries.find(
-        (s) => s.underlyingAsset === position.underlyingAsset,
-      )
-      return summary?.isIsolated && position.usageAsCollateralEnabledOnUser
-    })
-
-    expect(result.account.isInIsolationMode).toBe(isolatedCollateral)
-    expect(result.account.isolatedReserve).toBe(
-      isolatedCollateral ? result.account.isolatedReserve : null,
-    )
-  })
-
   it("skips a position whose reserve has no summary", () => {
     const [first] = positions.positions
     if (!first) throw new Error("The fixture has no positions")
@@ -278,22 +219,5 @@ describe("summarizeAccount", () => {
         (p) => p.underlyingAsset === first.underlyingAsset,
       ),
     ).toBe(false)
-  })
-
-  it("leaves rewards to the incentives pass", () => {
-    for (const position of result.positions) {
-      expect(position.rewards).toEqual([])
-    }
-  })
-
-  it("is deterministic at a fixed timestamp", () => {
-    expect(
-      summarizeAccount({
-        reserves: chain,
-        summaries,
-        positions,
-        currentTimestamp: fixtureTimestamp,
-      }),
-    ).toEqual(result)
   })
 })

@@ -3,18 +3,18 @@ import { Abi, Address, Hex } from "viem"
 /**
  * The vocabulary of CONTEXT.md, expressed as types.
  *
- * The one boundary that matters is where a value came from (ADR-0001):
+ * The one boundary that matters is where a value came from:
  * `Reserve` and `Position` are decoded, validated chain state; `ReserveSummary`,
  * `PositionSummary` and `Account` are values computed from it. `Account` exists
  * only on the derived side, because a health factor has no on-chain counterpart.
  *
- * Assets are identified by EVM address (ADR-0003) — no Hydration asset id
+ * Assets are identified by EVM address — no Hydration asset id
  * appears anywhere below. Stable-rate borrowing is cut, so no stable-rate field
- * is modelled. The stablecoin is Hollar, never GHO (ADR-0002).
+ * is modelled. The stablecoin is Hollar, never GHO.
  *
  * Numeric values on the chain side are raw base-unit decimal strings; on the
  * derived side they are plain fixed-point decimal strings in human units
- * (ADR-0006). Neither side carries `bigint` or `Big` — both are converted at
+ *. Neither side carries `bigint` or `Big` — both are converted at
  * the boundary that produces them.
  */
 
@@ -236,7 +236,7 @@ export type HollarFacilitator = {
 
 /**
  * One reward emission's rate on one side of one reserve. Reported per reward
- * and not composed with the base APY on the summary (ADR-0005, ADR-0009); the
+ * and not composed with the base APY on the summary; the
  * incentive controller address comes from the reward payload, not the market
  * descriptor.
  */
@@ -367,7 +367,7 @@ export type PositionSummary = {
  * A user's standing across every position in a market. Always derived — there
  * is no `Account` without a user, which is why `healthFactor` of `"-1"` means
  * only "no debt, so the health factor is unbounded" and never "no user"
- * (ADR-0006).
+ *.
  */
 export type Account = {
   address: Address
@@ -399,7 +399,7 @@ export type Account = {
 
 /**
  * Per-call gas overrides, carried but never computed. The module estimates no
- * gas and simulates nothing, so a hint is only ever a caller's (ADR-0007). A
+ * gas and simulates nothing, so a hint is only ever a caller's. A
  * hint of `0n` is falsy downstream and already reads as absent.
  */
 export type GasHints = {
@@ -423,7 +423,7 @@ export type EvmCall = GasHints & {
 }
 
 /**
- * An ordered list of plain calls — the only shape an action takes (ADR-0007).
+ * An ordered list of plain calls — the only shape an action takes.
  * There is no approval step, no allowance read, no permit concept and no step
  * kinds, because approvals are not required on Hydration and whether a call is
  * permit-signed is decided by the app at signing time, not here.
@@ -520,7 +520,7 @@ export type FindingParams = Readonly<
 >
 
 /**
- * One thing an assessment reports about an action (ADR-0011). Where it is shown
+ * One thing an assessment reports about an action. Where it is shown
  * is the form's concern, not the finding's. Generic over the code so the app
  * can append codes of its own to the package's.
  */

@@ -7,7 +7,7 @@ import Big, { BigSource } from "big.js"
  * rounding regimes are to mutate the global `Big.DP` / `Big.RM` — which would
  * race with unrelated Big.js math elsewhere in this repo — or to take isolated
  * constructors from the `Big()` factory. This module does the latter, which is
- * why nothing in the package ever touches the globals (ADR-0006).
+ * why nothing in the package ever touches the globals.
  *
  * `Decimal` divides at twenty places, half up, matching the BigNumber.js
  * defaults the blueprint's quotients were produced under. `Integer` is the
@@ -36,7 +36,7 @@ export function shift(value: Big, places: number): Big {
 /**
  * Turns a raw base-unit value into a human-unit fixed-point string. `toFixed`
  * rather than `toString`, so Big.js's exponent threshold can never leak into
- * output (ADR-0006).
+ * output.
  */
 export function normalize(value: BigSource, decimals: number): string {
   return shift(Decimal(value), -decimals).toFixed()

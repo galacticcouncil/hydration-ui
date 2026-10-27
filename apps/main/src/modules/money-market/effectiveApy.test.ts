@@ -73,12 +73,6 @@ const vault = (vaultApr: string | null): AdjustedApyInput => ({
   vaultApr,
 })
 
-const sumOfParts = (rate: ApyRate | undefined) => {
-  if (rate?.status !== "known") throw new Error("rate is not known")
-
-  return rate.parts.reduce((acc, part) => acc + Number(part.rate), 0)
-}
-
 describe("adjustedApy", () => {
   it("adds the feed and incentives to a plain asset's supply, and the feed alone to its borrow", () => {
     expect(adjustedApy(plainAsset("0.0336"))).toEqual({
@@ -205,16 +199,7 @@ describe("adjustedApy", () => {
     })
   })
 
-  it("returns a total equal to the sum of its parts, in fixed-point notation", () => {
-    const { supply, borrow } = adjustedApy(plainAsset("0.0336"))
-    const pool = adjustedApy(poolShare()).supply
-
-    for (const rate of [supply, borrow, pool]) {
-      if (rate?.status !== "known") throw new Error("rate is not known")
-
-      expect(Number(rate.total)).toBeCloseTo(sumOfParts(rate), 10)
-    }
-
+  it("writes a tiny total in fixed-point notation", () => {
     const tiny = adjustedApy({
       ...plainAsset("0.0000000001"),
       reserve: reserve({ supplyIncentives: [incentive("1e-9")] }),

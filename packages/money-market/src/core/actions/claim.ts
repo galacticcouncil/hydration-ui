@@ -14,7 +14,7 @@ import type {
 
 /**
  * Claiming accrued rewards, as the same ordered list of plain calls every other
- * action returns (ADR-0007). Nothing here touches a network.
+ * action returns. Nothing here touches a network.
  *
  * Two things a claim needs that a pool action does not:
  *

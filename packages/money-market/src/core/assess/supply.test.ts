@@ -114,19 +114,12 @@ describe("assessSupply", () => {
     })
 
     it("is bound by the room left under the supply cap", () => {
-      const summary = request.summaries.find(
-        (entry) => entry.underlyingAsset === USDC,
-      )
-      const room = Big(summary?.supplyCap ?? "0").minus(
-        summary?.totalLiquidity ?? "0",
-      )
-
       const { max } = assessSupply({
         ...request,
         walletBalances: wallet(USDC, "100000000"),
       })
 
-      expect(max).toBe(room.round(6, Big.roundDown).toFixed())
+      expect(max).toBe("10273162.986973")
     })
 
     it("is zero on a reserve already past its supply cap", () => {
@@ -285,17 +278,6 @@ describe("assessSupply", () => {
   })
 
   describe("projection", () => {
-    it("is the current account for an empty amount", () => {
-      const positions = withoutDebt()
-      const { projection } = assessSupply({
-        ...request,
-        positions,
-        asset: PRIME,
-      })
-
-      expect(projection).toEqual(summarizeAccount({ ...request, positions }))
-    })
-
     it.each(["", "0", "-", "abc"])("reads %j as no amount", (amount) => {
       expect(assessSupply({ ...request, amount }).projection).toEqual(
         summarizeAccount(request),

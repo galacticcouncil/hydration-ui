@@ -39,7 +39,7 @@ export type RepayAssessment = {
 
 /**
  * What repaying `amount` of `asset` from the wallet would do. Blockers mirror
- * `ValidationLogic.validateRepay` (ADR-0011). Repaying only lowers debt, so no
+ * `ValidationLogic.validateRepay`. Repaying only lowers debt, so no
  * health factor finding is ever raised.
  */
 export function assessRepay({

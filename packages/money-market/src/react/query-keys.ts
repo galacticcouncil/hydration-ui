@@ -13,7 +13,7 @@ import { CustomMarket } from "@/types"
  * shaped `["mm", "reserves", market]` would make "one market" unreachable as a
  * prefix and force consumers to invalidate per read kind instead.
  *
- * A timestamp is never part of a key (ADR-0004): the tick that re-derives
+ * A timestamp is never part of a key: the tick that re-derives
  * values is not a cache dimension, and putting it in a key would refetch the
  * chain every tick.
  *

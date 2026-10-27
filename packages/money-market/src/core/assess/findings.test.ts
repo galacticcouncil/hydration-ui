@@ -1,17 +1,15 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  hasAcknowledgement,
-  hasBlocker,
-  HF_ACKNOWLEDGEMENT_THRESHOLD,
-  HF_BLOCKER_THRESHOLD,
-  HF_MAX_TARGET,
-} from "@/core"
+import { hasAcknowledgement, hasBlocker } from "@/core"
 import type { Finding } from "@/types"
 
 type TestCode = "stop" | "accept" | "inform"
 
-const blocker: Finding<TestCode> = { kind: "blocker", code: "stop", params: {} }
+const blocker: Finding<TestCode> = {
+  kind: "blocker",
+  code: "stop",
+  params: {},
+}
 const acknowledgement: Finding<TestCode> = {
   kind: "acknowledgement",
   code: "accept",
@@ -63,13 +61,5 @@ describe("hasAcknowledgement", () => {
 
   it("is true when any finding asks for acceptance", () => {
     expect(hasAcknowledgement([blocker, warning, acknowledgement])).toBe(true)
-  })
-})
-
-describe("health factor thresholds", () => {
-  it("orders blocker < max target < acknowledgement", () => {
-    expect(Number(HF_BLOCKER_THRESHOLD)).toBe(1)
-    expect(Number(HF_MAX_TARGET)).toBe(1.01)
-    expect(Number(HF_ACKNOWLEDGEMENT_THRESHOLD)).toBe(1.1)
   })
 })

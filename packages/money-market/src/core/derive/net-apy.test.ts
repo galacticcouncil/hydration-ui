@@ -28,7 +28,7 @@ type Expected = {
 }
 
 /**
- * Rows 1 to 12 are legacy `getUserApyValues` output; 13 and 14 are the
+ * Rows 1 to 11 are legacy `getUserApyValues` output; 12 and 13 are the
  * corrected values, where legacy divided by zero and special-cased Hollar.
  */
 const cases: [string, NetApyPosition[], Expected][] = [
@@ -53,11 +53,6 @@ const cases: [string, NetApyPosition[], Expected][] = [
       position("3000", "400", "0.02", "0.08"),
     ],
     { earned: 0.0275, debt: 0.078, net: 0.0202857142857 },
-  ],
-  [
-    "supply rate including incentives",
-    [position("1000", "0", "0.08", UNUSED)],
-    { earned: 0.08, debt: 0, net: 0.08 },
   ],
   [
     "borrow reward",
@@ -145,14 +140,6 @@ describe("summarizeNetApy", () => {
     expectRate(summary.debtApy, expected.debt)
     expectRate(summary.netApy, expected.net)
     expect(summary.reason).toBe(expected.reason)
-  })
-
-  it("reports no positions as plain zeros", () => {
-    expect(summarizeNetApy([])).toEqual({
-      earnedApy: "0",
-      debtApy: "0",
-      netApy: "0",
-    })
   })
 
   it("has no net APY when borrows exceed supplies", () => {

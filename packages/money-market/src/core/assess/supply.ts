@@ -48,7 +48,7 @@ export type SupplyAssessment = {
 
 /**
  * What supplying `amount` of `asset` would do. Blockers mirror
- * `ValidationLogic.validateSupply` (ADR-0011); isolation-mode handling mirrors
+ * `ValidationLogic.validateSupply`; isolation-mode handling mirrors
  * `validateUseAsCollateral`, which the pool runs on a first supply.
  */
 export function assessSupply({

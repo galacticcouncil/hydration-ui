@@ -20,7 +20,7 @@ export const USD_DECIMALS = 8
 /**
  * `type(uint256).max` — the pool's own sentinel for "all of it". Callers pass
  * it through as an amount rather than resolving a balance, which would race
- * with interest accrual between planning and submission (ADR-0007).
+ * with interest accrual between planning and submission.
  */
 export const MAX_UINT_AMOUNT = 2n ** 256n - 1n
 

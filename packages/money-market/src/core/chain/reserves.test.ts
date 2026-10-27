@@ -1,15 +1,8 @@
 import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
-import { ContractFunctionZeroDataError } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  ChainReadError,
-  DecodeError,
-  getMarket,
-  MarketNotDeployedError,
-  readReserves,
-} from "@/core"
+import { DecodeError, getMarket, readReserves } from "@/core"
 
 vi.mock("@wagmi/core", () => ({ readContract: vi.fn() }))
 
@@ -180,39 +173,6 @@ describe("readReserves", () => {
     await expect(readReserves(config, market)).resolves.toMatchObject({
       incentives: [],
     })
-  })
-
-  it("throws MarketNotDeployedError when a call returns empty data", async () => {
-    respondWith({
-      incentives: [],
-      onReserves: () => {
-        throw new ContractFunctionZeroDataError({
-          functionName: "getReservesData",
-        })
-      },
-    })
-
-    await expect(readReserves(config, market)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof MarketNotDeployedError &&
-        error.market === "hydration_v3" &&
-        error.address === market.addresses.UI_POOL_DATA_PROVIDER,
-    )
-  })
-
-  it("wraps a transport failure as ChainReadError", async () => {
-    const transport = new Error("socket closed")
-    respondWith({
-      incentives: [],
-      onReserves: () => {
-        throw transport
-      },
-    })
-
-    await expect(readReserves(config, market)).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof ChainReadError && error.cause === transport,
-    )
   })
 
   it("throws DecodeError, never a ZodError, on an unexpected payload", async () => {

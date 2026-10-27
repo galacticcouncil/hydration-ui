@@ -15,7 +15,7 @@ import type {
  *
  * Nothing here touches a network, reads an allowance or estimates gas, so no
  * builder has a failure mode: given arguments that typecheck, each returns a
- * plan (ADR-0007). Amounts are raw base units, or `MAX_UINT_AMOUNT` when the
+ * plan. Amounts are raw base units, or `MAX_UINT_AMOUNT` when the
  * caller means "all of it" — this module never resolves a max against a
  * balance.
  *

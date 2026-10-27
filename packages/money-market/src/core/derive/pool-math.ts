@@ -3,9 +3,9 @@
  *
  * Everything that stays inside the ray/wad integer domain is `bigint`; the
  * functions whose results are genuinely fractional — health factor, borrowing
- * power, reference-currency and USD values — are Big.js (ADR-0006). Nothing
+ * power, reference-currency and USD values — are Big.js. Nothing
  * here reads a clock: every rate is evaluated at a timestamp the caller passes
- * (ADR-0004).
+ *.
  *
  * `getCompoundedStableBalance` is deliberately absent — stable-rate borrowing
  * is cut.
@@ -182,7 +182,7 @@ type HealthFactorRequest = {
 /**
  * Returns `-1` when there is no debt, and `-1` means only that: the position
  * cannot be liquidated because nothing is owed. It is never the "no user"
- * sentinel — an account without a user does not exist here (ADR-0006).
+ * sentinel — an account without a user does not exist here.
  */
 export function calculateHealthFactorFromBalances({
   collateralBalanceMarketReferenceCurrency,

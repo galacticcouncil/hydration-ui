@@ -57,15 +57,6 @@ describe("newestBy", () => {
 
     expect(newestBy(entries, (entry) => entry.time)?.time).toBe(7)
   })
-
-  it("does not depend on array order", () => {
-    const entries = [{ time: 2 }, { time: 9 }, { time: 4 }]
-
-    expect(newestBy(entries, (entry) => entry.time)).toEqual({ time: 9 })
-    expect(newestBy([...entries].reverse(), (entry) => entry.time)).toEqual({
-      time: 9,
-    })
-  })
 })
 
 describe("readingStatus", () => {

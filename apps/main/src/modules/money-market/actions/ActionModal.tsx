@@ -72,7 +72,7 @@ const ActionForm: FC<{ open: OpenAction; onSubmitted: () => void }> = ({
 /**
  * The modal for whichever action is open, if any. Swap-in supply and
  * pool-share withdraw open the liquidity modals instead of a money-market form
- * (ADR-0012); those bring their own header, body and footer.
+ *; those bring their own header, body and footer.
  */
 export const OpenActionModal: FC<{
   open: OpenAction | null

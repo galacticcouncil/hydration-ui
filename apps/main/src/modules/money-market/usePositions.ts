@@ -40,7 +40,7 @@ export const usePositions = (user: Address | undefined) => {
       },
     )
 
-    // net APY runs on the effective APYs the surfaces display (ADR-0009)
+    // net APY runs on the effective APYs the surfaces display
     const apyRows = rows.map((row) => ({
       ...row,
       apy: resolveApy(row.reserve),

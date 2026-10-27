@@ -33,7 +33,7 @@ export type CollateralAssessment = {
  * the opposite of the current flag. Blockers mirror
  * `ValidationLogic.validateSetUseReserveAsCollateral`, then
  * `validateUseAsCollateral` when enabling or `validateHFAndLtv` when
- * disabling (ADR-0011).
+ * disabling.
  */
 export function assessCollateral({
   asset,

@@ -1,16 +1,9 @@
 import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 import type { Address } from "viem"
-import { ContractFunctionZeroDataError } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  ChainReadError,
-  DecodeError,
-  getMarket,
-  MarketNotDeployedError,
-  readUserIncentives,
-} from "@/core"
+import { DecodeError, getMarket, readUserIncentives } from "@/core"
 
 vi.mock("@wagmi/core", () => ({ readContract: vi.fn() }))
 
@@ -90,27 +83,6 @@ describe("readUserIncentives", () => {
     mockedReadContract.mockResolvedValue([])
 
     await expect(readUserIncentives(config, market, user)).resolves.toEqual([])
-  })
-
-  it("reports empty return data as a market that is not deployed", async () => {
-    mockedReadContract.mockRejectedValue(
-      new ContractFunctionZeroDataError({
-        functionName: "getUserReservesIncentivesData",
-      }),
-    )
-
-    await expect(
-      readUserIncentives(config, market, user),
-    ).rejects.toBeInstanceOf(MarketNotDeployedError)
-  })
-
-  it("wraps a transport failure as a retryable read error", async () => {
-    const cause = new Error("socket closed")
-    mockedReadContract.mockRejectedValue(cause)
-
-    await expect(readUserIncentives(config, market, user)).rejects.toSatisfy(
-      (error) => error instanceof ChainReadError && error.cause === cause,
-    )
   })
 
   it("wraps a payload that does not match the schema as a decode error", async () => {

@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { AssessBorrowRequest } from "@/core"
 import {
   assessBorrow,
-  BORROW_MAX_MARGIN,
   getMarket,
   HF_MAX_TARGET,
   readPositions,
@@ -138,18 +137,8 @@ describe("assessBorrow", () => {
   describe("max", () => {
     it("leaves a margin under the borrowing power when LTV binds", () => {
       const { max } = assessBorrow(request)
-      const { account } = summarizeAccount(request)
-      const price = request.summaries.find(
-        (summary) => summary.underlyingAsset === USDC,
-      )!.priceInMarketReferenceCurrency
 
-      expect(max).toBe(
-        Big(account.availableBorrowsMarketReferenceCurrency)
-          .times(BORROW_MAX_MARGIN)
-          .div(price)
-          .round(6, Big.roundDown)
-          .toFixed(),
-      )
+      expect(max).toBe("11703.29072")
 
       const { projection } = assessBorrow({ ...request, amount: max })
       expect(Big(projection.account.healthFactor).gte(HF_MAX_TARGET)).toBe(true)

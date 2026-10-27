@@ -49,7 +49,7 @@ export type WithdrawAssessment = {
 /**
  * What withdrawing `amount` of `asset` would do. Blockers mirror
  * `ValidationLogic.validateWithdraw` and, for collateral backing debt,
- * `validateHFAndLtv` (ADR-0011).
+ * `validateHFAndLtv`.
  */
 export function assessWithdraw({
   asset,

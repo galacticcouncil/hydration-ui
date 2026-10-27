@@ -16,7 +16,7 @@ type RefreshMarketOptions = {
  * Refreshes the selected market's reads after a transaction: once now and
  * again after each delay, since the chain state the reads see can lag the
  * transaction. Shared by the module's own actions and the liquidity modals it
- * mounts, which invalidate no money-market read themselves (ADR-0012).
+ * mounts, which invalidate no money-market read themselves.
  */
 export const useRefreshMarket = () => {
   const { market } = useMoneyMarket()

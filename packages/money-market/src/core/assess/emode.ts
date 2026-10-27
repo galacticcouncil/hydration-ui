@@ -25,7 +25,7 @@ export type EModeAssessment = {
  * What entering, switching or leaving e-mode would do. Blockers mirror
  * `ValidationLogic.validateSetUserEMode`; the health factor is checked
  * whenever the account leaves a category, as `Pool.setUserEMode` does
- * (ADR-0011).
+ *.
  */
 export function assessEMode({
   categoryId,

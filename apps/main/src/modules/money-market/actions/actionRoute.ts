@@ -17,7 +17,7 @@ export type ActionRoute =
 
 /**
  * What an action on a reserve opens: one of the liquidity modals the module mounts for
- * swap-in supply and pool-share withdraw (ADR-0012), or the module's own form. The
+ * swap-in supply and pool-share withdraw, or the module's own form. The
  * modals act through the reserve's aToken, so a reserve whose aToken the
  * registry lacks always takes the form. Isolated reserves withdraw through
  * the form on every market.

@@ -45,7 +45,7 @@ export const POSITIONS_STALE_TIME = 30_000
  * A market's reserves, base currency and reward configuration, as read.
  *
  * The market is the provider's unless another is named. Naming one reads it
- * over the provider's transport, which every market shares (ADR-0010), and the
+ * over the provider's transport, which every market shares, and the
  * key is the market's own, so naming the provider's market is the same request.
  */
 export const useMarketReserves = (

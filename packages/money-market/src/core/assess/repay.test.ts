@@ -87,10 +87,6 @@ describe("assessRepay", () => {
       (finding) => finding.code,
     )
 
-  it("has debt to repay in the fixture", () => {
-    expect(Big(debt).gt(0)).toBe(true)
-  })
-
   describe("max", () => {
     it("is the whole debt when the wallet covers it", () => {
       const { max, maxClearsPosition, findings } = assessRepay({

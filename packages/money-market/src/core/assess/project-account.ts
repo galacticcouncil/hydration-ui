@@ -41,7 +41,7 @@ export type ProjectAccountRequest = SummarizeAccountRequest & {
 /**
  * The account an action would leave behind, computed by `summarizeAccount`
  * itself on the changed positions, so a projection can never disagree with the
- * displayed account (ADR-0011).
+ * displayed account.
  */
 export function projectAccount(request: ProjectAccountRequest): AccountSummary {
   return summarizeAccount({ ...request, positions: projectPositions(request) })

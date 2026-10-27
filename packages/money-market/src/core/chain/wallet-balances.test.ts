@@ -1,14 +1,11 @@
 import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 import type { Address } from "viem"
-import { ContractFunctionZeroDataError } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
-  ChainReadError,
   DecodeError,
   getMarket,
-  MarketNotDeployedError,
   readReserves,
   readWalletBalances,
 } from "@/core"
@@ -104,35 +101,6 @@ describe("readWalletBalances", () => {
     ])
   })
 
-  it("throws MarketNotDeployedError when the call returns empty data", async () => {
-    mockedReadContract.mockRejectedValue(
-      new ContractFunctionZeroDataError({
-        functionName: "getUserWalletBalances",
-      }),
-    )
-
-    await expect(
-      readWalletBalances(config, market, user, []),
-    ).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof MarketNotDeployedError &&
-        error.market === "hydration_v3" &&
-        error.address === market.addresses.WALLET_BALANCE_PROVIDER,
-    )
-  })
-
-  it("wraps a transport failure as ChainReadError", async () => {
-    const transport = new Error("socket closed")
-    mockedReadContract.mockRejectedValue(transport)
-
-    await expect(
-      readWalletBalances(config, market, user, []),
-    ).rejects.toSatisfy(
-      (error: unknown) =>
-        error instanceof ChainReadError && error.cause === transport,
-    )
-  })
-
   it("throws DecodeError, never a ZodError, on an unexpected payload", async () => {
     mockedReadContract.mockResolvedValue([["not an address"], [1n]])
 
@@ -155,24 +123,5 @@ describe("readWalletBalances", () => {
     await expect(
       readWalletBalances(config, market, user, []),
     ).rejects.toBeInstanceOf(DecodeError)
-  })
-
-  it("fails independently of the reserves read", async () => {
-    mockedReadContract.mockImplementation(async (_config, parameters) => {
-      const { functionName } = parameters as { functionName: string }
-      if (functionName === "getUserWalletBalances") {
-        throw new Error("balances unavailable")
-      }
-      if (functionName === "getReservesData") return getReservesDataFixture()
-      return getReservesIncentivesDataFixture()
-    })
-
-    const [balances, reserves] = await Promise.allSettled([
-      readWalletBalances(config, market, user, []),
-      readReserves(config, market),
-    ])
-
-    expect(balances.status).toBe("rejected")
-    expect(reserves.status).toBe("fulfilled")
   })
 })

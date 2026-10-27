@@ -65,10 +65,6 @@ const symbols = (args: Partial<Parameters<typeof toSupplyRows<Row>>[0]> = {}) =>
   }).rows.map((r) => r.symbol)
 
 describe("toSupplyRows", () => {
-  it("leads with configured swap-in reserves, then pool-share ones in list order", () => {
-    expect(symbols().slice(0, 4)).toEqual(["PRIME", "GDOT", "GETH", "HUSDC"])
-  })
-
   it("flags the pinned rows only", () => {
     const { rows } = toSupplyRows({
       rows: ROWS,

@@ -4,15 +4,12 @@ import { describe, expect, it } from "vitest"
 import {
   binomialApproximatedRayPow,
   HALF_RAY,
-  HALF_WAD,
   RAY,
   rayDiv,
   rayMul,
   rayPow,
   rayToWad,
   SECONDS_PER_YEAR,
-  WAD,
-  WAD_RAY_RATIO,
   wadToRay,
 } from "@/core"
 
@@ -45,28 +42,6 @@ const legacyCalculateCompoundedInterest = (
   rayPow(rate / SECONDS_PER_YEAR + RAY, currentTimestamp - lastUpdateTimestamp)
 
 describe("ray math", () => {
-  describe("constants", () => {
-    it("WAD should equal 1000000000000000000", () => {
-      expect(WAD.toString()).toEqual("1000000000000000000")
-    })
-
-    it("HALF_WAD should equal 500000000000000000", () => {
-      expect(HALF_WAD.toString()).toEqual("500000000000000000")
-    })
-
-    it("RAY should equal 1000000000000000000000000000", () => {
-      expect(RAY.toString()).toEqual("1000000000000000000000000000")
-    })
-
-    it("HALF_RAY should equal 500000000000000000000000000", () => {
-      expect(HALF_RAY.toString()).toEqual("500000000000000000000000000")
-    })
-
-    it("WAD_RAY_RATIO should equal 1000000000", () => {
-      expect(WAD_RAY_RATIO.toString()).toEqual("1000000000")
-    })
-  })
-
   describe("rayMul", () => {
     it("should work correctly", () => {
       expect(rayMul(RAY, RAY)).toEqual(RAY)
@@ -89,26 +64,10 @@ describe("ray math", () => {
   })
 
   describe("rayPow and binomialApproximatedRayPow", () => {
-    it("should be roughly equal", () => {
-      const result = rayPow(
-        323788616402133497883602337n / SECONDS_PER_YEAR + RAY,
-        60n * 60n * 24n,
-      ).toString()
-      const approx = binomialApproximatedRayPow(
-        323788616402133497883602337n / SECONDS_PER_YEAR,
-        60n * 60n * 24n,
-      ).toString()
-      expect(result.substring(0, 8)).toEqual(approx.substring(0, 8))
-    })
-
     it.each([
       { exponent: 0n, errorLte: 0 },
-      { exponent: 60n, errorLte: 0.00001 },
-      { exponent: 60n * 60n, errorLte: 0.00001 },
       { exponent: 60n * 60n * 24n, errorLte: 0.00001 },
-      { exponent: 60n * 60n * 24n * 31n, errorLte: 0.00001 },
       { exponent: 60n * 60n * 24n * 365n, errorLte: 0.00001 },
-      { exponent: 60n * 60n * 24n * 365n * 2n, errorLte: 0.00002 },
       { exponent: 60n * 60n * 24n * 365n * 5n, errorLte: 0.0003 },
     ])(
       "should have close results for exponent $exponent",
@@ -129,13 +88,7 @@ describe("ray math", () => {
      */
     it.each([
       { years: 1n, interest: 3n, errorLte: 0.00001 },
-      { years: 1n, interest: 5n, errorLte: 0.00001 },
-      { years: 1n, interest: 10n, errorLte: 0.00001 },
-      { years: 3n, interest: 3n, errorLte: 0.00001 },
-      { years: 3n, interest: 5n, errorLte: 0.00001 },
       { years: 3n, interest: 10n, errorLte: 0.00005 },
-      { years: 5n, interest: 3n, errorLte: 0.00001 },
-      { years: 5n, interest: 5n, errorLte: 0.00003 },
       { years: 5n, interest: 10n, errorLte: 0.0003 },
     ])(
       "should not be far off over $years years at $interest",

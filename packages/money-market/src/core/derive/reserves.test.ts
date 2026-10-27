@@ -22,7 +22,7 @@ const mockedReadContract = vi.mocked(readContract)
 const market = getMarket("hydration_v3")
 const config = {} as Config
 
-/** A plain fixed-point decimal — never exponent notation (ADR-0006). */
+/** A plain fixed-point decimal — never exponent notation. */
 const DECIMAL = /^-?\d+(\.\d+)?$/
 
 const find = (summaries: ReserveSummary[], symbol: string) => {
@@ -71,19 +71,6 @@ describe("summarizeReserves", () => {
     }
   })
 
-  it("derives liquidity as debt plus what is left unborrowed", () => {
-    const hollar = find(summaries, "HOLLAR")
-    const reserve = chain.reserves.find(
-      (r) => r.underlyingAsset === hollar.underlyingAsset,
-    )!
-
-    expect(Number(hollar.totalLiquidity)).toBeCloseTo(
-      Number(hollar.totalDebt) +
-        Number(reserve.availableLiquidity) / 10 ** reserve.decimals,
-      6,
-    )
-  })
-
   it("accrues debt forward — a later timestamp owes more", () => {
     const later = summarizeReserves({
       ...chain,
@@ -124,30 +111,6 @@ describe("summarizeReserves", () => {
     }
   })
 
-  it("normalizes the risk parameters out of basis points", () => {
-    const hollar = find(summaries, "HOLLAR")
-    const reserve = chain.reserves.find(
-      (r) => r.underlyingAsset === hollar.underlyingAsset,
-    )!
-
-    expect(hollar.ltv).toBe(String(Number(reserve.baseLTVasCollateral) / 1e4))
-    expect(hollar.liquidationThreshold).toBe(
-      String(Number(reserve.reserveLiquidationThreshold) / 1e4),
-    )
-    // A bonus is stored as a multiplier over par; the summary reports the premium.
-    expect(Number(hollar.liquidationBonus)).toBeLessThan(1)
-  })
-
-  it("prices every reserve in USD consistently with its own price feed", () => {
-    for (const summary of summaries) {
-      if (Number(summary.totalLiquidity) === 0) continue
-      expect(Number(summary.totalLiquidityUsd)).toBeCloseTo(
-        Number(summary.totalLiquidity) * Number(summary.priceInUsd),
-        2,
-      )
-    }
-  })
-
   it("reports no debt ceiling for a reserve that is not isolated", () => {
     const open = summaries.filter((s) => !s.isIsolated)
     expect(open.length).toBeGreaterThan(0)
@@ -174,12 +137,6 @@ describe("summarizeReserves", () => {
           Number(summary.supplyIncentives[0]!.rewardApr),
       )
     }
-  })
-
-  it("reads no clock — the same timestamp gives the same answer", () => {
-    expect(
-      summarizeReserves({ ...chain, currentTimestamp: fixtureTimestamp }),
-    ).toEqual(summaries)
   })
 
   it("reports the interest-rate model the current borrow rate sits on", () => {

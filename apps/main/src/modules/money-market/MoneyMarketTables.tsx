@@ -94,7 +94,7 @@ export const NoData = () => <Text color={getToken("text.low")}>—</Text>
 type ApyTextProps = Omit<TextProps, "children">
 
 /**
- * An effective APY (ADR-0009): the total as the one headline figure, with its
+ * An effective APY: the total as the one headline figure, with its
  * parts in a tooltip unless the base rate is all there is. A rate that is not
  * known never shows a number. The figure is plain text that takes its size
  * from the parent, so it sits in a table cell or a summary row alike - any
