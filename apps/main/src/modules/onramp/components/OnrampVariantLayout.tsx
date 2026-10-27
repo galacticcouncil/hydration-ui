@@ -13,6 +13,7 @@ type OnrampVariantLayoutProps = {
   options: { value: string; label: string }[]
   onValueChange: (value: string) => void
   disabled?: boolean
+  desktopMinHeight?: number
   children: ReactNode
 }
 
@@ -22,9 +23,11 @@ export const OnrampVariantLayout: FC<OnrampVariantLayoutProps> = ({
   options,
   onValueChange,
   disabled = false,
+  desktopMinHeight,
   children,
 }) => (
   <SOnrampVariantRoot
+    desktopMinHeight={desktopMinHeight}
     value={value}
     activationMode="manual"
     onValueChange={(next) => {

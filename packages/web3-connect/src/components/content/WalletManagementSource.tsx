@@ -112,6 +112,9 @@ export const WalletSourceButton: React.FC<{
   readonly variant?: WalletSourceButtonVariant
   readonly chainModes?: WalletMode[]
   readonly action?: ReactNode
+  readonly disabled?: boolean
+  readonly "aria-expanded"?: boolean
+  readonly "aria-controls"?: string
   readonly onClick: () => void
 }> = ({
   active,
@@ -126,12 +129,18 @@ export const WalletSourceButton: React.FC<{
   variant = "management",
   chainModes,
   action,
+  disabled,
+  "aria-expanded": ariaExpanded,
+  "aria-controls": ariaControls,
   onClick,
 }) => (
   <SSourceButton
     type="button"
     data-active={active}
     data-variant={variant}
+    disabled={disabled}
+    aria-expanded={ariaExpanded}
+    aria-controls={ariaControls}
     onClick={onClick}
   >
     <Flex align="center" gap="base" minWidth={0} flex={1}>

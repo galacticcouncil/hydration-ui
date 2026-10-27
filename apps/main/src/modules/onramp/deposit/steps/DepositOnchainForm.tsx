@@ -109,7 +109,8 @@ export const DepositOnchainForm = () => {
             <DepositAccountButton
               name={account.name}
               address={account.displayAddress}
-              onClick={() => paginateTo(OnrampScreen.DepositOnchainWallet)}
+              disabled={submit.isPending}
+              onChange={() => paginateTo(OnrampScreen.DepositOnchainWallet)}
             />
           )}
         </Stack>
@@ -146,7 +147,8 @@ export const DepositOnchainForm = () => {
               active
               name={destAccount?.name ?? t("deposit.onchain.customAddress")}
               address={destAddress}
-              onClick={selectRecipient}
+              disabled={submit.isPending}
+              onChange={selectRecipient}
             />
           ) : (
             <Button variant="secondary" onClick={selectRecipient}>

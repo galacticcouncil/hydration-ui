@@ -279,6 +279,20 @@ export const selectWalletSources = <T extends WalletSourceLike>(
   }
 }
 
+/** Actual connections across source sections, without the recent-wallet cap. */
+export const getConnectedWalletSourceGroups = <T extends WalletSourceLike>(
+  groups: WalletSourceGroup<T>[],
+  connectedProviderTypes: WalletProviderType[],
+): WalletSourceGroup<T>[] =>
+  uniqueBy(
+    groups.filter((group) =>
+      group.providers.some((provider) =>
+        connectedProviderTypes.includes(provider),
+      ),
+    ),
+    (group) => group.id,
+  )
+
 /**
  * What "Connect all" enables: installed wallets that can sign Hydration
  * transactions, minus WalletConnect, whose QR flow can't run in a batch. A

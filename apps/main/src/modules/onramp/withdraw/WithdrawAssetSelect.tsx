@@ -64,7 +64,6 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
   const [mobileStep, setMobileStep] = useState<"chains" | "assets">(
     initialDestinationChainKey ? "assets" : "chains",
   )
-  const mobileChains = isMobile && mobileStep === "chains"
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
   useEffect(() => {
@@ -124,7 +123,10 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
       }),
     [options],
   )
+  const showChainSelector = pairs.length !== 1
+  const mobileChains = isMobile && showChainSelector && mobileStep === "chains"
   const visiblePairs = pairs.filter(({ chain }) => {
+    if (!showChainSelector) return true
     const matchesEcosystem =
       filter === "all" ||
       (filter === "polkadot"
@@ -208,7 +210,8 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
         align="center"
         closable
         onBack={() => {
-          if (isMobile && mobileStep === "assets") setMobileStep("chains")
+          if (isMobile && showChainSelector && mobileStep === "assets")
+            setMobileStep("chains")
           else onBack()
         }}
       />
@@ -220,14 +223,14 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
       >
         <Grid
           data-onramp-step={
-            isMobile ? `withdraw-${mobileStep}` : "withdraw-assets"
+            mobileChains ? "withdraw-chains" : "withdraw-assets"
           }
           columnTemplate={
-            isMobile
-              ? mobileChains
-                ? "minmax(0, 1fr)"
-                : `${pxToRem(52)} minmax(0, 1fr)`
-              : "9rem minmax(0, 1fr)"
+            !showChainSelector || mobileChains
+              ? "minmax(0, 1fr)"
+              : isMobile
+                ? `${pxToRem(52)} minmax(0, 1fr)`
+                : "9rem minmax(0, 1fr)"
           }
           gap={isMobile ? "base" : "l"}
           p="m"
@@ -236,44 +239,46 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
           height={isMobile ? "100%" : pxToRem(450)}
           sx={{ minHeight: 0 }}
         >
-          <Stack
-            gap="base"
-            justify="flex-start"
-            minWidth={0}
-            sx={{ minHeight: 0 }}
-          >
-            {(!isMobile || mobileChains) && (
-              <Input
-                iconStart={Search}
-                placeholder={t("common:search.placeholder.chains")}
-                aria-label={t("common:search.placeholder.chains")}
-                value={chainSearch}
-                onChange={(event) => setChainSearch(event.target.value)}
-              />
-            )}
-            <Text
-              fs={isMobile && !mobileChains ? "p6" : "p5"}
-              color={getToken("text.medium")}
+          {showChainSelector && (
+            <Stack
+              gap="base"
+              justify="flex-start"
+              minWidth={0}
+              sx={{ minHeight: 0 }}
             >
-              {t("deposit.onchain.chains")}
-            </Text>
-            <Box flex={1} sx={{ minHeight: 0 }}>
-              <ScrollArea height="100%" hideScrollbar>
-                <ChainList
-                  variant={mobileChains ? "list" : "rail"}
-                  items={visiblePairs}
-                  selectedChain={selectedChain}
-                  setSelectedChain={(chain) => {
-                    setSelectedChainKey(chain?.key ?? null)
-                    if (isMobile && chain) {
-                      setChainSearch("")
-                      setMobileStep("assets")
-                    }
-                  }}
+              {(!isMobile || mobileChains) && (
+                <Input
+                  iconStart={Search}
+                  placeholder={t("common:search.placeholder.chains")}
+                  aria-label={t("common:search.placeholder.chains")}
+                  value={chainSearch}
+                  onChange={(event) => setChainSearch(event.target.value)}
                 />
-              </ScrollArea>
-            </Box>
-          </Stack>
+              )}
+              <Text
+                fs={isMobile && !mobileChains ? "p6" : "p5"}
+                color={getToken("text.medium")}
+              >
+                {t("deposit.onchain.chains")}
+              </Text>
+              <Box flex={1} sx={{ minHeight: 0 }}>
+                <ScrollArea height="100%" hideScrollbar>
+                  <ChainList
+                    variant={mobileChains ? "list" : "rail"}
+                    items={visiblePairs}
+                    selectedChain={selectedChain}
+                    setSelectedChain={(chain) => {
+                      setSelectedChainKey(chain?.key ?? null)
+                      if (isMobile && chain) {
+                        setChainSearch("")
+                        setMobileStep("assets")
+                      }
+                    }}
+                  />
+                </ScrollArea>
+              </Box>
+            </Stack>
+          )}
           {!mobileChains && (
             <Stack
               gap="m"
@@ -288,7 +293,7 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
                 placeholder={t("common:search.placeholder.assets")}
                 aria-label={t("common:search.placeholder.assets")}
               />
-              {!isMobile && (
+              {!isMobile && showChainSelector && (
                 <Flex gap="base" wrap>
                   {(["all", "polkadot", "evm"] as const).map((value) => (
                     <Button

@@ -31,8 +31,13 @@ export const DepositGuidedAsset: FC = () => {
   const sourceChainAssetPairs = withHydrationDepositSource(crossChainPairs)
   const { getValues, reset } = useFormContext<XcmFormValues>()
   const intent = useDepositJourneyStore((state) => state.assetIntent)
-  const [assetKey, setAssetKey] = useState<string | null>(
-    intent?.assetKey ?? null,
+  const [assetKey, setAssetKey] = useState<string | null>(() =>
+    intent &&
+    sourceChainAssetPairs.filter(({ assets }) =>
+      assets.some((asset) => asset.key === intent.assetKey),
+    ).length > 1
+      ? intent.assetKey
+      : null,
   )
   const [search, setSearch] = useState("")
   const assets = [
@@ -62,6 +67,18 @@ export const DepositGuidedAsset: FC = () => {
   const visibleNetworks = networks.filter(({ chain }) =>
     `${chain.name} ${chain.key}`.toLowerCase().includes(query),
   )
+  const selectNetwork = (assetKey: string, chainKey: string) => {
+    reset({
+      ...getValues(),
+      srcChain: null,
+      srcAsset: null,
+      srcAmount: "",
+      destAsset: null,
+      destAmount: "",
+      bridgeProvider: null,
+    })
+    useDepositJourneyStore.getState().setAssetIntent({ assetKey, chainKey })
+  }
   const back = () => {
     if (selected) {
       setAssetKey(null)
@@ -135,21 +152,7 @@ export const DepositGuidedAsset: FC = () => {
                     key={chain.key}
                     variant="ghost"
                     width="100%"
-                    onClick={() => {
-                      reset({
-                        ...getValues(),
-                        srcChain: null,
-                        srcAsset: null,
-                        srcAmount: "",
-                        destAsset: null,
-                        destAmount: "",
-                        bridgeProvider: null,
-                      })
-                      useDepositJourneyStore.getState().setAssetIntent({
-                        assetKey: selected.asset.key,
-                        chainKey: chain.key,
-                      })
-                    }}
+                    onClick={() => selectNetwork(selected.asset.key, chain.key)}
                     sx={{
                       height: "auto",
                       px: "m",
@@ -179,8 +182,12 @@ export const DepositGuidedAsset: FC = () => {
                     chain={chain}
                     supportedNetworks={supportedNetworks}
                     onSelect={() => {
-                      setAssetKey(asset.key)
-                      setSearch("")
+                      if (supportedNetworks.length === 1) {
+                        selectNetwork(asset.key, supportedNetworks[0]!.key)
+                      } else {
+                        setAssetKey(asset.key)
+                        setSearch("")
+                      }
                     }}
                   />
                 ))}

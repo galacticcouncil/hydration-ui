@@ -5,6 +5,7 @@ import {
   Flex,
   Icon,
   ScrollArea,
+  Separator,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -24,6 +25,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -95,6 +97,7 @@ import { filterAccounts, getFilteredAccounts } from "@/utils/accountFilter"
 import {
   getConflictingWalletProviders,
   getConnectAllGroups,
+  getConnectedWalletSourceGroups,
   getSelectableWallets,
   getWalletSourceAction,
   getWalletSourceGroupAction,
@@ -106,10 +109,17 @@ import { getWallet, getWallets } from "@/wallets"
 
 type MultisigStep = "list" | "setup" | "signer"
 
-const filterWalletGroups = (groups: WalletSourceGroup[], search: string) => {
+const filterWalletGroups = (
+  groups: WalletSourceGroup[],
+  search: string,
+  excludedProviders: WalletProviderType[] = [],
+) => {
   const phrase = search.toLowerCase().trim()
-  if (!phrase) return groups
-  return groups.filter((group) => group.title.toLowerCase().includes(phrase))
+  return groups.filter(
+    (group) =>
+      (!phrase || group.title.toLowerCase().includes(phrase)) &&
+      !group.providers.some((provider) => excludedProviders.includes(provider)),
+  )
 }
 
 export const WalletManagementContent = () => {
@@ -122,10 +132,12 @@ export const WalletManagementContent = () => {
     isControlled,
     setModalContentWidth,
     isPage,
+    walletListVariant,
     accountFilter: filterPageAccount,
     customSource,
     onBack,
   } = useWeb3ConnectContext()
+  const prioritizeConnectedWallets = walletListVariant === "connectedFirst"
   const currentAccount = filterPageAccount ? null : activeAccount
   const { gte } = useBreakpoints()
   const isDesktop = gte("md")
@@ -163,13 +175,17 @@ export const WalletManagementContent = () => {
     WalletMode.Default,
   )
   // Global pickers open the selected account; embedded flows start with sources.
-  const [showAccounts, setShowAccounts] = useState(!isPage && !!currentAccount)
+  const [showAccounts, setShowAccounts] = useState(
+    !prioritizeConnectedWallets && !isPage && !!currentAccount,
+  )
   const [isCustomSourceSelected, setIsCustomSourceSelected] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
   const [accountSearchValue, setAccountSearchValue] = useState("")
   const [walletSearch, setWalletSearch] = useState("")
   const [accountSearch, setAccountSearch] = useState("")
   const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const [isAdditionalWalletsOpen, setIsAdditionalWalletsOpen] = useState(false)
+  const additionalWalletsId = useId()
   const [isConnectingAll, setIsConnectingAll] = useState(false)
   const [connectionResults, setConnectionResults] = useState<
     Partial<Record<WalletProviderType, "pending" | "connected" | "rejected">>
@@ -289,6 +305,28 @@ export const WalletManagementContent = () => {
     ],
   )
 
+  const connectedWalletGroups = useMemo(
+    () =>
+      getConnectedWalletSourceGroups(
+        [
+          ...recentWalletGroups,
+          ...installedWalletGroups,
+          ...moreWalletGroups,
+          ...deeplinkedWalletGroups,
+          ...walletConnectGroups,
+        ],
+        connectedProviderTypes,
+      ),
+    [
+      recentWalletGroups,
+      installedWalletGroups,
+      moreWalletGroups,
+      deeplinkedWalletGroups,
+      walletConnectGroups,
+      connectedProviderTypes,
+    ],
+  )
+
   const selectedWallet =
     selectedSource !== "all" &&
     selectedSource !== "recent" &&
@@ -334,6 +372,8 @@ export const WalletManagementContent = () => {
       showErrorState
   const showAllAccounts =
     (isPage || showAccountPanel) && connectedAccountsCount > 0
+  const showConnectedWalletSummary =
+    prioritizeConnectedWallets && connectedWalletGroups.length > 0
 
   /** Global pickers fall back when emptied; embedded flows switch on selection. */
   const isAccountsView = showAccounts && showAccountPanel
@@ -364,29 +404,62 @@ export const WalletManagementContent = () => {
     )
   }, [isDesktop, setModalContentWidth, showAccountPanel])
 
+  const excludedConnectedProviders = prioritizeConnectedWallets
+    ? connectedProviderTypes
+    : undefined
+  const visibleConnectedWalletGroups = useMemo(
+    () => filterWalletGroups(connectedWalletGroups, walletSearch),
+    [connectedWalletGroups, walletSearch],
+  )
+
   const visibleRecentWalletGroups = useMemo(
-    () => filterWalletGroups(recentWalletGroups, walletSearch),
-    [recentWalletGroups, walletSearch],
+    () =>
+      filterWalletGroups(
+        recentWalletGroups,
+        walletSearch,
+        excludedConnectedProviders,
+      ),
+    [recentWalletGroups, walletSearch, excludedConnectedProviders],
   )
 
   const visibleInstalledWalletGroups = useMemo(
-    () => filterWalletGroups(installedWalletGroups, walletSearch),
-    [installedWalletGroups, walletSearch],
+    () =>
+      filterWalletGroups(
+        installedWalletGroups,
+        walletSearch,
+        excludedConnectedProviders,
+      ),
+    [installedWalletGroups, walletSearch, excludedConnectedProviders],
   )
 
   const visibleMoreWalletGroups = useMemo(
-    () => filterWalletGroups(moreWalletGroups, walletSearch),
-    [moreWalletGroups, walletSearch],
+    () =>
+      filterWalletGroups(
+        moreWalletGroups,
+        walletSearch,
+        excludedConnectedProviders,
+      ),
+    [moreWalletGroups, walletSearch, excludedConnectedProviders],
   )
 
   const visibleDeeplinkedWalletGroups = useMemo(
-    () => filterWalletGroups(deeplinkedWalletGroups, walletSearch),
-    [deeplinkedWalletGroups, walletSearch],
+    () =>
+      filterWalletGroups(
+        deeplinkedWalletGroups,
+        walletSearch,
+        excludedConnectedProviders,
+      ),
+    [deeplinkedWalletGroups, walletSearch, excludedConnectedProviders],
   )
 
   const visibleWalletConnectGroups = useMemo(
-    () => filterWalletGroups(walletConnectGroups, walletSearch),
-    [walletConnectGroups, walletSearch],
+    () =>
+      filterWalletGroups(
+        walletConnectGroups,
+        walletSearch,
+        excludedConnectedProviders,
+      ),
+    [walletConnectGroups, walletSearch, excludedConnectedProviders],
   )
 
   const visibleReachableWalletCount =
@@ -394,7 +467,18 @@ export const WalletManagementContent = () => {
 
   const shouldAutoOpenMoreWallets =
     !showAccountPanel && visibleReachableWalletCount === 0
-  const isMoreWalletsListOpen = isMoreOpen || shouldAutoOpenMoreWallets
+  const expandMoreWallets =
+    prioritizeConnectedWallets &&
+    (connectedWalletGroups.length > 0 || !!walletSearch.trim())
+  const isMoreWalletsListOpen =
+    isMoreOpen || shouldAutoOpenMoreWallets || expandMoreWallets
+  const showAdditionalWallets =
+    !prioritizeConnectedWallets ||
+    connectedWalletGroups.length === 0 ||
+    isAdditionalWalletsOpen ||
+    isConnectingAll ||
+    pendingProviderTypes.length > 0 ||
+    !!walletSearch.trim()
 
   const hasConnectedWalletSource = (
     provider: WalletProviderType,
@@ -452,6 +536,15 @@ export const WalletManagementContent = () => {
         ? selectedSource
         : null
 
+    const connectedSourceAccounts = showConnectedWalletSummary
+      ? accounts.filter(
+          (account) =>
+            connectedProviderTypes.includes(account.provider) &&
+            connectedWalletGroups.some((group) =>
+              group.providers.includes(account.provider),
+            ),
+        )
+      : accounts
     const sourceAccounts =
       selectedSource === "recent"
         ? accounts.filter((account) =>
@@ -459,7 +552,7 @@ export const WalletManagementContent = () => {
           )
         : selectedProvider
           ? accounts.filter((account) => account.provider === selectedProvider)
-          : accounts
+          : connectedSourceAccounts
 
     return filterAccounts(mode)(sourceAccounts.map(toAccount)).filter(
       (account) => !filterPageAccount || filterPageAccount(account),
@@ -470,6 +563,8 @@ export const WalletManagementContent = () => {
     mode,
     selectedSource,
     filterPageAccount,
+    connectedWalletGroups,
+    showConnectedWalletSummary,
   ])
 
   /**
@@ -683,6 +778,7 @@ export const WalletManagementContent = () => {
     !showExternalWallet &&
     !showMultisig
   const hasCollapsedMoreWallets =
+    !expandMoreWallets &&
     !shouldAutoOpenMoreWallets &&
     visibleMoreWalletGroups.length > moreWalletsPreviewCount
   const visibleMoreWallets =
@@ -763,21 +859,42 @@ export const WalletManagementContent = () => {
             <SSourceScrollFrame hasFooter={showLogOutAll}>
               <ScrollArea viewportRef={sourceViewportRef}>
                 <SScrollAreaContent direction="column" gap="base">
+                  {prioritizeConnectedWallets &&
+                    connectedWalletGroups.length > 0 && (
+                      <WalletSourceCategoryLabel>
+                        {t("provider.yourWallets")}
+                      </WalletSourceCategoryLabel>
+                    )}
                   {showAllAccounts && (
                     <Flex direction="column" gap="s">
                       <WalletSourceButton
                         active={
                           !isCustomSourceSelected && selectedSource === "all"
                         }
-                        title={t("provider.allAccountsAndWallets")}
-                        subtitle={t("provider.allAccountsCount", {
-                          count: connectedAccountsCount,
-                        })}
+                        title={t(
+                          showConnectedWalletSummary
+                            ? "provider.allConnectedWallets"
+                            : "provider.allAccountsAndWallets",
+                        )}
+                        subtitle={
+                          showConnectedWalletSummary
+                            ? t("provider.connectedWalletCount", {
+                                count: connectedWalletGroups.length,
+                              })
+                            : t("provider.allAccountsCount", {
+                                count: connectedAccountsCount,
+                              })
+                        }
                         icon={WalletIcon}
                         onClick={() => selectSource("all")}
                       />
                     </Flex>
                   )}
+
+                  {prioritizeConnectedWallets &&
+                    visibleConnectedWalletGroups.map((group) =>
+                      renderWalletGroup(group),
+                    )}
 
                   {customSource && (
                     <WalletSourceButton
@@ -792,152 +909,202 @@ export const WalletManagementContent = () => {
                     />
                   )}
 
-                  {visibleRecentWalletGroups.length > 0 && (
-                    <Flex direction="column" gap="s">
-                      <WalletSourceCategoryLabel>
-                        {t("provider.recentlyUsed")}
-                      </WalletSourceCategoryLabel>
-                      {visibleRecentWalletGroups.map((group) =>
-                        renderWalletGroup(group),
-                      )}
-                    </Flex>
-                  )}
-
-                  {(visibleInstalledWalletGroups.length > 0 ||
-                    showConnectAll) && (
-                    <Flex direction="column" gap="s">
-                      {visibleInstalledWalletGroups.length > 0 && (
-                        <WalletSourceCategoryLabel>
-                          {t(
-                            isChainMode
-                              ? "provider.available"
-                              : "provider.installed",
-                          )}
-                        </WalletSourceCategoryLabel>
-                      )}
-                      {visibleInstalledWalletGroups.map((group) =>
-                        renderWalletGroup(group),
-                      )}
-                      {showConnectAll && (
+                  {prioritizeConnectedWallets &&
+                    connectedWalletGroups.length > 0 &&
+                    !walletSearch.trim() && (
+                      <Flex direction="column" gap="base" pt="s">
+                        <Separator />
                         <WalletSourceButton
-                          title={t("provider.connectAll")}
-                          subtitle={connectAllGroups
-                            .map(prop("title"))
-                            .join(", ")}
-                          icon={LucideWallet}
+                          title={t("provider.connectAnotherWallet")}
+                          icon={Plus}
                           iconColor="neutral"
-                          pending={isConnectingAll}
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
-                          onClick={handleConnectAll}
-                        />
-                      )}
-                    </Flex>
-                  )}
-
-                  {(visibleDeeplinkedWalletGroups.length > 0 ||
-                    visibleWalletConnectGroups.length > 0 ||
-                    showExternalWallet ||
-                    showMultisig) && (
-                    <Flex direction="column" gap="s">
-                      <WalletSourceCategoryLabel>
-                        {t("provider.other")}
-                      </WalletSourceCategoryLabel>
-                      {visibleDeeplinkedWalletGroups.map((group) =>
-                        renderWalletGroup(group, t("provider.open")),
-                      )}
-                      {visibleWalletConnectGroups.map((group) =>
-                        renderWalletGroup(group, t("provider.open")),
-                      )}
-
-                      {showExternalWallet && (
-                        <WalletProviderSourceButton
-                          wallet={getWallet(WalletProviderType.ExternalWallet)}
-                          active={
-                            selectedSource === WalletProviderType.ExternalWallet
+                          disabled={isConnectingAll || isProvidersConnecting}
+                          aria-expanded={showAdditionalWallets}
+                          aria-controls={additionalWalletsId}
+                          action={
+                            <WalletSourceAction
+                              icon={
+                                showAdditionalWallets ? ChevronUp : ChevronDown
+                              }
+                            />
                           }
-                          status={getStatus(WalletProviderType.ExternalWallet)}
-                          pending={pendingProviderTypes.includes(
-                            WalletProviderType.ExternalWallet,
-                          )}
-                          variant={
-                            showAccountPanel ? "management" : "firstConnection"
-                          }
-                          connectLabel={t("provider.open")}
-                          icon={HatGlasses}
-                          iconColor="dark"
                           onClick={() =>
-                            selectSource(WalletProviderType.ExternalWallet)
-                          }
-                          onDisconnect={() =>
-                            disconnect(WalletProviderType.ExternalWallet)
+                            setIsAdditionalWalletsOpen((open) => !open)
                           }
                         />
-                      )}
+                      </Flex>
+                    )}
 
-                      {showMultisig && (
-                        <WalletSourceButton
-                          title={t("multisig.title")}
-                          subtitle={t("provider.open")}
-                          icon={Users}
-                          iconColor="pink"
-                          variant={
-                            showAccountPanel ? "management" : "firstConnection"
-                          }
-                          active={isMultisigSelected}
-                          onClick={() => {
-                            setMultisigStep(
-                              multisigConfigs.length > 0 ? "list" : "setup",
-                            )
-                            selectSource(WalletProviderType.Multisig)
-                          }}
-                        />
-                      )}
-                    </Flex>
-                  )}
-
-                  {!(isNovaWalletApp() && !isChainMode) &&
-                    visibleMoreWalletGroups.length > 0 && (
-                      <Flex direction="column" gap="s">
-                        {!isMoreWalletsOnlySection && (
+                  {showAdditionalWallets && (
+                    <Flex
+                      id={additionalWalletsId}
+                      direction="column"
+                      gap="base"
+                    >
+                      {visibleRecentWalletGroups.length > 0 && (
+                        <Flex direction="column" gap="s">
                           <WalletSourceCategoryLabel>
-                            {t("provider.moreWallets")}
+                            {t("provider.recentlyUsed")}
                           </WalletSourceCategoryLabel>
-                        )}
-                        {visibleMoreWallets.map((group) =>
-                          renderWalletGroup(group),
-                        )}
-                        {hasCollapsedMoreWallets && (
-                          <WalletSourceButton
-                            title={
-                              isMoreWalletsListOpen
-                                ? t("provider.hide")
-                                : t("provider.showMore")
-                            }
-                            icon={
-                              isMoreWalletsListOpen ? ChevronUp : ChevronDown
-                            }
-                            iconColor="neutral"
-                            variant={
-                              showAccountPanel
-                                ? "management"
-                                : "firstConnection"
-                            }
-                            action={
-                              <WalletSourceAction
+                          {visibleRecentWalletGroups.map((group) =>
+                            renderWalletGroup(group),
+                          )}
+                        </Flex>
+                      )}
+
+                      {(visibleInstalledWalletGroups.length > 0 ||
+                        showConnectAll) && (
+                        <Flex direction="column" gap="s">
+                          {visibleInstalledWalletGroups.length > 0 && (
+                            <WalletSourceCategoryLabel>
+                              {t(
+                                isChainMode
+                                  ? "provider.available"
+                                  : "provider.installed",
+                              )}
+                            </WalletSourceCategoryLabel>
+                          )}
+                          {visibleInstalledWalletGroups.map((group) =>
+                            renderWalletGroup(group),
+                          )}
+                          {showConnectAll && (
+                            <WalletSourceButton
+                              title={t("provider.connectAll")}
+                              subtitle={connectAllGroups
+                                .map(prop("title"))
+                                .join(", ")}
+                              icon={LucideWallet}
+                              iconColor="neutral"
+                              pending={isConnectingAll}
+                              variant={
+                                showAccountPanel
+                                  ? "management"
+                                  : "firstConnection"
+                              }
+                              onClick={handleConnectAll}
+                            />
+                          )}
+                        </Flex>
+                      )}
+
+                      {(visibleDeeplinkedWalletGroups.length > 0 ||
+                        visibleWalletConnectGroups.length > 0 ||
+                        showExternalWallet ||
+                        showMultisig) && (
+                        <Flex direction="column" gap="s">
+                          <WalletSourceCategoryLabel>
+                            {t("provider.other")}
+                          </WalletSourceCategoryLabel>
+                          {visibleDeeplinkedWalletGroups.map((group) =>
+                            renderWalletGroup(group, t("provider.open")),
+                          )}
+                          {visibleWalletConnectGroups.map((group) =>
+                            renderWalletGroup(group, t("provider.open")),
+                          )}
+
+                          {showExternalWallet && (
+                            <WalletProviderSourceButton
+                              wallet={getWallet(
+                                WalletProviderType.ExternalWallet,
+                              )}
+                              active={
+                                selectedSource ===
+                                WalletProviderType.ExternalWallet
+                              }
+                              status={getStatus(
+                                WalletProviderType.ExternalWallet,
+                              )}
+                              pending={pendingProviderTypes.includes(
+                                WalletProviderType.ExternalWallet,
+                              )}
+                              variant={
+                                showAccountPanel
+                                  ? "management"
+                                  : "firstConnection"
+                              }
+                              connectLabel={t("provider.open")}
+                              icon={HatGlasses}
+                              iconColor="dark"
+                              onClick={() =>
+                                selectSource(WalletProviderType.ExternalWallet)
+                              }
+                              onDisconnect={() =>
+                                disconnect(WalletProviderType.ExternalWallet)
+                              }
+                            />
+                          )}
+
+                          {showMultisig && (
+                            <WalletSourceButton
+                              title={t("multisig.title")}
+                              subtitle={t("provider.open")}
+                              icon={Users}
+                              iconColor="pink"
+                              variant={
+                                showAccountPanel
+                                  ? "management"
+                                  : "firstConnection"
+                              }
+                              active={isMultisigSelected}
+                              onClick={() => {
+                                setMultisigStep(
+                                  multisigConfigs.length > 0 ? "list" : "setup",
+                                )
+                                selectSource(WalletProviderType.Multisig)
+                              }}
+                            />
+                          )}
+                        </Flex>
+                      )}
+
+                      {!(isNovaWalletApp() && !isChainMode) &&
+                        visibleMoreWalletGroups.length > 0 && (
+                          <Flex direction="column" gap="s">
+                            {!isMoreWalletsOnlySection && (
+                              <WalletSourceCategoryLabel>
+                                {t("provider.moreWallets")}
+                              </WalletSourceCategoryLabel>
+                            )}
+                            {visibleMoreWallets.map((group) =>
+                              renderWalletGroup(group),
+                            )}
+                            {hasCollapsedMoreWallets && (
+                              <WalletSourceButton
+                                title={
+                                  isMoreWalletsListOpen
+                                    ? t("provider.hide")
+                                    : t("provider.showMore")
+                                }
                                 icon={
                                   isMoreWalletsListOpen
                                     ? ChevronUp
                                     : ChevronDown
                                 }
+                                iconColor="neutral"
+                                variant={
+                                  showAccountPanel
+                                    ? "management"
+                                    : "firstConnection"
+                                }
+                                action={
+                                  <WalletSourceAction
+                                    icon={
+                                      isMoreWalletsListOpen
+                                        ? ChevronUp
+                                        : ChevronDown
+                                    }
+                                  />
+                                }
+                                onClick={() => setIsMoreOpen((open) => !open)}
                               />
-                            }
-                            onClick={() => setIsMoreOpen((open) => !open)}
-                          />
+                            )}
+                          </Flex>
                         )}
-                      </Flex>
-                    )}
+                    </Flex>
+                  )}
                 </SScrollAreaContent>
               </ScrollArea>
               {showLogOutAll && (

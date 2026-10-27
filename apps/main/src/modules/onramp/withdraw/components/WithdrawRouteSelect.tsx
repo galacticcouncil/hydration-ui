@@ -62,7 +62,13 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       }))
       .sort((a, b) => a.asset.originSymbol.localeCompare(b.asset.originSymbol))
   }, [options])
-  const selected = groups.find(({ asset }) => asset.key === assetKey)
+  const selected = groups.find(
+    ({ asset, routes }) => asset.key === assetKey && routes.length > 1,
+  )
+  const selectingDestinationAsset =
+    !!selected &&
+    new Set(selected.routes.map((route) => route.destinationChainKey)).size ===
+      1
   const query = search.trim().toLowerCase()
   const assets = groups.filter(({ asset, assetId }) => {
     const metadata = getAsset(assetId)
@@ -87,9 +93,11 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
     <>
       <SOnrampStepHeader
         title={t(
-          selected
-            ? "withdraw.guided.network.title"
-            : "withdraw.onchain.asset.title",
+          selectingDestinationAsset
+            ? "common:selectAsset"
+            : selected
+              ? "withdraw.guided.network.title"
+              : "withdraw.onchain.asset.title",
         )}
         align="center"
         closable
@@ -100,7 +108,11 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
           gap="l"
           justify="flex-start"
           data-onramp-step={
-            selected ? "withdraw-route-networks" : "withdraw-route-assets"
+            selectingDestinationAsset
+              ? "withdraw-route-destination-assets"
+              : selected
+                ? "withdraw-route-networks"
+                : "withdraw-route-assets"
           }
         >
           {guided && (
@@ -108,7 +120,11 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
               compact
               steps={[
                 t("withdraw.guided.step.asset"),
-                t("withdraw.guided.step.network"),
+                t(
+                  selectingDestinationAsset
+                    ? "common:destination"
+                    : "withdraw.guided.step.network",
+                ),
                 t("withdraw.guided.step.withdraw"),
               ]}
               activeStepIndex={selected ? 1 : 0}
@@ -116,18 +132,24 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
           )}
           <Stack gap="s" justify="flex-start">
             <Text as="h3" fs="h7" fw={500} font="primary">
-              {selected
-                ? t("withdraw.guided.network.heading", {
-                    symbol: selected.asset.originSymbol,
-                  })
-                : t("withdraw.guided.asset.heading")}
+              {selectingDestinationAsset
+                ? t("common:selectAsset")
+                : selected
+                  ? t("withdraw.guided.network.heading", {
+                      symbol: selected.asset.originSymbol,
+                    })
+                  : t("withdraw.guided.asset.heading")}
             </Text>
             <Text fs="p4" color={getToken("text.medium")}>
-              {t(
-                selected
-                  ? "withdraw.guided.network.description"
-                  : "withdraw.entry.description",
-              )}
+              {selectingDestinationAsset
+                ? t("deposit.v3.amount.receiveTo", {
+                    chain: selected.routes[0]!.destinationChain.name,
+                  })
+                : t(
+                    selected
+                      ? "withdraw.guided.network.description"
+                      : "withdraw.entry.description",
+                  )}
             </Text>
           </Stack>
           <Input
@@ -135,73 +157,92 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t(
-              selected
+              selected && !selectingDestinationAsset
                 ? "common:search.placeholder.chains"
                 : "common:search.placeholder.assets",
             )}
             aria-label={t(
-              selected
+              selected && !selectingDestinationAsset
                 ? "common:search.placeholder.chains"
                 : "common:search.placeholder.assets",
             )}
           />
           <Stack gap="s" justify="flex-start">
             {selected
-              ? routes.map((option) => (
-                  <Button
-                    key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
-                    variant="ghost"
-                    width="100%"
-                    aria-pressed={
-                      initialSelection?.sourceAssetKey ===
-                        option.sourceAssetKey &&
-                      initialSelection.destinationChainKey ===
-                        option.destinationChainKey &&
-                      initialSelection.destinationAssetKey ===
-                        option.destinationAssetKey
-                    }
-                    onClick={() => onSelect(option)}
-                    sx={{
-                      height: "auto",
-                      px: "m",
-                      py: "m",
-                      borderRadius: "m",
-                      gridTemplateColumns: "minmax(0, 1fr)",
-                    }}
-                  >
-                    <Flex gap="m" align="center" width="100%">
-                      <ChainLogo
-                        ecosystem={option.destinationChain.ecosystem}
-                        chainId={getChainId(option.destinationChain)}
-                        alt={option.destinationChain.name}
-                      />
-                      <Stack gap="s" flex={1} align="start">
-                        <Text fs="p3" fw={500}>
-                          {option.destinationChain.name}
-                        </Text>
-                        {(selected.routes.filter(
-                          ({ destinationChainKey }) =>
-                            destinationChainKey === option.destinationChainKey,
-                        ).length > 1 ||
-                          selected.asset.originSymbol !==
-                            option.destinationAsset.originSymbol) && (
-                          <Text fs="p5" color={getToken("text.medium")}>
-                            {option.destinationAsset.originSymbol}
+              ? routes.map((option) =>
+                  selectingDestinationAsset ? (
+                    <DepositAssetOption
+                      key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
+                      asset={option.destinationAsset}
+                      chain={option.destinationChain}
+                      isSelected={
+                        initialSelection?.sourceAssetKey ===
+                          option.sourceAssetKey &&
+                        initialSelection.destinationChainKey ===
+                          option.destinationChainKey &&
+                        initialSelection.destinationAssetKey ===
+                          option.destinationAssetKey
+                      }
+                      onSelect={() => onSelect(option)}
+                    />
+                  ) : (
+                    <Button
+                      key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
+                      variant="ghost"
+                      width="100%"
+                      aria-pressed={
+                        initialSelection?.sourceAssetKey ===
+                          option.sourceAssetKey &&
+                        initialSelection.destinationChainKey ===
+                          option.destinationChainKey &&
+                        initialSelection.destinationAssetKey ===
+                          option.destinationAssetKey
+                      }
+                      onClick={() => onSelect(option)}
+                      sx={{
+                        height: "auto",
+                        px: "m",
+                        py: "m",
+                        borderRadius: "m",
+                        gridTemplateColumns: "minmax(0, 1fr)",
+                      }}
+                    >
+                      <Flex gap="m" align="center" width="100%">
+                        <ChainLogo
+                          ecosystem={option.destinationChain.ecosystem}
+                          chainId={getChainId(option.destinationChain)}
+                          alt={option.destinationChain.name}
+                        />
+                        <Stack gap="s" flex={1} align="start">
+                          <Text fs="p3" fw={500}>
+                            {option.destinationChain.name}
                           </Text>
-                        )}
-                      </Stack>
-                      <Icon component={ChevronRight} size="m" />
-                    </Flex>
-                  </Button>
-                ))
+                          {(selected.routes.filter(
+                            ({ destinationChainKey }) =>
+                              destinationChainKey ===
+                              option.destinationChainKey,
+                          ).length > 1 ||
+                            selected.asset.originSymbol !==
+                              option.destinationAsset.originSymbol) && (
+                            <Text fs="p5" color={getToken("text.medium")}>
+                              {option.destinationAsset.originSymbol}
+                            </Text>
+                          )}
+                        </Stack>
+                        <Icon component={ChevronRight} size="m" />
+                      </Flex>
+                    </Button>
+                  ),
+                )
               : hydration &&
-                assets.map(({ asset }) => (
+                assets.map(({ asset, routes }) => (
                   <DepositAssetOption
                     key={asset.key}
                     asset={asset}
                     chain={hydration}
                     onSelect={() => {
-                      setAssetKey(asset.key)
+                      if (routes.length === 1) onSelect(routes[0]!)
+                      else setAssetKey(asset.key)
                       setSearch("")
                     }}
                   />

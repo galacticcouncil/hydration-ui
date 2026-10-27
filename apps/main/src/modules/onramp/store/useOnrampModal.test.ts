@@ -66,6 +66,24 @@ beforeEach(() => {
 })
 
 describe("on-chain deposit design variants", () => {
+  it.each(["current", "connected"] as const)(
+    "keeps the %s asset selection during navigation, then clears it for a new deposit",
+    (flow) => {
+      const selection = { chainKey: "bifrost", assetKey: "bnc" }
+      modal().openOnchain(flow)
+      modal().setWalletFirstAsset(selection)
+      modal().setModal("depositOnchain")
+      expect(modal().walletFirstAsset).toEqual(selection)
+
+      modal().setModal(null)
+      expect(modal().walletFirstAsset).toBeNull()
+
+      modal().setWalletFirstAsset(selection)
+      modal().openOnchain(flow)
+      expect(modal().walletFirstAsset).toBeNull()
+    },
+  )
+
   it.each([
     ["preview", "guided", "catalog"],
     ["guided", "guided", "catalog"],
@@ -186,13 +204,29 @@ describe("on-chain deposit design variants", () => {
     expect(journey().pendingTransfers).toEqual([transfer, latest])
   })
 
-  it("keeps the legacy wallet-first flow separate without discarding pending transfers", () => {
-    journey().setSubmitted(transfer)
+  it.each(["current", "connected"] as const)(
+    "keeps the %s wallet-first flow separate without discarding pending transfers",
+    (flow) => {
+      journey().setSubmitted(transfer)
+      modal().openOnchain(flow)
+      expect(modal()).toMatchObject({
+        modal: "depositOnchain",
+        walletFirstFlow: flow,
+      })
+      expect(paginateTo).toHaveBeenCalledWith(OnrampScreen.DepositOnchainWallet)
+      expect(journey().active).toBe(false)
+      expect(journey().pendingTransfers).toEqual([transfer])
+    },
+  )
+
+  it("restores the original picker when switching back from connected-wallets v4", () => {
+    modal().openOnchain("connected")
     modal().openOnchain("current")
-    expect(modal().modal).toBe("depositOnchain")
-    expect(paginateTo).toHaveBeenCalledWith(OnrampScreen.DepositOnchainWallet)
-    expect(journey().active).toBe(false)
-    expect(journey().pendingTransfers).toEqual([transfer])
+
+    expect(modal()).toMatchObject({
+      modal: "depositOnchain",
+      walletFirstFlow: "current",
+    })
   })
 })
 

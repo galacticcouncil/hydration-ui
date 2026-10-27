@@ -16,8 +16,13 @@ import { WithdrawAssetSelection } from "@/modules/onramp/withdraw/WithdrawAssetS
 
 import { useOnrampStore } from "./useOnrampStore"
 
-export type DepositFlow = "current" | "preview" | "guided" | "simple"
-export type DepositVariant = Exclude<DepositFlow, "current">
+export type DepositWalletFirstFlow = "current" | "connected"
+export type DepositFlow =
+  | DepositWalletFirstFlow
+  | "preview"
+  | "guided"
+  | "simple"
+export type DepositVariant = Exclude<DepositFlow, DepositWalletFirstFlow>
 export type WithdrawFlow = "current" | "guided" | "simple"
 
 export type OnrampModalType =
@@ -34,8 +39,13 @@ export type OnrampModalType =
 type OnrampModalState = {
   modal: OnrampModalType | null
   depositFlow: DepositVariant
+  walletFirstFlow: DepositWalletFirstFlow
+  walletFirstAsset: DepositAssetIntent | null
+  setWalletFirstAsset: (selection: DepositAssetIntent | null) => void
   withdrawFlow: WithdrawFlow
   withdrawPending: boolean
+  walletContentWidth: string | null
+  setWalletContentWidth: (width: string) => void
   withdrawAssetId: string | null
   withdrawSelection: WithdrawAssetSelection | null
   withdrawPage: OnrampScreen
@@ -59,8 +69,13 @@ type OnrampModalState = {
 export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   modal: null,
   depositFlow: "guided",
+  walletFirstFlow: "current",
+  walletFirstAsset: null,
+  setWalletFirstAsset: (walletFirstAsset) => set({ walletFirstAsset }),
   withdrawFlow: "guided",
   withdrawPending: false,
+  walletContentWidth: null,
+  setWalletContentWidth: (walletContentWidth) => set({ walletContentWidth }),
   withdrawAssetId: null,
   withdrawSelection: null,
   withdrawPage: OnrampScreen.WithdrawOnchainAsset,
@@ -109,16 +124,23 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   setModal: (modal) => {
     if (modal !== "depositOnchainPreview")
       useDepositJourneyStore.getState().leave()
-    set({ modal })
+    set({
+      modal,
+      ...(modal !== "depositOnchain" ? { walletFirstAsset: null } : {}),
+    })
   },
   openOnchain: (requestedFlow, options) => {
     // Keep existing preview links working while Balance browser is hidden.
     const flow = requestedFlow === "preview" ? "guided" : requestedFlow
     const journey = useDepositJourneyStore.getState()
-    if (flow === "current") {
+    if (flow === "current" || flow === "connected") {
       journey.leave()
       useOnrampStore.getState().paginateTo(OnrampScreen.DepositOnchainWallet)
-      set({ modal: "depositOnchain" })
+      set({
+        modal: "depositOnchain",
+        walletFirstFlow: flow,
+        walletFirstAsset: options?.assetIntent ?? null,
+      })
       return
     }
 

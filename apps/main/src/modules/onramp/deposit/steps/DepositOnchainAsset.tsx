@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { AssetList } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetList"
@@ -38,6 +39,7 @@ export const DepositOnchainAsset = () => {
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
   const { sourceChainAssetPairs } = useXcmProvider()
+  const showChainSelector = sourceChainAssetPairs.length !== 1
   const { getValues, setValue } = useFormContext<XcmFormValues>()
   const resetAmounts = useResetAmounts()
   const paginateTo = useOnrampStore((state) => state.paginateTo)
@@ -62,8 +64,10 @@ export const DepositOnchainAsset = () => {
   const [mobileStep, setMobileStep] = useState<"chains" | "assets">(() =>
     getValues("srcAsset") ? "assets" : "chains",
   )
-  const showChainScreen = isMobile && mobileStep === "chains"
+  const showChainScreen =
+    isMobile && showChainSelector && mobileStep === "chains"
   const filteredPairs = sourceChainAssetPairs.filter(({ chain }) => {
+    if (!showChainSelector) return true
     const matchesEcosystem =
       filter === "all" ||
       (filter === "polkadot"
@@ -77,9 +81,10 @@ export const DepositOnchainAsset = () => {
         : true)
     )
   })
-  const visiblePairs = allChains
-    ? filteredPairs
-    : filteredPairs.filter(({ chain }) => chain.key === pendingChain?.key)
+  const visiblePairs =
+    !showChainSelector || allChains
+      ? filteredPairs
+      : filteredPairs.filter(({ chain }) => chain.key === pendingChain?.key)
 
   return (
     <>
@@ -94,7 +99,8 @@ export const DepositOnchainAsset = () => {
         align="center"
         closable
         onBack={() => {
-          if (isMobile && !showChainScreen) setMobileStep("chains")
+          if (isMobile && showChainSelector && !showChainScreen)
+            setMobileStep("chains")
           else paginateTo(OnrampScreen.DepositOnchainWallet)
         }}
       />
@@ -107,7 +113,7 @@ export const DepositOnchainAsset = () => {
         <Grid
           data-onramp-step={`deposit-current-${showChainScreen ? "chains" : "assets"}`}
           columnTemplate={
-            showChainScreen
+            !showChainSelector || showChainScreen
               ? "minmax(0, 1fr)"
               : isMobile
                 ? `${pxToRem(52)} minmax(0, 1fr)`
@@ -119,60 +125,62 @@ export const DepositOnchainAsset = () => {
           flex={1}
           sx={{ minHeight: 0 }}
         >
-          <Stack
-            gap="base"
-            justify="flex-start"
-            minWidth={0}
-            sx={{ minHeight: 0 }}
-          >
-            {(!isMobile || showChainScreen) && (
-              <Input
-                iconStart={Search}
-                placeholder={t("deposit.onchain.search.chains")}
-                aria-label={t("deposit.onchain.search.chains")}
-                value={chainSearch}
-                onChange={(event) => setChainSearch(event.target.value)}
-              />
-            )}
-            {(!isMobile || showChainScreen) && (
-              <Text fs="p4" color={getToken("text.medium")}>
-                {t("deposit.onchain.chains")}
-              </Text>
-            )}
-            <Box flex={1} sx={{ minHeight: 0 }}>
-              <ScrollArea height="100%" hideScrollbar>
-                <Button
-                  variant={allChains ? "accent" : "transparent"}
-                  outline={allChains}
-                  aria-label={t("deposit.onchain.allChains")}
-                  borderRadius={isMobile ? "m" : undefined}
-                  height={isMobile ? pxToRem(44) : undefined}
-                  minWidth={isMobile ? pxToRem(44) : undefined}
-                  width={showChainScreen ? "100%" : undefined}
-                  onClick={() => {
-                    setAllChains(true)
-                    setMobileStep("assets")
-                  }}
-                >
-                  {isMobile && !showChainScreen ? (
-                    <Icon component={Layers} size="m" />
-                  ) : (
-                    t("deposit.onchain.allChains")
-                  )}
-                </Button>
-                <ChainList
-                  variant={showChainScreen ? "list" : "rail"}
-                  items={filteredPairs}
-                  selectedChain={allChains ? null : pendingChain}
-                  setSelectedChain={(chain) => {
-                    setAllChains(false)
-                    setPendingChain(chain)
-                    setMobileStep("assets")
-                  }}
+          {showChainSelector && (
+            <Stack
+              gap="base"
+              justify="flex-start"
+              minWidth={0}
+              sx={{ minHeight: 0 }}
+            >
+              {(!isMobile || showChainScreen) && (
+                <Input
+                  iconStart={Search}
+                  placeholder={t("deposit.onchain.search.chains")}
+                  aria-label={t("deposit.onchain.search.chains")}
+                  value={chainSearch}
+                  onChange={(event) => setChainSearch(event.target.value)}
                 />
-              </ScrollArea>
-            </Box>
-          </Stack>
+              )}
+              {(!isMobile || showChainScreen) && (
+                <Text fs="p4" color={getToken("text.medium")}>
+                  {t("deposit.onchain.chains")}
+                </Text>
+              )}
+              <Box flex={1} sx={{ minHeight: 0 }}>
+                <ScrollArea height="100%" hideScrollbar>
+                  <Button
+                    variant={allChains ? "accent" : "transparent"}
+                    outline={allChains}
+                    aria-label={t("deposit.onchain.allChains")}
+                    borderRadius={isMobile ? "m" : undefined}
+                    height={isMobile ? pxToRem(44) : undefined}
+                    minWidth={isMobile ? pxToRem(44) : undefined}
+                    width={showChainScreen ? "100%" : undefined}
+                    onClick={() => {
+                      setAllChains(true)
+                      setMobileStep("assets")
+                    }}
+                  >
+                    {isMobile && !showChainScreen ? (
+                      <Icon component={Layers} size="m" />
+                    ) : (
+                      t("deposit.onchain.allChains")
+                    )}
+                  </Button>
+                  <ChainList
+                    variant={showChainScreen ? "list" : "rail"}
+                    items={filteredPairs}
+                    selectedChain={allChains ? null : pendingChain}
+                    setSelectedChain={(chain) => {
+                      setAllChains(false)
+                      setPendingChain(chain)
+                      setMobileStep("assets")
+                    }}
+                  />
+                </ScrollArea>
+              </Box>
+            </Stack>
+          )}
           {!showChainScreen && (
             <Stack
               gap="m"
@@ -187,7 +195,7 @@ export const DepositOnchainAsset = () => {
                 value={assetSearch}
                 onChange={(event) => setAssetSearch(event.target.value)}
               />
-              {!isMobile && (
+              {!isMobile && showChainSelector && (
                 <Flex gap="base" wrap>
                   {(["all", "polkadot", "evm"] as const).map((value) => (
                     <Button
@@ -232,7 +240,7 @@ export const DepositOnchainAsset = () => {
                         }))
                       return (
                         <Stack key={chain.key} gap="base" justify="flex-start">
-                          {allChains && (
+                          {showChainSelector && allChains && (
                             <Text
                               px="l"
                               fs="p5"
@@ -252,6 +260,12 @@ export const DepositOnchainAsset = () => {
                                   getValues("srcAsset") ?? undefined
                                 }
                                 setSelectedAsset={(asset) => {
+                                  useOnrampModal
+                                    .getState()
+                                    .setWalletFirstAsset({
+                                      chainKey: chain.key,
+                                      assetKey: asset.key,
+                                    })
                                   resetAmounts()
                                   setValue("srcChain", chain)
                                   setValue("srcAsset", asset)

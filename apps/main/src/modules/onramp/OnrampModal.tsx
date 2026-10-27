@@ -27,6 +27,7 @@ export const OnrampModal = () => {
   const { t } = useTranslation("common")
   const modal = useOnrampModal((state) => state.modal)
   const depositFlow = useOnrampModal((state) => state.depositFlow)
+  const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const withdrawFlow = useOnrampModal((state) => state.withdrawFlow)
   const setModal = useOnrampModal((state) => state.setModal)
   const openOnchain = useOnrampModal((state) => state.openOnchain)
@@ -42,6 +43,7 @@ export const OnrampModal = () => {
   )
   const page = useOnrampStore((state) => state.page)
   const phase = useDepositJourneyStore((state) => state.phase)
+  const walletContentWidth = useOnrampModal((state) => state.walletContentWidth)
   const navigate = useNavigate()
   const router = useRouter()
   const close = () => setModal(null)
@@ -60,6 +62,10 @@ export const OnrampModal = () => {
     isWithdrawOnchain ||
     modal === "withdrawCex" ||
     isOnchain
+  const isSplitWalletConnection =
+    isWithdrawOnchain &&
+    withdrawFlow === "current" &&
+    withdrawPage === OnrampScreen.WithdrawOnchainWallet
   const contentWidth =
     modal === "depositOnchain" && page === OnrampScreen.DepositOnchainRecipient
       ? 650
@@ -102,7 +108,11 @@ export const OnrampModal = () => {
           isOpen={modal !== null}
           stepKey={`${modal}:${isWithdraw ? withdrawPage : isOnchain ? (modal === "depositOnchainPreview" ? phase : page) : "method"}`}
           loadingTitle={t(isWithdraw ? "withdraw" : "deposit")}
-          contentWidth={pxToRem(contentWidth)}
+          contentWidth={
+            isSplitWalletConnection
+              ? (walletContentWidth ?? pxToRem(650))
+              : pxToRem(contentWidth)
+          }
           hasFlowSwitcher={
             isOnchain ||
             isWithdrawTransfer ||
@@ -119,7 +129,11 @@ export const OnrampModal = () => {
           {modal === "deposit" && <DepositMethodSelect onSelect={select} />}
           {isOnchain && (
             <DepositOnchainModalContent
-              flow={modal === "depositOnchainPreview" ? depositFlow : "current"}
+              flow={
+                modal === "depositOnchainPreview"
+                  ? depositFlow
+                  : walletFirstFlow
+              }
             />
           )}
           {modal === "bankDeposit" && (

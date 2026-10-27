@@ -1,6 +1,6 @@
 import { TabsRoot } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
-import { styled } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 import { SOnrampFlowContent } from "./OnrampFlowContent.styled"
 
@@ -14,12 +14,31 @@ export const SOnrampVariantContent = styled(SOnrampFlowContent)`
   }
 `
 
-export const SOnrampVariantRoot = styled(TabsRoot)`
+export const SOnrampVariantRoot = styled(TabsRoot, {
+  shouldForwardProp: (prop) => prop !== "desktopMinHeight",
+})<{ desktopMinHeight?: number }>`
   display: flex;
   flex-direction: column;
   min-height: 0;
 
   ${mq("sm")} {
+    ${({ desktopMinHeight }) =>
+      desktopMinHeight !== undefined &&
+      css`
+        min-height: min(
+          ${pxToRem(desktopMinHeight)},
+          calc(
+            100dvh - 2 * var(--modal-block-offset) - var(
+                --onramp-bottom-content-height,
+                0px
+              )
+          )
+        );
+
+        & > [role="tabpanel"] > :only-child {
+          flex: 1;
+        }
+      `}
     max-height: calc(
       100dvh - 2 * var(--modal-block-offset) - var(
           --onramp-bottom-content-height,

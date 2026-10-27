@@ -10,6 +10,7 @@ import { WalletMode } from "@/config/wallet"
 import {
   getConflictingWalletProviders,
   getConnectAllGroups,
+  getConnectedWalletSourceGroups,
   getExclusiveWalletProviderTypes,
   getSelectableWallets,
   getWalletGroupSourceModes,
@@ -395,6 +396,110 @@ describe("selectWalletSources", () => {
 
     expect(titles(recentGroups)).toEqual(["Talisman"])
     expect(titles(moreGroups)).toEqual(["Enkrypt"])
+  })
+})
+
+describe("getConnectedWalletSourceGroups", () => {
+  const allGroups = (sources: ReturnType<typeof selectWalletSources>) => [
+    ...sources.recentGroups,
+    ...sources.installedGroups,
+    ...sources.deeplinkedGroups,
+    ...sources.walletConnectGroups,
+    ...sources.moreGroups,
+  ]
+
+  it("includes connected brands beyond the recent-wallet limit", () => {
+    const wallets = [PHANTOM, POLKADOT_JS, TALISMAN, SUBWALLET, NOVA, RABBY]
+    const connectedProviders = wallets.map((wallet) => wallet.provider)
+    const sources = selectWalletSources(
+      wallets,
+      null,
+      connectedProviders,
+      connectedProviders,
+    )
+
+    expect(sources.recentGroups).toHaveLength(5)
+    expect(
+      titles(
+        getConnectedWalletSourceGroups(allGroups(sources), connectedProviders),
+      ),
+    ).toEqual([
+      "Phantom",
+      "Polkadot.js",
+      "Talisman",
+      "SubWallet",
+      "Nova Wallet",
+      "Rabby",
+    ])
+  })
+
+  it("excludes disconnected recent wallets rather than inferring a connection from recency", () => {
+    const connectedProviders = [WalletProviderType.Talisman]
+    const sources = selectWalletSources(
+      [PHANTOM, TALISMAN],
+      null,
+      connectedProviders,
+      [WalletProviderType.Phantom, WalletProviderType.Talisman],
+    )
+
+    expect(titles(sources.recentGroups)).toEqual(["Phantom", "Talisman"])
+    expect(
+      titles(
+        getConnectedWalletSourceGroups(allGroups(sources), connectedProviders),
+      ),
+    ).toEqual(["Talisman"])
+  })
+
+  it("renders each connected brand once when category inputs overlap", () => {
+    const groups = groupWalletsBySource([TALISMAN, TALISMAN_EVM, PHANTOM])
+    const connectedProviders = [
+      WalletProviderType.TalismanEvm,
+      WalletProviderType.Phantom,
+    ]
+
+    expect(
+      getConnectedWalletSourceGroups(
+        [...groups, ...groups],
+        connectedProviders,
+      ),
+    ).toEqual(groups)
+  })
+
+  it("includes a connected WalletConnect session from its separate category", () => {
+    const connectedProviders = [WalletProviderType.WalletConnect]
+    const sources = selectWalletSources(
+      [
+        TALISMAN,
+        wallet(WalletProviderType.WalletConnect, "WalletConnect", false),
+      ],
+      null,
+      connectedProviders,
+    )
+
+    expect(sources.recentGroups).toEqual([])
+    expect(
+      titles(
+        getConnectedWalletSourceGroups(allGroups(sources), connectedProviders),
+      ),
+    ).toEqual(["WalletConnect"])
+  })
+
+  it("does not reintroduce a connected provider outside the selected mode", () => {
+    const connectedProviders = [
+      WalletProviderType.Talisman,
+      WalletProviderType.Phantom,
+    ]
+    const sources = selectWalletSources(
+      [TALISMAN, TALISMAN_SOL, PHANTOM],
+      SOLANA_PROVIDERS,
+      connectedProviders,
+    )
+
+    expect(
+      titles(
+        getConnectedWalletSourceGroups(allGroups(sources), connectedProviders),
+      ),
+    ).toEqual(["Phantom"])
   })
 })
 

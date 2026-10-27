@@ -12,8 +12,8 @@ export const DepositOnchainModalContent: FC<
   DepositOnchainModalContentProps
 > = ({ flow }) => (
   <DepositFlowLayout flow={flow}>
-    {flow === "current" ? (
-      <DepositOnchain />
+    {flow === "current" || flow === "connected" ? (
+      <DepositOnchain key={flow} />
     ) : (
       <DepositPreview variant={flow} />
     )}

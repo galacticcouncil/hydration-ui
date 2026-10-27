@@ -30,6 +30,10 @@ export const WithdrawOnchainSteps: FC<WithdrawOnchainStepsProps> = ({
   const { papi } = useRpcProvider()
   const page = useOnrampModal((state) => state.withdrawPage)
   const paginateTo = useOnrampModal((state) => state.paginateWithdraw)
+  const flow = useOnrampModal((state) => state.withdrawFlow)
+  const setWalletContentWidth = useOnrampModal(
+    (state) => state.setWalletContentWidth,
+  )
   const setAccount = useWeb3Connect((state) => state.setAccount)
   const { watch, setValue } = useFormContext<XcmFormValues>()
   const selectedAsset = watch("srcAsset")
@@ -49,6 +53,10 @@ export const WithdrawOnchainSteps: FC<WithdrawOnchainStepsProps> = ({
   if (page === OnrampScreen.WithdrawOnchainWallet)
     return (
       <Web3ConnectPage
+        layout={flow === "current" ? "split" : "page"}
+        onContentWidthChange={
+          flow === "current" ? setWalletContentWidth : undefined
+        }
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.SubstrateEVM}
