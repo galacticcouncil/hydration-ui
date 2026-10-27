@@ -45,6 +45,7 @@ import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVa
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import {
   getDepositOptions,
+  isOneToOneDeposit,
   isSwapDeposit,
   type PropellerDepositOption,
 } from "@/modules/strategies/propeller/utils/depositOptions"
@@ -180,7 +181,9 @@ export const DepositForm = ({
     if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
     if (atCapacity) return t("deposit.cta.full")
-    return isSwap ? t("deposit.cta.swapAndDeposit") : t("deposit.cta.deposit")
+    return isSwap && !isOneToOneDeposit(selected)
+      ? t("deposit.cta.swapAndDeposit")
+      : t("deposit.cta.deposit")
   })()
 
   // each reason is one the contract itself enforces (see depositGates)

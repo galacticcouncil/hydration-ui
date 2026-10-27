@@ -32,6 +32,10 @@ export const getDepositOptions = (
 export const isSwapDeposit = ({ vault, assetId }: PropellerDepositOption) =>
   assetId !== vault.assetId
 
+/** the collateral's product token (GETH) converts 1:1: a deposit, not a swap */
+export const isOneToOneDeposit = ({ vault, assetId }: PropellerDepositOption) =>
+  assetId !== vault.assetId && assetId === vault.collateralDisplayId
+
 /** the first asset the wallet holds, base asset first; the base asset if none */
 export const getVaultDepositOption = (
   vault: PropellerVaultConfig,

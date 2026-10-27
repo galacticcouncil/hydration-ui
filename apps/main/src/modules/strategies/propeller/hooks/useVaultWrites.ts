@@ -462,18 +462,27 @@ export function useDeposit(
         getAssetWithFallback(trade.assetIn).symbol,
       )
       const deposited = formatAmount(formatUnits(depositAmount, decimals))
+      // GETH unwraps 1:1 into the collateral: a conversion, not a swap
       const swapStep = (tx: AnyPapiTx) => ({
         tx,
-        stepTitle: t("propeller:deposit.step.swap"),
+        stepTitle: t(
+          exact
+            ? "propeller:deposit.step.convert"
+            : "propeller:deposit.step.swap",
+        ),
         toasts: {
-          submitted: t("propeller:deposit.swapStep.toast.submitted", {
-            amountIn,
-            symbol,
-          }),
-          success: t("propeller:deposit.swapStep.toast.success", {
-            amountIn,
-            symbol,
-          }),
+          submitted: t(
+            exact
+              ? "propeller:deposit.convertStep.toast.submitted"
+              : "propeller:deposit.swapStep.toast.submitted",
+            { amountIn, symbol },
+          ),
+          success: t(
+            exact
+              ? "propeller:deposit.convertStep.toast.success"
+              : "propeller:deposit.swapStep.toast.success",
+            { amountIn, symbol },
+          ),
         },
       })
 
@@ -557,15 +566,15 @@ export function useDeposit(
       return createTransaction(
         {
           tx,
-          title: t("propeller:deposit.swap.title"),
+          // only the 1:1 GETH unwrap takes this path: to the user it's a deposit
+          title: t("deposit"),
           description: t("propeller:deposit.swap.description.exact", {
             amountIn,
             amount: deposited,
             symbol,
           }),
           toasts: {
-            submitted: t("propeller:deposit.swap.toast.submitted", {
-              amountIn,
+            submitted: t("propeller:deposit.toast.submitted", {
               amount: deposited,
             }),
             success: t("propeller:deposit.toast.success", {

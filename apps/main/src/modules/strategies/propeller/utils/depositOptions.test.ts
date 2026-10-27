@@ -5,6 +5,7 @@ import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config
 import {
   getDepositOptions,
   getVaultDepositOption,
+  isOneToOneDeposit,
   isSwapDeposit,
 } from "./depositOptions"
 
@@ -37,6 +38,13 @@ describe("Deposit options", () => {
     expect(isSwapDeposit({ vault: jeth, assetId: "34" })).toBe(true)
     expect(isSwapDeposit({ vault: jeth, assetId: "4200" })).toBe(false)
     expect(isSwapDeposit({ vault: jbtc, assetId: "1000765" })).toBe(false)
+  })
+
+  it("treats GETH as a 1:1 deposit, not a swap", () => {
+    const withGeth = { ...jeth, collateralDisplayId: "420" }
+    expect(isOneToOneDeposit({ vault: withGeth, assetId: "420" })).toBe(true)
+    expect(isOneToOneDeposit({ vault: withGeth, assetId: "34" })).toBe(false)
+    expect(isOneToOneDeposit({ vault: withGeth, assetId: "4200" })).toBe(false)
   })
 
   it("starts on the base asset; the collateral only when it is all the wallet holds", () => {
