@@ -1,18 +1,20 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { type Hex } from "viem"
 
-import { useBlockTime } from "@/api/chain"
-import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
+import {
+  PROPELLER_VAULTS,
+  type PropellerVaultConfig,
+} from "@/modules/strategies/propeller/config/vaults"
+import { exitBacklogQuery } from "@/modules/strategies/propeller/hooks/useExitBacklog"
 import { debtPerCollateral } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { vaultQueueQuery } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
-import { vaultSettleLogsQuery } from "@/modules/strategies/propeller/hooks/useSettlePace"
 import {
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   claimableInSeconds,
-  measureSettlePace,
+  notStartedEquity,
   reserveCoversExit,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
@@ -20,7 +22,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 /**
  * When a withdrawal requested now would be fully claimable: the cooldown, then
- * everything already queued, then this amount, at the keeper's measured pace.
+ * the keeper's exit backlog, which every started withdrawal in every vault
+ * shares, with this one and the requests not started yet added to it.
  */
 export const useNewWithdrawalEstimate = (
   vault: PropellerVaultConfig,
@@ -28,46 +31,58 @@ export const useNewWithdrawalEstimate = (
 ) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { decimals } = getAssetWithFallback(vault.assetId)
-  const { data: blockTimeMs } = useBlockTime()
-  const { data: stats } = useQuery(vaultStatsQuery(rpc, vault, decimals))
+  const decimalsOf = (v: PropellerVaultConfig) =>
+    getAssetWithFallback(v.assetId).decimals
+  const index = PROPELLER_VAULTS.findIndex(
+    (v) => v.vaultAddress === vault.vaultAddress,
+  )
+  const statsQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((v) =>
+      vaultStatsQuery(rpc, v, decimalsOf(v)),
+    ),
+  })
+  const queueQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((v) =>
+      vaultQueueQuery(rpc, v, decimalsOf(v), evmAddress),
+    ),
+  })
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
-  const { data: queue } = useQuery(
-    vaultQueueQuery(rpc, vault, decimals, evmAddress),
-  )
-  const { data: settleLogs } = useQuery(
-    vaultSettleLogsQuery(rpc, vault, decimals),
-  )
+  const { data: backlog } = useQuery(exitBacklogQuery(rpc))
 
-  const pace =
-    settleLogs && blockTimeMs
-      ? measureSettlePace(settleLogs.logs, blockTimeMs / 1000)
-      : null
+  const debtPerCollateralOf = (i: number) =>
+    debtPerCollateral(
+      statsQueries[i]?.data?.mainDebtUsd,
+      statsQueries[i]?.data?.totalAssets,
+    )
+  const stats = statsQueries[index]?.data
+  const queue = queueQueries[index]?.data
   const ahead = (queue?.queued ?? []).reduce((sum, q) => sum + q.remaining, 0)
+  const notStartedHollar = notStartedEquity(
+    PROPELLER_VAULTS.map((_, i) => ({
+      queued: queueQueries[i]?.data?.queued ?? [],
+      debtPerCollateral: debtPerCollateralOf(i),
+    })),
+  )
 
   /** `collateral` in collateral units (GETH, not ETH) */
   return (collateral: number) => {
+    const perCollateral = debtPerCollateralOf(index)
     const reserveShort = !reserveCoversExit({
       carry: subLoop?.negativeCarry ?? null,
       reserveHollar: stats?.protocolReserveHollar ?? null,
-      debtPerCollateral: debtPerCollateral(
-        stats?.mainDebtUsd,
-        stats?.totalAssets,
-      ),
+      debtPerCollateral: perCollateral,
       collateral: ahead + collateral,
     })
     return {
       reserveShort,
       seconds:
-        reserveShort || !stats || !queue
+        reserveShort || !stats || !queue || perCollateral === null
           ? null
           : claimableInSeconds({
-              pace,
-              remaining: collateral,
-              ahead,
+              backlog: backlog ?? null,
+              notStartedHollar: notStartedHollar + collateral * perCollateral,
               cooldownLeftSeconds: stats.withdrawalDelay,
               started: false,
-              sinceLastSettleSeconds: null,
             }),
     }
   }

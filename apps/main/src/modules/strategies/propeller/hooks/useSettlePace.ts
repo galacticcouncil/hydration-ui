@@ -38,8 +38,8 @@ type VaultScan = {
 const REORG_DEPTH = 64n
 
 /**
- * How far back the settle pace looks (~2.3 days at 2 s blocks): long enough
- * to reach the last stretch the keeper was busy, even on a quiet vault.
+ * How far back settlements are read (~2.3 days at 2 s blocks): a closed
+ * withdrawal keeps the rate of its last tranche when that falls inside.
  */
 const PACE_WINDOW_BLOCKS = 100_000n
 
@@ -47,7 +47,7 @@ const PACE_WINDOW_BLOCKS = 100_000n
 const paceScans = new Map<Hex, VaultScan>()
 
 /**
- * Every tranche settled in the pace window, any owner. Scans the window once,
+ * Every tranche settled in the window, any owner. Scans the window once,
  * then only new blocks plus the reorgable tail.
  */
 export const vaultSettleLogsQuery = (

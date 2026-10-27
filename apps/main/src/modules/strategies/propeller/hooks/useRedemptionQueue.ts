@@ -36,6 +36,8 @@ export interface QueueEntry {
 export interface QueuedRequest {
   requestId: number
   remaining: number
+  /** the keeper has started its unwind; its equity is in the exit backlog */
+  started: boolean
 }
 
 export const vaultQueueQuery = (
@@ -141,7 +143,7 @@ export const vaultQueueQuery = (
                     (1 - Number(repaid) / Number(debtShare))
                   : 0
                 : Number(formatUnits(shares, decimals)) * exchangeRate
-              queued.push({ requestId: Number(id), remaining: left })
+              queued.push({ requestId: Number(id), remaining: left, started })
             }
             if (owner.toLowerCase() !== evmAddress?.toLowerCase()) return null
             const [eligibleAt, claimed, position, surplus, funded] =

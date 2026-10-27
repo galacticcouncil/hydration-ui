@@ -258,6 +258,14 @@ export const SUBLOOP_ABI = [
     "function harvestThreshold() view returns (uint256)",
     "function paused() view returns (bool)",
     "function emergencyPaused() view returns (bool)",
+    // exit pacing: one slice of aPRIME sold per pacing interval frees equity
+    // for every started withdrawal at once
+    "function unwindTranche() view returns (uint256)",
+    "function reservedFreed() view returns (uint256)",
+    "function deleverDebtTarget() view returns (uint256)",
+    "function executionController() view returns (address)",
+    "function primeAToken() view returns (address)",
+    "function pendingIntent() view returns (uint64 nonce, uint64 deadline, uint8 kind, bool controlled, uint128 amountIn, uint128 minOut, uint128 fairOut, uint128 inBase, uint128 outBase)",
   ]),
   {
     type: "function",
@@ -407,4 +415,10 @@ export const YIELD_ACCOUNTING_ABI = parseAbi([
   "function epoch() view returns (uint256)",
   "function unitScale() view returns (uint256)",
   "function totalUnits() view returns (uint256)",
+])
+
+export const EXECUTION_CONTROLLER_ABI = parseAbi([
+  "function lane(address consumer, address tokenIn, address tokenOut) pure returns (bytes32)",
+  "function limits(bytes32 lane) view returns (bytes32 group, uint128 minimum, uint128 maximum)",
+  "function pacing(bytes32 group) view returns (uint64 interval, uint64 nextAt, uint256 lastBlock)",
 ])

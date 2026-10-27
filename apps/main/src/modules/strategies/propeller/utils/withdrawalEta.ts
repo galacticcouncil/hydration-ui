@@ -1,14 +1,3 @@
-/** a keeper's first sliver (<0.0001) says nothing about its tranche pace */
-const PACE_DUST = 0.0001
-/** a longer pause between tranches means the queue was idle, not slow */
-const IDLE_GAP_SECONDS = 15 * 60
-/** fewer tranche gaps than this is too thin to call a pace */
-const MIN_PACE_SAMPLES = 2
-/** the keeper changes; only its latest tranches say how it works now */
-const RECENT_GAPS = 20
-/** a settling request this many keeper cycles without a tranche is stalled */
-const STALL_CYCLES = 5
-
 export type SettleLog = {
   requestId: number
   /** collateral units */
@@ -16,84 +5,79 @@ export type SettleLog = {
   blockNumber: bigint
 }
 
-export type SettlePace = {
-  /** collateral the keeper settles per second while the queue is busy */
-  perSecond: number
-  /** one keeper cycle: the median gap between consecutive tranches */
-  cycleSeconds: number
+/**
+ * The keeper's exit work, shared by every vault. It sells one slice of the
+ * loop's aPRIME per pacing interval and credits the freed HOLLAR to every
+ * started withdrawal pro rata, so all of them finish in the same last slice.
+ */
+export type ExitBacklog = {
+  /** HOLLAR still to free for started withdrawals, all vaults */
+  backlogHollar: number
+  /** HOLLAR of withdrawal equity one slice frees */
+  freedPerSlice: number
+  /** seconds per slice: the keeper's measured cadence, never below pacing */
+  sliceSeconds: number
+  /** a safety de-lever or a pause: withdrawals make no progress */
+  stalled: boolean
 }
 
-/**
- * The keeper settles one tranche per cycle, so its pace is collateral settled
- * over the time between consecutive tranches of the same request. Gaps
- * between requests are cooldowns and an idle queue, not keeper speed.
- */
-export const measureSettlePace = (
-  logs: SettleLog[],
-  blockTimeSeconds: number,
-): SettlePace | null => {
-  const tranches = logs
-    .filter((l) => l.collateral >= PACE_DUST)
-    .sort((a, b) => (a.blockNumber < b.blockNumber ? -1 : 1))
-  const idleBlocks = IDLE_GAP_SECONDS / blockTimeSeconds
-  const gaps: number[] = []
-  let collateral = 0
-  for (let i = tranches.length - 1; i >= 1 && gaps.length < RECENT_GAPS; i--) {
-    const [prev, next] = [tranches[i - 1]!, tranches[i]!]
-    if (prev.requestId !== next.requestId) continue
-    const gap = Number(next.blockNumber - prev.blockNumber)
-    if (gap > idleBlocks || gap === 0) continue
-    collateral += next.collateral
-    gaps.push(gap)
-  }
-  if (gaps.length < MIN_PACE_SAMPLES) return null
-  const blocks = gaps.reduce((sum, gap) => sum + gap, 0)
-  const sorted = [...gaps].sort((a, b) => a - b)
-  return {
-    perSecond: collateral / (blocks * blockTimeSeconds),
-    cycleSeconds: sorted[Math.floor(sorted.length / 2)]! * blockTimeSeconds,
-  }
-}
+/** the keeper starts an eligible unwind on its next cycle */
+const START_SECONDS = 30
+/** the vault pays out on the keeper turn after the last slice is credited */
+const SETTLE_SECONDS = 30
 
 /**
  * Seconds until a withdrawal is fully claimable:
  *
- *   cooldown left + one keeper cycle to start + (ahead + remaining) / pace
+ *   (backlog + not started) / freed per slice × seconds per slice
  *
- * `ahead` is collateral still to settle for earlier requests: the queue is
- * FIFO. null while the pace is unknown or the request has stalled.
+ * plus the cooldown left and a keeper turn to start it, then one to pay out.
+ * Every started withdrawal finishes together, so the whole backlog counts,
+ * never just the queue ahead. Withdrawals that start later push it back; null
+ * while the inputs are unknown or the keeper is stalled.
  */
 export const claimableInSeconds = ({
-  pace,
-  remaining,
-  ahead,
+  backlog,
+  notStartedHollar,
   cooldownLeftSeconds,
   started,
-  sinceLastSettleSeconds,
 }: {
-  pace: SettlePace | null
-  /** collateral units */
-  remaining: number
-  /** collateral units */
-  ahead: number
+  backlog: ExitBacklog | null
+  /** equity of requested withdrawals the keeper has not started, all vaults */
+  notStartedHollar: number
   cooldownLeftSeconds: number
   started: boolean
-  /** since this request's own latest tranche; null before its first one */
-  sinceLastSettleSeconds: number | null
 }): number | null => {
-  if (!pace || pace.perSecond <= 0 || remaining <= 0) return null
-  // a stalled request never gets a countdown that keeps moving forward
-  if (
-    sinceLastSettleSeconds !== null &&
-    sinceLastSettleSeconds > STALL_CYCLES * pace.cycleSeconds
-  )
-    return null
+  if (!backlog || backlog.stalled || backlog.freedPerSlice <= 0) return null
+  const slices =
+    (backlog.backlogHollar + notStartedHollar) / backlog.freedPerSlice
   return (
     Math.max(cooldownLeftSeconds, 0) +
-    (started ? 0 : pace.cycleSeconds) +
-    (ahead + remaining) / pace.perSecond
+    (started ? 0 : START_SECONDS) +
+    slices * backlog.sliceSeconds +
+    SETTLE_SECONDS
   )
 }
+
+/**
+ * HOLLAR equity of requested withdrawals the keeper has not started yet, in
+ * every vault: each joins the shared backlog within a keeper turn.
+ */
+export const notStartedEquity = (
+  vaults: {
+    queued: { remaining: number; started: boolean }[]
+    /** HOLLAR of Main debt per collateral unit; null while unknown */
+    debtPerCollateral: number | null
+  }[],
+) =>
+  vaults.reduce(
+    (sum, { queued, debtPerCollateral }) =>
+      sum +
+      queued
+        .filter((q) => !q.started)
+        .reduce((s, q) => s + q.remaining * (debtPerCollateral ?? 0), 0),
+    0,
+  )
 
 /**
  * The reserve pays each exit's share of the strategy's shortfall. An exit it
@@ -120,7 +104,7 @@ export const reserveCoversExit = ({
   return reserveHollar >= collateral * debtPerCollateral * carry
 }
 
-/** coarse on purpose: the pace wobbles, so minutes beat false precision */
+/** coarse on purpose: keeper turns wobble, so minutes beat false precision */
 export const formatEta = (seconds: number) => {
   if (seconds < 90) return "~1 min"
   if (seconds < 5400) return `~${Math.round(seconds / 60)} min`

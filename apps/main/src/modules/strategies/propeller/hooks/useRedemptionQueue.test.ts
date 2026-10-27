@@ -91,8 +91,8 @@ describe("Withdrawal queue shares", () => {
     const { result } = await queue(0n)
     // request 0 has no debt left to repay; request 1 waits with 2 shares
     expect(result.queued).toEqual([
-      { requestId: 0, remaining: 0 },
-      { requestId: 1, remaining: 2 },
+      { requestId: 0, remaining: 0, started: true },
+      { requestId: 1, remaining: 2, started: false },
     ])
   })
 })

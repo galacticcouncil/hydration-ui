@@ -1,12 +1,12 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { type Hex } from "viem"
 
-import { useBlockTime } from "@/api/chain"
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
 import { baseRateQuery } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { exitBacklogQuery } from "@/modules/strategies/propeller/hooks/useExitBacklog"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
   type QueueEntry,
@@ -24,10 +24,10 @@ import {
 import { type HarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
 import {
   claimableInSeconds,
-  measureSettlePace,
+  type ExitBacklog,
+  notStartedEquity,
   reserveCoversExit,
   type SettleLog,
-  type SettlePace,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -73,8 +73,8 @@ export type PropellerWithdrawalRow = {
   collateralSettled?: number
   settledSoFar?: number
   /**
-   * until the whole withdrawal is claimable, at the keeper's measured pace
-   * behind everything ahead in the queue; null while unknown, stalled or done
+   * until the whole withdrawal is claimable: the keeper's exit backlog, which
+   * every started withdrawal shares; null while unknown, stalled or done
    */
   claimableInSeconds: number | null
   /** the reserve can't cover the strategy shortfall up to this exit */
@@ -98,9 +98,9 @@ export const buildWithdrawalRow = ({
   exchangeRate,
   price,
   baseRate = 1,
-  pace = null,
+  backlog = null,
+  notStartedHollar = 0,
   ahead = 0,
-  sinceLastSettleSeconds = null,
   shortfall,
   now = 0,
 }: {
@@ -110,11 +110,11 @@ export const buildWithdrawalRow = ({
   price: number
   /** collateral -> display-asset spot (GETH -> ETH); 1 when they coincide */
   baseRate?: number
-  pace?: SettlePace | null
-  /** collateral still to settle for earlier requests */
+  backlog?: ExitBacklog | null
+  /** equity of requested withdrawals not yet started, every vault */
+  notStartedHollar?: number
+  /** collateral still to settle for earlier requests in this vault */
   ahead?: number
-  /** since this request's latest tranche; null before its first */
-  sinceLastSettleSeconds?: number | null
   shortfall?: Omit<Parameters<typeof reserveCoversExit>[0], "collateral">
   /** wall clock, ms: the live countdown flips on it, so the estimate must too */
   now?: number
@@ -139,23 +139,21 @@ export const buildWithdrawalRow = ({
     ? entry.collateralOwed
     : entry.shares * exchangeRate
 
-  // collateral units, like the pace: owed minus settled once started,
-  // the shares' current value before
+  // collateral units: owed minus settled once started, the shares' current
+  // value before
   const remainingCollateral = entry.started
     ? entry.collateralOwed - settledSoFar
     : entry.shares * exchangeRate
   const open = entry.active && remainingCollateral > 0
   const claimableIn = open
     ? claimableInSeconds({
-        pace,
-        remaining: remainingCollateral,
-        ahead,
+        backlog,
+        notStartedHollar,
         // a lagging node serves an older block: never count cooldown the
-        // row's own countdown already shows as over
+        // wall clock already shows as over
         cooldownLeftSeconds:
           (entry.eligibleAt - Math.max(entry.observedAt, now)) / 1000,
         started: entry.started,
-        sinceLastSettleSeconds,
       })
     : null
   const reserveShort =
@@ -228,7 +226,6 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { vaults: markets } = usePropellerVaults()
-  const { data: blockTimeMs } = useBlockTime()
 
   const decimalsOf = (vault: PropellerVaultConfig) =>
     getAssetWithFallback(vault.assetId).decimals
@@ -279,7 +276,15 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
     return rate ? Number(rate) : null
   }
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
-  const blockTimeSeconds = blockTimeMs ? blockTimeMs / 1000 : null
+  const { data: backlog } = useQuery(exitBacklogQuery(rpc))
+  const debtPerCollateralOf = (i: number) =>
+    debtPerCollateral(markets[i]?.stats?.mainDebtUsd, markets[i]?.stats?.tvl)
+  const notStartedHollar = notStartedEquity(
+    PROPELLER_VAULTS.map((_, i) => ({
+      queued: queueQueries[i]?.data?.queued ?? [],
+      debtPerCollateral: debtPerCollateralOf(i),
+    })),
+  )
 
   if (!evmAddress) {
     return { positions: [], withdrawals: [], isLoading: false, isError: false }
@@ -317,21 +322,15 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const withdrawals = sortWithdrawalRows(
     PROPELLER_VAULTS.flatMap((vault, i) => {
       const market = markets[i]
-      const settleLogs = settleLogQueries[i]?.data
-      const pace =
-        settleLogs && blockTimeSeconds
-          ? measureSettlePace(settleLogs.logs, blockTimeSeconds)
-          : null
       const queued = queueQueries[i]?.data?.queued ?? []
       const stats = market?.stats
       const shortfall = {
         carry: subLoop?.negativeCarry ?? null,
         reserveHollar: stats?.protocolReserveHollar ?? null,
-        debtPerCollateral: debtPerCollateral(stats?.mainDebtUsd, stats?.tvl),
+        debtPerCollateral: debtPerCollateralOf(i),
       }
-      return (userQueues[i] ?? []).map((entry) => {
-        const lastTranche = lastTrancheBlock(settleLogs?.logs, entry.requestId)
-        return buildWithdrawalRow({
+      return (userQueues[i] ?? []).map((entry) =>
+        buildWithdrawalRow({
           vault,
           entry,
           exchangeRate: market?.stats?.exchangeRate ?? 1,
@@ -339,18 +338,15 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
           baseRate:
             (!entry.active && closedRateOf(vault, entry.requestId)) ||
             (market?.baseRate ? Number(market.baseRate) : 1),
-          pace,
+          backlog: backlog ?? null,
+          notStartedHollar,
           ahead: queued
             .filter((q) => q.requestId < entry.requestId)
             .reduce((sum, q) => sum + q.remaining, 0),
-          sinceLastSettleSeconds:
-            lastTranche !== null && settleLogs && blockTimeSeconds
-              ? Number(settleLogs.head - lastTranche) * blockTimeSeconds
-              : null,
           shortfall,
           now: Date.now(),
-        })
-      })
+        }),
+      )
     }),
   )
 

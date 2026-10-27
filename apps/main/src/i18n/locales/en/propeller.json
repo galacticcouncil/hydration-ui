@@ -9,7 +9,7 @@
   "explainer.earn.description": "Harvested yield is converted into your deposited asset after costs and fees. Funded earnings stay invested and are included in your balance.",
   "explainer.earn.note": "Earnings compound into your balance automatically. Yield that isn't harvested yet shows separately as pending yield.",
   "explainer.withdraw.description": "Request a full or partial withdrawal. Your shares stay invested during the cooldown, then settle in parts. Claim each part from Withdrawals in the asset you choose.",
-  "explainer.withdraw.note": "The cooldown is the earliest the unwind can start. How long settling takes depends on the queue ahead of you; each withdrawal shows its estimate.",
+  "explainer.withdraw.note": "The cooldown is the earliest the unwind can start. Open withdrawals settle together, so new ones can stretch the wait; each withdrawal shows its estimate.",
   "explainer.risk": "Returns are variable. The leveraged strategy can lose value or be liquidated, and withdrawals may be delayed. Principal and immediate repayment are not guaranteed.",
   "explainer.details": "How it works and risks",
   "explainer.show": "Read more",
