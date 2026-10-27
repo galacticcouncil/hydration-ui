@@ -1,4 +1,11 @@
-import { Alert, Paper, Stack } from "@galacticcouncil/ui/components"
+import {
+  Alert,
+  Paper,
+  Stack,
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Navigate } from "@tanstack/react-router"
@@ -45,38 +52,71 @@ const PropellerVaultContent = () => {
 
   const defaultDeposit = useDefaultDepositVault()
 
+  // below md the grid stacks into one column, so the page splits into tabs
+  const { gte } = useBreakpoints()
+  const stacked = !gte("md")
+  const [tab, setTab] = useState<"overview" | "positions">("overview")
+  const hasUserData = positions.length > 0 || withdrawals.length > 0
+  const showOverview = !stacked || !hasUserData || tab === "overview"
+  const showPositions = !stacked || (hasUserData && tab === "positions")
+
   return (
-    <Stack gap="xxl">
+    <Stack gap="xl">
       <StrategyHeader />
       {isError && (
         <Alert variant="warning" description={t("positions.readFailed")} />
       )}
 
+      {stacked && hasUserData && (
+        <ToggleGroup
+          type="single"
+          fullWidth
+          value={tab}
+          onValueChange={(value) => value && setTab(value)}
+        >
+          <ToggleGroupItem value="overview">
+            {t("tab.overview")}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="positions">
+            {t("tab.myPositions")}
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
       <TwoColumnGrid template="sidebar">
-        <Stack gap="xl" minWidth={0} sx={{ order: [1, null, 0] }}>
-          <MyPositionsCard
-            positions={positions}
-            onWithdraw={setWithdrawVault}
-          />
+        <Stack
+          gap="xl"
+          minWidth={0}
+          sx={{ order: [showOverview ? 1 : 0, null, 0] }}
+        >
+          {showPositions && (
+            <MyPositionsCard
+              positions={positions}
+              onWithdraw={setWithdrawVault}
+            />
+          )}
 
-          <StrategyDetailsCard />
-
-          <AboutCard />
+          {showOverview && (
+            <>
+              <StrategyDetailsCard />
+              <AboutCard />
+            </>
+          )}
         </Stack>
 
         <Stack gap="xl" minWidth={0}>
-          {defaultDeposit.deposit ? (
-            <Paper px="xl" position="relative">
-              <DepositForm
-                key={`${defaultDeposit.deposit.vault.vaultAddress}:${defaultDeposit.deposit.assetId}`}
-                initialDeposit={defaultDeposit.deposit}
-                onSelect={defaultDeposit.markUserPick}
-              />
-            </Paper>
-          ) : (
-            defaultDeposit.isLoading && <AppSkeleton />
-          )}
-          <WithdrawalsCard rows={withdrawals} />
+          {showOverview &&
+            (defaultDeposit.deposit ? (
+              <Paper px="xl" position="relative">
+                <DepositForm
+                  key={`${defaultDeposit.deposit.vault.vaultAddress}:${defaultDeposit.deposit.assetId}`}
+                  initialDeposit={defaultDeposit.deposit}
+                  onSelect={defaultDeposit.markUserPick}
+                />
+              </Paper>
+            ) : (
+              defaultDeposit.isLoading && <AppSkeleton />
+            ))}
+          {showPositions && <WithdrawalsCard rows={withdrawals} />}
         </Stack>
       </TwoColumnGrid>
 

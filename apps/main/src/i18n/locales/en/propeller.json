@@ -1,4 +1,6 @@
 {
+  "tab.overview": "Overview",
+  "tab.myPositions": "My positions",
   "explainer.intro": "Deposit a single asset. Juicer manages borrowing and converts strategy yield back into your deposited asset.",
   "explainer.steps": "How Juicer works",
   "explainer.deposit.label": "Deposit",
