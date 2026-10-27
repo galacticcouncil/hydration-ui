@@ -122,9 +122,9 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
       onSubmitted: (txHash) => {
         submitted = true
         currentBaseConfig.onSubmitted?.(txHash)
-        transaction.onSubmitted?.(txHash)
         setIsLoading(true)
         if (isLastTransaction) {
+          transaction.onSubmitted?.(txHash)
           setIsLastSubmitted(true)
         }
       },

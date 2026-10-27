@@ -126,8 +126,8 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
         // the position and the form never offer a balance already withdrawn
         for (const delay of [4_000, 8_000, 15_000])
           setTimeout(() => invalidateVault(vaultAddress), delay)
-        onWriteSuccess?.()
       },
+      onSubmitted: () => onWriteSuccess?.(),
       resolveOn: "success",
     }),
     [address, invalidateVault, onWriteSuccess, queryClient, rpc],
