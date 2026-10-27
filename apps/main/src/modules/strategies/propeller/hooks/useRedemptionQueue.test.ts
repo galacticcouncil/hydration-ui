@@ -30,6 +30,7 @@ const queue = async (requestUnits: bigint) => {
     redemptions: ([id]) =>
       id === 0n ? redemption(unit, 2n * unit) : redemption(2n * unit),
     unwindEligibleAt: () => 0n,
+    exchangeRate: () => 10n ** 18n,
     claimedCollateral: () => 0n,
     positions: () => [0n, 0n, 0n, 0n, owner],
     surplusOf: () => 0n,
@@ -84,5 +85,14 @@ describe("Withdrawal queue shares", () => {
     expect(
       readContract.mock.calls.map(([request]) => request.functionName),
     ).not.toContain("totalUnits")
+  })
+
+  it("lists what every open request still waits for, in queue order", async () => {
+    const { result } = await queue(0n)
+    // request 0 has no debt left to repay; request 1 waits with 2 shares
+    expect(result.queued).toEqual([
+      { requestId: 0, remaining: 0 },
+      { requestId: 1, remaining: 2 },
+    ])
   })
 })

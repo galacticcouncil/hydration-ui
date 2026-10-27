@@ -73,8 +73,8 @@ const withdrawal = (
   estEth: 1,
   estUsd: 2500,
   state: "pending",
-  etaSeconds: null,
-  typicalSettleSeconds: null,
+  claimableInSeconds: null,
+  reserveShort: false,
   settledSoFar: 0,
   collateralSettled: 0,
   eligibleAt: 0,
@@ -113,6 +113,7 @@ beforeEach(() => {
   vi.mocked(usePropellerVaults).mockReturnValue({
     vaults: PROPELLER_VAULTS.map((vault) => ({
       vault,
+      deployedFraction: null,
       accrualPaused: false,
       apy: 6.5,
       runRateApy: 6.5,
@@ -227,6 +228,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "1.800000000000000001",
           assetValue: 2,
           usdValue: 5000,
+          deployedFraction: null,
           accrualPaused: false,
           apy: 6.5,
           pendingYield: 0.03,
@@ -287,6 +289,7 @@ describe("Portfolio strategy position projection", () => {
             sharesExact: "1",
             assetValue: 1,
             usdValue: 2500,
+            deployedFraction: null,
             accrualPaused: false,
             apy: 6.5,
             pendingYield: null,
@@ -301,6 +304,7 @@ describe("Portfolio strategy position projection", () => {
       vi.mocked(usePropellerVaults).mockReturnValue({
         vaults: PROPELLER_VAULTS.map((vault) => ({
           vault,
+          deployedFraction: null,
           accrualPaused: false,
           apy: 6.5,
           price: 2500,
@@ -360,6 +364,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "0",
           assetValue: 0,
           usdValue: 0,
+          deployedFraction: null,
           accrualPaused: false,
           apy: 6.5,
           pendingYield: 0.004,
@@ -428,6 +433,7 @@ describe("Portfolio strategy position projection", () => {
           sharesExact: "1",
           assetValue: 1,
           usdValue: 0,
+          deployedFraction: null,
           accrualPaused: false,
           apy: null,
           pendingYield: null,

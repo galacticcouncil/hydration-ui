@@ -8,6 +8,7 @@ import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiqu
 import {
   DEBT_TOKEN_ABI,
   FEE_CONTROLLER_ABI,
+  MAIN_DEBT_ABI,
   POOL_ABI,
   SUBLOOP_ABI,
   VAULT_ABI,
@@ -140,10 +141,21 @@ export const vaultStatsQuery = (
         safeRead("Vault.deleverTarget", () => contract.read.deleverTarget(at)),
         safeRead("Vault.mainDebt", () => contract.read.mainDebt(at)),
       ])
-      const deploying =
-        mainDebt === null || mainDebt === zeroAddress
-          ? null
-          : await readMainDebtBusy(evm, mainDebt, at.blockNumber)
+      const hasMainDebt = mainDebt !== null && mainDebt !== zeroAddress
+      const [deploying, protocolReserve] = hasMainDebt
+        ? await Promise.all([
+            readMainDebtBusy(evm, mainDebt, at.blockNumber),
+            // covers each exit's share of a strategy shortfall
+            safeRead("MainDebt.protocolReserve", () =>
+              evm.readContract({
+                address: mainDebt,
+                abi: MAIN_DEBT_ABI,
+                functionName: "protocolReserve",
+                ...at,
+              }),
+            ),
+          ])
+        : [null, null]
       const [protocolFeeBps, mainDiscountBps, band] = await Promise.all([
         safeRead("FeeController.protocolFeeBps", () =>
           evm.readContract({
@@ -214,6 +226,10 @@ export const vaultStatsQuery = (
         pendingDeployment:
           deferredDeployment === true && pendingDeployment !== null
             ? formatUnits(pendingDeployment, decimals)
+            : null,
+        protocolReserveHollar:
+          typeof protocolReserve === "bigint"
+            ? Number(formatUnits(protocolReserve, 18))
             : null,
         protocolFeeBps: protocolFeeBps === null ? null : Number(protocolFeeBps),
         mainDiscountBps:
@@ -428,6 +444,8 @@ export const claimPreviewQuery = (
     queryFn: () =>
       prepareWithdrawalClaim(evm, vault.vaultAddress, requestId, evmAddress),
     enabled: !!evmAddress,
+    // tranches keep settling while the modal is open; the quotes follow
+    refetchInterval: 10_000,
   })
 
 /** What claiming `collateral` pays in each payout asset the vault offers. */

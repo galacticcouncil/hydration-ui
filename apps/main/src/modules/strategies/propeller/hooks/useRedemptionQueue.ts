@@ -32,6 +32,12 @@ export interface QueueEntry {
   sourcePending: boolean
 }
 
+/** collateral an active request still waits for, whoever owns it */
+export interface QueuedRequest {
+  requestId: number
+  remaining: number
+}
+
 export const vaultQueueQuery = (
   rpc: TProviderContext,
   vault: PropellerVaultConfig,
@@ -50,14 +56,16 @@ export const vaultQueueQuery = (
       // Use one block so cooldown, debt and claimability cannot disagree across reads.
       const block = await rpc.evm.getBlock()
       const options = { blockNumber: block.number }
-      const [tail, totalQueued, unwind, mainDebt, accounting] =
+      const [tail, totalQueued, unwind, mainDebt, accounting, rateWad] =
         await Promise.all([
           contract.read.queueTail(options),
           contract.read.totalQueuedShares(options),
           contract.read.queueUnwind(options),
           contract.read.mainDebt(options),
           contract.read.yieldAccounting(options),
+          contract.read.exchangeRate(options),
         ])
+      const exchangeRate = Number(formatUnits(rateWad, 18))
       const ledger = getContract({
         address: mainDebt,
         abi: MAIN_DEBT_ABI,
@@ -100,6 +108,9 @@ export const vaultQueueQuery = (
         })
       }
       const queue: QueueEntry[] = []
+      // everyone's open requests: the queue is FIFO, so what is ahead of a
+      // request decides when it settles
+      const queued: QueuedRequest[] = []
       // Historical requests may still own recoveries after collateral has been claimed.
       // Bound RPC fan-out while scanning; a user-request index can replace this scan.
       for (let start = 0n; start < tail; start += 32n) {
@@ -120,12 +131,19 @@ export const vaultQueueQuery = (
               ,
               active,
             ] = await contract.read.redemptions([id], options)
-            if (
-              owner === zeroAddress ||
-              owner.toLowerCase() !== evmAddress?.toLowerCase()
-            )
-              return null
+            if (owner === zeroAddress) return null
             const started = id < unwind
+            if (active) {
+              // collateral is released in step with the debt repaid
+              const left = started
+                ? debtShare > 0n
+                  ? Number(formatUnits(collateralOwed, decimals)) *
+                    (1 - Number(repaid) / Number(debtShare))
+                  : 0
+                : Number(formatUnits(shares, decimals)) * exchangeRate
+              queued.push({ requestId: Number(id), remaining: left })
+            }
+            if (owner.toLowerCase() !== evmAddress?.toLowerCase()) return null
             const [eligibleAt, claimed, position, surplus, funded] =
               await Promise.all([
                 contract.read.unwindEligibleAt([id], options),
@@ -169,6 +187,7 @@ export const vaultQueueQuery = (
       }
       return {
         queue,
+        queued: queued.sort((a, b) => a.requestId - b.requestId),
         totalQueuedShares: Number(formatUnits(totalQueued, decimals)),
       }
     },

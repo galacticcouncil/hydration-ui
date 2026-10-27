@@ -17,6 +17,7 @@ import {
   useClaim,
   usePendingClaimIds,
 } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { formatEta } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -48,14 +49,6 @@ const useCooldownElapsed = (eligibleAt: number, inCooldown: boolean) => {
     return () => clearTimeout(id)
   }, [eligibleAt, inCooldown])
   return now >= eligibleAt
-}
-
-/** coarse on purpose: the pace wobbles, so minutes beat false precision */
-const formatEta = (seconds: number) => {
-  if (seconds < 90) return "~1 min"
-  if (seconds < 5400) return `~${Math.round(seconds / 60)} min`
-  if (seconds < 172800) return `~${Math.round(seconds / 3600)} h`
-  return `~${Math.round(seconds / 86400)} d`
 }
 
 type WithdrawalPositionProps = {
@@ -98,65 +91,86 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // anything settled is claimable: the contract takes any amount, so the UI
   // never holds a partial claim back
   const status = getWithdrawalStateLabel({ ...row, state })
+  // when the whole withdrawal is claimable: measured keeper pace behind the
+  // queue ahead — an estimate, so it is shown coarse and never as a promise
+  const eta =
+    row.claimableInSeconds !== null ? formatEta(row.claimableInSeconds) : null
+  const etaLine = row.reserveShort
+    ? t("withdrawals.eta.reserve")
+    : eta
+      ? t("withdrawals.eta.claimableIn", { eta })
+      : undefined
   const stats =
     state === "cooldown"
       ? [
           {
-            label: t("withdrawals.eligibleAt"),
+            // two lines like a settling row: the Cooldown chip names the
+            // countdown, the line under it says when everything is claimable
             value: <DateText date={new Date(row.eligibleAt)} />,
+            bottomLabel: etaLine,
           },
         ]
-      : // a claim button already names the settled amount, and next to it
-        // the stat overflows the card — show it only while there is no button
-        row.state === "partial" &&
-          (row.collateralOwed ?? 0) > 0 &&
-          status !== "claimable"
+      : status === "pending" && etaLine
         ? [
             {
-              // two lines, mirroring the amount column: what has settled, then
-              // when the rest is expected. The chip already says Settling.
-              // progress of the whole withdrawal, claimed parts included,
-              // so a partial claim never makes it look like it went back to 0%
-              value: t("withdrawals.settledInline", {
-                settled: t("common:currency", {
-                  value: row.settledSoFar ?? 0,
-                  symbol,
-                  maximumFractionDigits: 4,
-                }),
-                pct: (
-                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
-                  100
-                ).toFixed(1),
-              }),
-              // the pace is measured from recent tranches and decays through
-              // stalls — "at the current pace", never a promise
-              bottomLabel:
-                row.etaSeconds !== null
-                  ? t("withdrawals.etaAtPace", {
-                      eta: formatEta(row.etaSeconds),
-                    })
-                  : row.typicalSettleSeconds !== null
-                    ? t("withdrawals.etaTypical", {
-                        eta: formatEta(row.typicalSettleSeconds),
-                      })
-                    : undefined,
+              label: t("withdrawals.eta.label"),
+              value: row.reserveShort ? t("withdrawals.eta.reserveShort") : eta,
+              tooltip: row.reserveShort
+                ? t("withdrawals.eta.reserveTooltip")
+                : undefined,
             },
           ]
-        : undefined
+        : // a claim button already names the settled amount, and next to it
+          // the stat overflows the card — show it only while there is no button
+          row.state === "partial" &&
+            (row.collateralOwed ?? 0) > 0 &&
+            status !== "claimable"
+          ? [
+              {
+                // two lines, mirroring the amount column: what has settled,
+                // then when the rest is expected. The chip already says
+                // Settling. Progress of the whole withdrawal, claimed parts
+                // included, so a partial claim never looks like a reset to 0%
+                value: t("withdrawals.settledInline", {
+                  settled: t("common:currency", {
+                    value: row.settledSoFar ?? 0,
+                    symbol,
+                    maximumFractionDigits: 4,
+                  }),
+                  pct: (
+                    ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
+                    100
+                  ).toFixed(1),
+                }),
+                bottomLabel: etaLine,
+              },
+            ]
+          : undefined
 
   // the contract keeps only when the unwind may start; the request came one
   // withdrawal delay earlier (exact while the delay is unchanged). It tells
   // apart otherwise identical rows, quietly, on the USD line — only where no
   // stat competes for the width: an in-progress row already says when.
+  // A partly claimable row has its Claim button where the estimate goes, so
+  // the rest's estimate takes the date's place on the USD line.
   const amountMeta =
-    vaultStats === undefined || stats !== undefined
-      ? usd
-      : t("withdrawals.amountMeta", {
+    status === "claimable" &&
+    row.state === "partial" &&
+    (eta || row.reserveShort)
+      ? t("withdrawals.amountMetaRest", {
           usd,
-          requested: new Date(
-            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
-          ),
+          rest: row.reserveShort
+            ? t("withdrawals.eta.reserve")
+            : t("withdrawals.eta.rest", { eta }),
         })
+      : vaultStats === undefined || stats !== undefined
+        ? usd
+        : t("withdrawals.amountMeta", {
+            usd,
+            requested: new Date(
+              row.eligibleAt - vaultStats.withdrawalDelay * 1000,
+            ),
+          })
 
   return (
     <>
@@ -164,7 +178,6 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
         assetId={displayAsset.id}
         value={t("common:currency", { value: remaining, symbol })}
         displayValue={amountMeta}
-        isLoading={row.isSettlementLoading}
         stats={stats}
         status={
           status === "claimable" ? (

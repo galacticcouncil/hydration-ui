@@ -33,6 +33,7 @@ const stats = (
   depositsPaused: false,
   mainCollUsd: null,
   mainDebtUsd: null,
+  protocolReserveHollar: null,
   deficitStop: false,
   deleverPending: false,
   deploying: false,

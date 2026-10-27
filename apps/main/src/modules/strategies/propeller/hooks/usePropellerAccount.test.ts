@@ -10,7 +10,7 @@ vi.mock("@galacticcouncil/utils", () => ({
 }))
 vi.mock("@/api/chain", () => ({}))
 vi.mock("@/modules/strategies/propeller/hooks/usePropellerVaults", () => ({}))
-vi.mock("@/modules/strategies/propeller/hooks/useRedemptionHistory", () => ({}))
+vi.mock("@/modules/strategies/propeller/hooks/useSettlePace", () => ({}))
 vi.mock("@/modules/strategies/propeller/hooks/useRedemptionQueue", () => ({}))
 vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
 vi.mock("@/providers/assetsProvider", () => ({}))
@@ -24,9 +24,12 @@ const vault = {
   shareName: "Juicer BTC",
 } as const
 
+const PACE = { perSecond: 0.25 / 60, cycleSeconds: 60 }
+
 const row = (
-  blockTimeSeconds: number | null,
-  entry: { active?: boolean; claimedCollateral?: number } = {},
+  pace: typeof PACE | null,
+  entry: Partial<Parameters<typeof buildWithdrawalRow>[0]["entry"]> = {},
+  extra: Partial<Parameters<typeof buildWithdrawalRow>[0]> = {},
 ) =>
   buildWithdrawalRow({
     vault,
@@ -49,39 +52,56 @@ const row = (
       sourcePending: false,
       ...entry,
     },
-    settlement: {
-      requestId: 1,
-      collateralSettled: 0.25,
-      firstSettledBlock: 100n,
-      lastSettledBlock: 110n,
-      recentRatePerBlock: 0.0625,
-      typicalSettleBlocks: 120,
-    },
-    isSettlementLoading: false,
     exchangeRate: 1,
     price: 1,
-    blockTimeSeconds,
+    pace,
+    ...extra,
   })
 
-describe("Settle estimates", () => {
-  it("convert blocks at the measured block time", () => {
-    expect(row(2).etaSeconds).toBe(24)
-    expect(row(8.5).etaSeconds).toBe(102)
-    expect(row(8.5).typicalSettleSeconds).toBe(1020)
+describe("Claimable estimate", () => {
+  it("settles what is left behind the queue ahead", () => {
+    // 0.75 left + 0.5 ahead at 0.25 per min
+    expect(row(PACE, {}, { ahead: 0.5 }).claimableInSeconds).toBe(300)
   })
 
-  it("stay empty until the block time is known", () => {
-    expect(row(null).etaSeconds).toBeNull()
-    expect(row(null).typicalSettleSeconds).toBeNull()
+  it("adds the cooldown and a start cycle before the unwind starts", () => {
+    const waiting = row(PACE, {
+      started: false,
+      collateralSettled: 0,
+      eligibleAt: 61_000,
+      observedAt: 1_000,
+    })
+    // 60 s cooldown + 60 s start + 1 / 0.25 per min
+    expect(waiting.claimableInSeconds).toBe(360)
+  })
+
+  it("stays empty without a pace, once stalled or when claimed", () => {
+    expect(row(null).claimableInSeconds).toBeNull()
+    expect(
+      row(PACE, {}, { sinceLastSettleSeconds: 3600 }).claimableInSeconds,
+    ).toBeNull()
+    expect(row(PACE, { active: false }).claimableInSeconds).toBeNull()
+  })
+
+  it("trades the estimate for a warning when the reserve falls short", () => {
+    const short = row(
+      PACE,
+      {},
+      {
+        shortfall: { carry: 0.01, reserveHollar: 1, debtPerCollateral: 2700 },
+      },
+    )
+    expect(short.reserveShort).toBe(true)
+    expect(short.claimableInSeconds).toBeNull()
   })
 })
 
 describe("Withdrawal amount", () => {
   it("excludes collateral already claimed from an open request", () => {
-    expect(row(2, { claimedCollateral: 0.25 }).estEth).toBe(0.75)
+    expect(row(PACE, { claimedCollateral: 0.25 }).estEth).toBe(0.75)
   })
 
   it("keeps the full amount once the request is claimed", () => {
-    expect(row(2, { claimedCollateral: 1, active: false }).estEth).toBe(1)
+    expect(row(PACE, { claimedCollateral: 1, active: false }).estEth).toBe(1)
   })
 })

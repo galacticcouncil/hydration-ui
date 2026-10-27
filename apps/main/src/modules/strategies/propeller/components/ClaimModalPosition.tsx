@@ -1,4 +1,4 @@
-import { Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
+import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { type FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,16 +20,14 @@ export const ClaimModalPosition: FC<ClaimModalPositionProps> = ({ row }) => {
     <Flex align="center" gap="base">
       <AssetLogo id={displayAsset.id} size="large" />
       <Text fs="h5" fw={500} color={getToken("text.high")} font="primary">
-        {row.isSettlementLoading ? (
-          <Skeleton width={120} />
-        ) : (
+        {
           // what this claim pays, like the row's Claim button: after a
           // partial claim the original request overstates it
           t("currency", {
             value: row.collateralSettled ?? row.estEth,
             symbol: displayAsset.symbol,
           })
-        )}
+        }
       </Text>
     </Flex>
   )

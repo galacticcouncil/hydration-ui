@@ -10,11 +10,6 @@ export const propellerQueryKeys = {
   subLoop: () => [PROPELLER_QUERY_KEY_PREFIX, "subloop"],
   claimSurplus: () => [PROPELLER_QUERY_KEY_PREFIX, "claim-surplus"],
   claim: () => [PROPELLER_QUERY_KEY_PREFIX, "claim"],
-  blockTimestamp: (blockNumber: string | undefined) => [
-    PROPELLER_QUERY_KEY_PREFIX,
-    "block-timestamp",
-    blockNumber,
-  ],
   vault,
   vaultStats: (vaultAddress: string) => [...vault(vaultAddress), "stats"],
   depositCapacity: (vaultAddress: string) => [
@@ -25,10 +20,10 @@ export const propellerQueryKeys = {
     ...vault(vaultAddress),
     "loop-position",
   ],
-  vaultSettlements: (
-    vaultAddress: string,
-    minRequestId: number | undefined,
-  ) => [...vault(vaultAddress), "settlements", minRequestId],
+  vaultSettlePace: (vaultAddress: string) => [
+    ...vault(vaultAddress),
+    "settle-pace",
+  ],
   vaultBalances: (vaultAddress: string, evmAddress: string | undefined) => [
     ...vault(vaultAddress),
     "balances",

@@ -1,4 +1,4 @@
-import { useQueries } from "@tanstack/react-query"
+import { useQueries, useQuery } from "@tanstack/react-query"
 import { type Hex } from "viem"
 
 import { useBlockTime } from "@/api/chain"
@@ -8,19 +8,25 @@ import {
 } from "@/modules/strategies/propeller/config/vaults"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
-  type RedemptionSettlement,
-  vaultSettlementsQuery,
-} from "@/modules/strategies/propeller/hooks/useRedemptionHistory"
-import {
   type QueueEntry,
   vaultQueueQuery,
 } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
-import { vaultBalancesQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { vaultSettleLogsQuery } from "@/modules/strategies/propeller/hooks/useSettlePace"
+import {
+  subLoopQuery,
+  vaultBalancesQuery,
+} from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   type WithdrawalState,
   withdrawalState,
 } from "@/modules/strategies/propeller/utils/accounting"
 import { type HarvestStatus } from "@/modules/strategies/propeller/utils/harvestStatus"
+import {
+  claimableInSeconds,
+  measureSettlePace,
+  reserveCoversExit,
+  type SettlePace,
+} from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -33,6 +39,8 @@ export type PropellerPosition = {
   usdValue: number
   /** current accrual rate: strategy APY x deployed fraction, 0 while paused */
   apy: number | null
+  /** the vault's deployed share, which every holder earns at */
+  deployedFraction: number | null
   accrualPaused: boolean
   /** collateral earned but not harvested, outside the balance; null if unread */
   pendingYield: number | null
@@ -53,32 +61,25 @@ export type PropellerWithdrawalRow = {
   estEth: number
   estUsd: number
   isEstimate?: boolean
-  /** Payout and date are still being read from settlement logs. */
-  isSettlementLoading?: boolean
   state: WithdrawalRowState
-  settledBlock?: bigint
   collateralOwed?: number
   collateralSettled?: number
   settledSoFar?: number
-  /** at the trailing settlement pace; null while stalled or already settled */
-  etaSeconds: number | null
-  /** the vault's median settle-phase length, for when there is no live pace */
-  typicalSettleSeconds: number | null
+  /**
+   * until the whole withdrawal is claimable, at the keeper's measured pace
+   * behind everything ahead in the queue; null while unknown, stalled or done
+   */
+  claimableInSeconds: number | null
+  /** the reserve can't cover the strategy shortfall up to this exit */
+  reserveShort: boolean
   eligibleAt: number
   mainDebt: Hex
   surplusHollar: number
   sourcePending: boolean
 }
 
-/** below this share settled, the trailing pace is too thin to project */
-const MIN_SETTLED_FOR_PACE = 0.1
-
 export const withdrawalRowId = (vaultAddress: string, requestId: number) =>
   `${vaultAddress}:${requestId}`
-
-/** Rows whose payout / date only exist in settlement logs. */
-const needsSettlement = (entry: QueueEntry) =>
-  !entry.active || entry.collateralSettled > 0 || entry.settledProgress > 0
 
 /**
  * One withdrawal row from a queue entry. Pays out the measured settlement when
@@ -87,23 +88,26 @@ const needsSettlement = (entry: QueueEntry) =>
 export const buildWithdrawalRow = ({
   vault,
   entry,
-  settlement,
-  isSettlementLoading,
   exchangeRate,
   price,
   baseRate = 1,
-  blockTimeSeconds,
+  pace = null,
+  ahead = 0,
+  sinceLastSettleSeconds = null,
+  shortfall,
 }: {
   vault: PropellerVaultConfig
   entry: QueueEntry
-  settlement: RedemptionSettlement | undefined
-  isSettlementLoading: boolean
   exchangeRate: number
   price: number
   /** collateral -> display-asset spot (GETH -> ETH); 1 when they coincide */
   baseRate?: number
-  /** measured, never assumed: lark forks run slower than mainnet */
-  blockTimeSeconds: number | null
+  pace?: SettlePace | null
+  /** collateral still to settle for earlier requests */
+  ahead?: number
+  /** since this request's latest tranche; null before its first */
+  sinceLastSettleSeconds?: number | null
+  shortfall?: Omit<Parameters<typeof reserveCoversExit>[0], "collateral">
 }): PropellerWithdrawalRow => {
   const settledSoFar = entry.claimedCollateral + entry.collateralSettled
   const state = withdrawalState({
@@ -121,25 +125,29 @@ export const buildWithdrawalRow = ({
     ? entry.collateralOwed - (entry.active ? entry.claimedCollateral : 0)
     : entry.shares * exchangeRate
 
-  // "at the current pace" only: a stall drops the trailing rate and with it
-  // the ETA — never project a frozen pace forward
-  const remainingCollateral = entry.collateralOwed - settledSoFar
-  const rate = settlement?.recentRatePerBlock ?? null
-  // the keeper settles in a few large chunks; a pace measured off a first
-  // sliver (0.1% -> "~3 d") says nothing, so wait for a meaningful share
-  const settledShare =
-    entry.collateralOwed > 0 ? settledSoFar / entry.collateralOwed : 0
-  const etaSeconds =
-    entry.active &&
-    entry.started &&
-    remainingCollateral > 0 &&
-    settledShare >= MIN_SETTLED_FOR_PACE &&
-    rate &&
-    rate > 0 &&
-    blockTimeSeconds
-      ? (remainingCollateral / rate) * blockTimeSeconds
-      : null
-  const typicalSettleBlocks = settlement?.typicalSettleBlocks ?? null
+  // collateral units, like the pace: owed minus settled once started,
+  // the shares' current value before
+  const remainingCollateral = entry.started
+    ? entry.collateralOwed - settledSoFar
+    : entry.shares * exchangeRate
+  const open = entry.active && remainingCollateral > 0
+  const claimableIn = open
+    ? claimableInSeconds({
+        pace,
+        remaining: remainingCollateral,
+        ahead,
+        cooldownLeftSeconds: (entry.eligibleAt - entry.observedAt) / 1000,
+        started: entry.started,
+        sinceLastSettleSeconds,
+      })
+    : null
+  const reserveShort =
+    open &&
+    !!shortfall &&
+    !reserveCoversExit({
+      ...shortfall,
+      collateral: ahead + remainingCollateral,
+    })
 
   return {
     id: withdrawalRowId(vault.vaultAddress, entry.requestId),
@@ -149,27 +157,27 @@ export const buildWithdrawalRow = ({
     estEth: estCollateral * baseRate,
     estUsd: estCollateral * price,
     isEstimate: !entry.started,
-    isSettlementLoading,
     state,
-    settledBlock: settlement?.firstSettledBlock,
     collateralOwed: entry.collateralOwed * baseRate,
     collateralSettled: entry.collateralSettled * baseRate,
     settledSoFar: settledSoFar * baseRate,
-    etaSeconds,
-    typicalSettleSeconds:
-      entry.active &&
-      entry.started &&
-      remainingCollateral > 0 &&
-      typicalSettleBlocks !== null &&
-      blockTimeSeconds
-        ? typicalSettleBlocks * blockTimeSeconds
-        : null,
+    claimableInSeconds: reserveShort ? null : claimableIn,
+    reserveShort,
     eligibleAt: entry.eligibleAt,
     mainDebt: entry.mainDebt,
     surplusHollar: entry.surplusHollar,
     sourcePending: entry.sourcePending,
   }
 }
+
+/** HOLLAR of Main debt per collateral unit; HOLLAR is priced at $1 */
+export const debtPerCollateral = (
+  mainDebtUsd: number | null | undefined,
+  totalCollateral: number | undefined,
+) =>
+  typeof mainDebtUsd === "number" && totalCollateral
+    ? mainDebtUsd / totalCollateral
+    : null
 
 export const sortWithdrawalRows = <
   T extends Pick<PropellerWithdrawalRow, "requestId">,
@@ -200,35 +208,13 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const userQueues = queueQueries.map((q) =>
     (q.data?.queue ?? []).filter((entry) => entry.isUser),
   )
-  const minSettlementId = (entries: QueueEntry[] | undefined) => {
-    const ids = (entries ?? [])
-      .filter(needsSettlement)
-      .map((entry) => entry.requestId)
-    return ids.length ? Math.min(...ids) : undefined
-  }
-  const activeSettlementQueries = useQueries({
-    queries: PROPELLER_VAULTS.map((vault, i) =>
-      vaultSettlementsQuery(
-        rpc,
-        vault,
-        decimalsOf(vault),
-        minSettlementId(userQueues[i]?.filter((entry) => entry.active)),
-      ),
+  const settleLogQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((vault) =>
+      vaultSettleLogsQuery(rpc, vault, decimalsOf(vault)),
     ),
   })
-  const historySettlementQueries = useQueries({
-    queries: PROPELLER_VAULTS.map((vault, i) => {
-      const active = activeSettlementQueries[i]
-      const activeDone =
-        !active?.isFetching || (!!active.data && !active.isPlaceholderData)
-      return vaultSettlementsQuery(
-        rpc,
-        vault,
-        decimalsOf(vault),
-        activeDone ? minSettlementId(userQueues[i]) : undefined,
-      )
-    }),
-  })
+  const { data: subLoop } = useQuery(subLoopQuery(rpc))
+  const blockTimeSeconds = blockTimeMs ? blockTimeMs / 1000 : null
 
   if (!evmAddress) {
     return { positions: [], withdrawals: [], isLoading: false, isError: false }
@@ -257,6 +243,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
         assetValue: assetValue * baseRate,
         usdValue: assetValue * (market?.price ?? 0),
         apy: market?.runRateApy ?? null,
+        deployedFraction: market?.deployedFraction ?? null,
         accrualPaused: market?.accrualPaused ?? false,
       },
     ]
@@ -265,30 +252,42 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const withdrawals = sortWithdrawalRows(
     PROPELLER_VAULTS.flatMap((vault, i) => {
       const market = markets[i]
-      const activeQuery = activeSettlementQueries[i]
-      const historyQuery = historySettlementQueries[i]
-      // Either scan returns every log seen so far; the active one refreshes
-      // unclaimed rows, so it wins on overlap.
-      const settlementByReqId = new Map(
-        [...(historyQuery?.data ?? []), ...(activeQuery?.data ?? [])].map(
-          (s) => [s.requestId, s],
-        ),
-      )
+      const settleLogs = settleLogQueries[i]?.data
+      const pace =
+        settleLogs && blockTimeSeconds
+          ? measureSettlePace(settleLogs.logs, blockTimeSeconds)
+          : null
+      const queued = queueQueries[i]?.data?.queued ?? []
+      const stats = market?.stats
+      const shortfall = {
+        carry: subLoop?.negativeCarry ?? null,
+        reserveHollar: stats?.protocolReserveHollar ?? null,
+        debtPerCollateral: debtPerCollateral(stats?.mainDebtUsd, stats?.tvl),
+      }
       return (userQueues[i] ?? []).map((entry) => {
-        const settlement = settlementByReqId.get(entry.requestId)
-        const query = entry.active ? activeQuery : historyQuery
-        const settlementFetching =
-          !!query?.isPending || !!query?.isPlaceholderData
+        const lastTranche = settleLogs?.logs
+          .filter((l) => l.requestId === entry.requestId && l.collateral > 0)
+          .reduce<
+            bigint | null
+          >((last, l) => (last === null || l.blockNumber > last ? l.blockNumber : last), null)
         return buildWithdrawalRow({
           vault,
           entry,
-          settlement,
-          isSettlementLoading:
-            !settlement && settlementFetching && needsSettlement(entry),
           exchangeRate: market?.stats?.exchangeRate ?? 1,
           price: market?.price ?? 0,
           baseRate: market?.baseRate ? Number(market.baseRate) : 1,
-          blockTimeSeconds: blockTimeMs ? blockTimeMs / 1000 : null,
+          pace,
+          ahead: queued
+            .filter((q) => q.requestId < entry.requestId)
+            .reduce((sum, q) => sum + q.remaining, 0),
+          sinceLastSettleSeconds:
+            lastTranche !== null &&
+            lastTranche !== undefined &&
+            settleLogs &&
+            blockTimeSeconds
+              ? Number(settleLogs.head - lastTranche) * blockTimeSeconds
+              : null,
+          shortfall,
         })
       })
     }),

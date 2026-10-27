@@ -71,6 +71,8 @@ export type PropellerVaultStats = {
   targetLtv: number | null
   mainCollUsd: number | null
   mainDebtUsd: number | null
+  /** HOLLAR that covers exits' share of a strategy shortfall */
+  protocolReserveHollar: number | null
   pendingDeployment: string | null
 }
 
@@ -87,6 +89,8 @@ export type PropellerVaultMarket = {
   apy: number | null
   /** what a holder accrues right now: apy x deployed fraction, 0 while underfunded */
   runRateApy: number | null
+  /** share of the pooled collateral at work; every holder earns at it */
+  deployedFraction: number | null
   /** allocation gate closed — nothing accrues regardless of the estimate */
   accrualPaused: boolean
   price: number
@@ -133,6 +137,7 @@ export const usePropellerVaults = () => {
       targetLtv: data.targetLtv,
       mainCollUsd: data.mainCollUsd,
       mainDebtUsd: data.mainDebtUsd,
+      protocolReserveHollar: data.protocolReserveHollar,
       pendingDeployment: data.pendingDeployment,
     }
 
@@ -170,6 +175,7 @@ export const usePropellerVaults = () => {
       apy,
       runRateApy:
         apy === null ? null : accrualPaused ? 0 : apy * (deployed ?? 1),
+      deployedFraction: deployed,
       accrualPaused,
       price,
       tvlUsd: (stats?.tvl ?? 0) * price,

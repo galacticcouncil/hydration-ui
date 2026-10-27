@@ -10,9 +10,9 @@ import {
   ModalContentDivider,
   ModalFooter,
   Separator,
-  Text,
+  Summary,
+  SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -28,12 +28,13 @@ import {
   useBaseRates,
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { useNewWithdrawalEstimate } from "@/modules/strategies/propeller/hooks/useNewWithdrawalEstimate"
 import {
-  subLoopQuery,
   vaultBalancesQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useRequestRedeem } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { formatEta } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { percentageOf } from "@/utils/formatting"
@@ -71,7 +72,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const { data: balances, isError: balancesError } = useQuery(
     vaultBalancesQuery(rpc, vault, decimals, evmAddress),
   )
-  const { data: subLoop } = useQuery(subLoopQuery(rpc))
+  const estimate = useNewWithdrawalEstimate(vault, evmAddress)
   const redeem = useRequestRedeem(vault, { onSuccess })
 
   const exchangeRate = stats?.exchangeRate ?? 1
@@ -85,9 +86,6 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
     .times(exchangeRate)
     .times(rate)
     .toFixed(decimals, Big.roundDown)
-  const negativeCarry = subLoop?.negativeCarry ?? 0
-  const carry = negativeCarry
-
   const blockedReason =
     !rpc.isReady ||
     !stats ||
@@ -124,9 +122,20 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
 
   // an amount below one share unit would submit requestRedeem(0) and revert
   const redeemsShares = maxChosen || Big(sharesIn).gt(0)
+  const tooSmall = !redeemsShares && Big(amount || "0").gt(0)
   const canSubmit =
     formState.isValid && redeemsShares && !redeem.isPending && !blockedReason
-  const showCarryNotice = carry > 0 && !blockedReason
+  // the typed amount, or the whole position while nothing is typed: either
+  // way it's what this request adds to the queue, in collateral units
+  const { seconds: claimableIn, reserveShort } = estimate(
+    Number(Big(amount || maxAssets || "0").div(rate)),
+  )
+  // an amount the form rejects gets no estimate
+  const showEta =
+    !blockedReason &&
+    claimableIn !== null &&
+    !formState.errors.amount &&
+    !tooSmall
 
   // the balance grows as earnings are funded; asking for everything shown
   // submits the EXACT share balance, never a round-trip through the rate
@@ -178,7 +187,10 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
                     },
                     isMaxDisabled: Big(maxAssets).lte(0),
                   }}
-                  amountError={fieldState.error?.message}
+                  amountError={
+                    fieldState.error?.message ??
+                    (tooSmall ? t("withdraw.validation.tooSmall") : undefined)
+                  }
                 />
               </Box>
             )}
@@ -186,11 +198,21 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
 
           <ModalContentDivider />
 
-          {showCarryNotice && (
-            <Box py="l">
-              <Text fs="p6" color={getToken("text.low")}>
-                {t("withdraw.carryEstimate", { carry })}
-              </Text>
+          {showEta && (
+            <Summary separator={<Separator mx="-xl" />}>
+              <SummaryRow
+                label={t("withdraw.claimableIn")}
+                content={formatEta(claimableIn)}
+              />
+            </Summary>
+          )}
+
+          {!blockedReason && reserveShort && (
+            <Box pt="l">
+              <Alert
+                variant="warning"
+                description={t("withdraw.reserveShort")}
+              />
             </Box>
           )}
 
@@ -205,7 +227,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
 
           {!blockedReason && (
             <>
-              {showCarryNotice && <ModalContentDivider />}
+              {showEta && <ModalContentDivider />}
               <Flex align="center" gap="base" pt="l">
                 <Controller
                   control={control}
