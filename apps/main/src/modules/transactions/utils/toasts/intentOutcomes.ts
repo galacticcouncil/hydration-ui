@@ -73,7 +73,7 @@ export const watchIntentOutcomes = (
   blocks$.pipe(
     repeat({ delay: RESUBSCRIBE_DELAY_MS }),
     retry({ delay: RESUBSCRIBE_DELAY_MS }),
-    // ponytail: a resubscribe replays known blocks; the seen-set grows for the
+    // A resubscribe replays known blocks; the seen-set grows for the
     // subscription's life, which only lasts while an intent toast is pending
     distinct(({ hash }) => hash),
     mergeMap(({ hash }) =>

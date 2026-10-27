@@ -85,13 +85,14 @@ describe("eModeCategories", () => {
     }
   })
 
-  it("uses the on-chain label verbatim", () => {
+  it("uses the normalized summary label", () => {
     for (const category of categories) {
       const member = summaries.find((s) => s.eModeCategoryId === category.id)
       expect(category.label).toBe(member?.eModeLabel)
       expect(category.label).not.toMatch(/ Correlated$/)
     }
     expect(categoryOf(categories, "SOL").label).toBe("SOL correlated")
+    expect(categoryOf(categories, "DOT").label).toBe("DOT correlated")
   })
 
   it("carries the category's ltv and liquidation threshold as fractions", () => {

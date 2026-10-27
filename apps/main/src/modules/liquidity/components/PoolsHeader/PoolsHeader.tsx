@@ -1,4 +1,4 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, ScrollArea } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 
 import { VaultsValueTile } from "@/modules/liquidity/components/PoolsHeader/Vaults"
@@ -15,23 +15,29 @@ export const PoolsHeader = () => {
   const isIsolated = type === "isolated"
 
   return (
-    <Flex
-      gap={["l", isIsolated ? "5.625rem" : "xl"]}
-      justify={isIsolated ? "flex-start" : "space-between"}
-      pb="xxl"
-      sx={{ overflowX: "auto" }}
+    <ScrollArea
+      orientation="horizontal"
+      horizontalEdgeOffset="var(--layout-gutter)"
+      hideScrollbar
     >
-      {myLiquidity ? (
-        <MyLiquidity />
-      ) : type === "all" ? (
-        <AllPools />
-      ) : type === "vaults" ? (
-        <VaultsValueTile withPoolValue />
-      ) : isIsolated ? (
-        <Isolated />
-      ) : (
-        <Omnipool />
-      )}
-    </Flex>
+      <Flex
+        gap={["l", isIsolated ? "5.625rem" : "xl"]}
+        justify={isIsolated ? "flex-start" : "space-between"}
+        pb="xxl"
+        sx={{ "& > *": { flexShrink: 0 } }}
+      >
+        {myLiquidity ? (
+          <MyLiquidity />
+        ) : type === "all" ? (
+          <AllPools />
+        ) : type === "vaults" ? (
+          <VaultsValueTile withPoolValue />
+        ) : isIsolated ? (
+          <Isolated />
+        ) : (
+          <Omnipool />
+        )}
+      </Flex>
+    </ScrollArea>
   )
 }

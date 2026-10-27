@@ -147,7 +147,7 @@ describe("assessEMode", () => {
       expect(findings).toContainEqual({
         kind: "blocker",
         code: "borrowsOutsideCategory",
-        params: { category: "ETH" },
+        params: { category: "ETH correlated" },
       })
     })
 

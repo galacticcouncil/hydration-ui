@@ -25,15 +25,19 @@ import {
   Grid,
   Paper,
   ProgressCircle,
+  ScrollArea,
   Separator,
   Spinner,
   Stack,
   Summary,
   Text,
+  ToggleGroup,
+  ToggleGroupItem,
   ValueStats,
   ValueStatsProps,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useParams, useSearch } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -150,8 +154,18 @@ const ReserveDetail: FC<{
   const hollar = isHollar(reserve.underlyingAsset, market)
   const { t } = useTranslation("borrow")
   const user = useUserAddress()
-  const eModeId = useAccountSummary(user).data?.account.eModeCategoryId
+  const account = useAccountSummary(user).data
+  const eModeId = account?.account.eModeCategoryId
   const [open, setOpen] = useState<OpenAction | null>(null)
+  // below md the grid stacks into one column, so the page splits into tabs
+  const { gte } = useBreakpoints()
+  const stacked = !gte("md")
+  const [tab, setTab] = useState<"overview" | "position">("overview")
+  const hasPosition = !!account?.positions.some(
+    (p) => p.underlyingAsset === reserve.underlyingAsset,
+  )
+  const showOverview = !stacked || !hasPosition || tab === "overview"
+  const showPosition = !stacked || (hasPosition && tab === "position")
 
   const columns = useMemo(() => {
     const onAction = user
@@ -194,62 +208,90 @@ const ReserveDetail: FC<{
         <ReserveActions reserve={reserve} hollar={hollar} />
       </Flex>
 
+      {stacked &&
+        (hollar ? (
+          <HollarStats reserve={reserve} />
+        ) : (
+          <ReserveStats reserve={reserve} />
+        ))}
+
+      {stacked && hasPosition && (
+        <ToggleGroup
+          type="single"
+          fullWidth
+          value={tab}
+          onValueChange={(value) => value && setTab(value)}
+        >
+          <ToggleGroupItem value="overview">
+            {t("reserve.tab.overview")}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="position">
+            {t("reserve.tab.myPosition")}
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
+
       <TwoColumnGrid template="sidebar">
-        <Stack gap="xl" sx={{ order: [1, null, 0] }}>
-          {hollar ? (
-            <>
-              <AboutHollar />
-              <HollarBorrowInfo reserve={reserve} />
-            </>
-          ) : (
-            <InterestRates reserve={reserve} />
-          )}
-          <ProtocolParameters reserve={reserve} hollar={hollar} />
-          {reserve.eModeCategoryId !== 0 && (
-            <EModeParameters reserve={reserve} />
-          )}
-          {borrowingEnabled && !hollar && (
-            <InterestRateModel reserve={reserve} />
-          )}
-          {borrowingEnabled && (
-            <Section
-              flush
-              title="Supported collateral"
-              description={`Assets that can be supplied as collateral to borrow ${symbol} in this market. E-mode and an account's own state can narrow this further.`}
-            >
-              <ReserveDataTable
-                size="compact"
-                data={collateral}
-                columns={columns.collateral}
-                limit={10}
-                empty={`Nothing can currently back a ${symbol} borrow.`}
-              />
-            </Section>
-          )}
-          {canBeCollateral(reserve) && (
-            <Section
-              flush
-              title="Assets you can borrow"
-              description={`What can be borrowed with ${symbol} as collateral.`}
-            >
-              <ReserveDataTable
-                size="compact"
-                data={borrowable}
-                columns={columns.borrowable}
-                limit={10}
-                empty={`Nothing can currently be borrowed against ${symbol}.`}
-              />
-            </Section>
-          )}
-        </Stack>
-        <Stack gap="xl">
-          {hollar ? (
-            <HollarStats reserve={reserve} />
-          ) : (
-            <ReserveStats reserve={reserve} />
-          )}
-          <MyPosition reserve={reserve} />
-        </Stack>
+        {showOverview && (
+          <Stack gap="xl">
+            {hollar ? (
+              <>
+                <AboutHollar />
+                <HollarBorrowInfo reserve={reserve} />
+              </>
+            ) : (
+              <InterestRates reserve={reserve} />
+            )}
+            <ProtocolParameters reserve={reserve} hollar={hollar} />
+            {reserve.eModeCategoryId !== 0 && (
+              <EModeParameters reserve={reserve} />
+            )}
+            {borrowingEnabled && !hollar && (
+              <InterestRateModel reserve={reserve} />
+            )}
+            {borrowingEnabled && (
+              <Section
+                flush
+                title="Supported collateral"
+                description={`Assets that can be supplied as collateral to borrow ${symbol} in this market. E-mode and an account's own state can narrow this further.`}
+              >
+                <ReserveDataTable
+                  size="compact"
+                  data={collateral}
+                  columns={columns.collateral}
+                  limit={10}
+                  empty={`Nothing can currently back a ${symbol} borrow.`}
+                />
+              </Section>
+            )}
+            {canBeCollateral(reserve) && (
+              <Section
+                flush
+                title="Assets you can borrow"
+                description={`What can be borrowed with ${symbol} as collateral.`}
+              >
+                <ReserveDataTable
+                  size="compact"
+                  data={borrowable}
+                  columns={columns.borrowable}
+                  limit={10}
+                  empty={`Nothing can currently be borrowed against ${symbol}.`}
+                />
+              </Section>
+            )}
+          </Stack>
+        )}
+        {showPosition && (
+          <Stack gap="xl">
+            {!stacked &&
+              (hollar ? (
+                <HollarStats reserve={reserve} />
+              ) : (
+                <ReserveStats reserve={reserve} />
+              ))}
+            <MyPosition reserve={reserve} />
+          </Stack>
+        )}
       </TwoColumnGrid>
       <OpenActionModal open={open} onClose={() => setOpen(null)} />
     </Stack>
@@ -287,7 +329,7 @@ const ReserveTitle: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
       <Flex direction="column">
         <Text
           font="primary"
-          fs="h6"
+          fs={["h7", null, "h6"]}
           lh={1}
           fw={600}
           color={getToken("text.high")}
@@ -302,19 +344,48 @@ const ReserveTitle: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
   )
 }
 
-/** The same panel as the stats beside the liquidity pool chart. */
-const StatsPanel: FC<{ stats: ValueStatsProps[] }> = ({ stats }) => (
-  <Paper p={["secondary", "primary"]}>
-    <Flex direction="column" gap="xl">
-      {stats.map((stat, index) => (
-        <Fragment key={index}>
-          {index > 0 && <Separator mx="-xl" />}
-          <ValueStats wrap {...stat} />
-        </Fragment>
-      ))}
-    </Flex>
-  </Paper>
-)
+/**
+ * The same panel as the stats beside the liquidity pool chart; below md, a
+ * scrolling strip like the markets header.
+ */
+const StatsPanel: FC<{ stats: ValueStatsProps[] }> = ({ stats }) => {
+  const { gte } = useBreakpoints()
+
+  if (!gte("md")) {
+    return (
+      <ScrollArea
+        orientation="horizontal"
+        horizontalEdgeOffset="var(--layout-gutter)"
+        hideScrollbar
+      >
+        <Stack
+          direction="row"
+          justify="flex-start"
+          gap="xxxl"
+          separated
+          sx={{ "& > *": { flexShrink: 0 } }}
+        >
+          {stats.map((stat, index) => (
+            <ValueStats key={index} size="medium" fixedSize wrap {...stat} />
+          ))}
+        </Stack>
+      </ScrollArea>
+    )
+  }
+
+  return (
+    <Paper p={["secondary", "primary"]}>
+      <Flex direction="column" gap="xl">
+        {stats.map((stat, index) => (
+          <Fragment key={index}>
+            {index > 0 && <Separator mx="-xl" />}
+            <ValueStats wrap {...stat} />
+          </Fragment>
+        ))}
+      </Flex>
+    </Paper>
+  )
+}
 
 const ReserveStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
   const { t } = useTranslation()
@@ -729,8 +800,9 @@ const InterestRateModel: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 }
 
 /**
- * Supply leads. The other actions sit behind a "..." menu, each only while the
- * account can take it, and the menu goes when none is left.
+ * Supply leads, or borrow on a reserve that cannot be supplied (HOLLAR). The
+ * other actions sit behind a "..." menu, each only while the account can take
+ * it, and the menu goes when none is left.
  */
 const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
   reserve,
@@ -759,25 +831,26 @@ const ReserveActions: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
         }).max,
       ).gt(0))
 
+  const lead = hollar ? "borrow" : "supply"
   const more = (["withdraw", "borrow", "repay"] as const).filter(
     (action) =>
-      ({
+      action !== lead &&
+      {
         withdraw: Big(position?.underlyingBalance ?? 0).gt(0),
         borrow: canBorrow,
         repay: Big(position?.variableBorrows ?? 0).gt(0),
-      })[action],
+      }[action],
   )
 
   return (
     <Flex align="center" gap="base">
-      {!hollar && (
-        <Button
-          size="medium"
-          onClick={() => setOpen({ action: "supply", asset })}
-        >
-          {t("supply")}
-        </Button>
-      )}
+      <Button
+        size="medium"
+        disabled={lead === "borrow" && !canBorrow}
+        onClick={() => setOpen({ action: lead, asset })}
+      >
+        {t(lead)}
+      </Button>
       {more.length > 0 && (
         <ActionsCell
           asset={asset}

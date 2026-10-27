@@ -20,8 +20,11 @@ import {
   LogoSize,
   MenuItemLabel,
   MenuSelectionItem,
+  Paper,
   Separator,
   Skeleton,
+  Stack,
+  Summary,
   TableContainer,
   TableSize,
   Text,
@@ -29,8 +32,16 @@ import {
   Toggle,
   Tooltip,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import {
+  Cell,
+  ColumnDef,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
 import Big from "big.js"
 import { FC, ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -181,14 +192,38 @@ export const NetApyValue: FC<{
   return t("percent", { value: Big(value).times(100).toNumber() })
 }
 
-const AmountCell: FC<{ amount: string; usd: string }> = ({ amount, usd }) => {
+/**
+ * An amount and its USD value. On mobile it heads the row's card, so it
+ * carries the asset too - and is just the asset while there is no amount.
+ */
+const AmountCell: FC<{
+  reserve: ReserveSummary
+  amount: string | undefined
+  usd: string | undefined
+}> = ({ reserve, amount, usd }) => {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
+  const { symbol, logoId } = useReserveDisplay(reserve)
 
-  return (
+  if (!amount || !usd) {
+    return isMobile ? <ReserveAsset reserve={reserve} /> : <NoData />
+  }
+
+  const value = t("number", { value: amount, subscript: true })
+  const display = (
     <Amount
-      value={t("number", { value: amount, subscript: true })}
+      value={isMobile ? `${value} ${symbol}` : value}
       displayValue={t("currency", { value: usd, maximumFractionDigits: 2 })}
     />
+  )
+
+  return isMobile ? (
+    <Flex align="center" gap="base">
+      <AssetLogo id={logoId} />
+      {display}
+    </Flex>
+  ) : (
+    display
   )
 }
 
@@ -333,10 +368,12 @@ export const suppliedColumns = (onAction: OnRowAction) => [
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   supplied.display({
+    id: "amount",
     header: "Balance",
     ...right,
     cell: ({ row }) => (
       <AmountCell
+        reserve={row.original.reserve}
         amount={row.original.position.underlyingBalance}
         usd={row.original.position.underlyingBalanceUsd}
       />
@@ -374,10 +411,12 @@ export const borrowedColumns = (onAction: OnRowAction) => [
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   supplied.display({
+    id: "amount",
     header: "Debt",
     ...right,
     cell: ({ row }) => (
       <AmountCell
+        reserve={row.original.reserve}
         amount={row.original.position.variableBorrows}
         usd={row.original.position.variableBorrowsUsd}
       />
@@ -417,16 +456,16 @@ export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
   pinned
     ? toSupply.display({ id: "balancePlaceholder" })
     : toSupply.display({
+        id: "amount",
         header: "Balance",
         ...right,
-        cell: ({ row }) => {
-          const { balance, balanceUsd } = row.original
-          return balance && balanceUsd ? (
-            <AmountCell amount={balance} usd={balanceUsd} />
-          ) : (
-            <Text color={getToken("text.low")}>—</Text>
-          )
-        },
+        cell: ({ row }) => (
+          <AmountCell
+            reserve={row.original.reserve}
+            amount={row.original.balance}
+            usd={row.original.balanceUsd}
+          />
+        ),
       }),
   toSupply.display({
     header: "APY",
@@ -467,10 +506,12 @@ export const toBorrowColumns = (onAction: OnRowAction) => [
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   toBorrow.display({
+    id: "amount",
     header: "Available",
     ...right,
     cell: ({ row }) => (
       <AmountCell
+        reserve={row.original.reserve}
         amount={row.original.available}
         usd={row.original.availableUsd}
       />
@@ -495,6 +536,63 @@ export const toBorrowColumns = (onAction: OnRowAction) => [
     ),
   }),
 ]
+
+/**
+ * The rows as cards, one per reserve, for mobile: the amount (or, without
+ * one, the first column) and the actions head the card, every other titled
+ * column is a row of its own.
+ */
+const ReserveCards = <T extends { reserve: ReserveSummary }>({
+  data,
+  columns,
+}: {
+  data: T[]
+  columns: ColumnDef<T>[]
+}) => {
+  const navigateToReserve = useNavigateToReserve()
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  return table.getRowModel().rows.map((row) => {
+    const [first, ...cells] = row.getVisibleCells()
+    const actions = cells.find((cell) => cell.column.id === "actions")
+    // an amount column heads the card in place of the asset, as it shows both
+    const title = cells.find((cell) => cell.column.id === "amount") ?? first
+    const render = (cell: Cell<T, unknown>) =>
+      flexRender(cell.column.columnDef.cell, cell.getContext())
+
+    return (
+      <Paper
+        key={row.original.reserve.underlyingAsset}
+        p="l"
+        shadow={false}
+        bg="dim"
+        borderRadius="m"
+        sx={{ cursor: "pointer" }}
+        onClick={() => navigateToReserve(row.original.reserve.underlyingAsset)}
+      >
+        <Flex justify="space-between" align="center" gap="base">
+          {title && render(title)}
+          {actions && render(actions)}
+        </Flex>
+        <Separator mt="base" />
+        <Summary
+          mt="s"
+          mb="-l"
+          rows={cells.flatMap((cell) => {
+            const { header } = cell.column.columnDef
+            return typeof header === "string" && cell !== title
+              ? [{ label: header, content: render(cell) }]
+              : []
+          })}
+        />
+      </Paper>
+    )
+  })
+}
 
 export type TableState = { isLoading: boolean; error: Error | null }
 
@@ -529,24 +627,38 @@ export const ReserveDataTable = <T extends { reserve: ReserveSummary }>({
 }) => {
   const navigateToReserve = useNavigateToReserve()
   const [expanded, setExpanded] = useState(false)
+  const { isMobile } = useBreakpoints()
   const hidden = !expanded && limit ? Math.max(data.length - limit, 0) : 0
+  const rows = hidden ? data.slice(0, limit) : data
 
   return (
     <TableContainer borderRadius={flat ? undefined : "xl"}>
-      <DataTable
-        fixedLayout
-        size={size}
-        skeletonRowCount={4}
-        isLoading={isLoading}
-        data={hidden ? data.slice(0, limit) : data}
-        columns={columns}
-        onRowClick={(row) => navigateToReserve(row.reserve.underlyingAsset)}
-        emptyState={
-          <Text fw={500} color={getToken("text.low")}>
-            {empty}
-          </Text>
-        }
-      />
+      {isMobile ? (
+        <Stack gap="m" p="l">
+          {isLoading ? (
+            Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} height="6rem" />
+            ))
+          ) : (
+            <ReserveCards data={rows} columns={columns} />
+          )}
+        </Stack>
+      ) : (
+        <DataTable
+          fixedLayout
+          size={size}
+          skeletonRowCount={4}
+          isLoading={isLoading}
+          data={rows}
+          columns={columns}
+          onRowClick={(row) => navigateToReserve(row.reserve.underlyingAsset)}
+          emptyState={
+            <Text fw={500} color={getToken("text.low")}>
+              {empty}
+            </Text>
+          }
+        />
+      )}
       {hidden > 0 && (
         <>
           <Separator />
@@ -592,7 +704,13 @@ export const ReserveTable = <T extends { reserve: ReserveSummary }>({
 
   return (
     <TablePaper>
-      <Flex justify="space-between" align="center" gap="base" p="xl">
+      <Flex
+        justify="space-between"
+        align="center"
+        gap="base"
+        p="xl"
+        sx={{ flexWrap: "wrap" }}
+      >
         <Text as="h2" fs="p2" fw={500} font="primary">
           {title}
         </Text>

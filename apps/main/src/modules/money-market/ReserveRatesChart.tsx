@@ -54,7 +54,7 @@ const AVERAGE_LABEL_BELOW = 16
 // of height counted from its dashed line
 const AVERAGE_LABEL_WIDTH_SHARE = 0.2
 const AVERAGE_LABEL_BAND = 22
-// ponytail: the plot's pixel height is not known here, so the smaller of the
+// The plot's pixel height is not known here, so the smaller of the
 // chart's two heights stands in; on taller charts the label's band is
 // overestimated, which only makes the placement more cautious
 const PLOT_HEIGHT = 150

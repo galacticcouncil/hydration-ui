@@ -1,4 +1,3 @@
-import { SectionHeader } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
 import { useShallowCompareEffect } from "react-use"
@@ -38,20 +37,10 @@ export const BorrowHistoryPage = () => {
 
   return (
     <>
-      <SectionHeader
-        noTopPadding
+      <BorrowHistorySearch
         title={t("borrow:history.table.title")}
-        actions={
-          <BorrowHistorySearch
-            searchPhrase={searchPhrase}
-            onChange={setSearchPhrase}
-          />
-        }
-        sx={{
-          flexDirection: ["column-reverse", "row"],
-          gap: ["xl", 0],
-          alignItems: ["flex-start", "center"],
-        }}
+        searchPhrase={searchPhrase}
+        onChange={setSearchPhrase}
       />
 
       <BorrowHistoryTable

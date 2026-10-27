@@ -17,6 +17,15 @@ import type {
   ReserveSummary,
 } from "@/types"
 
+// On-chain labels are inconsistent ("DOT", "SOL correlated",
+// "EUROZONE"); renamed here so every consumer gets sentence case. Unknown
+// labels pass through.
+const E_MODE_LABELS: Record<string, string> = {
+  DOT: "DOT correlated",
+  ETH: "ETH correlated",
+  EUROZONE: "Eurozone",
+}
+
 /**
  * Turns decoded chain state into what a reserve actually offers at one instant:
  * rates, utilisation, USD values, caps and the isolation/e-mode flags.
@@ -208,7 +217,7 @@ function summarizeReserve(
     isSiloedBorrowing: reserve.isSiloedBorrowing,
 
     eModeCategoryId: reserve.eModeCategoryId,
-    eModeLabel: reserve.eModeLabel,
+    eModeLabel: E_MODE_LABELS[reserve.eModeLabel] ?? reserve.eModeLabel,
     eModeLtv: normalize(reserve.eModeLtv, LTV_PRECISION),
     eModeLiquidationThreshold: normalize(
       reserve.eModeLiquidationThreshold,

@@ -395,6 +395,7 @@
   "transaction.batch.step.label": "Transaction {{ index }}",
   "transaction.error.unsupportedTransaction": "Unsupported transaction or signer type",
   "search.placeholder.any": "Search...",
+  "search.placeholder.compact": "Search",
   "search.placeholder.assets": "Search assets...",
   "search.placeholder.chains": "Search chains...",
   "search.emptyState": "No results matching",

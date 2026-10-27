@@ -26,7 +26,7 @@ type UseSpendableParams = {
  * the action's single-call plan with the wallet's transferable balance as the
  * amount - it only exists to estimate the fee.
  *
- * ponytail: an isolation-join supply paid in the same asset carries extra
+ * An isolation-join supply paid in the same asset carries extra
  * calls, so its fee is under-estimated here. Upgrade = run the assessment once
  * to read `isolationJoin`, then estimate the full plan.
  */

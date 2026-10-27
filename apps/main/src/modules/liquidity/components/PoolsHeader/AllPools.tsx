@@ -48,6 +48,7 @@ export const AllPools = () => {
           value: totals.totalLiquidity,
         })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />
@@ -59,6 +60,7 @@ export const AllPools = () => {
         })}
         isLoading={isLoading}
         size="medium"
+        fixedSize
         wrap
       />
       <PoolsHeaderSeparator />
@@ -67,6 +69,7 @@ export const AllPools = () => {
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency.compact", { value: totals.liquidity })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />
@@ -75,6 +78,7 @@ export const AllPools = () => {
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency.compact", { value: totals.stablepool })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />
@@ -85,6 +89,7 @@ export const AllPools = () => {
           value: totals.isolated,
         })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />

@@ -3,15 +3,14 @@ import {
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
 import type { ReserveSummary } from "@galacticcouncil/money-market/types"
-import { ChevronRight, Search } from "@galacticcouncil/ui/assets/icons"
+import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
   DataTable,
   Icon,
-  Input,
   Paper,
-  SectionHeader,
+  ScrollArea,
   Stack,
   TableContainer,
   ValueStats,
@@ -22,6 +21,7 @@ import Big from "big.js"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TitleWithSearch } from "@/components/TitleWithSearch"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { useNavigateToReserve } from "@/modules/money-market/hooks"
@@ -31,6 +31,7 @@ import {
   ReserveApyCell,
   ReserveAsset,
 } from "@/modules/money-market/MoneyMarketTables"
+import { useResolveReserveApy } from "@/modules/money-market/ReserveApyProvider"
 import { isHollar } from "@/modules/money-market/reserves"
 import { useResolveReserveDisplay } from "@/modules/money-market/useReserveDisplay"
 import { numericallyStr, sortBy } from "@/utils/sort"
@@ -50,6 +51,7 @@ export const MarketsPage: FC = () => {
   const reserves = useReserveSummaries()
   const navigateToReserve = useNavigateToReserve()
   const resolveDisplay = useResolveReserveDisplay()
+  const resolveApy = useResolveReserveApy()
   const sorting = useDataTableUrlSorting("/borrow/markets/", "sort")
   const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
     "/borrow/markets/",
@@ -73,8 +75,28 @@ export const MarketsPage: FC = () => {
     }
   }, [reserves.data])
 
-  const columns = useMemo(
-    () => [
+  // v1's list: only reserves open for use, Hollar first, then largest supply
+  const rows = useMemo(
+    () =>
+      (reserves.data ?? [])
+        .filter((r) => r.isActive && !r.isFrozen && !r.isPaused)
+        .sort((a, b) => {
+          const aHollar = isHollar(a.underlyingAsset, market)
+          const bHollar = isHollar(b.underlyingAsset, market)
+          if (aHollar !== bHollar) return aHollar ? -1 : 1
+          return Big(b.totalLiquidityUsd).cmp(a.totalLiquidityUsd)
+        }),
+    [reserves.data, market],
+  )
+
+  const columns = useMemo(() => {
+    // An unknown rate sorts as -1, below every real one
+    const apyOf = (reserve: ReserveSummary, side: "supply" | "borrow") => {
+      const rate = resolveApy(reserve)[side]
+      return rate?.status === "known" ? rate.total : "-1"
+    }
+
+    return [
       // sorted and searched by the name the row shows
       accessor((reserve) => resolveDisplay(reserve).symbol, {
         id: "symbol",
@@ -101,13 +123,21 @@ export const MarketsPage: FC = () => {
           )
         },
       }),
-      display({
+      accessor((reserve) => apyOf(reserve, "supply"), {
         id: "supplyApy",
         header: "Supply APY",
         ...right,
-        cell: ({ row }) => (
-          <ReserveApyCell reserve={row.original} side="supply" />
-        ),
+        sortingFn: sortBy({
+          select: (row) => apyOf(row.original, "supply"),
+          compare: numericallyStr,
+        }),
+        // Hollar can't be supplied, so like v1 it has no supply rate
+        cell: ({ row }) =>
+          isHollar(row.original.underlyingAsset, market) ? (
+            <NoData />
+          ) : (
+            <ReserveApyCell reserve={row.original} side="supply" />
+          ),
       }),
       accessor("totalDebtUsd", {
         header: "Total borrowed",
@@ -128,10 +158,14 @@ export const MarketsPage: FC = () => {
           )
         },
       }),
-      display({
+      accessor((reserve) => apyOf(reserve, "borrow"), {
         id: "variableBorrowApy",
         header: "Borrow APY",
         ...right,
+        sortingFn: sortBy({
+          select: (row) => apyOf(row.original, "borrow"),
+          compare: numericallyStr,
+        }),
         cell: ({ row }) => (
           <ReserveApyCell reserve={row.original} side="borrow" />
         ),
@@ -148,62 +182,60 @@ export const MarketsPage: FC = () => {
           />
         ),
       }),
-    ],
-    [t, market, resolveDisplay],
-  )
+    ]
+  }, [t, market, resolveDisplay, resolveApy])
 
   const usd = (value: string | undefined) =>
     value ? t("currency.compact", { value }) : "—"
 
   return (
     <>
-      <Stack
-        direction={["column", null, "row"]}
-        justify="flex-start"
-        gap={["base", null, "xxxl"]}
-        separated
+      <ScrollArea
+        orientation="horizontal"
+        horizontalEdgeOffset="var(--layout-gutter)"
+        hideScrollbar
       >
-        <ValueStats
-          size="large"
-          isLoading={reserves.isPending}
-          label="Total market size"
-          wrap
-          value={usd(stats?.size)}
-        />
-        <ValueStats
-          size="large"
-          isLoading={reserves.isPending}
-          label="Total available"
-          wrap
-          value={usd(stats?.available)}
-        />
-        <ValueStats
-          size="large"
-          isLoading={reserves.isPending}
-          label="Total borrows"
-          wrap
-          value={usd(stats?.borrows)}
-        />
-      </Stack>
+        <Stack
+          direction="row"
+          justify="flex-start"
+          gap={["xl", null, "xxxl", "3.75rem"]}
+          separated
+          sx={{ "& > *": { flexShrink: 0 } }}
+        >
+          <ValueStats
+            size="large"
+            fixedSize
+            isLoading={reserves.isPending}
+            label="Total market size"
+            wrap
+            value={usd(stats?.size)}
+          />
+          <ValueStats
+            size="large"
+            fixedSize
+            isLoading={reserves.isPending}
+            label="Total available"
+            wrap
+            value={usd(stats?.available)}
+          />
+          <ValueStats
+            size="large"
+            fixedSize
+            isLoading={reserves.isPending}
+            label="Total borrows"
+            wrap
+            value={usd(stats?.borrows)}
+          />
+        </Stack>
+      </ScrollArea>
 
       <Box>
-        <SectionHeader
+        <TitleWithSearch
           as="h1"
           title="All markets"
-          actions={
-            <Input
-              value={searchPhrase}
-              placeholder={t("search.placeholder.assets")}
-              iconStart={Search}
-              width={["100%", null, "4xl"]}
-              onChange={(e) => setSearchPhrase(e.target.value)}
-            />
-          }
-          sx={{
-            flexDirection: ["column-reverse", "row"],
-            gap: ["xl", 0],
-            alignItems: ["flex-start", "center"],
-          }}
+          value={searchPhrase}
+          placeholder={t("search.placeholder.assets")}
+          onChange={(e) => setSearchPhrase(e.target.value)}
         />
         {reserves.error ? (
           <ReadError error={reserves.error} />
@@ -213,7 +245,7 @@ export const MarketsPage: FC = () => {
               globalFilter={searchPhrase}
               isLoading={reserves.isPending}
               onRowClick={(row) => navigateToReserve(row.underlyingAsset)}
-              data={reserves.data ?? []}
+              data={rows}
               columns={columns}
               {...sorting}
             />

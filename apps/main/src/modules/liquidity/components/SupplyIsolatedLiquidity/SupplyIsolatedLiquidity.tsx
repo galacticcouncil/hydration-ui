@@ -5,12 +5,16 @@ import {
 import type { ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
   Box,
+  CollapsibleContent,
+  CollapsibleRoot,
   LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Separator,
   Skeleton,
+  Stack,
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
@@ -136,6 +140,7 @@ const SupplyIsolatedLiquidityBody = ({
     isTradeLoading,
     isAaveSupply,
     swap,
+    hasTradeAmount,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
@@ -144,6 +149,10 @@ const SupplyIsolatedLiquidityBody = ({
     decimals,
     onSubmitted,
   })
+
+  // Open once there is a quote to show; stay open while a new amount re-quotes.
+  const isTradeOpen =
+    !isAaveSupply && hasTradeAmount && (!!swap || isTradeLoading)
 
   return (
     <FormProvider {...form}>
@@ -154,7 +163,7 @@ const SupplyIsolatedLiquidityBody = ({
         closable
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <ModalBody>
+        <ModalBody sx={{ pb: 0 }}>
           <Box pb="l">
             <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
               label={t("amount")}
@@ -176,52 +185,6 @@ const SupplyIsolatedLiquidityBody = ({
                 content={formatApyPercent(t, apy.apy)}
               />
             ))}
-            {!isBlockedSupply && (
-              <SummaryRow
-                label={t("minimumReceived")}
-                loading={isTradeLoading}
-                content={t("common:currency", {
-                  value: minReceiveAmountShifted,
-                  symbol: aToken.symbol,
-                })}
-              />
-            )}
-
-            <SummaryRow
-              label={t("tradeLimit")}
-              content={<TradeLimit type={TradeLimitType.Trade} />}
-            />
-
-            {(swap || isTradeLoading) && (
-              <SummaryRow
-                label={t("trade:market.summary.estTradeFees")}
-                content={
-                  <TradeFee
-                    swap={swap}
-                    receiveAsset={aToken}
-                    isLoading={isTradeLoading || isAssessing}
-                  />
-                }
-              />
-            )}
-
-            {!isAaveSupply && (
-              <SummaryRow
-                label={t("price")}
-                content={
-                  isPriceLoading ? (
-                    <Skeleton width={50} height="100%" />
-                  ) : (
-                    t("liquidity:liquidity.remove.stablepool.modal.price", {
-                      poolSymbol: form.watch("asset").symbol,
-                      value: spotPriceData?.spotPrice,
-                      symbol: aToken.symbol,
-                    })
-                  )
-                }
-              />
-            )}
-
             <SummaryRow
               label={t("borrow:collateral.title")}
               loading={isAssessing}
@@ -249,15 +212,62 @@ const SupplyIsolatedLiquidityBody = ({
             />
           </Summary>
 
-          <ModalContentDivider />
+          <CollapsibleRoot open={isTradeOpen}>
+            <CollapsibleContent>
+              <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+                {!isBlockedSupply && (
+                  <SummaryRow
+                    label={t("minimumReceived")}
+                    loading={isTradeLoading}
+                    content={t("common:currency", {
+                      value: minReceiveAmountShifted,
+                      symbol: aToken.symbol,
+                    })}
+                  />
+                )}
+                <SummaryRow
+                  label={t("price")}
+                  content={
+                    isPriceLoading ? (
+                      <Skeleton width={50} height="100%" />
+                    ) : (
+                      t("liquidity:liquidity.remove.stablepool.modal.price", {
+                        poolSymbol: form.watch("asset").symbol,
+                        value: spotPriceData?.spotPrice,
+                        symbol: aToken.symbol,
+                      })
+                    )
+                  }
+                />
+                <SummaryRow
+                  label={t("tradeLimit")}
+                  content={<TradeLimit type={TradeLimitType.Trade} />}
+                />
+                <SummaryRow
+                  label={t("trade:market.summary.estTradeFees")}
+                  content={
+                    <TradeFee
+                      swap={swap}
+                      receiveAsset={aToken}
+                      isLoading={isTradeLoading || isAssessing}
+                    />
+                  }
+                />
+              </Summary>
+            </CollapsibleContent>
+          </CollapsibleRoot>
 
           {findings.length > 0 && (
-            <Box py="l">
-              <FindingsList findings={findings} />
-            </Box>
+            <>
+              <ModalContentDivider />
+              <Stack gap="base" py="base">
+                <FindingsList findings={findings} />
+              </Stack>
+            </>
           )}
         </ModalBody>
-        <ModalFooter sx={{ pt: 0 }}>
+        <Separator />
+        <ModalFooter>
           <LoadingButton
             type="submit"
             size="large"

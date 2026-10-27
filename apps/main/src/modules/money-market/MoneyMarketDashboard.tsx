@@ -16,6 +16,7 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
+  ScrollArea,
   Select,
   Separator,
   Skeleton,
@@ -70,7 +71,7 @@ const isUsable = (reserve: ReserveSummary) =>
 
 const canBorrow = (row: BorrowRow) => Big(row.available).gt(0)
 
-// ponytail: categories by symbol pattern, as Aave's interface does it - a
+// Categories by symbol pattern, as Aave's interface does it - a
 // new asset whose symbol fits none lands in "Other"; move to a per-market
 // asset list if patterns start misfiling
 const CATEGORIES = [
@@ -90,9 +91,20 @@ const TableStats: FC<{ isLoading: boolean; stats: [string, ReactNode][] }> = ({
   isLoading,
   stats,
 }) => (
-  <Flex justify="flex-end" gap="l" sx={{ whiteSpace: "nowrap" }}>
+  // grows into the row it wraps onto, spreading the stats across it; on
+  // mobile it always takes its own row under the title
+  <Flex
+    justify="space-between"
+    gap="l"
+    sx={{ flexGrow: 1, flexBasis: ["100%", "auto"], whiteSpace: "nowrap" }}
+  >
     {stats.map(([label, value]) => (
-      <Flex key={label} align="center" gap="s">
+      <Flex
+        key={label}
+        direction={["column", "row"]}
+        align={["flex-start", "center"]}
+        gap={["xs", "s"]}
+      >
         <Text fs="p5" color={getToken("text.medium")}>
           {label}:
         </Text>
@@ -218,7 +230,7 @@ export const MoneyMarketDashboard: FC = () => {
         // the borrow form's own max, so a row never offers what the form
         // refuses (e-mode, isolation, siloed debt, no collateral). No wallet
         // has no account to assess and reads the pool's liquidity.
-        // ponytail: re-summarizes the account per row on every tick; hoist
+        // Re-summarizes the account per row on every tick; hoist
         // summarizeAccount out of assessBorrow if the reserve list grows
         const max = request
           ? Big(
@@ -307,75 +319,88 @@ export const MoneyMarketDashboard: FC = () => {
 
   return (
     <Stack gap="xxl">
-      <Stack
-        direction={["column", null, "row"]}
-        justify="flex-start"
-        gap={["base", null, "xxxl", "3.75rem"]}
-        separated
+      <ScrollArea
+        orientation="horizontal"
+        horizontalEdgeOffset="var(--layout-gutter)"
+        hideScrollbar
       >
-        <ValueStats
-          size="large"
-          isLoading={accountLoading}
-          label={t("borrow:netWorth")}
-          wrap
-          value={usd(acc?.netWorthUsd)}
-        />
-        <ValueStats
-          size="large"
-          isLoading={accountLoading}
-          label={t("borrow:netApy")}
-          wrap
-          customValue={
-            <ValueStatsValue size="large">
-              <NetApyValue netApy={netApy} figure="netApy" />
-            </ValueStatsValue>
-          }
-        />
-        <ValueStats
-          size="large"
-          isLoading={accountLoading}
-          label={t("borrow:healthFactor")}
-          wrap
-          customValue={
-            <Flex align="center" gap="base">
-              <ValueStatsValue size="large">
-                {acc && isHealthFactorValid ? (
-                  <HealthFactorNumber value={acc.healthFactor} />
-                ) : (
-                  "-"
-                )}
-              </ValueStatsValue>
-              {acc && isHealthFactorValid && (
-                <Button
-                  outline
-                  variant={healthFactorLevel === "good" ? "success" : "danger"}
-                  onClick={() => setRiskOpen(true)}
-                >
-                  {t("borrow:risk.details")}
-                </Button>
-              )}
-            </Flex>
-          }
-        />
-
-        {user && claimableUsd.gte(MIN_CLAIM_USD) && (
+        <Stack
+          direction="row"
+          justify="flex-start"
+          gap={["xl", null, "xxxl", "3.75rem"]}
+          separated
+          sx={{ "& > *": { flexShrink: 0 } }}
+        >
           <ValueStats
             size="large"
-            label={t("borrow:availableRewards")}
+            fixedSize
+            isLoading={accountLoading}
+            label={t("borrow:netWorth")}
+            wrap
+            value={usd(acc?.netWorthUsd)}
+          />
+          <ValueStats
+            size="large"
+            fixedSize
+            isLoading={accountLoading}
+            label={t("borrow:netApy")}
+            wrap
+            customValue={
+              <ValueStatsValue size="large" fixedSize>
+                <NetApyValue netApy={netApy} figure="netApy" />
+              </ValueStatsValue>
+            }
+          />
+          <ValueStats
+            size="large"
+            fixedSize
+            isLoading={accountLoading}
+            label={t("borrow:healthFactor")}
             wrap
             customValue={
               <Flex align="center" gap="base">
-                <ValueStatsValue size="large">
-                  {usd(claimableUsd.toFixed())}
+                <ValueStatsValue size="large" fixedSize>
+                  {acc && isHealthFactorValid ? (
+                    <HealthFactorNumber value={acc.healthFactor} />
+                  ) : (
+                    "-"
+                  )}
                 </ValueStatsValue>
-                <Button onClick={() => setOpen({ action: "claim" })}>
-                  {t("borrow:claim")}
-                </Button>
+                {acc && isHealthFactorValid && (
+                  <Button
+                    outline
+                    variant={
+                      healthFactorLevel === "good" ? "success" : "danger"
+                    }
+                    onClick={() => setRiskOpen(true)}
+                  >
+                    {t("borrow:risk.details")}
+                  </Button>
+                )}
               </Flex>
             }
           />
-        )}
-      </Stack>
+
+          {user && claimableUsd.gte(MIN_CLAIM_USD) && (
+            <ValueStats
+              size="large"
+              fixedSize
+              label={t("borrow:availableRewards")}
+              wrap
+              customValue={
+                <Flex align="center" gap="base">
+                  <ValueStatsValue size="large" fixedSize>
+                    {usd(claimableUsd.toFixed())}
+                  </ValueStatsValue>
+                  <Button onClick={() => setOpen({ action: "claim" })}>
+                    {t("borrow:claim")}
+                  </Button>
+                </Flex>
+              }
+            />
+          )}
+        </Stack>
+      </ScrollArea>
 
       <Box display={["block", null, null, "none"]}>
         <ToggleGroup<Side>
@@ -405,7 +430,7 @@ export const MoneyMarketDashboard: FC = () => {
                   stats={[
                     ["Balance", usd(acc?.totalLiquidityUsd)],
                     [
-                      t("borrow:earnedApy"),
+                      t("apy"),
                       <NetApyValue
                         key="earnedApy"
                         netApy={netApy}
@@ -474,7 +499,7 @@ export const MoneyMarketDashboard: FC = () => {
                   stats={[
                     ["Balance", usd(acc?.totalBorrowsUsd)],
                     [
-                      t("borrow:debtApy"),
+                      t("apy"),
                       <NetApyValue
                         key="debtApy"
                         netApy={netApy}

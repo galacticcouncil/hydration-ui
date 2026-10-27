@@ -283,6 +283,7 @@ export const useSupplyIsolatedLiquidity = ({
     isAaveSupply,
     isTradeLoading,
     swap: trade?.swap,
+    hasTradeAmount: Number(amountIn) > 0,
   }
 }
 

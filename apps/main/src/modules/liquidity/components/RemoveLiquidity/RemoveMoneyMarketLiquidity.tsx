@@ -1,4 +1,7 @@
+import { useAccountSummary } from "@galacticcouncil/money-market/react"
 import {
+  CollapsibleContent,
+  CollapsibleRoot,
   Flex,
   LoadingButton,
   ModalBody,
@@ -17,7 +20,6 @@ import { useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -36,6 +38,7 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { HealthFactorRiskWarning } from "@/modules/money-market/HealthFactorRiskWarning"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { ReceiveAssets } from "./ReceiveAssets"
@@ -100,6 +103,7 @@ const RemoveMoneyMarketLiquidityForm = (
     isLoadingMaxBalance,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
   const { closable, onBack, receiveAssets, title } = props
+  const accountSummary = useAccountSummary(useUserAddress())
 
   const {
     formState: { isValid },
@@ -107,7 +111,14 @@ const RemoveMoneyMarketLiquidityForm = (
     watch,
   } = form
 
-  const [receiveAsset, split] = watch(["receiveAsset", "split"])
+  const [receiveAsset, split, amount] = watch([
+    "receiveAsset",
+    "split",
+    "amount",
+  ])
+
+  // Open once there is a quote to show; stay open while a new amount re-quotes.
+  const isTradeOpen = !split && Number(amount) > 0 && (!!swap || isTradePending)
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -142,7 +153,7 @@ const RemoveMoneyMarketLiquidityForm = (
       />
       <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
         <ModalBody sx={{ pb: 0 }}>
-          <Flex direction="column" gap="m">
+          <Flex direction="column" gap="m" pb="m">
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
@@ -162,7 +173,7 @@ const RemoveMoneyMarketLiquidityForm = (
               name="split"
               render={({ field: { value, onChange } }) => (
                 <Flex align="center" justify="space-between">
-                  <Text fs="p3">
+                  <Text fs="p4" fw={500}>
                     {t("liquidity.remove.stablepool.modal.proportionally")}
                   </Text>
                   <Toggle
@@ -191,40 +202,36 @@ const RemoveMoneyMarketLiquidityForm = (
                 <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}
-
-            <ModalContentDivider />
-
-            {split ? (
-              <div>
-                <TradeLimitRow type={TradeLimitType.Liquidity} />
-                {healthFactor ? (
-                  <>
-                    <ModalContentDivider />
-                    <SummaryRow
-                      label={t("common:healthFactor")}
-                      content={
-                        <HealthFactorChange
-                          current={healthFactor.current}
-                          intermediate={intermediateHealthFactor?.future}
-                          projected={healthFactor.future}
-                        />
-                      }
-                    />
-                  </>
-                ) : null}
-              </div>
-            ) : (
-              <TradeSummary
-                receiveAsset={receiveAsset}
-                minReceive={tradeMinReceive}
-                erc20={meta}
-                healthFactor={healthFactor}
-                intermediateHealthFactor={intermediateHealthFactor}
-                swap={swap}
-                isTradePending={isTradePending}
-              />
-            )}
           </Flex>
+          <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+            {split && <TradeLimitRow type={TradeLimitType.Liquidity} />}
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={
+                <HealthFactorChange
+                  current={
+                    healthFactor?.current ??
+                    accountSummary.data?.account.healthFactor
+                  }
+                  intermediate={intermediateHealthFactor?.future}
+                  projected={healthFactor?.future}
+                />
+              }
+            />
+          </Summary>
+          {!split && (
+            <CollapsibleRoot open={isTradeOpen}>
+              <CollapsibleContent>
+                <TradeSummary
+                  receiveAsset={receiveAsset}
+                  minReceive={tradeMinReceive}
+                  erc20={meta}
+                  swap={swap}
+                  isTradePending={isTradePending}
+                />
+              </CollapsibleContent>
+            </CollapsibleRoot>
+          )}
         </ModalBody>
         <Separator />
         <ModalFooter>
@@ -265,16 +272,12 @@ const TradeSummary = ({
   receiveAsset,
   minReceive,
   erc20,
-  healthFactor,
-  intermediateHealthFactor,
   swap,
   isTradePending,
 }: {
   receiveAsset: TSelectedAsset
   minReceive: string
   erc20: TAssetData
-  healthFactor: HealthFactorResult | undefined
-  intermediateHealthFactor: HealthFactorResult | undefined
   swap?: Trade
   isTradePending: boolean
 }) => {
@@ -286,10 +289,26 @@ const TradeSummary = ({
   )
 
   return (
-    <div>
+    <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+      <SummaryRow
+        label={t("minimumReceived")}
+        loading={isTradePending}
+        content={t("currency", {
+          value: minReceive,
+          symbol: receiveAsset.symbol,
+        })}
+      />
+      <SummaryRow
+        label={t("price")}
+        content={
+          isSpotPricePending ? (
+            <Skeleton width={100} sx={{ height: 18 }} />
+          ) : (
+            `${t("currency", { value: 1, symbol: receiveAsset.symbol })}≈${t("currency", { value: spotPriceData?.spotPrice, symbol: erc20.symbol })}`
+          )
+        }
+      />
       <TradeLimitRow type={TradeLimitType.Trade} />
-
-      <ModalContentDivider />
       <SummaryRow
         label={t("trade:market.summary.estTradeFees")}
         content={
@@ -300,42 +319,6 @@ const TradeSummary = ({
           />
         }
       />
-
-      <ModalContentDivider />
-      <Summary
-        separator={<ModalContentDivider />}
-        rows={[
-          {
-            label: t("minimumReceived"),
-            content: t("currency", {
-              value: minReceive,
-              symbol: receiveAsset.symbol,
-            }),
-          },
-          {
-            label: t("price"),
-            content: isSpotPricePending ? (
-              <Skeleton width={100} sx={{ height: 18 }} />
-            ) : (
-              `${t("currency", { value: 1, symbol: receiveAsset.symbol })}≈${t("currency", { value: spotPriceData?.spotPrice, symbol: erc20.symbol })}`
-            ),
-          },
-          ...(healthFactor
-            ? [
-                {
-                  label: t("healthFactor"),
-                  content: (
-                    <HealthFactorChange
-                      current={healthFactor.current}
-                      intermediate={intermediateHealthFactor?.future}
-                      projected={healthFactor.future}
-                    />
-                  ),
-                },
-              ]
-            : []),
-        ]}
-      />
-    </div>
+    </Summary>
   )
 }

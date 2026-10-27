@@ -2,8 +2,8 @@ import type { EModeCategory, ReserveSummary } from "@/types"
 
 /**
  * Every e-mode category the market offers, sorted by id. Category 0 is "no
- * e-mode" and is never returned. The label is the on-chain `eModeLabel`
- * verbatim; formatting it is the app's concern.
+ * e-mode" and is never returned. The label is the summary's `eModeLabel`,
+ * already normalized to sentence case by `summarizeReserves`.
  */
 export function eModeCategories(summaries: ReserveSummary[]): EModeCategory[] {
   const categories = new Map<number, EModeCategory>()
