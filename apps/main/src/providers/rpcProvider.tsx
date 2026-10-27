@@ -59,6 +59,7 @@ const defaultData: TProviderContext = {
   featureFlags: {
     hollarBondsEnabled: true,
     bilEnabled: false,
+    looperEnabled: false,
     isIceEnabled: false,
   },
   dryRunErrorDecoder: {} as DryRunErrorDecoder,

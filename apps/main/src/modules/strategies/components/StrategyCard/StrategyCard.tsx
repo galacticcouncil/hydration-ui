@@ -8,7 +8,7 @@ import {
   ValueStatsProps,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FileRouteTypes, Link } from "@tanstack/react-router"
+import { FileRouteTypes, Link, LinkProps } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import {
@@ -23,6 +23,7 @@ export type StrategyCardProps = {
   title: string
   description: string
   link?: FileRouteTypes["to"]
+  linkParams?: LinkProps["params"]
 }
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
@@ -31,6 +32,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   title,
   description,
   link,
+  linkParams,
   badges = [],
 }) => {
   return (
@@ -80,6 +82,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </Stack>
       <Link
         to={link}
+        params={linkParams}
         sx={{ "&::before": { content: "''", position: "absolute", inset: 0 } }}
       />
     </Paper>
