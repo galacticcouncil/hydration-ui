@@ -40,6 +40,7 @@ import {
   useBaseRates,
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { useDepositFeeReferenceTx } from "@/modules/strategies/propeller/hooks/useDepositFeeReferenceTx"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
@@ -49,12 +50,15 @@ import {
   isSwapDeposit,
   type PropellerDepositOption,
 } from "@/modules/strategies/propeller/utils/depositOptions"
+import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionClosedError } from "@/states/transactions"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
+// a deposit is up to three transactions; the reference batch pays one base fee
+const FEE_BUFFER_PCT = 50
 
 type Props = {
   initialDeposit: PropellerDepositOption
@@ -120,6 +124,15 @@ export const DepositForm = ({
 
   const isSwap = isSwapDeposit(selected)
   const balance = scaleHuman(getTransferableBalance(assetId), asset.decimals)
+  // when the asset paid with also pays the fees, MAX keeps them back
+  const { getMaxBalance } = useFormMaxBalanceWithFee(
+    useDepositFeeReferenceTx(selected),
+    FEE_BUFFER_PCT,
+  )
+  // the fee math can run past the asset's decimals
+  const spendable = Big(getMaxBalance(asset))
+    .round(asset.decimals, Big.roundDown)
+    .toFixed()
   // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
   // the cap in the pay asset at spot. The swap executes below spot (fees,
   // impact), so a spot-converted fill always lands under the cap.
@@ -136,17 +149,18 @@ export const DepositForm = ({
   // filling it EXACTLY guarantees an over-max by the next refetch and an
   // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
   // to a 6-decimal floor the drift cannot overtake between signing and inclusion.
-  const capacityBound = capacityInPay !== null && Big(balance).gt(capacityInPay)
+  const capacityBound =
+    capacityInPay !== null && Big(spendable).gt(capacityInPay)
   const maxButtonBalance = capacityBound
     ? Big(capacityInPay).round(6, Big.roundDown).toString()
-    : balance
+    : spendable
 
   // closing the review is not a failure
   const depositFailed =
     deposit.isError && !(deposit.error instanceof TransactionClosedError)
 
   const form = useDepositForm({
-    maxBalance: balance,
+    maxBalance: spendable,
     maxCapacity:
       capacityInPay === null
         ? undefined
