@@ -240,7 +240,9 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         symbol={symbol ?? srcAsset?.originSymbol ?? ""}
         onBack={back}
         source={
-          source?.(submit.isPending) ?? (
+          source ? (
+            source(submit.isPending)
+          ) : (
             <Flex align="center" justify="space-between" gap="m">
               <Stack gap="s" minWidth={0}>
                 <Flex gap="s" align="center">

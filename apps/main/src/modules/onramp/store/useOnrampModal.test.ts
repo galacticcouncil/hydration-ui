@@ -66,6 +66,25 @@ beforeEach(() => {
 })
 
 describe("on-chain deposit design variants", () => {
+  it("opens the fifth version from the main deposit modal after visiting an older flow", () => {
+    journey().setSubmitted(transfer)
+    modal().openOnchain("guided")
+
+    modal().setModal("deposit")
+    expect(modal()).toMatchObject({
+      depositEntryFlow: "choice",
+      depositEntryChoice: true,
+    })
+
+    modal().openSelectedDepositFlow()
+    expect(modal()).toMatchObject({
+      modal: "depositOnchain",
+      walletFirstFlow: "connected",
+      depositEntryChoice: true,
+    })
+    expect(journey().pendingTransfers).toEqual([transfer])
+  })
+
   it.each(["current", "guided", "simple", "connected", "choice"] as const)(
     "selects %s on the main modal without starting a flow or losing pending transfers",
     (flow) => {

@@ -1,25 +1,25 @@
-import { ChevronRight, Search } from "@galacticcouncil/ui/assets/icons"
+import { Layers, Search } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   Button,
-  Flex,
+  Grid,
   Icon,
   Input,
+  ModalBody,
   Stack,
-  Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { getChainId } from "@galacticcouncil/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
-import { ChainLogo } from "@/components/ChainLogo"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
-import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
+import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { useAssets } from "@/providers/assetsProvider"
 
 type AssetNetworkPair = { asset: Asset; chain: AnyChain }
@@ -38,187 +38,160 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
   onSelect,
   onBack,
 }) => {
-  const { t } = useTranslation(["common", "onramp"])
-  const [search, setSearch] = useState("")
-  const [assetKey, setAssetKey] = useState<string | null>(null)
+  const { t } = useTranslation(["common", "onramp", "xcm"])
+  const { gte } = useBreakpoints()
+  const isMobile = !gte("sm")
+  const [chainSearch, setChainSearch] = useState("")
+  const [assetSearch, setAssetSearch] = useState("")
+  const [chainKey, setChainKey] = useState(selectedChain?.key ?? null)
   const getDisplayAssetId = useHydrationDisplayAssetId()
   const { getAsset } = useAssets()
-  const assets = useMemo(() => {
-    const groups = new Map<
-      string,
-      { asset: Asset; chain: AnyChain; pairs: AssetNetworkPair[] }
-    >()
-    for (const item of items) {
-      const existing = groups.get(item.asset.key)
-      if (existing) {
-        if (!existing.pairs.some(({ chain }) => chain.key === item.chain.key))
-          existing.pairs.push(item)
-      } else groups.set(item.asset.key, { ...item, pairs: [item] })
+  const chains = useMemo(() => {
+    const groups = new Map<string, { chain: AnyChain; assets: Asset[] }>()
+    for (const { asset, chain } of items) {
+      const group = groups.get(chain.key)
+      if (group) group.assets.push(asset)
+      else groups.set(chain.key, { chain, assets: [asset] })
     }
     return [...groups.values()]
-      .map((item) => {
-        const id = getDisplayAssetId(item.asset)
-        return {
-          ...item,
-          name: (id && getAsset(id)?.name) || item.asset.originSymbol,
-        }
-      })
-      .sort((a, b) => a.asset.originSymbol.localeCompare(b.asset.originSymbol))
-  }, [items, getDisplayAssetId, getAsset])
-  const query = search.trim().toLowerCase()
-  const selected = assets.find(({ asset }) => asset.key === assetKey)
-  const visibleAssets = assets.filter(({ asset, name }) =>
-    `${asset.originSymbol} ${name}`.toLowerCase().includes(query),
+  }, [items])
+  const assets = useMemo(
+    () =>
+      items
+        .map((item) => {
+          const id = getDisplayAssetId(item.asset)
+          return {
+            ...item,
+            key: `${item.chain.key}:${item.asset.key}`,
+            name: (id && getAsset(id)?.name) || item.asset.originSymbol,
+          }
+        })
+        .sort((a, b) =>
+          a.asset.originSymbol.localeCompare(b.asset.originSymbol),
+        ),
+    [items, getDisplayAssetId, getAsset],
   )
-  const visibleNetworks =
-    selected?.pairs.filter(({ chain }) =>
-      `${chain.name} ${chain.key}`.toLowerCase().includes(query),
-    ) ?? []
-  const back = () => {
-    if (selected) {
-      setAssetKey(null)
-      setSearch("")
-    } else onBack()
-  }
+  const chainQuery = chainSearch.trim().toLowerCase()
+  const assetQuery = assetSearch.trim().toLowerCase()
+  const visibleChains = chains.filter(({ chain }) =>
+    `${chain.name} ${chain.key}`.toLowerCase().includes(chainQuery),
+  )
+  const activeChain =
+    chains.find(({ chain }) => chain.key === chainKey)?.chain ?? null
+  const visibleAssets = assets.filter(
+    ({ asset, chain, name }) =>
+      (!chainKey || chain.key === chainKey) &&
+      `${asset.originSymbol} ${name} ${chain.name}`
+        .toLowerCase()
+        .includes(assetQuery),
+  )
 
   return (
     <>
       <SOnrampStepHeader
-        title={t(
-          selected
-            ? "onramp:deposit.guided.networkTitle"
-            : "onramp:deposit.guided.assetTitle",
-        )}
-        description={
-          selected
-            ? t("onramp:deposit.guided.networkHeading", {
-                symbol: selected.asset.originSymbol,
-              })
-            : undefined
-        }
+        title={t("xcm:chainAssetSelect.modal.title")}
         align="center"
         closable
-        onBack={back}
+        onBack={onBack}
       />
-      <DepositScrollBody contained>
-        <Stack
-          gap="m"
-          justify="flex-start"
-          data-onramp-step={
-            selected ? "deposit-quick-network" : "deposit-quick-assets"
-          }
+      <ModalBody
+        noPadding
+        scrollable={false}
+        display="flex"
+        sx={{ minHeight: 0 }}
+      >
+        <Grid
+          data-onramp-step="deposit-quick-assets"
+          columnTemplate={`${pxToRem(isMobile ? 52 : 164)} minmax(0, 1fr)`}
+          gap={isMobile ? "base" : "l"}
+          p={isMobile ? "base" : "m"}
+          height={isMobile ? "100%" : pxToRem(450)}
+          flex={1}
+          sx={{ minHeight: 0 }}
         >
-          <Input
-            autoFocus
-            iconStart={Search}
-            aria-label={t(
-              selected
-                ? "onramp:deposit.guided.searchNetworks"
-                : "search.placeholder.assets",
+          <Stack
+            gap="base"
+            minWidth={0}
+            justify="flex-start"
+            sx={{ minHeight: 0 }}
+          >
+            {!isMobile && (
+              <Input
+                iconStart={Search}
+                placeholder={t("search.placeholder.chains")}
+                aria-label={t("search.placeholder.chains")}
+                value={chainSearch}
+                onChange={(event) => setChainSearch(event.target.value)}
+              />
             )}
-            placeholder={t(
-              selected
-                ? "onramp:deposit.guided.searchNetworks"
-                : "search.placeholder.assets",
-            )}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          <Stack gap="s" justify="flex-start">
-            {selected ? (
-              visibleNetworks.map(({ asset, chain }) => (
-                <Button
-                  key={chain.key}
-                  variant="ghost"
-                  width="100%"
-                  aria-pressed={
-                    selectedAsset?.key === asset.key &&
-                    selectedChain?.key === chain.key
-                  }
-                  onClick={() => onSelect({ asset, chain })}
-                  sx={{
-                    height: "auto",
-                    px: "m",
-                    py: "m",
-                    borderRadius: "m",
-                    gridTemplateColumns: "minmax(0, 1fr)",
-                  }}
-                >
-                  <Flex gap="m" align="center" width="100%">
-                    <ChainLogo
-                      ecosystem={chain.ecosystem}
-                      chainId={getChainId(chain)}
-                      alt={chain.name}
-                    />
-                    <Text
-                      flex={1}
-                      fs="p3"
-                      fw={500}
-                      align="left"
-                      color={getToken("text.high")}
-                    >
-                      {chain.name}
-                    </Text>
-                    <Icon component={ChevronRight} size="m" />
-                  </Flex>
-                </Button>
-              ))
-            ) : (
+            <Button
+              variant={chainKey ? "transparent" : "accent"}
+              outline={!chainKey}
+              size="small"
+              aria-label={t("onramp:deposit.onchain.allChains")}
+              aria-pressed={!chainKey}
+              width="100%"
+              onClick={() => setChainKey(null)}
+            >
+              {isMobile ? (
+                <Icon component={Layers} size="m" />
+              ) : (
+                t("onramp:deposit.onchain.allChains")
+              )}
+            </Button>
+            <Box flex={1} sx={{ minHeight: 0 }}>
+              <ChainList
+                compact
+                fillHeight
+                items={visibleChains}
+                selectedChain={activeChain}
+                setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
+              />
+            </Box>
+          </Stack>
+          <Stack
+            gap="base"
+            minWidth={0}
+            justify="flex-start"
+            sx={{ minHeight: 0 }}
+          >
+            <Input
+              autoFocus
+              iconStart={Search}
+              aria-label={t("search.placeholder.assets")}
+              placeholder={t("search.placeholder.assets")}
+              value={assetSearch}
+              onChange={(event) => setAssetSearch(event.target.value)}
+            />
+            {visibleAssets.length ? (
               <VirtualizedList
                 items={visibleAssets}
                 itemSize={50}
-                maxVisibleItems={10}
-                getItemKey={(index) => visibleAssets[index]!.asset.key}
-                renderItem={({ asset, chain, name, pairs }) => (
+                getItemKey={(index) => visibleAssets[index]!.key}
+                sx={{ flex: 1, minHeight: 0 }}
+                renderItem={({ asset, chain, name }) => (
                   <AssetListItem
                     asset={asset}
                     chain={chain}
                     symbol={asset.originSymbol}
-                    name={name}
+                    name={chainKey ? name : chain.name}
                     route={null}
-                    showChainLogo={false}
                     isLoading={false}
-                    isSelected={selectedAsset?.key === asset.key}
-                    trailingElement={
-                      <Flex gap="xs" align="center">
-                        {pairs.map(({ chain }) => (
-                          <ChainLogo
-                            key={chain.key}
-                            ecosystem={chain.ecosystem}
-                            chainId={getChainId(chain)}
-                            size="extra-small"
-                            alt={chain.name}
-                          />
-                        ))}
-                      </Flex>
+                    isSelected={
+                      selectedAsset?.key === asset.key &&
+                      selectedChain?.key === chain.key
                     }
-                    onClick={() => {
-                      if (pairs.length === 1) onSelect(pairs[0]!)
-                      else {
-                        setAssetKey(asset.key)
-                        setSearch("")
-                      }
-                    }}
+                    trailingElement={null}
+                    onClick={() => onSelect({ asset, chain })}
                   />
                 )}
               />
+            ) : (
+              <AssetSelectEmptyState />
             )}
-            {!(selected ? visibleNetworks : visibleAssets).length &&
-              (selected ? (
-                <Text
-                  fs="p4"
-                  color={getToken("text.medium")}
-                  align="center"
-                  py="l"
-                >
-                  {t("onramp:deposit.guided.emptySearch")}
-                </Text>
-              ) : (
-                <AssetSelectEmptyState />
-              ))}
           </Stack>
-        </Stack>
-      </DepositScrollBody>
+        </Grid>
+      </ModalBody>
     </>
   )
 }

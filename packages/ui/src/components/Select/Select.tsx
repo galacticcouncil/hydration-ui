@@ -15,6 +15,7 @@ import {
   SSelectedIndicator,
   SSelectTrigger,
 } from "./Select.styled"
+import { SelectHover } from "./SelectHover"
 
 const selectedIndicator = (
   <DropdownMenuPrimitive.ItemIndicator asChild forceMount>
@@ -52,6 +53,7 @@ export type SelectProps<TKey extends string> = SButtonProps &
     placeholder?: string
     disabled?: boolean
     fullWidth?: boolean
+    openOnHover?: boolean
     className?: string
     onCloseAutoFocus?: (event: Event) => void
   }
@@ -67,6 +69,7 @@ export const Select = <TKey extends string = string>({
   onCloseAutoFocus,
   fullWidth,
   disabled,
+  openOnHover = false,
   variant = "muted",
   outline = true,
   size = "small",
@@ -81,49 +84,67 @@ export const Select = <TKey extends string = string>({
 
   const selectedItems = items.filter((item) => selectedKeys.includes(item.key))
 
+  const trigger = (
+    <SSelectTrigger
+      variant={variant}
+      outline={outline}
+      size={size}
+      iconEnd={CaretDown}
+      fullWidth={fullWidth}
+      disabled={disabled}
+      {...triggerProps}
+    >
+      <Flex as="span" gap="0.4em">
+        {label && (
+          <Text as="span" color={getToken("text.high")}>
+            {label}:
+          </Text>
+        )}
+        {selectedItems.length
+          ? selectedItems.map((item, index) => (
+              <Flex
+                key={item.key}
+                as="span"
+                align="center"
+                gap={iconSize === undefined ? "0.3em" : "base"}
+              >
+                {item.icon && (
+                  <Icon
+                    size={iconSize ?? "1.15em"}
+                    sx={
+                      index === 0 && iconSize === undefined
+                        ? { marginInlineStart: "-0.5em" }
+                        : undefined
+                    }
+                    component={item.icon}
+                  />
+                )}
+                {item.label}
+                {index < selectedItems.length - 1 && ","}
+              </Flex>
+            ))
+          : placeholder}
+      </Flex>
+    </SSelectTrigger>
+  )
+
+  if (openOnHover && !selection.multiple)
+    return (
+      <SelectHover
+        trigger={trigger}
+        items={items}
+        value={selection.value}
+        onValueChange={selection.onValueChange}
+        iconSize={iconSize}
+        disabled={disabled}
+        onCloseAutoFocus={onCloseAutoFocus}
+      />
+    )
+
   return (
     <DropdownMenuPrimitive.Root>
       <DropdownMenuPrimitive.Trigger asChild disabled={disabled}>
-        <SSelectTrigger
-          variant={variant}
-          outline={outline}
-          size={size}
-          iconEnd={CaretDown}
-          fullWidth={fullWidth}
-          {...triggerProps}
-        >
-          <Flex as="span" gap="0.4em">
-            {label && (
-              <Text as="span" color={getToken("text.high")}>
-                {label}:
-              </Text>
-            )}
-            {selectedItems.length
-              ? selectedItems.map((item, index) => (
-                  <Flex
-                    key={item.key}
-                    as="span"
-                    align="center"
-                    gap={iconSize === undefined ? "0.3em" : "base"}
-                  >
-                    {item.icon && (
-                      <Icon
-                        size={iconSize ?? "1.15em"}
-                        sx={
-                          index === 0 && iconSize === undefined
-                            ? { marginInlineStart: "-0.5em" }
-                            : undefined
-                        }
-                        component={item.icon}
-                      />
-                    )}
-                    {item.label}
-                    {index < selectedItems.length - 1 && ","}
-                  </Flex>
-                ))
-              : placeholder}
-          </Flex>
-        </SSelectTrigger>
+        {trigger}
       </DropdownMenuPrimitive.Trigger>
       <SSelectContent
         sideOffset={6}

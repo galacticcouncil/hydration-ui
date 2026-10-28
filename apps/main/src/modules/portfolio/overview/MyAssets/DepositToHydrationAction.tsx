@@ -16,8 +16,9 @@ export const canDepositToHydration = (asset: DepositAsset) =>
 
 const openAssetDeposit = (asset: DepositAsset) => {
   if (!canDepositToHydration(asset)) return
-  const { openOnchain, depositFlow } = useOnrampModal.getState()
-  openOnchain(depositFlow, {
+  const { openOnchain } = useOnrampModal.getState()
+  openOnchain("connected", {
+    entryChoice: true,
     assetIntent: { chainKey: asset.origin!.key, assetKey: asset.xcAssetKey! },
   })
 }

@@ -26,7 +26,7 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
   return (
     <OnrampVariantLayout
       value={selectedFlow}
-      showSwitcher={modal === "deposit"}
+      showSwitcher={false}
       desktopMinHeight={
         modal !== "deposit" && (flow === "current" || flow === "connected")
           ? 550

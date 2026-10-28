@@ -79,8 +79,8 @@ type OnrampModalState = {
 export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   modal: null,
   depositFlow: "guided",
-  depositEntryChoice: false,
-  depositEntryFlow: "current",
+  depositEntryChoice: true,
+  depositEntryFlow: "choice",
   setDepositEntryFlow: (flow) =>
     set({ depositEntryFlow: flow, depositEntryChoice: flow === "choice" }),
   openSelectedDepositFlow: () => {
@@ -157,6 +157,9 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       useDepositJourneyStore.getState().leave()
     set({
       modal,
+      ...(modal === "deposit"
+        ? { depositEntryFlow: "choice", depositEntryChoice: true }
+        : {}),
       ...(modal !== "depositOnchain" ? { walletFirstAsset: null } : {}),
     })
   },

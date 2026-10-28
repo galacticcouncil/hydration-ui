@@ -67,12 +67,26 @@ export const DepositVariantForm: FC<DepositVariantFormProps> = ({
               <Separator />
             </>
           )}
-          <Stack px="xl" py="l">
-            {source}
-          </Stack>
-          <Separator />
-          {amount}
-          <Separator />
+          {variant === "simple" && (
+            <>
+              {amount}
+              <Separator />
+            </>
+          )}
+          {source && (
+            <>
+              <Stack px="xl" py="l">
+                {source}
+              </Stack>
+              <Separator />
+            </>
+          )}
+          {variant === "guided" && (
+            <>
+              {amount}
+              <Separator />
+            </>
+          )}
           <Stack px="xl" py="l" gap="m">
             {destination}
           </Stack>

@@ -70,10 +70,12 @@ export const DepositQuickStart = () => {
   )
   const isSourcePickerOpen = connecting && !!selectedPair && !!selectedAsset
   useEffect(() => {
-    if (!directEntry) return
-    setWalletContentWidth(isSourcePickerOpen ? pxToRem(650) : null)
+    if (!directEntry && !selectingAsset) return
+    setWalletContentWidth(
+      selectingAsset || isSourcePickerOpen ? pxToRem(650) : null,
+    )
     return () => setWalletContentWidth(null)
-  }, [directEntry, isSourcePickerOpen, setWalletContentWidth])
+  }, [directEntry, isSourcePickerOpen, selectingAsset, setWalletContentWidth])
   const eligible = (account: Account) =>
     !!selectedPair &&
     !!selectedAsset &&
@@ -236,11 +238,12 @@ export const DepositQuickStart = () => {
         <Text fs="p5" color={getToken("text.medium")}>
           {t("deposit.quick.sourceWallet")}
         </Text>
-        {compatible.length ? (
+        {directEntry || compatible.length > 0 ? (
           <Select
             fullWidth
+            openOnHover={directEntry}
             size="medium"
-            disabled={disabled}
+            disabled={disabled || !selectedAsset}
             aria-label={t("deposit.quick.sourceWallet")}
             placeholder={t("deposit.quick.chooseAccount")}
             value={selectedSource ? sourceKey : undefined}
@@ -311,7 +314,9 @@ export const DepositQuickStart = () => {
           <DepositPreviewForm
             key={`${chainKey}:${assetKey}:${selectedSource?.provider ?? ""}:${selectedSource?.address ?? ""}`}
             variant="simple"
-            source={(disabled) => controls(disabled, false)}
+            source={(disabled) =>
+              selectedPair && selectedAsset ? controls(disabled, false) : null
+            }
             assetSelection={
               selectedPair && selectedAsset
                 ? { chain: selectedPair.chain, asset: selectedAsset }

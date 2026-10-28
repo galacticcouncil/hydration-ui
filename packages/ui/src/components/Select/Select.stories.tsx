@@ -96,6 +96,7 @@ type TemplateProps = Pick<
   | "placeholder"
   | "disabled"
   | "fullWidth"
+  | "openOnHover"
 > & { items?: ReadonlyArray<SelectItem<string>> }
 
 const Single = (props: TemplateProps) => {
@@ -129,6 +130,10 @@ const Multiple = (props: TemplateProps) => {
 
 export const Default: Story = {
   render: () => <Single />,
+}
+
+export const OpenOnHover: Story = {
+  render: () => <Single openOnHover items={itemsWithIcons} />,
 }
 
 export const WithLabel: Story = {

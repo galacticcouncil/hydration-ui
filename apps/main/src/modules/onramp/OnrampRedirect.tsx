@@ -15,8 +15,10 @@ export const OnrampRedirect: FC<OnrampRedirectProps> = ({ modal }) => {
 
   useEffect(() => {
     void navigate({ to: "/portfolio", replace: true }).then(() => {
-      if (modal === "depositOnchain") openOnchain("current")
-      else if (modal === "depositOnchainPreview") openOnchain("preview")
+      if (modal === "depositOnchain")
+        openOnchain("connected", { entryChoice: true })
+      else if (modal === "depositOnchainPreview")
+        openOnchain("simple", { entryChoice: true })
       else setModal(modal)
     })
   }, [modal, navigate, setModal, openOnchain])
