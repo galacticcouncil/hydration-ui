@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest"
 import { type AnyPapiTx } from "@/modules/transactions/types"
 import { type Papi } from "@/providers/rpcProvider"
 
-import { prependEvmBindingTx } from "./tx"
+import {
+  containsEvmCall,
+  getNestedEvmCallsFeeWei,
+  prependEvmBindingTx,
+} from "./tx"
 
 vi.mock("@/api/evm", () => ({ weightToEvmFeeQuery: vi.fn() }))
 vi.mock("@/api/transaction", () => ({ paymentInfoQuery: vi.fn() }))
@@ -57,5 +61,39 @@ describe("Native EVM binding composition", () => {
     const preparedApproval = batch([binding, call])
     expect(prependEvmBindingTx(papi, preparedApproval)).toBe(preparedApproval)
     expect(batchAll).not.toHaveBeenCalled()
+  })
+})
+
+describe("EVM calls inside a dispatch_evm_call", () => {
+  const evmCall = (gas: bigint, price: bigint) => ({
+    type: "EVM",
+    value: {
+      type: "call",
+      value: { gas_limit: gas, max_fee_per_gas: [price, 0n, 0n, 0n] },
+    },
+  })
+  const dispatched = (inner: unknown) => ({
+    type: "Dispatcher",
+    value: { type: "dispatch_evm_call", value: { call: inner } },
+  })
+  const asTx = (tx: AnyPapiTx) =>
+    ({ ...tx, signSubmitAndWatch: () => undefined }) as unknown as AnyPapiTx
+  const sell = { type: "Router", value: { type: "sell", value: {} } }
+
+  it("counts them as EVM calls and adds their up-front gas to the fee", () => {
+    const tx = asTx(
+      batch([
+        sell,
+        dispatched(evmCall(2_000_000n, 3n)),
+        dispatched(evmCall(1_000_000n, 3n)),
+      ]),
+    )
+    expect(containsEvmCall(tx)).toBe(true)
+    expect(getNestedEvmCallsFeeWei(tx)).toBe(9_000_000n)
+  })
+
+  it("finds no EVM call in a batch without one", () => {
+    expect(containsEvmCall(asTx(batch([sell, binding])))).toBe(false)
+    expect(getNestedEvmCallsFeeWei(asTx(batch([sell])))).toBe(0n)
   })
 })

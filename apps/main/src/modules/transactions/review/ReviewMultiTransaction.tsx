@@ -113,6 +113,8 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
 
     // whether this step reached the chain; a failure after that is final
     let submitted = false
+    // a reorg re-reports a step's result: never record or advance twice
+    let succeeded = false
     const config: SingleTransaction = {
       ...transaction,
       ...omit(currentBaseConfig, ["tx"]),
@@ -129,6 +131,8 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
         }
       },
       onSuccess: async (event) => {
+        if (succeeded) return
+        succeeded = true
         setIsLoading(false)
         setTransactionResults((prev) => [...prev, event])
 

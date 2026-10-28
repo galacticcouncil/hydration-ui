@@ -299,19 +299,50 @@ export class EthereumSigner {
       const receipt = await this.publicClient.waitForTransactionReceipt({
         hash: txHash,
       })
+      this.reportReceipt(receipt, options)
 
-      if (receipt.status === "reverted") {
-        options.onError(this.formatError(new ExecutionRevertedError()))
-      } else {
-        options.onSuccess(receipt)
-      }
-
-      options.onFinalized(receipt)
+      // The receipt comes from the best block, which a reorg can replace and
+      // re-execute: report again once its block is finalized. Not awaited, so
+      // callers still settle on the first receipt.
+      void this.waitForFinalReceipt(txHash).then((final) => {
+        if (final && final.status !== receipt.status)
+          this.reportReceipt(final, options)
+        options.onFinalized(final ?? receipt)
+      })
 
       return receipt
     } catch (err) {
       options.onError(this.formatError(err))
     }
+  }
+
+  private reportReceipt(
+    receipt: TransactionReceipt,
+    options: EthereumSignerOptions,
+  ) {
+    if (receipt.status === "reverted") {
+      options.onError(this.formatError(new ExecutionRevertedError()))
+    } else {
+      options.onSuccess(receipt)
+    }
+  }
+
+  /** The receipt once a finalized block holds it; null if that takes too long. */
+  private async waitForFinalReceipt(
+    hash: Hex,
+    { interval = 3_000, timeout = 180_000 } = {},
+  ): Promise<TransactionReceipt | null> {
+    const deadline = Date.now() + timeout
+    while (Date.now() < deadline) {
+      const [receipt, finalized] = await Promise.all([
+        this.publicClient.getTransactionReceipt({ hash }).catch(() => null),
+        this.publicClient.getBlock({ blockTag: "finalized" }).catch(() => null),
+      ])
+      if (receipt && finalized && finalized.number >= receipt.blockNumber)
+        return receipt
+      await new Promise((resolve) => setTimeout(resolve, interval))
+    }
+    return null
   }
 
   async signAndSubmitNative(
