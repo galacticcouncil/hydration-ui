@@ -69,6 +69,7 @@
   "withdrawals.claim.descriptionUnsold": "Claiming {{ payouts }}. Anything more that settles before this confirms arrives as {{ collateral }}.",
   "withdrawals.claim.submitted": "Claiming withdrawal payouts...",
   "withdrawals.claim.success": "Withdrawal claimed",
+  "withdrawals.claim.error": "Withdrawal not claimed",
   "withdrawals.claim.empty": "No withdrawal payouts are currently available. Refresh and try again.",
   "withdrawals.claimModal.receiveAs": "Receive as",
   "withdrawals.claimModal.surplus": "Surplus",
@@ -103,6 +104,7 @@
   "withdraw.review.max": "Requesting a withdrawal of your whole position, about {{ amount }}. The call asks for every share, so earnings added before it confirms come along too.",
   "withdraw.toast.submitted": "Requesting {{ amount }} withdrawal...",
   "withdraw.toast.success": "{{ amount }} withdrawal requested",
+  "withdraw.toast.error": "{{ amount }} withdrawal not requested",
   "withdraw.validation.belowMin": "Min. {{ min, currency }} {{symbol}}",
   "withdraw.validation.overPosition": "More than your position of {{ amount }}",
   "withdraw.validation.tooSmall": "Too small to withdraw",
@@ -141,6 +143,7 @@
   ],
   "deposit.toast.submitted": "Depositing {{ amount }}...",
   "deposit.toast.success": "{{ amount }} deposited; strategy deployment follows gradually",
+  "deposit.toast.error": "{{ amount }} not deposited",
   "deposit.failed": "The deposit didn't go through. Check your balance and the current vault status, then retry.",
   "deposit.swap.description.exact": "Converts {{ amountIn }} 1:1 into the vault's collateral and deposits the full {{ amount }} in one transaction.",
   "deposit.swap.description.sweep": "Swaps {{ amountIn }} and deposits {{ amount }} in one transaction. If the swap would deliver less, nothing happens. Anything above it is swapped back to {{ symbolIn }}.",
@@ -166,5 +169,6 @@
   "transfer.previewOnly": "Preview only — transfers are not connected yet.",
   "transfer.paused": "The vault is paused. Positions can't be sent until it resumes.",
   "transfer.toast.submitted": "Sending {{ amount }} Juicer position...",
-  "transfer.toast.success": "Sent {{ amount }} Juicer position"
+  "transfer.toast.success": "Sent {{ amount }} Juicer position",
+  "transfer.toast.error": "{{ amount }} Juicer position not sent"
 }

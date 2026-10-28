@@ -126,7 +126,7 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       vaultAddress: Hex,
       data: Hex,
       abi: Abi,
-      toasts: { submitted: string; success: string },
+      toasts: { submitted: string; success: string; error: string },
       review?: Pick<TransactionCommon, "title" | "description">,
     ) => {
       if (!address) throw new Error("Connect an account before continuing")
@@ -286,6 +286,8 @@ export function useDeposit(
     return {
       submitted: t("propeller:deposit.toast.submitted", { amount: value }),
       success: t("propeller:deposit.toast.success", { amount: value }),
+      // without it a failure keeps the "Depositing..." title
+      error: t("propeller:deposit.toast.error", { amount: value }),
     }
   }
 
@@ -435,6 +437,7 @@ export function useRequestRedeem(
         {
           submitted: t("propeller:withdraw.toast.submitted", { amount }),
           success: t("propeller:withdraw.toast.success", { amount }),
+          error: t("propeller:withdraw.toast.error", { amount }),
         },
         {
           title: t("propeller:withdraw.review.title"),
@@ -494,6 +497,7 @@ export function useTransferShares(
       return submitTx(vault.vaultAddress, data, [...erc20Abi], {
         submitted: t("propeller:transfer.toast.submitted", { amount }),
         success: t("propeller:transfer.toast.success", { amount }),
+        error: t("propeller:transfer.toast.error", { amount }),
       })
     },
   })
@@ -632,6 +636,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
         toasts: {
           submitted: t("withdrawals.claim.submitted"),
           success: t("withdrawals.claim.success"),
+          error: t("withdrawals.claim.error"),
         },
       }
       const txOptions = txOptionsForVault(vault.vaultAddress)
