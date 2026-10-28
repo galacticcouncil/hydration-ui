@@ -1,4 +1,3 @@
-import { minutesToMilliseconds } from "date-fns"
 import { isBigInt, isNumber, isPlainObject, isString } from "remeda"
 import {
   encodeFunctionData,
@@ -99,9 +98,6 @@ export const assertDepositCapacity = (
       "Deposit availability changed. Check the vault status and amount, then retry.",
     )
 }
-
-/** how long to wait for a node to catch up with a landed transaction */
-export const CHAIN_WAIT = { interval: 1000, timeout: minutesToMilliseconds(3) }
 
 const depositRequest = ({ vault, owner, amount }: DepositInput) =>
   ({

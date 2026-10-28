@@ -4,11 +4,7 @@ import {
   safeConvertSS58toH160,
   safeStringify,
 } from "@galacticcouncil/utils"
-import {
-  isEthereumSigner,
-  useAccount,
-  useWallet,
-} from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
   useMutation,
@@ -16,7 +12,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import Big from "big.js"
-import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -46,9 +41,7 @@ import { useFormatSurplusHollar } from "@/modules/strategies/propeller/hooks/use
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
 import {
-  CHAIN_WAIT,
   encodeDeposit,
-  isCallNode,
   prepareApproval,
   prepareFundedDeposit,
   prepareSwapDeposit,
@@ -64,7 +57,7 @@ import { prepareWithdrawalClaim } from "@/modules/strategies/propeller/utils/wit
 import { type AnyPapiTx } from "@/modules/transactions/types"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
-import { type Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   type TransactionCommon,
@@ -244,17 +237,6 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
     createTransaction,
     txOptionsForVault,
   }
-}
-
-/** Polls until a submitted step's effect is visible on chain. */
-const waitForChain = async (
-  isVisible: () => Promise<boolean>,
-  message: string,
-) => {
-  await waitFor(isVisible, {
-    interval: CHAIN_WAIT.interval,
-    timeout: { milliseconds: CHAIN_WAIT.timeout, message },
-  })
 }
 
 export type DepositVariables = {
@@ -524,28 +506,11 @@ export type ClaimVariables = {
   payoutAssetId?: string
 }
 
-/** A decoded call as a submittable tx, through its pallet's own builder. */
-const decodedCallToTx = (papi: Papi, call: AnyPapiTx["decodedCall"]) => {
-  if (!isCallNode(call) || !isCallNode(call.value))
-    throw new Error("Not a decoded call")
-  const { type: pallet } = call
-  const { type: method, value: args } = call.value
-  const build = (
-    papi.tx as unknown as Record<
-      string,
-      Record<string, (args: unknown) => AnyPapiTx> | undefined
-    >
-  )[pallet]?.[method]
-  if (!build) throw new Error(`No builder for ${pallet}.${method}`)
-  return build(args)
-}
-
 export function useClaim(options: VaultWriteOptions = {}) {
   const { t } = useTranslation(["propeller", "common"])
   const rpc = useRpcProvider()
   const { evm, sdk } = rpc
   const { account } = useAccount()
-  const wallet = useWallet()
   const { getAssetWithFallback } = useAssets()
   const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
     useVaultEvmCall(options)
@@ -625,67 +590,6 @@ export function useClaim(options: VaultWriteOptions = {}) {
     ].join(" + ")
   }
 
-  /**
-   * EVM signers can't put a substrate sell behind the EVM calls: claim, wait
-   * for the collateral to arrive, then sell exactly that much.
-   */
-  const claimThenSellSteps = async (
-    vault: PropellerVaultConfig,
-    payoutAssetId: string,
-    collateral: bigint,
-    claimStep: TransactionCommon & { tx: AnyPapiTx },
-  ) => {
-    const collateralAddress = getAddressFromAssetId(vault.assetId) as Hex
-    const readCollateral = () =>
-      evm.readContract({
-        address: collateralAddress,
-        abi: erc20Abi,
-        functionName: "balanceOf",
-        args: [evmAddress],
-      })
-    const before = await readCollateral()
-    const swapToasts = {
-      amountIn: t("common:currency", {
-        value: formatUnits(
-          collateral,
-          getAssetWithFallback(vault.assetId).decimals,
-        ),
-        symbol: getAssetWithFallback(vaultCollateralDisplayId(vault)).symbol,
-        maximumFractionDigits: 4,
-      }),
-      symbol: getAssetWithFallback(payoutAssetId).symbol,
-    }
-    return [
-      {
-        ...claimStep,
-        stepTitle: t("withdrawals.claim.step.claim"),
-        // dispatch-precompile calls emit no logs, so watch the balance
-        beforeNext: () =>
-          waitForChain(
-            async () => (await readCollateral()) >= before + collateral,
-            t("withdrawals.claim.timeout"),
-          ),
-      },
-      {
-        stepTitle: t("withdrawals.claim.step.swap"),
-        tx: async () => {
-          const sell = await buildSell(vault, payoutAssetId, collateral)
-          if (!sell) throw new Error("No payout sell to build")
-          return {
-            tx: decodedCallToTx(rpc.papi, sell),
-            toasts: {
-              submitted: t(
-                "withdrawals.claim.swap.toast.submitted",
-                swapToasts,
-              ),
-              success: t("withdrawals.claim.swap.toast.success", swapToasts),
-            },
-          }
-        },
-      },
-    ]
-  }
-
   return useMutation({
     mutationKey: propellerQueryKeys.claim(),
     mutationFn: async ({
@@ -732,22 +636,9 @@ export function useClaim(options: VaultWriteOptions = {}) {
       }
       const txOptions = txOptionsForVault(vault.vaultAddress)
 
-      if (sell && isEthereumSigner(wallet?.signer)) {
-        const tx = await buildBatch(calls, { atomic: true })
-        const steps = await claimThenSellSteps(
-          vault,
-          payoutAssetId,
-          collateral,
-          {
-            ...claim,
-            tx,
-          },
-        )
-        return createTransaction({ tx: steps }, txOptions)
-      }
-
-      // a reverted claim must stop the rest: claimSurplus, and a sell that
-      // would otherwise spend collateral the wallet already held
+      // One transaction for every wallet (a permit runs a sell after EVM
+      // calls too). A reverted claim must stop the rest: claimSurplus, and a
+      // sell that would otherwise spend collateral the wallet already held.
       const tx = await buildBatch(calls, {
         atomic: true,
         trailing: sell ? [sell] : [],
