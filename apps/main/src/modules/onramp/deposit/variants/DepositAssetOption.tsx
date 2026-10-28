@@ -4,7 +4,6 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@/components/ChainLogo"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
@@ -24,8 +23,6 @@ export const DepositAssetOption: FC<DepositAssetOptionProps> = ({
   onSelect,
   isSelected,
 }) => {
-  const { t } = useTranslation("onramp")
-
   return (
     <Button
       variant={isSelected ? "tertiary" : "ghost"}
@@ -47,23 +44,16 @@ export const DepositAssetOption: FC<DepositAssetOptionProps> = ({
             {asset.originSymbol}
           </Text>
           {!!supportedNetworks?.length && (
-            <Flex gap="base" align="center" wrap>
-              <Flex gap="xs" align="center" wrap>
-                {supportedNetworks.map((network) => (
-                  <ChainLogo
-                    key={network.key}
-                    ecosystem={network.ecosystem}
-                    chainId={getChainId(network)}
-                    size="extra-small"
-                    alt={network.name}
-                  />
-                ))}
-              </Flex>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("deposit.guided.networkCount", {
-                  count: supportedNetworks.length,
-                })}
-              </Text>
+            <Flex gap="xs" align="center" wrap>
+              {supportedNetworks.map((network) => (
+                <ChainLogo
+                  key={network.key}
+                  ecosystem={network.ecosystem}
+                  chainId={getChainId(network)}
+                  size="extra-small"
+                  alt={network.name}
+                />
+              ))}
             </Flex>
           )}
         </Stack>

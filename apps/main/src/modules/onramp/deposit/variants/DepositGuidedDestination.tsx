@@ -23,6 +23,7 @@ import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAcc
 import { useDepositRecipientReadiness } from "@/modules/onramp/deposit/hooks/useDepositRecipientReadiness"
 import { SDepositSourceAccount } from "@/modules/onramp/deposit/preview/steps/DepositHydrationTransfer.styled"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -58,6 +59,15 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
   const accounts = useDepositAccounts({ signersOnly: true })
   const [candidate, setCandidate] = useState<Account | null>(null)
   const [connecting, setConnecting] = useState(false)
+  const setWalletContentWidth = useOnrampModal(
+    (state) => state.setWalletContentWidth,
+  )
+
+  useEffect(() => {
+    if (!connecting) return
+    return () => setWalletContentWidth(null)
+  }, [connecting, setWalletContentWidth])
+
   const preferred = [candidate, destination, suggested].find(
     (account) =>
       account?.canUseOnHydration &&
@@ -111,6 +121,9 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
   if (connecting)
     return (
       <Web3ConnectPage
+        layout="split"
+        keepSplitOpen
+        onContentWidthChange={setWalletContentWidth}
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.SubstrateEVM}

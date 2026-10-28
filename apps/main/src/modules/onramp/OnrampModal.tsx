@@ -32,7 +32,6 @@ export const OnrampModal = () => {
   const { t } = useTranslation("common")
   const modal = useOnrampModal((state) => state.modal)
   const depositFlow = useOnrampModal((state) => state.depositFlow)
-  const depositEntryChoice = useOnrampModal((state) => state.depositEntryChoice)
   const depositEntryFlow = useOnrampModal((state) => state.depositEntryFlow)
   const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const withdrawFlow = useOnrampModal((state) => state.withdrawFlow)
@@ -75,11 +74,8 @@ export const OnrampModal = () => {
     isWithdrawOnchain &&
     withdrawFlow === "current" &&
     withdrawPage === OnrampScreen.WithdrawOnchainWallet
-  const isSplitQuickConnection =
-    modal === "depositOnchainPreview" &&
-    depositEntryChoice &&
-    depositFlow === "simple" &&
-    walletContentWidth !== null
+  const isSplitDepositConnection =
+    modal === "depositOnchainPreview" && walletContentWidth !== null
   const contentWidth =
     modal === "depositOnchain" && page === OnrampScreen.DepositOnchainRecipient
       ? 650
@@ -123,7 +119,7 @@ export const OnrampModal = () => {
           stepKey={`${modal}:${isWithdraw ? withdrawPage : isOnchain ? (modal === "depositOnchainPreview" ? phase : page) : "method"}`}
           loadingTitle={t(isWithdraw ? "withdraw" : "deposit")}
           contentWidth={
-            isSplitWalletConnection || isSplitQuickConnection
+            isSplitWalletConnection || isSplitDepositConnection
               ? (walletContentWidth ?? pxToRem(650))
               : pxToRem(contentWidth)
           }

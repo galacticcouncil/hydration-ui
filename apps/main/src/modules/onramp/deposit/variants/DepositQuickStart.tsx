@@ -210,26 +210,28 @@ export const DepositQuickStart = () => {
       />
     )
 
-  const controls = (disabled = false) => (
+  const controls = (disabled = false, showAssetSelector = true) => (
     <Stack data-onramp-step="deposit-quick-start" gap="l" justify="flex-start">
-      <Stack gap="base" justify="flex-start">
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("deposit.quick.assetNetwork")}
-        </Text>
-        <ChainAssetSelectButton
-          fullWidth
-          showChainName
-          placeholder={t("deposit.quick.selectAssetNetwork")}
-          currentSelection={
-            selectedAsset && selectedPair
-              ? { asset: selectedAsset, chain: selectedPair.chain }
-              : null
-          }
-          disabled={disabled || !pairs.length}
-          aria-label={t("deposit.quick.selectAssetNetwork")}
-          onClick={() => setSelectingAsset(true)}
-        />
-      </Stack>
+      {showAssetSelector && (
+        <Stack gap="base" justify="flex-start">
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("deposit.quick.assetNetwork")}
+          </Text>
+          <ChainAssetSelectButton
+            fullWidth
+            showChainName
+            placeholder={t("deposit.quick.selectAssetNetwork")}
+            currentSelection={
+              selectedAsset && selectedPair
+                ? { asset: selectedAsset, chain: selectedPair.chain }
+                : null
+            }
+            disabled={disabled || !pairs.length}
+            aria-label={t("deposit.quick.selectAssetNetwork")}
+            onClick={() => setSelectingAsset(true)}
+          />
+        </Stack>
+      )}
       <Stack gap="base" justify="flex-start">
         <Text fs="p5" color={getToken("text.medium")}>
           {t("deposit.quick.sourceWallet")}
@@ -309,7 +311,14 @@ export const DepositQuickStart = () => {
           <DepositPreviewForm
             key={`${chainKey}:${assetKey}:${selectedSource?.provider ?? ""}:${selectedSource?.address ?? ""}`}
             variant="simple"
-            source={controls}
+            source={(disabled) => controls(disabled, false)}
+            assetSelection={
+              selectedPair && selectedAsset
+                ? { chain: selectedPair.chain, asset: selectedAsset }
+                : null
+            }
+            onAssetClick={() => setSelectingAsset(true)}
+            assetSelectorDisabled={!pairs.length}
             destination={destination}
             footerHint={sourceHint}
             recipientReady={ready && !!selectedSource && sameRoute}

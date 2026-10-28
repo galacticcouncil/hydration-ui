@@ -180,26 +180,17 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
                     isLoading={false}
                     isSelected={selectedAsset?.key === asset.key}
                     trailingElement={
-                      pairs.length > 1 ? (
-                        <Flex direction="column" align="flex-end" gap="base">
-                          <Text fs="p6" color={getToken("text.medium")}>
-                            {t("onramp:deposit.guided.networkCount", {
-                              count: pairs.length,
-                            })}
-                          </Text>
-                          <Flex gap="xs" align="center">
-                            {pairs.map(({ chain }) => (
-                              <ChainLogo
-                                key={chain.key}
-                                ecosystem={chain.ecosystem}
-                                chainId={getChainId(chain)}
-                                size="extra-small"
-                                alt={chain.name}
-                              />
-                            ))}
-                          </Flex>
-                        </Flex>
-                      ) : null
+                      <Flex gap="xs" align="center">
+                        {pairs.map(({ chain }) => (
+                          <ChainLogo
+                            key={chain.key}
+                            ecosystem={chain.ecosystem}
+                            chainId={getChainId(chain)}
+                            size="extra-small"
+                            alt={chain.name}
+                          />
+                        ))}
+                      </Flex>
                     }
                     onClick={() => {
                       if (pairs.length === 1) onSelect(pairs[0]!)

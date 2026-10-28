@@ -23,7 +23,10 @@ import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { ChainLogo } from "@/components/ChainLogo"
-import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
+import {
+  OnrampAssetAmount,
+  OnrampAssetAmountProps,
+} from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
@@ -65,6 +68,9 @@ type DepositPreviewFormProps = {
   destination?: (disabled: boolean) => ReactNode
   recipientReady?: boolean
   footerHint?: string
+  assetSelection?: OnrampAssetAmountProps["selection"]
+  onAssetClick?: () => void
+  assetSelectorDisabled?: boolean
   onBack?: () => void
 }
 
@@ -75,6 +81,9 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   destination,
   recipientReady = true,
   footerHint,
+  assetSelection,
+  onAssetClick,
+  assetSelectorDisabled,
   onBack,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
@@ -267,11 +276,21 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         amount={
           <Stack pb={formState.errors.srcAmount ? ["l", 0] : 0}>
             <OnrampAssetAmount
-              label={t("deposit.quick.amount")}
+              variant={variant === "simple" ? "transaction" : "default"}
+              label={
+                variant === "simple"
+                  ? t("common:from")
+                  : t("deposit.quick.amount")
+              }
+              onAssetClick={variant === "simple" ? onAssetClick : undefined}
+              assetSelectorDisabled={submit.isPending || assetSelectorDisabled}
+              selectAssetLabel={t("deposit.quick.selectAssetNetwork")}
               selection={
-                srcChain && srcAsset
-                  ? { chain: srcChain, asset: srcAsset }
-                  : null
+                variant === "simple" && assetSelection !== undefined
+                  ? assetSelection
+                  : srcChain && srcAsset
+                    ? { chain: srcChain, asset: srcAsset }
+                    : null
               }
               amountProps={{
                 fieldName: "srcAmount",
