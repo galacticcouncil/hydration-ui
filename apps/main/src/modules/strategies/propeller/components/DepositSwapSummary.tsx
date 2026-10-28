@@ -5,10 +5,6 @@ import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { TradeFee } from "@/components/TradeFee/TradeFee"
-import {
-  TradeLimit,
-  TradeLimitType,
-} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { type useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { type TAsset } from "@/providers/assetsProvider"
 
@@ -39,9 +35,7 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
         separator={<Separator mx="-xl" />}
         rows={[
           {
-            label: t(
-              exact ? "deposit.swap.deposit" : "deposit.swap.minDeposit",
-            ),
+            label: t("deposit.swap.deposit"),
             content:
               depositAmount === undefined
                 ? "—"
@@ -59,7 +53,8 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
             ),
             loading: isLoading,
           },
-          // the 1:1 unwrap has no price, impact, fee or trade limit to show
+          // the 1:1 unwrap has no price, impact or fee to show; no swap deposit
+          // uses the trade limit, it deposits exactly the amount above
           ...(exact
             ? []
             : [
@@ -93,10 +88,6 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
                       isLoading={isLoading}
                     />
                   ),
-                },
-                {
-                  label: t("common:tradeLimit"),
-                  content: <TradeLimit type={TradeLimitType.Trade} />,
                 },
               ]),
         ]}

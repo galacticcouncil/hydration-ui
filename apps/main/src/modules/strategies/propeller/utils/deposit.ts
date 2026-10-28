@@ -1,5 +1,4 @@
 import { minutesToMilliseconds } from "date-fns"
-import waitFor from "p-wait-for"
 import { isBigInt, isNumber, isPlainObject, isString } from "remeda"
 import {
   encodeFunctionData,
@@ -12,6 +11,7 @@ import {
 
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
+  DEPOSIT_BUFFER_BPS,
   DEPOSIT_MIN_GAS,
   EVM_CALL_GAS,
 } from "@/modules/strategies/propeller/constants"
@@ -19,7 +19,6 @@ import {
   depositBlocker,
   readMainDebtBusy,
 } from "@/modules/strategies/propeller/utils/depositGates"
-import { type TProviderContext } from "@/providers/rpcProvider"
 
 const MAX_NATIVE_TX_GAS = 1n << 24n
 type DepositInput = { vault: Hex; asset: Hex; owner: Hex; amount: bigint }
@@ -101,73 +100,8 @@ export const assertDepositCapacity = (
     )
 }
 
-/** Deposit at most the vault's remaining room. */
-export const clampDeposit = (delivered: bigint, maximum: bigint) =>
-  delivered < maximum ? delivered : maximum
-
 /** how long to wait for a node to catch up with a landed transaction */
 export const CHAIN_WAIT = { interval: 1000, timeout: minutesToMilliseconds(3) }
-
-/** Select a best state containing the swap, without waiting for finalization. */
-export const waitForSwapBlock = async (
-  { papi, papiClient }: Pick<TProviderContext, "papi" | "papiClient">,
-  swap: { number: number; hash?: string },
-  wait = CHAIN_WAIT,
-) =>
-  waitFor(async () => {
-    const blocks = await papiClient.getBestBlocks()
-    const best = blocks[0]
-    if (!best || best.number < swap.number) return false
-
-    if (swap.hash) {
-      // System records ancestor hashes; the current block's own hash comes from the head.
-      const hash =
-        best.number === swap.number
-          ? best.hash
-          : await papi.query.System.BlockHash.getValue(swap.number, {
-              at: best.hash,
-            })
-      if (hash !== swap.hash)
-        throw new Error("The swap is no longer in the best chain")
-    }
-
-    // Pin the checked best state so the dry-run cannot select a different head.
-    return waitFor.resolveWith(best.hash)
-  }, wait)
-
-// a node answers a read pinned to a block it has not imported with this
-const isMissingBlock = (error: unknown) =>
-  error instanceof Error && error.message.includes("header not found")
-
-/** Collateral a swap delivered: the owner's balance at its block minus the block before. */
-export const readDelivered = async (
-  client: PublicClient,
-  { asset, owner, block }: { asset: Hex; owner: Hex; block: bigint },
-  wait = CHAIN_WAIT,
-) => {
-  const balanceAt = (blockNumber: bigint) =>
-    client.readContract({
-      address: asset,
-      abi: erc20Abi,
-      functionName: "balanceOf",
-      args: [owner],
-      blockNumber,
-    })
-  const [before, after] = await waitFor(
-    () =>
-      Promise.all([balanceAt(block - 1n), balanceAt(block)]).then(
-        waitFor.resolveWith,
-        (error) => {
-          if (isMissingBlock(error)) return false
-          throw error
-        },
-      ),
-    wait,
-  )
-  const delivered = after - before
-  if (delivered <= 0n) throw new Error("The swap delivered nothing to deposit")
-  return delivered
-}
 
 const depositRequest = ({ vault, owner, amount }: DepositInput) =>
   ({
@@ -205,37 +139,6 @@ export const prepareFundedDeposit = async (
     abi: VAULT_ABI,
     gas,
     shares,
-  }
-}
-
-/** The swap landed but its deposit can't be prepared; delivered is unknown if unreadable. */
-export class InterruptedDepositError extends Error {
-  delivered: bigint | undefined
-  constructor(delivered: bigint | undefined, options: ErrorOptions) {
-    super("The deposit after the swap could not be prepared", options)
-    this.delivered = delivered
-  }
-}
-
-/** Deposits what a swap landed in `block` delivered, clamped to the vault's room. */
-export const prepareDeliveredDeposit = async (
-  client: PublicClient,
-  { block, ...input }: Omit<DepositInput, "amount"> & { block: bigint },
-  wait = CHAIN_WAIT,
-) => {
-  let delivered: bigint | undefined
-  try {
-    delivered = await readDelivered(client, { ...input, block }, wait)
-    // The EVM node must have imported the swap before preparing its deposit.
-    await waitFor(async () => (await client.getBlockNumber()) >= block, wait)
-    const { vault, asset } = input
-    const { maximum } = await readDepositCapacity(client, vault, asset)
-    const amount = clampDeposit(delivered, maximum)
-    // also asserts the vault is ready, unpaused and has room
-    const approval = await prepareApproval(client, { ...input, amount })
-    return { delivered, amount, approval }
-  } catch (cause) {
-    throw new InterruptedDepositError(delivered, { cause })
   }
 }
 
@@ -372,9 +275,14 @@ const withMinAmountOut = (call: unknown, minAmountOut: bigint): unknown => {
   return { ...call, value: { ...call.value, value: next } }
 }
 
+/** What a swap deposit can count on: its quote, less a small buffer for the price moving before inclusion. */
+export const bufferedDeposit = (quotedAmountOut: bigint) =>
+  quotedAmountOut - (quotedAmountOut * DEPOSIT_BUFFER_BPS) / 10_000n
+
 /**
- * A 1:1 unwrap deposits its full amount and the sell accepts nothing less. Any
- * other route only reports its minimum: the deposit is sized after it lands.
+ * The sell's guaranteed minimum is what the batch deposits, so the deposit
+ * amount is known when signing. A 1:1 unwrap deposits its full amount; any other
+ * route deposits its buffered quote and accepts nothing less.
  */
 export const readSwapDeposit = (
   tradeCall: unknown,
@@ -382,7 +290,13 @@ export const readSwapDeposit = (
     assetIn,
     collateralId,
     quotedAmountIn,
-  }: { assetIn: string; collateralId: string; quotedAmountIn: bigint },
+    quotedAmountOut,
+  }: {
+    assetIn: string
+    collateralId: string
+    quotedAmountIn: bigint
+    quotedAmountOut: bigint
+  },
 ) => {
   const sell = readSellLimit(tradeCall)
   if (
@@ -392,35 +306,82 @@ export const readSwapDeposit = (
   )
     throw new Error("The swap does not buy this vault's collateral")
 
-  const depositAmount = readUnwrapDeposit(sell.route, {
+  const unwrap = readUnwrapDeposit(sell.route, {
     ...sell,
     amountIn: sell.amountIn ?? quotedAmountIn,
   })
-  if (depositAmount === null)
-    return { exact: false, minAmountOut: sell.minAmountOut, tradeCall } as const
+  const depositAmount = unwrap ?? bufferedDeposit(quotedAmountOut)
+  if (depositAmount <= 0n) throw new Error("The swap amount is too small")
   return {
-    exact: true,
+    exact: unwrap !== null,
     depositAmount,
     tradeCall: withMinAmountOut(tradeCall, depositAmount),
+    /** sell_all leaves no pay asset to receive the sweep */
+    sellsAll: sell.amountIn === undefined,
   } as const
 }
 
 /**
- * A 1:1 unwrap approves its deposit for the swap's batch. Any other route only
- * checks the vault takes deposits, so the swap isn't stranded, and shows its minimum.
+ * Sells whatever the swap delivered above its minimum back along the reverse
+ * route, so no collateral (2-Pool-GETH) is left in the wallet. Sell-all is
+ * sized at execution, so it needs no amount; it fails on a zero balance.
  */
+export const sweepCall = (tradeCall: unknown): unknown => {
+  if (!isCallNode(tradeCall) || !isCallNode(tradeCall.value)) return null
+  const { type: method, value: args } = tradeCall.value
+  if (!isPlainObject(args)) return null
+  if (tradeCall.type === "Dispatcher" && method === "dispatch_with_extra_gas") {
+    const call = sweepCall(args.call)
+    return (
+      call && {
+        ...tradeCall,
+        value: { ...tradeCall.value, value: { ...args, call } },
+      }
+    )
+  }
+  if (
+    tradeCall.type !== "Router" ||
+    !Array.isArray(args.route) ||
+    !isNumber(args.asset_in) ||
+    !isNumber(args.asset_out)
+  )
+    return null
+  const route = (args.route as Record<string, unknown>[])
+    .map((hop) => ({
+      ...hop,
+      asset_in: hop.asset_out,
+      asset_out: hop.asset_in,
+    }))
+    .reverse()
+  return {
+    type: "Router",
+    value: {
+      type: "sell_all",
+      value: {
+        asset_in: args.asset_out,
+        asset_out: args.asset_in,
+        min_amount_out: 0n,
+        route,
+      },
+    },
+  }
+}
+
+/** Approves the swap's guaranteed minimum for the same batch, after checking the vault takes it. */
 export const prepareSwapDeposit = async (
   client: PublicClient,
   {
     collateralId,
     assetIn,
     quotedAmountIn,
+    quotedAmountOut,
     tradeCall,
     ...input
   }: Omit<DepositInput, "amount"> & {
     collateralId: string
     assetIn: string
     quotedAmountIn: bigint
+    quotedAmountOut: bigint
     tradeCall: unknown
   },
 ) => {
@@ -428,19 +389,12 @@ export const prepareSwapDeposit = async (
     assetIn,
     collateralId,
     quotedAmountIn,
+    quotedAmountOut,
   })
-  if (swap.exact) {
-    const amount = swap.depositAmount
-    return {
-      exact: true,
-      amount,
-      approval: await prepareApproval(client, { ...input, amount }),
-    }
+  const amount = swap.depositAmount
+  return {
+    ...swap,
+    amount,
+    approval: await prepareApproval(client, { ...input, amount }),
   }
-  // any room at all: the delivered amount is clamped to it after the swap
-  assertDepositCapacity(
-    await readDepositCapacity(client, input.vault, input.asset),
-    1n,
-  )
-  return { exact: false, amount: swap.minAmountOut, approval: null }
 }

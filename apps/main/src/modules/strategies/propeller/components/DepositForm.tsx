@@ -129,8 +129,18 @@ export const DepositForm = ({
     useDepositFeeReferenceTx(selected),
     FEE_BUFFER_PCT,
   )
-  // the fee math can run past the asset's decimals
-  const spendable = Big(getMaxBalance(asset))
+  // A swap keeps the pay asset's existential deposit: selling the whole balance
+  // empties it, and the sweep's leftover could not be received back.
+  const swapMax = Big(balance).minus(
+    scaleHuman(asset.existentialDeposit, asset.decimals),
+  )
+  const spendable = Big.max(
+    0,
+    isSwapDeposit(selected)
+      ? Big.min(getMaxBalance(asset), swapMax)
+      : getMaxBalance(asset),
+  )
+    // the fee math can run past the asset's decimals
     .round(asset.decimals, Big.roundDown)
     .toFixed()
   // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
@@ -227,6 +237,7 @@ export const DepositForm = ({
               assetIn: assetId,
               tx: quote.tx,
               quotedAmountIn: quote.swap?.amountIn ?? 0n,
+              quotedAmountOut: quote.swap?.amountOut ?? 0n,
             },
           }
         : { amount },

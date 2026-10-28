@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { bestSellWithTxQuery } from "@/api/trade"
-import { calculateSlippage } from "@/api/utils/slippage"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { isExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import {
+  bufferedDeposit,
   readSwapDeposit,
   readUnwrapDeposit,
 } from "@/modules/strategies/propeller/utils/deposit"
@@ -57,9 +57,7 @@ export const useDepositQuote = (
         })
         return {
           exact: unwrap !== null,
-          depositAmount:
-            unwrap ??
-            swap.amountOut - calculateSlippage(swap.amountOut, slippage),
+          depositAmount: unwrap ?? bufferedDeposit(swap.amountOut),
           tx: null,
         }
       }
@@ -67,9 +65,9 @@ export const useDepositQuote = (
         assetIn: deposit.assetId,
         collateralId: deposit.vault.assetId,
         quotedAmountIn: swap.amountIn,
+        quotedAmountOut: swap.amountOut,
       })
-      const { exact, tradeCall } = read
-      const depositAmount = read.exact ? read.depositAmount : read.minAmountOut
+      const { exact, tradeCall, depositAmount } = read
       if (tradeCall === quotedTx.decodedCall)
         return { exact, depositAmount, tx: quotedTx }
       const { type: pallet, value } = tradeCall as {
@@ -87,14 +85,7 @@ export const useDepositQuote = (
     } catch {
       return null
     }
-  }, [
-    quotedTx,
-    swap,
-    slippage,
-    deposit.assetId,
-    deposit.vault.assetId,
-    rpc.papi,
-  ])
+  }, [quotedTx, swap, deposit.assetId, deposit.vault.assetId, rpc.papi])
 
   return {
     isSwap,

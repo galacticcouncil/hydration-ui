@@ -21,3 +21,7 @@ export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 export const STRATEGY = {
   id: "propeller",
 } as const
+
+// a swap deposit deposits its quote less this, so the amount is fixed when signing;
+// the quote already prices in impact, the buffer only covers blocks passing
+export const DEPOSIT_BUFFER_BPS = 5n
