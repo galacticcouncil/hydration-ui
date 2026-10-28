@@ -17,12 +17,20 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
   children,
 }) => {
   const { t } = useTranslation("onramp")
-  const openOnchain = useOnrampModal((state) => state.openOnchain)
+  const setEntryFlow = useOnrampModal((state) => state.setDepositEntryFlow)
+  const entryFlow = useOnrampModal((state) => state.depositEntryFlow)
+  const entryChoice = useOnrampModal((state) => state.depositEntryChoice)
+  const modal = useOnrampModal((state) => state.modal)
+  const selectedFlow =
+    modal === "deposit" ? entryFlow : entryChoice ? "choice" : flow
   return (
     <OnrampVariantLayout
-      value={flow}
+      value={selectedFlow}
+      showSwitcher={modal === "deposit"}
       desktopMinHeight={
-        flow === "current" || flow === "connected" ? 550 : undefined
+        modal !== "deposit" && (flow === "current" || flow === "connected")
+          ? 550
+          : undefined
       }
       label={t("deposit.flowSwitcher.label")}
       options={[
@@ -30,16 +38,18 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
         { value: "guided", label: t("deposit.flowSwitcher.guided") },
         { value: "simple", label: t("deposit.flowSwitcher.simple") },
         { value: "connected", label: t("deposit.flowSwitcher.connected") },
+        { value: "choice", label: t("deposit.flowSwitcher.choice") },
       ]}
       onValueChange={(value) => {
+        if (value === selectedFlow) return
         if (
-          value !== flow &&
-          (value === "current" ||
-            value === "guided" ||
-            value === "simple" ||
-            value === "connected")
+          value === "current" ||
+          value === "guided" ||
+          value === "simple" ||
+          value === "connected" ||
+          value === "choice"
         )
-          openOnchain(value)
+          setEntryFlow(value)
       }}
     >
       {children}

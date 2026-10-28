@@ -10,6 +10,7 @@ export type StepButtonProps = {
   description: string
   icon?: ComponentType
   onClick: () => void
+  hasFooter?: boolean
 }
 
 export const StepButton: React.FC<StepButtonProps> = ({
@@ -17,9 +18,10 @@ export const StepButton: React.FC<StepButtonProps> = ({
   description,
   icon: IconComponent,
   onClick,
+  hasFooter = false,
 }) => {
   return (
-    <SStepButton as="button" onClick={onClick}>
+    <SStepButton as="button" onClick={onClick} hasFooter={hasFooter}>
       {IconComponent && (
         <Icon
           size={["l", "lg"]}

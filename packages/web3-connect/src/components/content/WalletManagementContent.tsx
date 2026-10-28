@@ -132,6 +132,7 @@ export const WalletManagementContent = () => {
     isControlled,
     setModalContentWidth,
     isPage,
+    keepSplitOpen,
     walletListVariant,
     accountFilter: filterPageAccount,
     customSource,
@@ -141,6 +142,7 @@ export const WalletManagementContent = () => {
   const currentAccount = filterPageAccount ? null : activeAccount
   const { gte } = useBreakpoints()
   const isDesktop = gte("md")
+  const keepSplitPanel = keepSplitOpen && !isPage && isDesktop
   const { enable, disconnect } = useWeb3Enable()
   const sourceViewportRef = useRef<HTMLDivElement>(null)
   const { enable: enableWithDisconnectOnError } = useWeb3Enable({
@@ -362,7 +364,8 @@ export const WalletManagementContent = () => {
 
   const showAccountPanel = isPage
     ? showAccounts
-    : connectedProviderTypes.length > 0 ||
+    : keepSplitPanel ||
+      connectedProviderTypes.length > 0 ||
       connectedAccountsCount > 0 ||
       isExternalWalletSelected ||
       isMultisigSelected ||
@@ -387,6 +390,7 @@ export const WalletManagementContent = () => {
   if (
     isPanelOpened !== showAccountPanel &&
     (!showAccountPanel ||
+      keepSplitPanel ||
       isPage ||
       !isDesktop ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -1266,6 +1270,14 @@ export const WalletManagementContent = () => {
                 action={{
                   label: t("provider.connectingWallet"),
                 }}
+              />
+            ) : keepSplitPanel &&
+              connectedProviderTypes.length === 0 &&
+              connectedAccountsCount === 0 ? (
+              <WalletConnectionState
+                title={t("provider.connectWalletsTitle")}
+                description={t("provider.connectWalletsDescription")}
+                visual={{ type: "icon", icon: WalletIcon }}
               />
             ) : (
               <SRightColumn key={selectedSource}>

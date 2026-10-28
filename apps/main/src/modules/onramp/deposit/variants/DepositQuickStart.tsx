@@ -1,17 +1,13 @@
-import { CaretDown, Plus, Wallet } from "@galacticcouncil/ui/assets/icons"
+import { Plus, Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
-  AccountTile,
   Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Flex,
   Icon,
+  Select,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import {
   HYDRATION_CHAIN_KEY,
   shortenAccountAddress,
@@ -19,7 +15,6 @@ import {
 import {
   Account,
   AccountWalletAvatar,
-  useAccount,
   useWeb3Connect,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
@@ -53,7 +48,10 @@ export const DepositQuickStart = () => {
   const { papi } = useRpcProvider()
   const { sourceChainAssetPairs } = useXcmProvider()
   const { getValues, reset } = useFormContext<XcmFormValues>()
-  const { account: activeAccount } = useAccount()
+  const directEntry = useOnrampModal((state) => state.depositEntryChoice)
+  const setWalletContentWidth = useOnrampModal(
+    (state) => state.setWalletContentWidth,
+  )
   const setAccount = useWeb3Connect((state) => state.setAccount)
   const accounts = useDepositAccounts({ signersOnly: true })
   const intent = useDepositJourneyStore((state) => state.assetIntent)
@@ -70,6 +68,12 @@ export const DepositQuickStart = () => {
   const selectedAsset = selectedPair?.assets.find(
     (asset) => asset.key === assetKey,
   )
+  const isSourcePickerOpen = connecting && !!selectedPair && !!selectedAsset
+  useEffect(() => {
+    if (!directEntry) return
+    setWalletContentWidth(isSourcePickerOpen ? pxToRem(650) : null)
+    return () => setWalletContentWidth(null)
+  }, [directEntry, isSourcePickerOpen, setWalletContentWidth])
   const eligible = (account: Account) =>
     !!selectedPair &&
     !!selectedAsset &&
@@ -77,21 +81,9 @@ export const DepositQuickStart = () => {
   const compatible = accounts.filter(eligible)
   const sameRoute =
     selection?.chainKey === chainKey && selection?.assetKey === assetKey
-  const selectedSource = sourceKey
-    ? compatible.find(
-        (account) => `${account.provider}:${account.address}` === sourceKey,
-      )
-    : sameRoute
-      ? compatible.find(
-          (account) =>
-            account.provider === selection.account.provider &&
-            account.address === selection.account.address,
-        )
-      : (compatible.find(
-          (account) =>
-            account.provider === activeAccount?.provider &&
-            account.address === activeAccount.address,
-        ) ?? (compatible.length === 1 ? compatible[0] : undefined))
+  const selectedSource = compatible.find(
+    (account) => `${account.provider}:${account.address}` === sourceKey,
+  )
 
   const selectSource = useCallback(
     (account: Account) => {
@@ -188,6 +180,9 @@ export const DepositQuickStart = () => {
   if (connecting && selectedPair && selectedAsset)
     return (
       <Web3ConnectPage
+        layout={directEntry ? "split" : "page"}
+        keepSplitOpen={directEntry}
+        walletListVariant={directEntry ? "connectedFirst" : "default"}
         neckwork={neckworkClient}
         papi={papi}
         mode={getWalletModeByChain(selectedPair.chain)}
@@ -223,6 +218,8 @@ export const DepositQuickStart = () => {
         </Text>
         <ChainAssetSelectButton
           fullWidth
+          showChainName
+          placeholder={t("deposit.quick.selectAssetNetwork")}
           currentSelection={
             selectedAsset && selectedPair
               ? { asset: selectedAsset, chain: selectedPair.chain }
@@ -238,93 +235,49 @@ export const DepositQuickStart = () => {
           {t("deposit.quick.sourceWallet")}
         </Text>
         {compatible.length ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={disabled}>
-              <Button
-                variant="ghost"
-                width="100%"
-                aria-label={t("deposit.quick.sourceWallet")}
-                sx={{
-                  height: "auto",
-                  p: "m",
-                  borderRadius: "m",
-                  gridTemplateColumns: "minmax(0, 1fr)",
-                }}
-              >
-                <Flex gap="m" align="center" width="100%">
-                  {selectedSource ? (
-                    <AccountWalletAvatar
-                      address={selectedSource.displayAddress}
-                      provider={selectedSource.provider}
-                      size={36}
-                    />
-                  ) : (
-                    <Icon component={Wallet} size="m" />
-                  )}
-                  <Stack gap="s" flex={1} minWidth={0} align="start">
-                    <Text fs="p3" fw={500} truncate>
-                      {selectedSource?.name ?? t("deposit.quick.chooseAccount")}
-                    </Text>
-                    {selectedSource && (
-                      <Text fs="p5" color={getToken("text.medium")}>
-                        {getWallet(selectedSource.provider)?.title} ·{" "}
-                        {shortenAccountAddress(selectedSource.displayAddress)}
-                      </Text>
-                    )}
-                  </Stack>
-                  <Icon component={CaretDown} size="s" />
-                </Flex>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              size="small"
-              sideOffset={6}
-              collisionPadding={12}
-              sx={{
-                width: "var(--radix-dropdown-menu-trigger-width)",
-                maxHeight:
-                  "var(--radix-dropdown-menu-content-available-height)",
-                overflowY: "auto",
-              }}
-            >
-              {compatible.map((account) => (
-                <DropdownMenuItem
-                  key={`${account.provider}:${account.address}`}
-                  asChild
-                >
-                  <AccountTile
-                    name={`${getWallet(account.provider)?.title ?? ""} · ${account.name}`}
+          <Select
+            fullWidth
+            size="medium"
+            disabled={disabled}
+            aria-label={t("deposit.quick.sourceWallet")}
+            placeholder={t("deposit.quick.chooseAccount")}
+            value={selectedSource ? sourceKey : undefined}
+            iconSize={24}
+            items={[
+              ...compatible.map((account) => ({
+                key: `${account.provider}:${account.address}`,
+                label: `${account.name} · ${getWallet(account.provider)?.title ?? ""} · ${shortenAccountAddress(account.displayAddress)}`,
+                icon: () => (
+                  <AccountWalletAvatar
                     address={account.displayAddress}
-                    walletLogoSrc={getWallet(account.provider)?.logo}
-                    active={
-                      selectedSource?.provider === account.provider &&
-                      selectedSource.address === account.address
-                    }
-                    width="100%"
-                    sx={{ textAlign: "left" }}
-                    onClick={
-                      disabled
-                        ? undefined
-                        : () => {
-                            setSourceKey(
-                              `${account.provider}:${account.address}`,
-                            )
-                            selectSource(account)
-                          }
-                    }
+                    provider={account.provider}
+                    size={24}
                   />
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuItem
-                disabled={disabled}
-                onSelect={() => setConnecting(true)}
-              >
-                <Icon component={Plus} size="m" />
-                {t("deposit.variants.connectAnother")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                ),
+              })),
+              {
+                key: "connectAnother",
+                label: t("deposit.variants.connectAnother"),
+                icon: () => (
+                  <Flex align="center" justify="center">
+                    <Icon component={Plus} size="m" />
+                  </Flex>
+                ),
+              },
+            ]}
+            onValueChange={(key) => {
+              if (key === "connectAnother") {
+                setConnecting(true)
+                return
+              }
+              const account = compatible.find(
+                (account) => `${account.provider}:${account.address}` === key,
+              )
+              if (!account) return
+              setSourceKey(key)
+              selectSource(account)
+            }}
+          />
         ) : (
           <Button
             variant="tertiary"
@@ -342,22 +295,24 @@ export const DepositQuickStart = () => {
   )
 
   if (
-    selectedPair &&
-    selectedAsset &&
-    selectedSource &&
-    sameRoute &&
-    selection.account.provider === selectedSource.provider &&
-    selection.account.address === selectedSource.address
+    directEntry ||
+    (selectedPair &&
+      selectedAsset &&
+      selectedSource &&
+      sameRoute &&
+      selection.account.provider === selectedSource.provider &&
+      selection.account.address === selectedSource.address)
   )
     return (
       <DepositGuidedDestination>
-        {({ destination, ready }) => (
+        {({ destination, ready, sourceHint }) => (
           <DepositPreviewForm
-            key={`${chainKey}:${assetKey}:${selectedSource.provider}:${selectedSource.address}`}
+            key={`${chainKey}:${assetKey}:${selectedSource?.provider ?? ""}:${selectedSource?.address ?? ""}`}
             variant="simple"
             source={controls}
             destination={destination}
-            recipientReady={ready}
+            footerHint={sourceHint}
+            recipientReady={ready && !!selectedSource && sameRoute}
             onBack={back}
           />
         )}

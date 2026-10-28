@@ -10,7 +10,10 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
-import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
+import {
+  isWalletFirstWithdrawFlow,
+  useOnrampModal,
+} from "@/modules/onramp/store/useOnrampModal"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawOnchainAsset } from "@/modules/onramp/withdraw/steps/WithdrawOnchainAsset"
 import { WithdrawOnchainForm } from "@/modules/onramp/withdraw/steps/WithdrawOnchainForm"
@@ -53,7 +56,8 @@ export const WithdrawOnchainSteps: FC<WithdrawOnchainStepsProps> = ({
   if (page === OnrampScreen.WithdrawOnchainWallet)
     return (
       <Web3ConnectPage
-        layout={flow === "current" ? "split" : "page"}
+        layout={isWalletFirstWithdrawFlow(flow) ? "split" : "page"}
+        walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
         onContentWidthChange={
           flow === "current" ? setWalletContentWidth : undefined
         }
@@ -65,14 +69,19 @@ export const WithdrawOnchainSteps: FC<WithdrawOnchainStepsProps> = ({
           title: t("withdraw.onchain.wallet.title"),
           description: t("withdraw.onchain.wallet.description"),
           closable: true,
+          hideAccountFilters: flow === "connected",
         }}
-        onBack={() =>
+        onBack={() => {
+          if (flow === "connected" && !hasRoute) {
+            useOnrampModal.getState().setModal("withdraw")
+            return
+          }
           paginateTo(
             hasRoute
               ? OnrampScreen.WithdrawOnchainForm
               : OnrampScreen.WithdrawOnchainAsset,
           )
-        }
+        }}
         onAccountSelect={(account) => {
           if (!canUseWithdrawAccount(account)) return
           setAccount(account)

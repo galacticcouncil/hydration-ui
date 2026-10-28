@@ -231,6 +231,8 @@ export const WithdrawOnchainForm: FC = () => {
   if (isRecipientWalletOpen && destChain)
     return (
       <Web3ConnectPage
+        layout={flow === "connected" ? "split" : "page"}
+        walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
         neckwork={neckworkClient}
         papi={papi}
         mode={destinationMode}
@@ -245,6 +247,7 @@ export const WithdrawOnchainForm: FC = () => {
             chain: destChain.name,
           }),
           closable: true,
+          hideAccountFilters: flow === "connected",
         }}
         onBack={() => setIsRecipientWalletOpen(false)}
         onAccountSelect={(recipient) => {

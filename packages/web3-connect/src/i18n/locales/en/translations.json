@@ -23,6 +23,8 @@
   "provider.connectedWalletCount_one": "{{count}} connected wallet",
   "provider.connectedWalletCount_other": "{{count}} connected wallets",
   "provider.connectAnotherWallet": "Add wallet",
+  "provider.connectWalletsTitle": "Connect your wallets",
+  "provider.connectWalletsDescription": "Choose a wallet on the left. Your accounts will appear here once connected.",
   "provider.connectAll": "Connect all",
   "provider.notInstalled": "Not installed",
   "provider.logOutAll": "Disconnect all",

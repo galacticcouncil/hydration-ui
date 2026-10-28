@@ -2,7 +2,16 @@ import {
   ArrowRightLeftIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
-import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  ModalBody,
+  ModalHeader,
+  Separator,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { StepButton } from "@/modules/onramp/components/StepButton"
@@ -19,6 +28,17 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
 }) => {
   const { t } = useTranslation(["onramp"])
   const setModal = useOnrampModal((state) => state.setModal)
+  const entryChoice = useOnrampModal((state) => state.depositEntryChoice)
+  const openOnchain = useOnrampModal((state) => state.openOnchain)
+  const onchain = (
+    <StepButton
+      hasFooter={entryChoice}
+      icon={ArrowRightLeftIcon}
+      onClick={() => onSelect(OnrampScreen.DepositOnchainWallet)}
+      title={t("deposit.method.onchain.title")}
+      description={t("deposit.method.onchain.description")}
+    />
+  )
 
   return (
     <>
@@ -31,12 +51,43 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
             title={t("deposit.method.cex.title")}
             description={t("deposit.method.cex.description")}
           />
-          <StepButton
-            icon={ArrowRightLeftIcon}
-            onClick={() => onSelect(OnrampScreen.DepositOnchainWallet)}
-            title={t("deposit.method.onchain.title")}
-            description={t("deposit.method.onchain.description")}
-          />
+          {entryChoice ? (
+            <Stack gap={0} borderRadius="m" overflow="hidden">
+              {onchain}
+              <Stack gap={0} bg={getToken("buttons.secondary.low.rest")}>
+                <Separator mx={["l", "xl"]} />
+                <Flex
+                  gap="m"
+                  direction={["column", "row"]}
+                  align={["flex-start", "center"]}
+                  justify="space-between"
+                  px={["l", "xl"]}
+                  py="m"
+                >
+                  <Text
+                    fs="p4"
+                    lh={1.3}
+                    minWidth={0}
+                    color={getToken("text.medium")}
+                  >
+                    {t("deposit.method.quick.hint")}
+                  </Text>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    outline
+                    size="small"
+                    flexShrink={0}
+                    onClick={() => openOnchain("simple", { entryChoice: true })}
+                  >
+                    {t("deposit.quick.title")}
+                  </Button>
+                </Flex>
+              </Stack>
+            </Stack>
+          ) : (
+            onchain
+          )}
           <StepButton
             icon={LandmarkIcon}
             onClick={() => setModal("bankDeposit")}

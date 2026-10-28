@@ -24,13 +24,19 @@ export const OnrampAssetAmount: FC<OnrampAssetAmountProps> = ({
       <Text fs="p5" color={getToken("text.medium")}>
         {label}
       </Text>
-      {!onAssetClick && selection ? (
-        <Flex gap="base" align="center">
-          <XAssetLogo asset={selection.asset} chain={selection.chain} />
-          <Text fs="p3" fw={600}>
-            {selection.asset.originSymbol}
+      {!onAssetClick ? (
+        selection ? (
+          <Flex gap="base" align="center">
+            <XAssetLogo asset={selection.asset} chain={selection.chain} />
+            <Text fs="p3" fw={600}>
+              {selection.asset.originSymbol}
+            </Text>
+          </Flex>
+        ) : (
+          <Text fs="p3" color={getToken("text.low")}>
+            —
           </Text>
-        </Flex>
+        )
       ) : (
         <ChainAssetSelectButton
           currentSelection={selection}

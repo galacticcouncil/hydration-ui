@@ -109,6 +109,7 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
           <DataTable
             ref={tableRef}
             paginated
+            pageSize={10}
             size="small"
             fixedLayout={isMobile}
             data={journeys}

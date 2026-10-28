@@ -14,7 +14,11 @@ export const SButton = styled(Button, {
     width: ${fullWidth ? "100%" : "fit-content"};
     display: inline-flex;
     justify-content: ${fullWidth ? "space-between" : "center"};
-    padding-inline: ${fullWidth ? theme.space.l : theme.space.base};
+    padding-inline: ${fullWidth
+      ? theme.space.l
+      : hasSelection
+        ? theme.space.base
+        : `${theme.space.l} ${theme.space.m}`};
     padding-block: ${theme.space.s};
     height: 2.375rem;
 

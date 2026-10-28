@@ -245,13 +245,14 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
   if (inlineDestination && pair && asset)
     return (
       <DepositGuidedDestination>
-        {({ destination, ready }) => (
+        {({ destination, ready, sourceHint }) => (
           <DepositPreviewForm
             key={`${selection?.account.provider}:${selection?.account.address}`}
             variant="guided"
             symbol={asset.originSymbol}
             source={content}
             destination={destination}
+            footerHint={sourceHint}
             recipientReady={ready}
             onBack={back}
           />

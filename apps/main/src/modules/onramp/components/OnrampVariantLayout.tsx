@@ -14,6 +14,7 @@ type OnrampVariantLayoutProps = {
   onValueChange: (value: string) => void
   disabled?: boolean
   desktopMinHeight?: number
+  showSwitcher?: boolean
   children: ReactNode
 }
 
@@ -24,6 +25,7 @@ export const OnrampVariantLayout: FC<OnrampVariantLayoutProps> = ({
   onValueChange,
   disabled = false,
   desktopMinHeight,
+  showSwitcher = true,
   children,
 }) => (
   <SOnrampVariantRoot
@@ -39,11 +41,13 @@ export const OnrampVariantLayout: FC<OnrampVariantLayoutProps> = ({
         {children}
       </SOnrampVariantContent>
     </TabsContent>
-    <OnrampFlowSwitcher
-      label={label}
-      value={value}
-      options={options}
-      disabled={disabled}
-    />
+    {showSwitcher && (
+      <OnrampFlowSwitcher
+        label={label}
+        value={value}
+        options={options}
+        disabled={disabled}
+      />
+    )}
   </SOnrampVariantRoot>
 )

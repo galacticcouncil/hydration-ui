@@ -92,6 +92,8 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
 
   const walletSelector = (
     <Web3ConnectPage
+      layout={flow === "connected" ? "split" : "page"}
+      walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
       neckwork={neckworkClient}
       papi={papi}
       mode={WalletMode.SubstrateEVM}
@@ -100,6 +102,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
         title: t("withdraw.onchain.wallet.title"),
         description: t("withdraw.onchain.wallet.description"),
         closable: true,
+        hideAccountFilters: flow === "connected",
       }}
       onBack={() => {
         if (useOnrampModal.getState().withdrawPending) return

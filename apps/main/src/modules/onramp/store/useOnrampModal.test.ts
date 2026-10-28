@@ -66,6 +66,97 @@ beforeEach(() => {
 })
 
 describe("on-chain deposit design variants", () => {
+  it.each(["current", "guided", "simple", "connected", "choice"] as const)(
+    "selects %s on the main modal without starting a flow or losing pending transfers",
+    (flow) => {
+      journey().setSubmitted(transfer)
+      modal().setModal("deposit")
+      paginateTo.mockClear()
+
+      modal().setDepositEntryFlow(flow)
+
+      expect(modal()).toMatchObject({
+        modal: "deposit",
+        depositEntryFlow: flow,
+        depositEntryChoice: flow === "choice",
+      })
+      expect(paginateTo).not.toHaveBeenCalled()
+      expect(journey().active).toBe(false)
+      expect(journey().pendingTransfers).toEqual([transfer])
+    },
+  )
+
+  it.each(["current", "guided", "simple", "connected", "choice"] as const)(
+    "opens the selected %s version when the on-chain method is chosen",
+    (flow) => {
+      modal().setModal("deposit")
+      modal().setDepositEntryFlow(flow)
+      modal().openSelectedDepositFlow()
+
+      const walletFirst = ["current", "connected", "choice"].includes(flow)
+      expect(modal().modal).toBe(
+        walletFirst ? "depositOnchain" : "depositOnchainPreview",
+      )
+      expect(modal().depositEntryChoice).toBe(flow === "choice")
+      if (walletFirst)
+        expect(modal().walletFirstFlow).toBe(
+          flow === "choice" ? "connected" : flow,
+        )
+      else expect(modal().depositFlow).toBe(flow)
+    },
+  )
+
+  it("opens the fifth version at method selection without losing pending transfers", () => {
+    journey().setSubmitted(transfer)
+    modal().setWalletFirstAsset({ chainKey: "bifrost", assetKey: "bnc" })
+
+    modal().openDepositChoice()
+
+    expect(modal()).toMatchObject({
+      modal: "deposit",
+      depositEntryChoice: true,
+      walletFirstAsset: null,
+    })
+    expect(paginateTo).toHaveBeenCalledWith(OnrampScreen.MethodSelect)
+    expect(journey().active).toBe(false)
+    expect(journey().pendingTransfers).toEqual([transfer])
+  })
+
+  it.each(["connected", "simple"] as const)(
+    "uses the existing %s flow inside the fifth version and returns to its entry choice",
+    (flow) => {
+      modal().openDepositChoice()
+      modal().openOnchain(flow, { entryChoice: true })
+
+      expect(modal().depositEntryChoice).toBe(true)
+      expect(modal().modal).toBe(
+        flow === "connected" ? "depositOnchain" : "depositOnchainPreview",
+      )
+      if (flow === "connected")
+        expect(modal().walletFirstFlow).toBe("connected")
+      else {
+        expect(modal().depositFlow).toBe("simple")
+        expect(journey().phase).toBe("assets")
+      }
+
+      modal().setModal("deposit")
+      expect(modal()).toMatchObject({
+        modal: "deposit",
+        depositEntryChoice: true,
+      })
+    },
+  )
+
+  it.each(["current", "guided", "simple", "connected"] as const)(
+    "leaves the fifth entry context when explicitly switching to %s",
+    (flow) => {
+      modal().openDepositChoice()
+      modal().openOnchain("simple", { entryChoice: true })
+      modal().openOnchain(flow)
+      expect(modal().depositEntryChoice).toBe(false)
+    },
+  )
+
   it.each(["current", "connected"] as const)(
     "keeps the %s asset selection during navigation, then clears it for a new deposit",
     (flow) => {
@@ -269,6 +360,7 @@ describe("on-chain withdrawal design variants", () => {
 
   it.each([
     ["current", "withdrawOnchain", OnrampScreen.WithdrawOnchainWallet],
+    ["connected", "withdrawOnchain", OnrampScreen.WithdrawOnchainWallet],
     ["guided", "withdrawAsset", OnrampScreen.WithdrawOnchainAsset],
     ["simple", "withdrawAsset", OnrampScreen.WithdrawOnchainAsset],
   ] as const)(
@@ -301,7 +393,12 @@ describe("on-chain withdrawal design variants", () => {
     })
   })
 
-  it.each(["current", "guided", "simple"] satisfies WithdrawFlow[])(
+  it.each([
+    "current",
+    "guided",
+    "simple",
+    "connected",
+  ] satisfies WithdrawFlow[])(
     "remembers %s after returning to withdrawal methods",
     (flow) => {
       modal().openWithdrawOnchain(flow)
@@ -312,7 +409,7 @@ describe("on-chain withdrawal design variants", () => {
       expect(modal()).toMatchObject({
         withdrawFlow: flow,
         withdrawPage:
-          flow === "current"
+          flow === "current" || flow === "connected"
             ? OnrampScreen.WithdrawOnchainWallet
             : OnrampScreen.WithdrawOnchainAsset,
         withdrawAssetId: null,
@@ -321,7 +418,12 @@ describe("on-chain withdrawal design variants", () => {
     },
   )
 
-  it.each(["current", "guided", "simple"] satisfies WithdrawFlow[])(
+  it.each([
+    "current",
+    "guided",
+    "simple",
+    "connected",
+  ] satisfies WithdrawFlow[])(
     "keeps %s when selecting an asset and its destination route",
     (flow) => {
       modal().openWithdrawOnchain(flow)

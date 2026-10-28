@@ -6,9 +6,10 @@ import {
   Input,
   Stack,
   Text,
+  VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getChainId, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,7 +19,7 @@ import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmpty
 import { ChainLogo } from "@/components/ChainLogo"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
-import { DepositAssetOption } from "@/modules/onramp/deposit/variants/DepositAssetOption"
+import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { useAssets } from "@/providers/assetsProvider"
 
 type AssetNetworkPair = { asset: Asset; chain: AnyChain }
@@ -124,53 +125,83 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
             onChange={(event) => setSearch(event.target.value)}
           />
           <Stack gap="s" justify="flex-start">
-            {selected
-              ? visibleNetworks.map(({ asset, chain }) => (
-                  <Button
-                    key={chain.key}
-                    variant="ghost"
-                    width="100%"
-                    aria-pressed={
-                      selectedAsset?.key === asset.key &&
-                      selectedChain?.key === chain.key
-                    }
-                    onClick={() => onSelect({ asset, chain })}
-                    sx={{
-                      height: "auto",
-                      px: "m",
-                      py: "m",
-                      borderRadius: "m",
-                      gridTemplateColumns: "minmax(0, 1fr)",
-                    }}
-                  >
-                    <Flex gap="m" align="center" width="100%">
-                      <ChainLogo
-                        ecosystem={chain.ecosystem}
-                        chainId={getChainId(chain)}
-                        alt={chain.name}
-                      />
-                      <Stack gap="s" flex={1} align="start">
-                        <Text fs="p3" fw={500} color={getToken("text.high")}>
-                          {chain.name}
-                        </Text>
-                        {chain.key !== HYDRATION_CHAIN_KEY && (
-                          <Text fs="p5" color={getToken("text.medium")}>
-                            {t("onramp:deposit.guided.networkDestination")}
-                          </Text>
-                        )}
-                      </Stack>
-                      <Icon component={ChevronRight} size="m" />
-                    </Flex>
-                  </Button>
-                ))
-              : visibleAssets.map(({ asset, chain, pairs }) => (
-                  <DepositAssetOption
-                    key={asset.key}
+            {selected ? (
+              visibleNetworks.map(({ asset, chain }) => (
+                <Button
+                  key={chain.key}
+                  variant="ghost"
+                  width="100%"
+                  aria-pressed={
+                    selectedAsset?.key === asset.key &&
+                    selectedChain?.key === chain.key
+                  }
+                  onClick={() => onSelect({ asset, chain })}
+                  sx={{
+                    height: "auto",
+                    px: "m",
+                    py: "m",
+                    borderRadius: "m",
+                    gridTemplateColumns: "minmax(0, 1fr)",
+                  }}
+                >
+                  <Flex gap="m" align="center" width="100%">
+                    <ChainLogo
+                      ecosystem={chain.ecosystem}
+                      chainId={getChainId(chain)}
+                      alt={chain.name}
+                    />
+                    <Text
+                      flex={1}
+                      fs="p3"
+                      fw={500}
+                      align="left"
+                      color={getToken("text.high")}
+                    >
+                      {chain.name}
+                    </Text>
+                    <Icon component={ChevronRight} size="m" />
+                  </Flex>
+                </Button>
+              ))
+            ) : (
+              <VirtualizedList
+                items={visibleAssets}
+                itemSize={50}
+                maxVisibleItems={10}
+                getItemKey={(index) => visibleAssets[index]!.asset.key}
+                renderItem={({ asset, chain, name, pairs }) => (
+                  <AssetListItem
                     asset={asset}
                     chain={chain}
-                    supportedNetworks={pairs.map(({ chain }) => chain)}
+                    symbol={asset.originSymbol}
+                    name={name}
+                    route={null}
+                    showChainLogo={false}
+                    isLoading={false}
                     isSelected={selectedAsset?.key === asset.key}
-                    onSelect={() => {
+                    trailingElement={
+                      pairs.length > 1 ? (
+                        <Flex direction="column" align="flex-end" gap="base">
+                          <Text fs="p6" color={getToken("text.medium")}>
+                            {t("onramp:deposit.guided.networkCount", {
+                              count: pairs.length,
+                            })}
+                          </Text>
+                          <Flex gap="xs" align="center">
+                            {pairs.map(({ chain }) => (
+                              <ChainLogo
+                                key={chain.key}
+                                ecosystem={chain.ecosystem}
+                                chainId={getChainId(chain)}
+                                size="extra-small"
+                                alt={chain.name}
+                              />
+                            ))}
+                          </Flex>
+                        </Flex>
+                      ) : null
+                    }
+                    onClick={() => {
                       if (pairs.length === 1) onSelect(pairs[0]!)
                       else {
                         setAssetKey(asset.key)
@@ -178,7 +209,9 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
                       }
                     }}
                   />
-                ))}
+                )}
+              />
+            )}
             {!(selected ? visibleNetworks : visibleAssets).length &&
               (selected ? (
                 <Text

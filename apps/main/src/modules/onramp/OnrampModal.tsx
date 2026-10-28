@@ -6,18 +6,23 @@ import { useTranslation } from "react-i18next"
 
 import { SOnrampFlowContent } from "@/modules/onramp/components/OnrampFlowContent.styled"
 import { OnrampModalContent } from "@/modules/onramp/components/OnrampModalContent"
+import { DepositFlowLayout } from "@/modules/onramp/deposit/components/DepositFlowLayout"
 import { DepositOnchainModalContent } from "@/modules/onramp/deposit/components/DepositOnchainModalContent"
 import { DepositManager } from "@/modules/onramp/deposit/DepositManager"
 import { DepositJourneyMonitor } from "@/modules/onramp/deposit/preview/DepositJourneyMonitor"
 import { DepositMethodSelect } from "@/modules/onramp/deposit/steps/DepositMethodSelect"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
-import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
+import {
+  isWalletFirstWithdrawFlow,
+  useOnrampModal,
+} from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawFlowLayout } from "@/modules/onramp/withdraw/components/WithdrawFlowLayout"
 import { WithdrawMethodSelect } from "@/modules/onramp/withdraw/steps/WithdrawMethodSelect"
 import { WithdrawAssetSelect } from "@/modules/onramp/withdraw/WithdrawAssetSelect"
 import { WithdrawCexModalContent } from "@/modules/onramp/withdraw/WithdrawCexModalContent"
+import { WithdrawConnectedAssets } from "@/modules/onramp/withdraw/WithdrawConnectedAssets"
 import { WithdrawOnchain } from "@/modules/onramp/withdraw/WithdrawOnchain"
 import { WithdrawVariantEntry } from "@/modules/onramp/withdraw/WithdrawVariantEntry"
 import { BankDeposit } from "@/modules/ramp/BankDeposit"
@@ -27,10 +32,14 @@ export const OnrampModal = () => {
   const { t } = useTranslation("common")
   const modal = useOnrampModal((state) => state.modal)
   const depositFlow = useOnrampModal((state) => state.depositFlow)
+  const depositEntryChoice = useOnrampModal((state) => state.depositEntryChoice)
+  const depositEntryFlow = useOnrampModal((state) => state.depositEntryFlow)
   const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const withdrawFlow = useOnrampModal((state) => state.withdrawFlow)
   const setModal = useOnrampModal((state) => state.setModal)
-  const openOnchain = useOnrampModal((state) => state.openOnchain)
+  const openSelectedDepositFlow = useOnrampModal(
+    (state) => state.openSelectedDepositFlow,
+  )
   const selectWithdrawAsset = useOnrampModal(
     (state) => state.selectWithdrawAsset,
   )
@@ -66,10 +75,15 @@ export const OnrampModal = () => {
     isWithdrawOnchain &&
     withdrawFlow === "current" &&
     withdrawPage === OnrampScreen.WithdrawOnchainWallet
+  const isSplitQuickConnection =
+    modal === "depositOnchainPreview" &&
+    depositEntryChoice &&
+    depositFlow === "simple" &&
+    walletContentWidth !== null
   const contentWidth =
     modal === "depositOnchain" && page === OnrampScreen.DepositOnchainRecipient
       ? 650
-      : (isWithdrawTransfer && withdrawFlow !== "current") ||
+      : (isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)) ||
           (modal === "depositOnchainPreview" && depositFlow !== "preview")
         ? 520
         : isTransferFlow
@@ -88,7 +102,7 @@ export const OnrampModal = () => {
 
   const select = (page: OnrampScreen) => {
     if (page === OnrampScreen.DepositOnchainWallet) {
-      openOnchain("current")
+      openSelectedDepositFlow()
       return
     }
     useOnrampStore.getState().paginateTo(page)
@@ -109,12 +123,13 @@ export const OnrampModal = () => {
           stepKey={`${modal}:${isWithdraw ? withdrawPage : isOnchain ? (modal === "depositOnchainPreview" ? phase : page) : "method"}`}
           loadingTitle={t(isWithdraw ? "withdraw" : "deposit")}
           contentWidth={
-            isSplitWalletConnection
+            isSplitWalletConnection || isSplitQuickConnection
               ? (walletContentWidth ?? pxToRem(650))
               : pxToRem(contentWidth)
           }
           hasFlowSwitcher={
             isOnchain ||
+            modal === "deposit" ||
             isWithdrawTransfer ||
             modal === "bankDeposit" ||
             modal === "bankWithdraw"
@@ -126,7 +141,15 @@ export const OnrampModal = () => {
               : undefined
           }
         >
-          {modal === "deposit" && <DepositMethodSelect onSelect={select} />}
+          {modal === "deposit" && (
+            <DepositFlowLayout
+              flow={
+                depositEntryFlow === "choice" ? "connected" : depositEntryFlow
+              }
+            >
+              <DepositMethodSelect onSelect={select} />
+            </DepositFlowLayout>
+          )}
           {isOnchain && (
             <DepositOnchainModalContent
               flow={
@@ -144,7 +167,12 @@ export const OnrampModal = () => {
               {isWithdrawTransfer && (
                 <WithdrawFlowLayout>
                   {modal === "withdrawAsset" ? (
-                    withdrawFlow === "current" ? (
+                    withdrawFlow === "connected" ? (
+                      <WithdrawConnectedAssets
+                        onSelect={selectWithdrawAsset}
+                        onBack={() => openWithdrawOnchain("connected")}
+                      />
+                    ) : withdrawFlow === "current" ? (
                       <WithdrawAssetSelect
                         initialDestinationChainKey={
                           withdrawSelection?.destinationChainKey
@@ -161,6 +189,7 @@ export const OnrampModal = () => {
                     )
                   ) : (
                     <WithdrawOnchain
+                      key={withdrawFlow}
                       selectedAssetId={withdrawAssetId}
                       selectedRoute={withdrawSelection}
                     />

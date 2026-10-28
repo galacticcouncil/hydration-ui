@@ -31,6 +31,7 @@ type WithdrawRouteSelectProps = {
   onBack: () => void
   initialSelection?: WithdrawAssetSelection | null
   guided?: boolean
+  sourceAssetKey?: string
 }
 
 export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
@@ -38,12 +39,13 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   onBack,
   initialSelection,
   guided = false,
+  sourceAssetKey,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const options = useWithdrawDestinationOptions()
   const { getAsset } = useAssets()
   const [assetKey, setAssetKey] = useState(
-    initialSelection?.sourceAssetKey ?? null,
+    sourceAssetKey ?? initialSelection?.sourceAssetKey ?? null,
   )
   const [search, setSearch] = useState("")
   const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
@@ -83,6 +85,10 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
         .includes(query),
     ) ?? []
   const back = () => {
+    if (sourceAssetKey) {
+      onBack()
+      return
+    }
     if (selected) {
       setAssetKey(null)
       setSearch("")

@@ -32,15 +32,12 @@ export const OnrampFlowSwitcher: FC<OnrampFlowSwitcherProps> = ({
     <TabsList aria-label={label} asChild>
       <Grid
         gap="xs"
-        columnTemplate={
-          options.length > 2
-            ? [
-                "repeat(2, minmax(0, 1fr))",
-                `repeat(${options.length}, max-content)`,
-              ]
-            : `repeat(${options.length}, max-content)`
-        }
-        maxWidth="100%"
+        columnTemplate={`repeat(${options.length}, max-content)`}
+        width="max-content"
+        maxWidth={["100%", "none"]}
+        minWidth={0}
+        flexShrink={0}
+        sx={{ overflowX: ["auto", "visible"] }}
         p="xs"
         borderRadius="full"
         bg={getToken("surfaces.containers.dim.dimOnBg")}
@@ -54,6 +51,7 @@ export const OnrampFlowSwitcher: FC<OnrampFlowSwitcherProps> = ({
           >
             <Button
               size="small"
+              sx={{ px: "m" }}
               disabled={disabled}
               variant={option.value === value ? "secondary" : "tertiary"}
             >

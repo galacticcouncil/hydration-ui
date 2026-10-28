@@ -2,8 +2,10 @@ import { ButtonTransparent } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SStepButton = styled(ButtonTransparent)(
-  ({ theme }) => css`
+export const SStepButton = styled(ButtonTransparent, {
+  shouldForwardProp: (prop) => prop !== "hasFooter",
+})<{ hasFooter?: boolean }>(
+  ({ theme, hasFooter }) => css`
     width: 100%;
     gap: ${theme.space.m};
     text-align: left;
@@ -14,6 +16,11 @@ export const SStepButton = styled(ButtonTransparent)(
     justify-content: flex-start;
 
     border-radius: ${theme.radii.m};
+    ${hasFooter &&
+    css`
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    `}
 
     transition: ${theme.transitions.colors};
     background: ${theme.buttons.secondary.low.rest};

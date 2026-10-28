@@ -13,6 +13,7 @@ import {
 export type Web3ConnectContextType = {
   isControlled: boolean
   isPage?: boolean
+  keepSplitOpen?: boolean
   walletListVariant?: "default" | "connectedFirst"
   accountFilter?: (account: Account) => boolean
   customSource?: { title: string; content: ReactNode }

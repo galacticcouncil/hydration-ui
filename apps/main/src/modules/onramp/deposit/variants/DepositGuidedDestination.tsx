@@ -31,6 +31,7 @@ type DepositGuidedDestinationProps = {
   children: (state: {
     destination: (disabled: boolean) => ReactNode
     ready: boolean
+    sourceHint: string | undefined
   }) => ReactNode
 }
 
@@ -131,6 +132,7 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
     )
 
   return children({
+    sourceHint: !selection ? t("deposit.guided.chooseSourceFirst") : undefined,
     ready:
       canContinue &&
       destAddress === receiverAddress &&
@@ -194,11 +196,6 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
               )}
             />
           )}
-        {!selection && (
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("deposit.guided.chooseSourceFirst")}
-          </Text>
-        )}
         {(readinessError || needsActivation || bindingActivation) && (
           <Button
             variant="secondary"

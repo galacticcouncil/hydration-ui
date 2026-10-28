@@ -18,14 +18,16 @@ import { ENV } from "@/config/env"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 
 const CHAIN_ITEM_HEIGHT = 40
+export const COMPACT_CHAIN_ITEM_HEIGHT = 32
 const MAX_VISIBLE_CHAIN_ITEMS = 10
 
 export type ChainListProps = {
-  items: ChainAssetPair[]
+  items: Pick<ChainAssetPair, "chain" | "assets">[]
   selectedChain: AnyChain | null
   setSelectedChain: (chain: AnyChain | null) => void
   variant?: "rail" | "list"
   fillHeight?: boolean
+  compact?: boolean
 }
 
 export const ChainList: React.FC<ChainListProps> = ({
@@ -34,10 +36,15 @@ export const ChainList: React.FC<ChainListProps> = ({
   setSelectedChain,
   variant = "rail",
   fillHeight = false,
+  compact = false,
 }) => {
   const { isMobile } = useBreakpoints()
   const isList = variant === "list"
-  const itemHeight = isList ? 56 : isMobile ? 48 : CHAIN_ITEM_HEIGHT
+  const isCompactRail = compact && !isList && !isMobile
+  const railItemHeight = isCompactRail
+    ? COMPACT_CHAIN_ITEM_HEIGHT
+    : CHAIN_ITEM_HEIGHT
+  const itemHeight = isList ? 56 : isMobile ? 48 : railItemHeight
   const { t } = useTranslation(["xcm", "common"])
   const chainIndex = selectedChain
     ? items.findIndex(({ chain }) => chain.key === selectedChain.key)
@@ -56,16 +63,14 @@ export const ChainList: React.FC<ChainListProps> = ({
       sx={{
         px: isMobile && !isList ? 0 : "base",
         minHeight:
-          isList || fillHeight
-            ? 0
-            : CHAIN_ITEM_HEIGHT * MAX_VISIBLE_CHAIN_ITEMS,
+          isList || fillHeight ? 0 : railItemHeight * MAX_VISIBLE_CHAIN_ITEMS,
       }}
       renderItem={({ chain, assets }) => {
         const isActive = chain.key === selectedChain?.key
         const isDisabled = ENV.VITE_WORMHOLE_DISABLED && assets.length === 0
 
         return (
-          <Flex pb="s" align="center">
+          <Flex pb={isCompactRail ? "xs" : "s"} align="center">
             <Button
               variant={isActive ? "accent" : isList ? "muted" : "transparent"}
               outline={isActive}
@@ -76,9 +81,16 @@ export const ChainList: React.FC<ChainListProps> = ({
                 justifyContent: isList
                   ? "flex-start"
                   : ["center", "flex-start"],
-                height: isList ? pxToRem(52) : isMobile ? pxToRem(44) : "auto",
+                height: isList
+                  ? pxToRem(52)
+                  : isMobile
+                    ? pxToRem(44)
+                    : isCompactRail
+                      ? pxToRem(30)
+                      : "auto",
                 borderRadius: isList || isMobile ? "m" : undefined,
                 px: "base",
+                py: isCompactRail ? "s" : undefined,
               }}
               onClick={() => !isDisabled && setSelectedChain(chain)}
             >

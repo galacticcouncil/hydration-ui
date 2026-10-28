@@ -23,7 +23,11 @@ export type DepositFlow =
   | "guided"
   | "simple"
 export type DepositVariant = Exclude<DepositFlow, DepositWalletFirstFlow>
-export type WithdrawFlow = "current" | "guided" | "simple"
+export type DepositEntryFlow = Exclude<DepositFlow, "preview"> | "choice"
+export type WithdrawFlow = "current" | "guided" | "simple" | "connected"
+
+export const isWalletFirstWithdrawFlow = (flow: WithdrawFlow) =>
+  flow === "current" || flow === "connected"
 
 export type OnrampModalType =
   | "deposit"
@@ -39,13 +43,18 @@ export type OnrampModalType =
 type OnrampModalState = {
   modal: OnrampModalType | null
   depositFlow: DepositVariant
+  depositEntryChoice: boolean
+  depositEntryFlow: DepositEntryFlow
+  setDepositEntryFlow: (flow: DepositEntryFlow) => void
+  openSelectedDepositFlow: () => void
+  openDepositChoice: () => void
   walletFirstFlow: DepositWalletFirstFlow
   walletFirstAsset: DepositAssetIntent | null
   setWalletFirstAsset: (selection: DepositAssetIntent | null) => void
   withdrawFlow: WithdrawFlow
   withdrawPending: boolean
   walletContentWidth: string | null
-  setWalletContentWidth: (width: string) => void
+  setWalletContentWidth: (width: string | null) => void
   withdrawAssetId: string | null
   withdrawSelection: WithdrawAssetSelection | null
   withdrawPage: OnrampScreen
@@ -62,6 +71,7 @@ type OnrampModalState = {
       resume?: boolean
       txHash?: string
       assetIntent?: DepositAssetIntent
+      entryChoice?: boolean
     },
   ) => void
 }
@@ -69,6 +79,26 @@ type OnrampModalState = {
 export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   modal: null,
   depositFlow: "guided",
+  depositEntryChoice: false,
+  depositEntryFlow: "current",
+  setDepositEntryFlow: (flow) =>
+    set({ depositEntryFlow: flow, depositEntryChoice: flow === "choice" }),
+  openSelectedDepositFlow: () => {
+    const flow = get().depositEntryFlow
+    get().openOnchain(flow === "choice" ? "connected" : flow, {
+      entryChoice: flow === "choice",
+    })
+  },
+  openDepositChoice: () => {
+    useDepositJourneyStore.getState().leave()
+    useOnrampStore.getState().paginateTo(OnrampScreen.MethodSelect)
+    set({
+      modal: "deposit",
+      depositEntryChoice: true,
+      depositEntryFlow: "choice",
+      walletFirstAsset: null,
+    })
+  },
   walletFirstFlow: "current",
   walletFirstAsset: null,
   setWalletFirstAsset: (walletFirstAsset) => set({ walletFirstAsset }),
@@ -111,14 +141,15 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
     useDepositJourneyStore.getState().leave()
     const withdrawFlow = requestedFlow ?? get().withdrawFlow
     set({
-      modal: withdrawFlow === "current" ? "withdrawOnchain" : "withdrawAsset",
+      modal: isWalletFirstWithdrawFlow(withdrawFlow)
+        ? "withdrawOnchain"
+        : "withdrawAsset",
       withdrawFlow,
       withdrawAssetId: null,
       withdrawSelection: null,
-      withdrawPage:
-        withdrawFlow === "current"
-          ? OnrampScreen.WithdrawOnchainWallet
-          : OnrampScreen.WithdrawOnchainAsset,
+      withdrawPage: isWalletFirstWithdrawFlow(withdrawFlow)
+        ? OnrampScreen.WithdrawOnchainWallet
+        : OnrampScreen.WithdrawOnchainAsset,
     })
   },
   setModal: (modal) => {
@@ -132,6 +163,16 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   openOnchain: (requestedFlow, options) => {
     // Keep existing preview links working while Balance browser is hidden.
     const flow = requestedFlow === "preview" ? "guided" : requestedFlow
+    set({
+      depositEntryFlow:
+        options?.entryChoice === true &&
+        (flow === "connected" || flow === "simple")
+          ? "choice"
+          : flow,
+      depositEntryChoice:
+        options?.entryChoice === true &&
+        (flow === "connected" || flow === "simple"),
+    })
     const journey = useDepositJourneyStore.getState()
     if (flow === "current" || flow === "connected") {
       journey.leave()

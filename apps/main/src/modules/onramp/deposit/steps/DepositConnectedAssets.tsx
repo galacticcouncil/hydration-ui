@@ -13,7 +13,6 @@ import {
   Icon,
   Input,
   ModalBody,
-  ScrollArea,
   Stack,
   Text,
   VirtualizedList,
@@ -34,10 +33,24 @@ import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
-import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
+import {
+  ChainList,
+  COMPACT_CHAIN_ITEM_HEIGHT,
+} from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+
+import {
+  DepositSupportedAsset,
+  getOtherDepositAssets,
+} from "./DepositConnectedAssets.utils"
+
+type DepositAssetEntry =
+  | { kind: "holding"; key: string; row: DepositBalanceRow }
+  | { kind: "other"; key: string; item: DepositSupportedAsset }
+  | { kind: "hint"; key: string }
+  | { kind: "loading"; key: string }
 
 export const DepositConnectedAssets = () => {
   const { t } = useTranslation(["onramp", "common"])
@@ -77,12 +90,34 @@ export const DepositConnectedAssets = () => {
         .toLowerCase()
         .includes(assetSearch.trim().toLowerCase()),
   )
-  const supportedAssets =
-    selectedPair?.assets.filter((asset) =>
-      `${asset.originSymbol} ${asset.key}`
-        .toLowerCase()
-        .includes(assetSearch.trim().toLowerCase()),
-    ) ?? []
+  const otherAssets = showMoreChains
+    ? getOtherDepositAssets(sourceChainAssetPairs, data.rows).filter(
+        ({ asset, chain }) =>
+          (!selectedChain || chain.key === selectedChain.key) &&
+          `${asset.originSymbol} ${asset.key} ${chain.name}`
+            .toLowerCase()
+            .includes(assetSearch.trim().toLowerCase()),
+      )
+    : []
+  const entries: DepositAssetEntry[] = [
+    ...rows.map((row) => ({ kind: "holding" as const, key: row.key, row })),
+    ...(data.scanning && !browsingUnowned
+      ? Array.from({ length: rows.length ? 2 : 3 }, (_, index) => ({
+          kind: "loading" as const,
+          key: `loading:${index}`,
+        }))
+      : []),
+    ...(otherAssets.length
+      ? [
+          { kind: "hint" as const, key: "other-assets-hint" },
+          ...otherAssets.map((item) => ({
+            kind: "other" as const,
+            key: `other:${item.key}`,
+            item,
+          })),
+        ]
+      : []),
+  ]
 
   const selectAsset = (chain: AnyChain, asset: Asset) => {
     setWalletFirstAsset({ chainKey: chain.key, assetKey: asset.key })
@@ -163,11 +198,15 @@ export const DepositConnectedAssets = () => {
               </Button>
               {visiblePairs.length > 0 && (
                 <Box
-                  height={pxToRem(visiblePairs.length * (isMobile ? 48 : 40))}
+                  height={pxToRem(
+                    visiblePairs.length *
+                      (isMobile ? 48 : COMPACT_CHAIN_ITEM_HEIGHT),
+                  )}
                   flex="0 1 auto"
                   sx={{ minHeight: 0 }}
                 >
                   <ChainList
+                    compact
                     items={visiblePairs}
                     selectedChain={selectedChain}
                     setSelectedChain={(chain) =>
@@ -223,130 +262,105 @@ export const DepositConnectedAssets = () => {
             />
             <Flex justify="space-between" px="l">
               <Text fs="p5" color={getToken("text.medium")}>
-                {t(
-                  browsingUnowned
-                    ? "deposit.connected.supportedAssets"
-                    : "common:asset",
-                )}
+                {t("common:asset")}
               </Text>
-              {!browsingUnowned && (
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t("common:balance")}
-                </Text>
-              )}
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("common:balance")}
+              </Text>
             </Flex>
+            {data.failed > 0 && (
+              <Alert
+                variant="warning"
+                description={t("deposit.flow.assets.partial")}
+              />
+            )}
             <Box flex={1} sx={{ minHeight: 0 }}>
-              <ScrollArea
-                height="100%"
-                hideScrollbar
-                aria-busy={data.scanning && !browsingUnowned}
-              >
-                <Stack gap="base" justify="flex-start">
-                  {showMoreChains && !browsingUnowned && (
-                    <Text fs="p5" px="l" color={getToken("text.medium")}>
-                      {t("deposit.connected.moreChainsHint")}
-                    </Text>
-                  )}
-                  {data.failed > 0 && (
-                    <Alert
-                      variant="warning"
-                      description={t("deposit.flow.assets.partial")}
-                    />
-                  )}
-                  {browsingUnowned && (
-                    <Alert
-                      variant="info"
-                      description={t("deposit.connected.changeWalletHint", {
-                        chain: selectedChain.name,
-                      })}
-                    />
-                  )}
-                  {browsingUnowned ? (
-                    <VirtualizedList
-                      items={supportedAssets}
-                      itemSize={50}
-                      maxVisibleItems={8}
-                      renderItem={(asset) => (
-                        <AssetListItem
-                          asset={asset}
-                          route={null}
-                          symbol={asset.originSymbol}
-                          name={selectedChain.name}
-                          chain={selectedChain}
-                          isLoading={false}
-                          isSelected={
-                            getValues("srcChain")?.key === selectedChain.key &&
-                            getValues("srcAsset")?.key === asset.key
-                          }
-                          onClick={() => {
-                            selectAsset(selectedChain, asset)
-                            paginateTo(OnrampScreen.DepositOnchainWallet)
-                          }}
-                        />
-                      )}
-                    />
-                  ) : rows.length ? (
-                    <VirtualizedList
-                      items={rows}
-                      itemSize={50}
-                      maxVisibleItems={8}
-                      renderItem={(row) => (
-                        <AssetListItem
-                          asset={row.balance}
-                          route={null}
-                          symbol={row.balance.originSymbol}
-                          name={`${row.source.chain.name} · ${row.source.account.name}`}
-                          chain={row.source.chain}
-                          balance={row.balance}
-                          balanceDisplay={row.value}
-                          isLoading={false}
-                          isSelected={
-                            activeAccount?.provider ===
-                              row.source.account.provider &&
-                            activeAccount.address ===
-                              row.source.account.address &&
-                            getValues("srcChain")?.key ===
-                              row.source.chain.key &&
-                            getValues("srcAsset")?.key === row.balance.key
-                          }
-                          onClick={() => selectHolding(row)}
-                        />
-                      )}
-                    />
-                  ) : (
-                    !data.scanning && (
-                      <Stack gap="m" align="center" py="xl" px="m">
-                        <Text
-                          fs="p4"
-                          color={getToken("text.medium")}
-                          align="center"
-                        >
-                          {t(
-                            assetSearch.trim()
-                              ? "deposit.connected.noMatches"
-                              : "deposit.flow.assets.empty",
-                          )}
-                        </Text>
-                        {!assetSearch.trim() && (
-                          <Button
-                            variant="secondary"
-                            outline
-                            size="small"
-                            onClick={() =>
+              {entries.length ? (
+                <VirtualizedList
+                  items={entries}
+                  itemSize={50}
+                  height="100%"
+                  hideScrollbar
+                  aria-busy={data.scanning && !browsingUnowned}
+                  getItemKey={(index) => entries[index]!.key}
+                  renderItem={(entry) => {
+                    if (entry.kind === "loading")
+                      return <DepositAssetListSkeleton count={1} />
+                    if (entry.kind === "hint")
+                      return (
+                        <Flex align="center" height="100%" px="l">
+                          <Text fs="p5" color={getToken("text.medium")}>
+                            {t("deposit.connected.moreChainsHint")}
+                          </Text>
+                        </Flex>
+                      )
+                    if (entry.kind === "other") {
+                      const { asset, chain } = entry.item
+                      return (
+                        <Box height="100%" sx={{ opacity: 0.5 }}>
+                          <AssetListItem
+                            asset={asset}
+                            route={null}
+                            symbol={asset.originSymbol}
+                            name={chain.name}
+                            chain={chain}
+                            isLoading={false}
+                            isSelected={false}
+                            onClick={() => {
+                              selectAsset(chain, asset)
                               paginateTo(OnrampScreen.DepositOnchainWallet)
-                            }
-                          >
-                            {t("deposit.connected.changeWallet")}
-                          </Button>
-                        )}
-                      </Stack>
+                            }}
+                          />
+                        </Box>
+                      )
+                    }
+                    const { row } = entry
+                    return (
+                      <AssetListItem
+                        asset={row.balance}
+                        route={null}
+                        symbol={row.balance.originSymbol}
+                        name={`${row.source.chain.name} · ${row.source.account.name}`}
+                        chain={row.source.chain}
+                        balance={row.balance}
+                        balanceDisplay={row.value}
+                        isLoading={false}
+                        isSelected={
+                          activeAccount?.provider ===
+                            row.source.account.provider &&
+                          activeAccount.address ===
+                            row.source.account.address &&
+                          getValues("srcChain")?.key === row.source.chain.key &&
+                          getValues("srcAsset")?.key === row.balance.key
+                        }
+                        onClick={() => selectHolding(row)}
+                      />
                     )
-                  )}
-                  {data.scanning && !browsingUnowned && (
-                    <DepositAssetListSkeleton count={rows.length ? 2 : 3} />
+                  }}
+                />
+              ) : (
+                <Stack gap="m" align="center" py="xl" px="m">
+                  <Text fs="p4" color={getToken("text.medium")} align="center">
+                    {t(
+                      assetSearch.trim()
+                        ? "deposit.connected.noMatches"
+                        : "deposit.flow.assets.empty",
+                    )}
+                  </Text>
+                  {!assetSearch.trim() && (
+                    <Button
+                      variant="secondary"
+                      outline
+                      size="small"
+                      onClick={() =>
+                        paginateTo(OnrampScreen.DepositOnchainWallet)
+                      }
+                    >
+                      {t("deposit.connected.changeWallet")}
+                    </Button>
                   )}
                 </Stack>
-              </ScrollArea>
+              )}
             </Box>
           </Stack>
         </Grid>

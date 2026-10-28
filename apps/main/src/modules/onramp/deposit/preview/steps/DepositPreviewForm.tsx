@@ -41,7 +41,10 @@ import {
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { DepositVariantForm } from "@/modules/onramp/deposit/variants/DepositVariantForm"
 import { useOnrampReceiveEstimate } from "@/modules/onramp/hooks/useOnrampReceiveEstimate"
-import { DepositVariant } from "@/modules/onramp/store/useOnrampModal"
+import {
+  DepositVariant,
+  useOnrampModal,
+} from "@/modules/onramp/store/useOnrampModal"
 import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
 import {
   insertOptimisticJourney,
@@ -61,6 +64,7 @@ type DepositPreviewFormProps = {
   source?: (disabled: boolean) => ReactNode
   destination?: (disabled: boolean) => ReactNode
   recipientReady?: boolean
+  footerHint?: string
   onBack?: () => void
 }
 
@@ -70,6 +74,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   source,
   destination,
   recipientReady = true,
+  footerHint,
   onBack,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
@@ -97,6 +102,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
     (state) => state.destinationConfirmed,
   )
   const setPhase = useDepositJourneyStore((state) => state.setPhase)
+  const setModal = useOnrampModal((state) => state.setModal)
   const sources = useDepositAccounts({ signersOnly: true })
   const selectedAccount = sources.find(
     (item) =>
@@ -370,16 +376,31 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         }
         summary={<OnrampTransferSummary />}
         footer={
-          <XcmFooter
-            isSubmitting={submit.isPending}
-            canSubmit={
-              isSourceCompatible && destinationConfirmed && recipientReady
-            }
-            onSubmit={confirm}
-            submitLabel={t(
-              error ? "deposit.v3.amount.tryAgain" : "deposit.onchain.confirm",
+          <>
+            <XcmFooter
+              isSubmitting={submit.isPending}
+              canSubmit={
+                isSourceCompatible && destinationConfirmed && recipientReady
+              }
+              onSubmit={confirm}
+              submitLabel={t(
+                error
+                  ? "deposit.v3.amount.tryAgain"
+                  : "deposit.onchain.confirm",
+              )}
+            />
+            {footerHint && (
+              <Text
+                px="xl"
+                pb="l"
+                fs="p5"
+                align="center"
+                color={getToken("text.medium")}
+              >
+                {footerHint}
+              </Text>
             )}
-          />
+          </>
         }
       />
     )
@@ -515,7 +536,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
           canSubmit={
             isSourceCompatible && destinationConfirmed && recipientReady
           }
-          onCancel={back}
+          onCancel={() => setModal(null)}
           submitLabel={t(
             error ? "deposit.v3.amount.tryAgain" : "deposit.onchain.confirm",
           )}

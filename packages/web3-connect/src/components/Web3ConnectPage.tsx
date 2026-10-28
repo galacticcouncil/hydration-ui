@@ -21,6 +21,7 @@ type Web3ConnectPageProps = {
   accountFilter?: (account: Account) => boolean
   customSource?: { title: string; content: ReactNode }
   layout?: "page" | "split"
+  keepSplitOpen?: boolean
   walletListVariant?: Web3ConnectContextType["walletListVariant"]
   onContentWidthChange?: (width: string) => void
   onAccountSelect: (account: Account) => void

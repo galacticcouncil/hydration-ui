@@ -7,6 +7,7 @@ import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawAssetSelect } from "@/modules/onramp/withdraw/WithdrawAssetSelect"
 import { WithdrawAssetSelection } from "@/modules/onramp/withdraw/WithdrawAssetSelect.utils"
+import { WithdrawConnectedAssets } from "@/modules/onramp/withdraw/WithdrawConnectedAssets"
 import { WithdrawVariantEntry } from "@/modules/onramp/withdraw/WithdrawVariantEntry"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
@@ -20,7 +21,12 @@ export const WithdrawOnchainAsset: FC<WithdrawOnchainAssetProps> = () => {
   const config = useCrossChainConfigService()
   const flow = useOnrampModal((state) => state.withdrawFlow)
   const selection = useOnrampModal((state) => state.withdrawSelection)
-  const back = () => useOnrampModal.getState().setModal("withdraw")
+  const back = () =>
+    flow === "connected"
+      ? useOnrampModal
+          .getState()
+          .paginateWithdraw(OnrampScreen.WithdrawOnchainWallet)
+      : useOnrampModal.getState().setModal("withdraw")
   const select = (selection: WithdrawAssetSelection) => {
     const previous = getValues()
     if (
@@ -64,6 +70,9 @@ export const WithdrawOnchainAsset: FC<WithdrawOnchainAssetProps> = () => {
     })
     useOnrampModal.getState().paginateWithdraw(OnrampScreen.WithdrawOnchainForm)
   }
+
+  if (flow === "connected")
+    return <WithdrawConnectedAssets onBack={back} onSelect={select} />
 
   if (flow !== "current")
     return (

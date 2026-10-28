@@ -2,7 +2,10 @@ import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { OnrampVariantLayout } from "@/modules/onramp/components/OnrampVariantLayout"
-import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
+import {
+  isWalletFirstWithdrawFlow,
+  useOnrampModal,
+} from "@/modules/onramp/store/useOnrampModal"
 
 type WithdrawFlowLayoutProps = {
   children: ReactNode
@@ -21,17 +24,22 @@ export const WithdrawFlowLayout: FC<WithdrawFlowLayoutProps> = ({
   return (
     <OnrampVariantLayout
       value={flow}
+      desktopMinHeight={isWalletFirstWithdrawFlow(flow) ? 550 : undefined}
       disabled={pending}
       label={t("withdraw.flowSwitcher.label")}
       options={[
         { value: "current", label: t("withdraw.flowSwitcher.current") },
         { value: "guided", label: t("withdraw.flowSwitcher.guided") },
         { value: "simple", label: t("withdraw.flowSwitcher.simple") },
+        { value: "connected", label: t("withdraw.flowSwitcher.connected") },
       ]}
       onValueChange={(value) => {
         if (
           value !== flow &&
-          (value === "current" || value === "guided" || value === "simple")
+          (value === "current" ||
+            value === "guided" ||
+            value === "simple" ||
+            value === "connected")
         )
           openWithdrawOnchain(value)
       }}

@@ -41,6 +41,7 @@ export const DepositOnchainSteps = () => {
     return (
       <Web3ConnectPage
         layout="split"
+        keepSplitOpen={walletFirstFlow === "connected"}
         walletListVariant={
           walletFirstFlow === "connected" ? "connectedFirst" : "default"
         }

@@ -17,6 +17,7 @@ import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import {
@@ -48,6 +49,7 @@ export const DepositOnchainForm = () => {
     !!srcChain && canUseDepositAccount(account, srcChain)
   const paginateTo = useOnrampStore((state) => state.paginateTo)
   const page = useOnrampStore((state) => state.page)
+  const setModal = useOnrampModal((state) => state.setModal)
   const selectRecipient = () => paginateTo(OnrampScreen.DepositOnchainRecipient)
   const queryClient = useQueryClient()
   const resetAmounts = useResetAmounts()
@@ -166,7 +168,7 @@ export const DepositOnchainForm = () => {
         <XcmFooter
           isSubmitting={submit.isPending}
           canSubmit={isSourceCompatible}
-          onCancel={back}
+          onCancel={() => setModal(null)}
           submitLabel={t("deposit.onchain.confirm")}
           onSubmit={() => {
             void handleSubmit((values) => {
