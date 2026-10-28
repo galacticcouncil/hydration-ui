@@ -37,6 +37,7 @@ const schemaBase = z.object({
   limitPrice: positiveOptional,
   expiry: z.enum(EXPIRY_OPTIONS),
   partiallyFillable: z.boolean(),
+  isOrderMatch: z.boolean(),
   isLocked: z.boolean(),
   lastTwo: z.tuple([
     z.enum(["sell", "buy", "price"]),
@@ -101,6 +102,7 @@ export const useLimitForm = ({
     limitPrice: "",
     expiry: "open",
     partiallyFillable: true,
+    isOrderMatch: false,
     isLocked: false,
     lastTwo: ["price", "sell"],
   }

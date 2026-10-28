@@ -14,6 +14,7 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { OrderMatchToggle } from "@/modules/trade/swap/components/OrderMatchToggle"
 import { SBulletList } from "@/modules/trade/swap/sections/Limit/LimitOrderSettings.styled"
 import {
   EXPIRY_OPTIONS,
@@ -24,7 +25,11 @@ export const LimitOrderSettings: FC = () => {
   const { t } = useTranslation(["trade", "common"])
   const { watch, setValue } = useFormContext<LimitFormValues>()
 
-  const [expiry, partiallyFillable] = watch(["expiry", "partiallyFillable"])
+  const [expiry, partiallyFillable, isOrderMatch] = watch([
+    "expiry",
+    "partiallyFillable",
+    "isOrderMatch",
+  ])
 
   return (
     <>
@@ -122,6 +127,11 @@ export const LimitOrderSettings: FC = () => {
           </ToggleRoot>
         </Flex>
       </Flex>
+
+      <OrderMatchToggle
+        checked={isOrderMatch}
+        onCheckedChange={(checked) => setValue("isOrderMatch", checked)}
+      />
     </>
   )
 }
