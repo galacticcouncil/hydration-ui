@@ -22,7 +22,7 @@ type PortfolioDepositModalContentProps = {
   status: PortfolioDepositSample["status"]
   description: string
   rows: NonNullable<ComponentProps<typeof Summary>["rows"]>
-  notice: string
+  notice?: string
   closeLabel: string
   onClose: () => void
   action?: {
@@ -68,7 +68,7 @@ export const PortfolioDepositModalContent: FC<
           {description}
         </Text>
         <Summary rows={rows} />
-        <Alert variant="info" description={notice} />
+        {notice && <Alert variant="info" description={notice} />}
       </Stack>
     </ModalBody>
     <ModalFooter sx={{ p: ["l", "xl"] }}>

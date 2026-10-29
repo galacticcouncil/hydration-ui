@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Collapsible,
-  Flex,
   Icon,
   Image,
   ModalBody,
@@ -24,7 +23,6 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { OnrampModalTopContent } from "@/modules/onramp/components/OnrampModalTopContent"
-import { SStepButton } from "@/modules/onramp/components/StepButton.styled"
 
 import { BankDepositAmount } from "./BankDepositAmount"
 import { BankDepositInstructions } from "./BankDepositInstructions"
@@ -32,15 +30,22 @@ import { getBankDepositAmountError } from "./BankDepositV2.utils"
 import { BankDepositV2Tracking } from "./BankDepositV2Tracking"
 import { BankFlowPreviewNotice } from "./BankFlowPreviewNotice"
 import { BankProviderHandoff } from "./BankProviderHandoff"
-import { exampleDeposits } from "./deposit.mock"
 import {
   BANK_DEPOSIT_PREVIEW_WALLET,
   BankDepositFlow,
 } from "./useBankDepositFlow"
 
-type BankDepositV2Props = { flow: BankDepositFlow; onBack: () => void }
+type BankDepositV2Props = {
+  flow: BankDepositFlow
+  onBack: () => void
+  onHistory: () => void
+}
 
-export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
+export const BankDepositV2: FC<BankDepositV2Props> = ({
+  flow,
+  onBack,
+  onHistory,
+}) => {
   const { t } = useTranslation(["onramp", "common"])
   const {
     screen,
@@ -58,7 +63,7 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
   const waiting = screen === "details" && v2Stage === "waiting"
   const error = getBankDepositAmountError(amount, currency)
   const rail = currency === "USD" ? "ACH / wire" : "SEPA"
-  const isHistory = screen === "deposits" || screen === "tracking"
+  const isHistory = screen === "tracking"
   const titleKey = isHistory
     ? screen
     : waiting
@@ -76,7 +81,7 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
     } else if (screen === "entry") {
       onBack()
     } else {
-      flow.setScreen(screen === "tracking" ? "deposits" : "entry")
+      flow.setScreen("entry")
     }
   }
   const next = () => {
@@ -93,9 +98,7 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
     } else if (screen === "details" && !waiting) {
       flow.setV2Stage("waiting")
     } else if (screen === "details" || screen === "tracking") {
-      flow.setScreen("deposits")
-    } else if (screen === "deposits") {
-      flow.setScreen("entry")
+      onHistory()
     }
   }
   const action =
@@ -370,42 +373,6 @@ export const BankDepositV2: FC<BankDepositV2Props> = ({ flow, onBack }) => {
           )}
           {waiting && (
             <BankDepositV2Tracking amount={amount} currency={currency} />
-          )}
-          {screen === "deposits" && (
-            <Stack gap="m">
-              {exampleDeposits.map((deposit) => (
-                <SStepButton
-                  key={deposit.id}
-                  onClick={() => {
-                    flow.setSelectedDeposit(deposit)
-                    flow.setStatus(deposit.status)
-                    flow.setScreen("tracking")
-                  }}
-                >
-                  <Flex
-                    justify="space-between"
-                    width="100%"
-                    align="center"
-                    gap="m"
-                  >
-                    <Stack gap="s">
-                      <Text fs="p4" fw={500}>
-                        {t("common:currency", {
-                          value: deposit.amount,
-                          symbol: deposit.currency,
-                        })}
-                      </Text>
-                      <Text fs="p6" color={getToken("text.medium")}>
-                        {deposit.date}
-                      </Text>
-                    </Stack>
-                    <Text fs="p5" color={getToken("text.tint.secondary")}>
-                      {t("common:details")}
-                    </Text>
-                  </Flex>
-                </SStepButton>
-              ))}
-            </Stack>
           )}
           {screen === "tracking" && (
             <BankDepositV2Tracking

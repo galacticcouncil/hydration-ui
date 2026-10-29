@@ -18,7 +18,6 @@ export type BankDepositScreen =
   | "account"
   | "preparing"
   | "details"
-  | "deposits"
   | "tracking"
 export type BankDepositV2Stage = "amount" | "review" | "waiting"
 export const BANK_DEPOSIT_PREVIEW_WALLET = "0x1234…89ab"
@@ -123,7 +122,6 @@ export const useBankDepositFlow = () => {
     account: `Your ${currency} deposit account`,
     preparing: "Preparing your account",
     details: `Your ${currency} deposit details`,
-    deposits: "Your bank deposits",
     tracking: "Deposit details",
   }
 

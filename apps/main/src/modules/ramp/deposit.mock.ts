@@ -30,6 +30,7 @@ export const exampleDeposits: {
   amount: string
   currency: DepositCurrency
   date: string
+  sentAt: number
   status: DepositStatus
 }[] = [
   {
@@ -37,6 +38,7 @@ export const exampleDeposits: {
     amount: "500.00",
     currency: "USD",
     date: "19 Oct 2026 · 10:42",
+    sentAt: Date.parse("2026-10-19T10:42:00+02:00"),
     status: "Waiting for deposit limit",
   },
   {
@@ -44,6 +46,7 @@ export const exampleDeposits: {
     amount: "250.00",
     currency: "EUR",
     date: "18 Oct 2026 · 14:20",
+    sentAt: Date.parse("2026-10-18T14:20:00+02:00"),
     status: "Credited",
   },
   {
@@ -51,6 +54,7 @@ export const exampleDeposits: {
     amount: "100.00",
     currency: "USD",
     date: "17 Oct 2026 · 09:15",
+    sentAt: Date.parse("2026-10-17T09:15:00+02:00"),
     status: "Returned",
   },
 ]

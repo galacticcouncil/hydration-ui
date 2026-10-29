@@ -1,4 +1,6 @@
 {
+  "deposit.portfolio.bankPreview.notice": "Test data: sample bank deposits are shown alongside any live transfers. No funds move or balances change.",
+  "deposit.portfolio.bankPreview.wallet": "Example wallet",
   "deposit.portfolio.title": "Deposits",
   "deposit.portfolio.activity.title": "Deposit activity",
   "deposit.portfolio.activity.description": "Continue a pending deposit or check your latest transfer.",

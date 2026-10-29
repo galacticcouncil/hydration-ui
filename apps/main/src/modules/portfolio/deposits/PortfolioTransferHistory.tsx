@@ -1,9 +1,11 @@
 import DepositEmptyLounger from "@galacticcouncil/ui/assets/images/DepositEmptyLounger.webp"
 import {
+  Alert,
   Box,
   Button,
   DataTable,
   DataTableRef,
+  Modal,
   Paper,
   Separator,
   Stack,
@@ -11,16 +13,28 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { FC, useEffect, useMemo, useRef } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import {
+  BankDepositHistoryEntry,
+  bankDepositHistoryQuery,
+  isBankDeposit,
+} from "@/api/bankDeposits"
 import { EmptyState, SearchEmptyState } from "@/components/EmptyState"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useXcScan } from "@/modules/xcm/history/useXcScan"
+import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 
+import { PortfolioBankDepositDetail } from "./PortfolioBankDepositDetail"
+import { filterBankDeposits } from "./PortfolioBankDeposits.utils"
 import { SPortfolioDepositTableContainer } from "./PortfolioDepositPreview.styled"
-import { usePortfolioTransferHistoryColumns } from "./PortfolioTransferHistory.columns"
+import {
+  PortfolioTransferHistoryTableRow,
+  usePortfolioTransferHistoryColumns,
+} from "./PortfolioTransferHistory.columns"
 import {
   filterPortfolioTransferHistory,
   PortfolioTransferFilter,
@@ -43,22 +57,45 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
   const { isMobile } = useBreakpoints()
   const address = account?.address ?? ""
   const { data, isLoading, chainMetadata } = useXcScan(address)
-  const columns = usePortfolioTransferHistoryColumns(chainMetadata)
-  const tableRef = useRef<DataTableRef>(null)
-  const journeys = useMemo(
-    () => filterPortfolioTransferHistory(data, filter, search, chainMetadata),
-    [data, filter, search, chainMetadata],
+  const [selectedPreview, setSelectedPreview] =
+    useState<BankDepositHistoryEntry | null>(null)
+  const bankHistory = useQuery(bankDepositHistoryQuery(address))
+  const bankDeposits = bankHistory.data?.deposits
+  const columns = usePortfolioTransferHistoryColumns(
+    chainMetadata,
+    setSelectedPreview,
   )
-  const loading = !!address && isLoading && !data.length
+  const tableRef = useRef<DataTableRef>(null)
+  const journeys = useMemo<PortfolioTransferHistoryTableRow[]>(
+    () =>
+      [
+        ...filterBankDeposits(bankDeposits ?? [], filter, search),
+        ...filterPortfolioTransferHistory(data, filter, search, chainMetadata),
+      ].map((entry) => ({
+        entry,
+        assets: isBankDeposit(entry)
+          ? entry.symbol
+          : (getTransferAsset(entry)?.symbol ?? ""),
+        from: isBankDeposit(entry) ? entry.currency : entry.from,
+        to: isBankDeposit(entry) ? "Hydration" : entry.to,
+        status: entry.status,
+        sentAt: entry.sentAt,
+      })),
+    [data, filter, search, chainMetadata, bankDeposits],
+  )
+  const loading =
+    !!address && isLoading && !data.length && !bankDeposits?.length
+  const hasHistory = data.length > 0 || !!bankDeposits?.length
 
   useEffect(() => {
+    setSelectedPreview(null)
     tableRef.current?.onPaginationReset()
   }, [address, filter, search])
 
   const emptyState =
-    search.trim() && address && data.length ? (
+    search.trim() && hasHistory ? (
       <SearchEmptyState searchPhrase={search} />
-    ) : address && data.length && filter !== "all" ? (
+    ) : hasHistory && filter !== "all" ? (
       <Text fs="p5" color="text.medium" py="xl" align="center">
         {t("deposit.portfolio.noResults")}
       </Text>
@@ -87,6 +124,9 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
 
   return (
     <Stack gap="l" data-testid="portfolio-transfer-history">
+      {bankHistory.data?.source === "preview" && (
+        <Alert description={t("deposit.portfolio.bankPreview.notice")} />
+      )}
       <Paper overflow="hidden">
         <TabMenu
           p="m"
@@ -100,7 +140,9 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
           ).map<TabItem>((value) => ({
             to: filterTo,
             title: t(`deposit.portfolio.filter.${value}`),
-            search: { depositStatus: value },
+            search: {
+              depositStatus: value,
+            },
             resetScroll: false,
           }))}
         />
@@ -120,6 +162,19 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
           />
         </SPortfolioDepositTableContainer>
       </Paper>
+      <Modal
+        variant="popup"
+        open={!!selectedPreview}
+        onOpenChange={(open) => !open && setSelectedPreview(null)}
+      >
+        {selectedPreview && (
+          <PortfolioBankDepositDetail
+            deposit={selectedPreview}
+            source={bankHistory.data?.source ?? "preview"}
+            onClose={() => setSelectedPreview(null)}
+          />
+        )}
+      </Modal>
     </Stack>
   )
 }

@@ -25,10 +25,11 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SStepButton } from "@/modules/onramp/components/StepButton.styled"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 
 import { BankDepositInstructions } from "./BankDepositInstructions"
 import { BankDepositStatusChip } from "./BankDepositStatusChip"
@@ -41,7 +42,6 @@ import {
   DepositCurrency,
   DepositStatus,
   depositSteps,
-  exampleDeposits,
   RailStatus,
 } from "./deposit.mock"
 import {
@@ -61,6 +61,15 @@ const railStates: RailStatus[] = [
 export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
   const { t } = useTranslation(["onramp", "common"])
   const flow = useBankDepositFlow()
+  const navigate = useNavigate()
+  const setModal = useOnrampModal((state) => state.setModal)
+  const openHistory = () => {
+    setModal(null)
+    void navigate({
+      to: "/portfolio/deposits",
+      search: { depositStatus: "all" },
+    })
+  }
   const {
     screen,
     setScreen,
@@ -72,7 +81,6 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
     railStatus,
     setRailStatus,
     selectedDeposit,
-    setSelectedDeposit,
     status,
     setStatus,
     preparingStep,
@@ -87,7 +95,7 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
   const setupIndex = ([0, 1, 2] as const)[onboardingStep] ?? 2
   const backToEntry = () => {
     flow.cancelProviderHandoff()
-    setScreen(screen === "tracking" ? "deposits" : "entry")
+    setScreen("entry")
   }
   const next = () => {
     if (screen === "entry") {
@@ -97,9 +105,7 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
     else if (screen === "account") {
       setPreparingStep(0)
       setScreen("preparing")
-    } else if (screen === "details" || screen === "tracking")
-      setScreen("deposits")
-    else if (screen === "deposits") setScreen("entry")
+    } else if (screen === "details" || screen === "tracking") openHistory()
   }
   const action =
     screen === "onboarding"
@@ -112,11 +118,9 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
           ? t("bankCurrent.action.create")
           : screen === "preparing"
             ? t("bankV2.deposit.action.preparing")
-            : screen === "deposits"
-              ? t("bankCurrent.action.deposit")
-              : screen === "tracking"
-                ? t("bankCurrent.action.allDeposits")
-                : t("bankV2.deposit.action.history")
+            : screen === "tracking"
+              ? t("bankCurrent.action.allDeposits")
+              : t("bankV2.deposit.action.history")
 
   return (
     <BankFlowSwitcher
@@ -125,7 +129,7 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
       stepKey={`${screen}:${flow.v2Stage}:${onboardingStep}:${flow.providerHandoff}`}
     >
       {variant === "v2" ? (
-        <BankDepositV2 flow={flow} onBack={onBack} />
+        <BankDepositV2 flow={flow} onBack={onBack} onHistory={openHistory} />
       ) : (
         <>
           <ModalHeader
@@ -389,41 +393,6 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
                   </Collapsible>
                 </>
               )}
-              {screen === "deposits" && (
-                <Stack gap="m">
-                  {exampleDeposits.map((deposit) => (
-                    <SStepButton
-                      key={deposit.id}
-                      onClick={() => {
-                        setSelectedDeposit(deposit)
-                        setStatus(deposit.status)
-                        setScreen("tracking")
-                      }}
-                    >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        gap="m"
-                        width="100%"
-                        wrap
-                      >
-                        <Stack gap="s">
-                          <Text fs="p3" fw={500}>
-                            {t("common:currency", {
-                              value: deposit.amount,
-                              symbol: deposit.currency,
-                            })}
-                          </Text>
-                          <Text fs="p6" color={getToken("text.medium")}>
-                            {deposit.date}
-                          </Text>
-                        </Stack>
-                        <BankDepositStatusChip status={deposit.status} />
-                      </Flex>
-                    </SStepButton>
-                  ))}
-                </Stack>
-              )}
               {screen === "tracking" && (
                 <>
                   <Stack gap="m" align="center" py="l">
@@ -553,10 +522,7 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
                 {action}
               </Button>
               {screen === "entry" && (
-                <Button
-                  variant="transparent"
-                  onClick={() => setScreen("deposits")}
-                >
+                <Button variant="transparent" onClick={openHistory}>
                   {t("bankV2.deposit.action.history")}
                 </Button>
               )}
