@@ -61,17 +61,28 @@ export const SWalletManagementShell = styled(Box, {
   `,
 )
 
-export const SModalHeader = styled(ModalHeader)(
-  ({ theme }) => css`
-    padding-bottom: ${theme.space.l};
+export const SModalHeader = styled(ModalHeader, {
+  shouldForwardProp: (prop) => prop !== "embedded",
+})<{ embedded?: boolean }>(
+  ({ theme, embedded }) => css`
+    ${embedded
+      ? css`
+          padding-block: ${theme.space.m};
+        `
+      : css`
+          padding-bottom: ${theme.space.l};
+        `}
     flex-shrink: 0;
   `,
 )
 
-export const SModalBody = styled(ModalBody)(
-  ({ theme }) => css`
-    padding: 0 ${theme.space.base} ${theme.space.base};
-    border-top: 0;
+export const SModalBody = styled(ModalBody, {
+  shouldForwardProp: (prop) => prop !== "embedded",
+})<{ embedded?: boolean }>(
+  ({ theme, embedded }) => css`
+    padding: ${embedded ? theme.space.base : "0"} ${theme.space.base}
+      ${theme.space.base};
+    border-top: ${embedded ? `1px solid ${theme.details.separators}` : "0"};
 
     flex: 1;
     display: flex;
@@ -79,8 +90,13 @@ export const SModalBody = styled(ModalBody)(
     min-height: 0;
     overflow: hidden;
 
+    ${mq("sm")} {
+      padding-top: ${embedded ? theme.space.m : "0"};
+    }
+
     ${mq("md")} {
-      padding: 0 ${theme.space.s} ${theme.space.m} ${theme.space.m};
+      padding: ${embedded ? theme.space.m : "0"} ${theme.space.s}
+        ${theme.space.m} ${theme.space.m};
     }
   `,
 )

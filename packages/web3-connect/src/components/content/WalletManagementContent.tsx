@@ -132,6 +132,7 @@ export const WalletManagementContent = () => {
     isControlled,
     setModalContentWidth,
     isPage,
+    isEmbedded,
     keepSplitOpen,
     walletListVariant,
     accountFilter: filterPageAccount,
@@ -799,6 +800,7 @@ export const WalletManagementContent = () => {
   return (
     <SWalletManagementShell isPage={isPage}>
       <SModalHeader
+        embedded={isEmbedded}
         closable={meta?.closable ?? !isPage}
         title={
           meta?.title ??
@@ -837,7 +839,7 @@ export const WalletManagementContent = () => {
           ))}
         </Flex>
       )}
-      <SModalBody noPadding scrollable={false}>
+      <SModalBody embedded={isEmbedded} noPadding scrollable={false}>
         <SLayoutGrid
           showAccountPanel={showAccountPanel}
           isPage={isPage}

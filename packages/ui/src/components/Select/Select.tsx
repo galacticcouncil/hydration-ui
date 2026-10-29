@@ -4,12 +4,11 @@ import { CaretDown, Check } from "@/assets/icons"
 import { getToken } from "@/utils"
 
 import { BoxProps } from "../Box"
-import { SButtonProps } from "../Button"
+import { ButtonProps, SButtonProps } from "../Button"
 import { Flex } from "../Flex"
 import { Icon } from "../Icon"
 import { MenuItemLabel, MenuSelectionItem } from "../Menu"
 import { ScrollArea } from "../ScrollArea"
-import { Skeleton } from "../Skeleton"
 import { Text } from "../Text"
 import {
   SSelectContent,
@@ -33,6 +32,8 @@ export type SelectItem<TKey extends string> = {
   key: TKey
   label: string
   icon?: React.ComponentType
+  /** Keep actions such as connecting another wallet available while options load. */
+  alwaysVisible?: boolean
 }
 
 type SelectionProps<TKey extends string> =
@@ -48,6 +49,7 @@ type SelectionProps<TKey extends string> =
     }
 
 export type SelectProps<TKey extends string> = SButtonProps &
+  Pick<ButtonProps, "iconEnd"> &
   SelectionProps<TKey> & {
     items: ReadonlyArray<SelectItem<TKey>>
     iconSize?: BoxProps["size"]
@@ -56,6 +58,7 @@ export type SelectProps<TKey extends string> = SButtonProps &
     disabled?: boolean
     fullWidth?: boolean
     openOnHover?: boolean
+    /** Show skeleton options while preserving the trigger's label or selection. */
     isLoading?: boolean
     className?: string
     onCloseAutoFocus?: (event: Event) => void
@@ -87,6 +90,9 @@ export const Select = <TKey extends string = string>({
       : []
 
   const selectedItems = items.filter((item) => selectedKeys.includes(item.key))
+  const visibleItems = isLoading
+    ? items.filter((item) => item.alwaysVisible)
+    : items
 
   const trigger = (
     <SSelectTrigger
@@ -96,7 +102,6 @@ export const Select = <TKey extends string = string>({
       iconEnd={CaretDown}
       fullWidth={fullWidth}
       disabled={disabled}
-      aria-busy={isLoading}
       {...triggerProps}
     >
       <Flex as="span" gap="0.4em">
@@ -105,34 +110,30 @@ export const Select = <TKey extends string = string>({
             {label}:
           </Text>
         )}
-        {isLoading ? (
-          <Skeleton width={120} height="1em" />
-        ) : selectedItems.length ? (
-          selectedItems.map((item, index) => (
-            <Flex
-              key={item.key}
-              as="span"
-              align="center"
-              gap={iconSize === undefined ? "0.3em" : "base"}
-            >
-              {item.icon && (
-                <Icon
-                  size={iconSize ?? "1.15em"}
-                  sx={
-                    index === 0 && iconSize === undefined
-                      ? { marginInlineStart: "-0.5em" }
-                      : undefined
-                  }
-                  component={item.icon}
-                />
-              )}
-              {item.label}
-              {index < selectedItems.length - 1 && ","}
-            </Flex>
-          ))
-        ) : (
-          placeholder
-        )}
+        {selectedItems.length
+          ? selectedItems.map((item, index) => (
+              <Flex
+                key={item.key}
+                as="span"
+                align="center"
+                gap={iconSize === undefined ? "0.3em" : "base"}
+              >
+                {item.icon && (
+                  <Icon
+                    size={iconSize ?? "1.15em"}
+                    sx={
+                      index === 0 && iconSize === undefined
+                        ? { marginInlineStart: "-0.5em" }
+                        : undefined
+                    }
+                    component={item.icon}
+                  />
+                )}
+                {item.label}
+                {index < selectedItems.length - 1 && ","}
+              </Flex>
+            ))
+          : placeholder}
       </Flex>
     </SSelectTrigger>
   )
@@ -157,6 +158,7 @@ export const Select = <TKey extends string = string>({
         {trigger}
       </DropdownMenuPrimitive.Trigger>
       <SSelectContent
+        aria-busy={isLoading}
         sideOffset={6}
         align="start"
         collisionPadding={12}
@@ -165,10 +167,9 @@ export const Select = <TKey extends string = string>({
       >
         <ScrollArea>
           <Flex direction="column" gap="1px">
-            {isLoading ? (
-              <SelectSkeleton />
-            ) : selection.multiple ? (
-              items.map((item) => {
+            {isLoading && <SelectSkeleton />}
+            {selection.multiple ? (
+              visibleItems.map((item) => {
                 const isSelected = selectedKeys.includes(item.key)
 
                 return (
@@ -203,7 +204,7 @@ export const Select = <TKey extends string = string>({
                 value={selection.value}
                 onValueChange={(key) => selection.onValueChange(key as TKey)}
               >
-                {items.map((item) => (
+                {visibleItems.map((item) => (
                   <DropdownMenuPrimitive.RadioItem
                     key={item.key}
                     asChild

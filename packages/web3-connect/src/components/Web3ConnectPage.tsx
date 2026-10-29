@@ -40,6 +40,7 @@ export const Web3ConnectPage: FC<Web3ConnectPageProps> = ({
     <Web3ConnectModalContent
       {...props}
       open
+      isEmbedded
       isPage={layout === "page"}
       onOpenChange={ignoreModalChange}
       setModalContentWidth={onContentWidthChange}

@@ -13,6 +13,7 @@ import {
 export type Web3ConnectContextType = {
   isControlled: boolean
   isPage?: boolean
+  isEmbedded?: boolean
   keepSplitOpen?: boolean
   walletListVariant?: "default" | "connectedFirst"
   accountFilter?: (account: Account) => boolean

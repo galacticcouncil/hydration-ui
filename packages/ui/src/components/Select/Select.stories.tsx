@@ -25,6 +25,7 @@ export const Loading: Story = {
   args: {
     items: [],
     isLoading: true,
+    placeholder: "Choose an option",
     fullWidth: true,
     onValueChange: () => {},
   },
@@ -33,6 +34,17 @@ export const Loading: Story = {
 export const HoverLoading: Story = {
   ...Loading,
   args: { ...Loading.args, openOnHover: true },
+}
+
+export const LoadingWithAction: Story = {
+  ...Loading,
+  args: {
+    ...Loading.args,
+    openOnHover: true,
+    items: [
+      { key: "connect", label: "Connect another wallet", alwaysVisible: true },
+    ],
+  },
 }
 
 export default {

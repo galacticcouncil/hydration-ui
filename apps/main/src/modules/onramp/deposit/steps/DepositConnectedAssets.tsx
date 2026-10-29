@@ -141,7 +141,16 @@ export const DepositConnectedAssets = () => {
         title={t("deposit.flow.assets.title")}
         align="center"
         closable
-        onBack={() => paginateTo(OnrampScreen.DepositOnchainWallet)}
+        onBack={() => {
+          // Leaving asset selection starts a fresh wallet step, rather than
+          // resuming the previous asset and sending Back to this screen again.
+          setWalletFirstAsset(null)
+          setValue("srcChain", null)
+          setValue("srcAsset", null)
+          setValue("bridgeProvider", null)
+          void resetAmounts()
+          paginateTo(OnrampScreen.DepositOnchainWallet)
+        }}
       />
       <ModalBody
         noPadding

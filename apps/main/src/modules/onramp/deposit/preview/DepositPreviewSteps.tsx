@@ -14,13 +14,17 @@ import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDeposi
 import { DepositGuidedAsset } from "@/modules/onramp/deposit/variants/DepositGuidedAsset"
 import { DepositQuickStart } from "@/modules/onramp/deposit/variants/DepositQuickStart"
 import { DepositVariantSource } from "@/modules/onramp/deposit/variants/DepositVariantSource"
-import { DepositVariant } from "@/modules/onramp/store/useOnrampModal"
+import {
+  DepositVariant,
+  useOnrampModal,
+} from "@/modules/onramp/store/useOnrampModal"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
 export const DepositPreviewSteps: FC<{ variant?: DepositVariant }> = ({
   variant = "preview",
 }) => {
   const phase = useDepositJourneyStore((state) => state.phase)
+  const directEntry = useOnrampModal((state) => state.depositEntryChoice)
   const intent = useDepositJourneyStore((state) => state.assetIntent)
   const destinationAddress = useDepositJourneyStore(
     (state) => state.destinationAddress,
@@ -66,6 +70,7 @@ export const DepositPreviewSteps: FC<{ variant?: DepositVariant }> = ({
     if (
       intent?.chainKey === HYDRATION_CHAIN_KEY &&
       intent.assetKey === "hdx" &&
+      !(variant === "simple" && directEntry) &&
       phase !== "catalog" &&
       phase !== "tracking"
     )

@@ -38,6 +38,9 @@ export const SelectHover = <TKey extends string>({
   const optionRefs = useRef(new Map<TKey, HTMLButtonElement>())
   const pendingFocus = useRef<"first" | "last">("first")
   const search = useRef({ text: "", time: 0 })
+  const visibleItems = isLoading
+    ? items.filter((item) => item.alwaysVisible)
+    : items
   useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   const cancelClose = () => clearTimeout(closeTimer.current)
@@ -51,13 +54,12 @@ export const SelectHover = <TKey extends string>({
     cancelClose()
   }
   const focusOption = (position: "first" | "last") => {
-    const item = position === "first" ? items[0] : items.at(-1)
+    const item = position === "first" ? visibleItems[0] : visibleItems.at(-1)
     if (item) optionRefs.current.get(item.key)?.focus()
   }
   const navigateOptions = (event: KeyboardEvent) => {
-    if (isLoading) return
     pinOpen()
-    const active = items.find(
+    const active = visibleItems.find(
       (item) => optionRefs.current.get(item.key) === document.activeElement,
     )
     let query = ""
@@ -75,7 +77,12 @@ export const SelectHover = <TKey extends string>({
       search.current = { text, time: now }
       query = text
     }
-    const nextKey = getSelectHoverTarget(items, active?.key, event.key, query)
+    const nextKey = getSelectHoverTarget(
+      visibleItems,
+      active?.key,
+      event.key,
+      query,
+    )
     if (nextKey === undefined) return
     event.preventDefault()
     optionRefs.current.get(nextKey)?.focus()
@@ -106,9 +113,11 @@ export const SelectHover = <TKey extends string>({
           pinOpen()
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault()
-            pendingFocus.current = event.key === "ArrowDown" ? "first" : "last"
-            if (open) focusOption(pendingFocus.current)
+            const position = event.key === "ArrowDown" ? "first" : "last"
+            pendingFocus.current = position
             setOpen(true)
+            // Option refs may not exist yet when opening, or when replacing skeletons.
+            requestAnimationFrame(() => focusOption(position))
           }
         }}
       >
@@ -116,6 +125,7 @@ export const SelectHover = <TKey extends string>({
       </Popover.Trigger>
       <Popover.Portal>
         <SSelectHoverContent
+          aria-busy={isLoading}
           sideOffset={6}
           align="start"
           collisionPadding={12}
@@ -134,37 +144,34 @@ export const SelectHover = <TKey extends string>({
         >
           <ScrollArea>
             <Flex direction="column" gap="1px">
-              {isLoading ? (
-                <SelectSkeleton />
-              ) : (
-                items.map((item) => (
-                  <MenuSelectionItem
-                    asChild
-                    key={item.key}
-                    variant="filterLink"
-                    aria-pressed={value === item.key}
-                    onClick={() => {
-                      onValueChange(item.key)
-                      setOpen(false)
+              {isLoading && <SelectSkeleton />}
+              {visibleItems.map((item) => (
+                <MenuSelectionItem
+                  asChild
+                  key={item.key}
+                  variant="filterLink"
+                  aria-pressed={value === item.key}
+                  onClick={() => {
+                    onValueChange(item.key)
+                    setOpen(false)
+                  }}
+                >
+                  <button
+                    type="button"
+                    ref={(element) => {
+                      if (element) optionRefs.current.set(item.key, element)
+                      else optionRefs.current.delete(item.key)
                     }}
                   >
-                    <button
-                      type="button"
-                      ref={(element) => {
-                        if (element) optionRefs.current.set(item.key, element)
-                        else optionRefs.current.delete(item.key)
-                      }}
-                    >
-                      <MenuItemLabel>
-                        {item.icon && (
-                          <Icon size={iconSize ?? "s"} component={item.icon} />
-                        )}
-                        {item.label}
-                      </MenuItemLabel>
-                    </button>
-                  </MenuSelectionItem>
-                ))
-              )}
+                    <MenuItemLabel>
+                      {item.icon && (
+                        <Icon size={iconSize ?? "s"} component={item.icon} />
+                      )}
+                      {item.label}
+                    </MenuItemLabel>
+                  </button>
+                </MenuSelectionItem>
+              ))}
             </Flex>
           </ScrollArea>
         </SSelectHoverContent>

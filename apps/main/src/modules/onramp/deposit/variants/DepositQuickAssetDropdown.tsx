@@ -7,7 +7,6 @@ import {
   LogoSkeleton,
   Paper,
   SearchInput,
-  Skeleton,
   Text,
   ToggleGroupItem,
   Tooltip,
@@ -15,7 +14,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
-import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import * as Popover from "@radix-ui/react-popover"
 import {
   CSSProperties,
@@ -33,23 +31,32 @@ import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { ChainLogo } from "@/components/ChainLogo"
 import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
-import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
+import { DepositChainFilterScroll } from "./DepositChainFilterScroll"
 import {
   SDepositQuickAssetDropdown,
   SDepositQuickAssetTrigger,
   SDepositQuickChainFilters,
 } from "./DepositQuickAssetDropdown.styled"
+import { DepositQuickAssetGroupRow } from "./DepositQuickAssetGroupRow"
+import {
+  DepositAssetNetworkPair,
+  DepositQuickAssetGroup,
+  groupDepositAssetOptions,
+} from "./DepositQuickAssetGroups"
 
-type AssetNetworkPair = { asset: Asset; chain: AnyChain }
+type AssetNetworkPair = DepositAssetNetworkPair
 type DepositQuickAssetDropdownProps = {
   items: AssetNetworkPair[]
   selection: AssetNetworkPair | null
   disabled?: boolean
   isLoading?: boolean
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onSelect: (selection: AssetNetworkPair) => void
+  onChooseNetwork: (sources: AssetNetworkPair[]) => void
 }
 
 export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
@@ -57,10 +64,12 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
   selection,
   disabled,
   isLoading = false,
+  open,
+  onOpenChange: setOpen,
   onSelect,
+  onChooseNetwork,
 }) => {
   const { t } = useTranslation(["common", "onramp"])
-  const [open, setOpen] = useState(false)
   const [chainKey, setChainKey] = useState("all")
   const [search, setSearch] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
@@ -84,30 +93,29 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
   const chains = [
     ...new Map(items.map(({ chain }) => [chain.key, chain])).values(),
   ]
-  const assets = useMemo(
+  const visibleChainKey = chains.some(({ key }) => key === chainKey)
+    ? chainKey
+    : "all"
+  const groups = useMemo(
     () =>
-      items
-        .map((item) => {
+      groupDepositAssetOptions(
+        items.map((item) => {
           const id = getDisplayAssetId(item.asset)
           return {
             ...item,
-            key: `${item.chain.key}:${item.asset.key}`,
             name: (id && getAsset(id)?.name) || item.asset.originSymbol,
           }
-        })
-        .sort((a, b) =>
-          a.asset.originSymbol.localeCompare(b.asset.originSymbol),
-        ),
-    [items, getDisplayAssetId, getAsset],
+        }),
+        visibleChainKey,
+        search,
+      ),
+    [items, getDisplayAssetId, getAsset, visibleChainKey, search],
   )
-  const query = search.trim().toLowerCase()
-  const visibleAssets = assets.filter(
-    ({ asset, chain, name }) =>
-      (chainKey === "all" || chain.key === chainKey) &&
-      `${asset.originSymbol} ${name} ${chain.name}`
-        .toLowerCase()
-        .includes(query),
-  )
+  const selectAsset = (group: DepositQuickAssetGroup) => {
+    if (group.sources.length > 1) onChooseNetwork(group.sources)
+    else onSelect(group.sources[0]!)
+    setOpen(false)
+  }
   const allChains = t("onramp:deposit.onchain.allChains")
   const changeOpen = (next: boolean) => {
     if (next && !open) {
@@ -155,7 +163,6 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
           >
             {selection ? (
               <AssetButton
-                aria-busy={isLoading}
                 aria-label={t("onramp:deposit.quick.selectAssetNetwork")}
                 isDisabled={disabled}
                 asset={{
@@ -165,7 +172,6 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
               />
             ) : (
               <SDepositQuickAssetTrigger
-                aria-busy={isLoading}
                 variant="muted"
                 outline
                 size="medium"
@@ -176,11 +182,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
               >
                 <Flex as="span" align="center" gap="base" minWidth={0}>
                   <Text as="span" fs="p5" fw={500} truncate>
-                    {isLoading ? (
-                      <Skeleton width={180} height="1em" />
-                    ) : (
-                      t("onramp:deposit.quick.selectAssetNetwork")
-                    )}
+                    {t("onramp:deposit.quick.selectAssetNetwork")}
                   </Text>
                 </Flex>
               </SDepositQuickAssetTrigger>
@@ -224,7 +226,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
             maxHeight="var(--radix-popover-content-available-height)"
             data-onramp-step="deposit-quick-asset-dropdown"
           >
-            <Box flexShrink={0} sx={{ overflowX: "auto" }}>
+            <DepositChainFilterScroll>
               {isLoading ? (
                 <Flex gap="base" p="s" aria-hidden>
                   {[0, 1, 2, 3, 4, 5].map((index) => (
@@ -236,8 +238,10 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
                   type="single"
                   size="small"
                   aria-label={t("onramp:deposit.quick.network")}
-                  value={chainKey}
-                  onValueChange={(key) => setChainKey(key || "all")}
+                  value={visibleChainKey}
+                  onValueChange={(key) => {
+                    setChainKey(key || "all")
+                  }}
                 >
                   <Tooltip text={allChains} size="small" asChild>
                     <ToggleGroupItem value="all" aria-label={allChains}>
@@ -266,7 +270,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
                   ))}
                 </SDepositQuickChainFilters>
               )}
-            </Box>
+            </DepositChainFilterScroll>
             <SearchInput
               ref={searchRef}
               customSize="medium"
@@ -275,33 +279,23 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
               aria-label={t("search.placeholder.assets")}
               placeholder={t("search.placeholder.assets")}
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value)
+              }}
             />
             {isLoading ? (
               <DepositAssetListSkeleton count={5} showBalance={false} />
-            ) : visibleAssets.length ? (
+            ) : groups.length ? (
               <VirtualizedList
-                items={visibleAssets}
+                items={groups}
                 itemSize={50}
-                getItemKey={(index) => visibleAssets[index]!.key}
+                getItemKey={(index) => groups[index]!.key}
                 sx={{ flex: 1, minHeight: 0 }}
-                renderItem={({ asset, chain, name }) => (
-                  <AssetListItem
-                    asset={asset}
-                    chain={chain}
-                    symbol={asset.originSymbol}
-                    name={chainKey === "all" ? chain.name : name}
-                    route={null}
-                    isLoading={false}
-                    isSelected={
-                      selection?.asset.key === asset.key &&
-                      selection.chain.key === chain.key
-                    }
-                    trailingElement={null}
-                    onClick={() => {
-                      onSelect({ asset, chain })
-                      setOpen(false)
-                    }}
+                renderItem={(group) => (
+                  <DepositQuickAssetGroupRow
+                    group={group}
+                    selection={selection}
+                    onSelect={() => selectAsset(group)}
                   />
                 )}
               />

@@ -63,6 +63,7 @@ type Props = ControlledProps | UncontrolledProps
 
 type Web3ConnectModalContentProps = Props & {
   readonly isPage?: boolean
+  readonly isEmbedded?: boolean
   readonly keepSplitOpen?: boolean
   readonly walletListVariant?: Web3ConnectContextType["walletListVariant"]
   readonly accountFilter?: (account: Account) => boolean
@@ -79,6 +80,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
     papi,
     setModalContentWidth,
     isPage,
+    isEmbedded,
     keepSplitOpen,
     walletListVariant,
     onBack,
@@ -117,6 +119,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
     () => ({
       isControlled,
       isPage,
+      isEmbedded,
       keepSplitOpen,
       walletListVariant,
       accountFilter,
@@ -138,6 +141,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
       onAccountSelect,
       isControlled,
       isPage,
+      isEmbedded,
       keepSplitOpen,
       walletListVariant,
       accountFilter,
