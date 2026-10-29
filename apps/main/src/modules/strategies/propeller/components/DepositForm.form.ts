@@ -60,9 +60,14 @@ export const useDepositForm = ({
     resolver: standardSchemaResolver(schema),
     mode: "onChange",
   })
-  const { getValues, trigger } = form
+  const { getValues, trigger, clearErrors } = form
   useEffect(() => {
-    if (getValues("amount")) void trigger("amount")
-  }, [maxBalance, maxCapacity, decimals, getValues, trigger])
+    if (!getValues("amount")) return
+    // an account switch clears the amount while this check runs; its error
+    // would outlive the amount it was about
+    void trigger("amount").then(() => {
+      if (!getValues("amount")) clearErrors("amount")
+    })
+  }, [maxBalance, maxCapacity, decimals, getValues, trigger, clearErrors])
   return form
 }
