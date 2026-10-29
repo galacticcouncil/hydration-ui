@@ -25,6 +25,7 @@ import { WithdrawModal } from "@/modules/strategies/propeller/components/Withdra
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { useDefaultDepositVault } from "@/modules/strategies/propeller/hooks/useDefaultDepositVault"
 import { usePropellerAccount } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+import { useRefetchOnWake } from "@/modules/strategies/propeller/hooks/useRefetchOnWake"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const PropellerVaultPage = () => {
@@ -49,6 +50,7 @@ const PropellerVaultContent = () => {
     : undefined
 
   const { positions, withdrawals, isError } = usePropellerAccount(evmAddress)
+  useRefetchOnWake()
 
   const defaultDeposit = useDefaultDepositVault()
 
