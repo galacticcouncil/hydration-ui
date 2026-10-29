@@ -3,22 +3,18 @@ import { Icon } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import type {
-  BankDepositHistory,
-  BankDepositHistoryEntry,
-} from "@/api/bankDeposits"
+import type { BankDepositHistoryEntry } from "@/api/bankDeposits"
 
 import { PortfolioDepositModalContent } from "./PortfolioDepositModalContent"
 
 type PortfolioBankDepositDetailProps = {
   deposit: BankDepositHistoryEntry
-  source: BankDepositHistory["source"]
   onClose: () => void
 }
 
 export const PortfolioBankDepositDetail: FC<
   PortfolioBankDepositDetailProps
-> = ({ deposit: sample, source, onClose }) => {
+> = ({ deposit: sample, onClose }) => {
   const { t } = useTranslation(["onramp", "common"])
 
   return (
@@ -65,9 +61,6 @@ export const PortfolioBankDepositDetail: FC<
           content: sample.id,
         },
       ]}
-      notice={
-        source === "preview" ? t("deposit.portfolio.sampleNote") : undefined
-      }
       closeLabel={t("common:close")}
       onClose={onClose}
     />

@@ -1,50 +1,75 @@
+import { QueryClient } from "@tanstack/react-query"
 import { describe, expect, it } from "vitest"
 
 import { filterBankDeposits } from "@/modules/portfolio/deposits/PortfolioBankDeposits.utils"
-import { exampleDeposits } from "@/modules/ramp/deposit.mock"
 
-import { bankDepositHistoryQuery, isBankDeposit } from "./bankDeposits"
-import { getBankDepositPreviewHistory } from "./bankDeposits.preview"
+import {
+  BankDepositHistoryEntry,
+  bankDepositHistoryQuery,
+  isBankDeposit,
+} from "./bankDeposits"
 
-describe("bank deposit history adapter", () => {
-  it("uses the bank-flow records and preserves fiat amounts without inventing settlement values", () => {
-    const history = getBankDepositPreviewHistory()
-    expect(history.source).toBe("preview")
-    expect(history.deposits).toHaveLength(exampleDeposits.length)
-    history.deposits.forEach((record, i) => {
-      const original = exampleDeposits[i]!
-      expect(record).toMatchObject({
-        id: original.id,
-        amount: original.amount,
-        currency: original.currency,
-        symbol: original.currency,
-        providerStatus: original.status,
-        sentAt: original.sentAt,
-        destinationSymbol: "HOLLAR",
+const deposits: BankDepositHistoryEntry[] = [
+  {
+    kind: "bank",
+    id: "completed",
+    amount: "250",
+    symbol: "EUR",
+    currency: "EUR",
+    rail: "SEPA",
+    status: "completed",
+    providerStatus: "Credited",
+    sentAt: 123,
+    destinationAssetId: "222",
+    destinationSymbol: "HOLLAR",
+  },
+  {
+    kind: "bank",
+    id: "returned",
+    amount: "100",
+    symbol: "USD",
+    currency: "USD",
+    rail: "ACH / wire",
+    status: "failed",
+    providerStatus: "Returned",
+    sentAt: 456,
+    destinationAssetId: "222",
+    destinationSymbol: "HOLLAR",
+  },
+]
+
+describe("bank deposit history", () => {
+  it.each(["", "alice"])(
+    "returns no samples for account %j while the API is unconfigured",
+    async (address) => {
+      const query = bankDepositHistoryQuery(address)
+      const client = new QueryClient()
+      expect(await client.fetchQuery(query)).toEqual({
+        source: "unconfigured",
+        deposits: [],
       })
-      expect(Number.isFinite(record.sentAt)).toBe(true)
-      expect(isBankDeposit(record)).toBe(true)
-    })
-  })
+      client.clear()
+    },
+  )
 
-  it("maps provider states into portfolio filters", () => {
-    const { deposits } = getBankDepositPreviewHistory()
+  it("filters bank records by status, currency and provider status", () => {
     expect(
       filterBankDeposits(deposits, "completed", "").map((row) => row.id),
-    ).toEqual(["deposit-002"])
+    ).toEqual(["completed"])
     expect(
       filterBankDeposits(deposits, "attention", "").map((row) => row.id),
-    ).toEqual(["deposit-001", "deposit-003"])
+    ).toEqual(["returned"])
     expect(filterBankDeposits(deposits, "pending", "")).toEqual([])
     expect(
       filterBankDeposits(deposits, "all", " EUR ").map((row) => row.id),
-    ).toEqual(["deposit-002"])
+    ).toEqual(["completed"])
     expect(
       filterBankDeposits(deposits, "all", "Returned").map((row) => row.id),
-    ).toEqual(["deposit-003"])
+    ).toEqual(["returned"])
   })
 
-  it("keeps bank records distinct from on-chain claims", () => {
+  it("keeps bank records distinct from on-chain claims and isolates accounts", () => {
+    expect(isBankDeposit(deposits[0])).toBe(true)
     expect(isBankDeposit(null)).toBe(false)
     expect(isBankDeposit({ correlationId: "on-chain-journey" })).toBe(false)
     expect(bankDepositHistoryQuery("alice").queryKey).not.toEqual(

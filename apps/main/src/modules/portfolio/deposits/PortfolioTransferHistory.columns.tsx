@@ -194,11 +194,18 @@ export const usePortfolioTransferHistoryColumns = (
                   <Text fs="p5" fw={500} lh={1}>
                     {direction === "from" ? journey.currency : "Hydration"}
                   </Text>
-                  <Text fs="p6" lh={1} color="text.medium">
-                    {direction === "from"
-                      ? journey.rail
-                      : t("onramp:deposit.portfolio.bankPreview.wallet")}
-                  </Text>
+                  {direction === "from" ? (
+                    <Text fs="p6" lh={1} color="text.medium">
+                      {journey.rail}
+                    </Text>
+                  ) : journey.recipientAddress ? (
+                    <AccountIdentity
+                      fs="p6"
+                      lh={1}
+                      color="text.medium"
+                      address={journey.recipientAddress}
+                    />
+                  ) : null}
                 </Stack>
               </Flex>
             )

@@ -1,44 +1,44 @@
 # Bank deposit history handoff
 
-Bank deposits now appear in the normal Portfolio Deposits table (including its
-embedded Overview section). The bank deposit modals link to this page rather
-than rendering a second history list. USD/EUR rows use shared Amount, Icon,
-PortfolioDepositStatus, TableRowAction and modal components on desktop/mobile.
+The Portfolio Deposits table supports bank records alongside on-chain journeys.
+Bank deposit modals open this page instead of rendering a second history list.
+USD/EUR rows reuse shared Amount, Icon, PortfolioDepositStatus, TableRowAction
+and modal components on desktop/mobile.
 
-## Current source: preview
+## Current source: unconfigured
 
 `apps/main/src/api/bankDeposits.ts` owns the query and history record contract.
-Its `bankDeposits.preview.ts` adapter maps the same `exampleDeposits` used by the
-bank flow. The response explicitly identifies its source as `preview`; the page
-and Details dialog label that data as samples. No preview rows enter account
-balances, signing, claims, XCScan stores or bank APIs. Samples are available even
-without a wallet so the UI can be reviewed. There is no special URL flag.
+It returns `source: "unconfigured"` and an empty deposit list. No samples are
+injected into the Portfolio page, with or without a connected wallet. The old
+preview adapter and preview notice have been removed. The query key changed to
+avoid reusing cached sample records from the earlier preview.
 
-The displayed amounts are the original incoming USD/EUR amounts. No exchange
-rate or HOLLAR credit amount is inferred. HOLLAR is the intended destination
-asset, not proof of settlement. A provider record must supply any real output
-amount and asset separately before the UI can display credited proceeds.
+Only the existing on-chain history is populated until the bank API is wired.
+The empty state appears when there are no real records. Bank row rendering,
+filters and Details remain in place for the future integration.
 
 ## API integration boundary
 
-Replace the query function in `bankDepositHistoryQuery(address)` with the
-app's authenticated backend request and return `source: "provider"`. Replace
-the preview query key segment, gate requests on a valid wallet/session, and
-choose refetch/invalidation rules for pending records. Never send provider API
-keys from the browser. Fetch all history pages or expose explicit pagination.
+Replace the query function in `bankDepositHistoryQuery(address)` with the app's
+authenticated backend request and return `source: "provider"`. Replace the
+unconfigured query key segment, gate requests on a valid wallet/session, and
+choose refetch/invalidation rules for pending records. Keep provider credentials
+server-side. Fetch all history pages or expose explicit pagination.
 
-Normalize provider status into the portfolio status union, retain the original
-provider status/reference, and supply real epoch timestamps. Use trusted backend
-wallet bindings for ownership; do not treat a query-string address as bank API
-authorization. The placeholder destination wallet label in the table must be
-replaced with the provider's verified recipient when integrating live records.
+Normalize provider status into the portfolio status union, retaining the original
+provider status/reference and real epoch timestamps. Use trusted backend wallet
+bindings for ownership; a query-string address is not bank API authorization.
+Supply `recipientAddress` to show the verified destination account.
 
-`PortfolioBankDeposits.utils.ts` handles filters/search; `PortfolioBankDepositDetail.tsx`
-handles bank Details. Bank records are discriminated with `kind: "bank"` and do
-not expose on-chain Claim actions. On-chain journeys retain their existing
-claims and explorer links. The bank detail notice disappears only when the
-adapter explicitly reports a provider source.
+The amount/symbol represent incoming USD/EUR. Do not infer an exchange rate or
+HOLLAR credit amount. A provider must supply real output amounts and assets
+separately before the UI can display credited proceeds.
 
-The bank setup, instructions and tracking modals remain preview flows. Moving
-history to the Portfolio page does not make onboarding or payment submission
-live, nor does the preview status selector reconcile bank or chain balances.
+`PortfolioBankDeposits.utils.ts` handles filters/search;
+`PortfolioBankDepositDetail.tsx` handles Details. Bank records use `kind: "bank"`
+and never expose on-chain Claim actions. On-chain journeys retain existing
+claims and explorer links.
+
+Bank setup, instructions and tracking modals still use their existing preview
+flows; this history cleanup does not connect onboarding or payment submission
+to a provider. Those flows are separate from the Portfolio history source.

@@ -1,6 +1,5 @@
 import DepositEmptyLounger from "@galacticcouncil/ui/assets/images/DepositEmptyLounger.webp"
 import {
-  Alert,
   Box,
   Button,
   DataTable,
@@ -124,9 +123,6 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
 
   return (
     <Stack gap="l" data-testid="portfolio-transfer-history">
-      {bankHistory.data?.source === "preview" && (
-        <Alert description={t("deposit.portfolio.bankPreview.notice")} />
-      )}
       <Paper overflow="hidden">
         <TabMenu
           p="m"
@@ -170,7 +166,6 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
         {selectedPreview && (
           <PortfolioBankDepositDetail
             deposit={selectedPreview}
-            source={bankHistory.data?.source ?? "preview"}
             onClose={() => setSelectedPreview(null)}
           />
         )}

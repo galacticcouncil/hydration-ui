@@ -1,7 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
 
-import { getBankDepositPreviewHistory } from "./bankDeposits.preview"
-
 export type BankDepositHistoryEntry = {
   kind: "bank"
   id: string
@@ -14,10 +12,11 @@ export type BankDepositHistoryEntry = {
   sentAt: number
   destinationAssetId: string
   destinationSymbol: string
+  recipientAddress?: string
 }
 
 export type BankDepositHistory = {
-  source: "preview" | "provider"
+  source: "unconfigured" | "provider"
   deposits: BankDepositHistoryEntry[]
 }
 
@@ -29,12 +28,14 @@ export const isBankDeposit = (
   "kind" in entry &&
   entry.kind === "bank"
 
-// Replace the preview adapter with the authenticated backend request here.
+// Return no records until the authenticated backend is connected.
 // Keep provider credentials server-side and gate that request on the wallet session.
 export const bankDepositHistoryQuery = (address: string) =>
   queryOptions({
-    queryKey: ["bankDeposits", "history", "preview", address],
+    queryKey: ["bankDeposits", "history", "unconfigured", address],
     staleTime: Infinity,
-    queryFn: async (): Promise<BankDepositHistory> =>
-      getBankDepositPreviewHistory(),
+    queryFn: async (): Promise<BankDepositHistory> => ({
+      source: "unconfigured",
+      deposits: [],
+    }),
   })
