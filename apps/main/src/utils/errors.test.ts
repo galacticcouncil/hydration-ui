@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { isWalletRejection } from "./errors"
+import { isNonceClash, isWalletRejection } from "./errors"
 
 vi.mock("@/states/provider", () => ({ useProviderRpcUrlStore: {} }))
 
@@ -34,4 +34,21 @@ describe("isWalletRejection", () => {
   ])("does not treat %s as a rejection", (error) => {
     expect(isWalletRejection(error)).toBe(false)
   })
+})
+
+describe("isNonceClash", () => {
+  it.each(["Invalid.Stale", "Error.Invalid.Stale"])(
+    "treats %s as another transaction going first",
+    (message) => {
+      expect(isNonceClash(message)).toBe(true)
+      expect(isNonceClash(new Error(message))).toBe(true)
+    },
+  )
+
+  it.each([undefined, null, "", "Invalid.Custom.9", "Invalid.Future", "Stale"])(
+    "does not treat %s as a nonce clash",
+    (error) => {
+      expect(isNonceClash(error)).toBe(false)
+    },
+  )
 })

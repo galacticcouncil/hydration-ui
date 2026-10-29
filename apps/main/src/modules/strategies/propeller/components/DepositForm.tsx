@@ -55,7 +55,7 @@ import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMa
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionClosedError } from "@/states/transactions"
-import { isWalletRejection } from "@/utils/errors"
+import { isNonceClash, isWalletRejection } from "@/utils/errors"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
@@ -398,10 +398,14 @@ export const DepositForm = ({
                 <Alert
                   variant="error"
                   description={
-                    isSwap
-                      ? // what the wallet actually holds and the picker lists
-                        t("deposit.swap.failed", { symbol: collateral.symbol })
-                      : t("deposit.failed")
+                    isNonceClash(deposit.error)
+                      ? t("common:transaction.error.nonceClash")
+                      : isSwap
+                        ? // what the wallet actually holds and the picker lists
+                          t("deposit.swap.failed", {
+                            symbol: collateral.symbol,
+                          })
+                        : t("deposit.failed")
                   }
                 />
               )}

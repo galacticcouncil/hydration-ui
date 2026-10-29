@@ -66,6 +66,30 @@ describe("Payout sell", () => {
     ).toEqual(withExtraGas(sell(3n * unit, 3n * unit)))
   })
 
+  it("sells the whole balance when asked, keeping the route and minimum", () => {
+    const { amount_in: _, ...limits } = sell(5n * unit, 2n * unit).value.value
+    expect(
+      buildPayoutSell(sell(5n * unit, 2n * unit), 3n * unit, { sellAll: true }),
+    ).toEqual({ type: "Router", value: { type: "sell_all", value: limits } })
+  })
+
+  it("sells all through the extra gas dispatch, with a caller's minimum", () => {
+    expect(
+      buildPayoutSell(withExtraGas(sellAll), 3n * unit, {
+        minAmountOut: 3n * unit,
+        sellAll: true,
+      }),
+    ).toEqual(
+      withExtraGas({
+        type: "Router",
+        value: {
+          type: "sell_all",
+          value: { ...sellAll.value.value, min_amount_out: 3n * unit },
+        },
+      }),
+    )
+  })
+
   it("refuses anything but a router sell", () => {
     for (const call of [
       { type: "Router", value: { type: "buy", value: {} } },

@@ -23,6 +23,7 @@ import {
   TransactionMeta,
   TransactionType,
 } from "@/states/transactions"
+import { isNonceClash } from "@/utils/errors"
 
 export const useTransactionToasts = (
   transaction: SingleTransaction,
@@ -143,6 +144,7 @@ const describeTxError = (message: string, t: TFunction) => {
   if (message === "Invalid.Custom.10")
     return t("transaction.error.permitWouldFail")
   if (message === "Invalid.Custom.9") return t("transaction.error.permitStale")
+  if (isNonceClash(message)) return t("transaction.error.nonceClash")
   return message
 }
 

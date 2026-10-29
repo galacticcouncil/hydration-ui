@@ -522,13 +522,20 @@ export function useClaim(options: VaultWriteOptions = {}) {
   const getDisplayAsset = useVaultDisplayAsset()
   const formatSurplus = useFormatSurplusHollar()
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
+  const { getTransferableBalance } = useAccountBalances()
   const address = account?.address ?? ""
 
-  /** Router.sell of exactly the claimed collateral, priced by the SDK now. */
+  /**
+   * Router sell of the claimed collateral, priced by the SDK now. The claim
+   * pays all settled at execution, and a keeper slice can land first: a wallet
+   * that held no collateral sells all of it, others exactly the quote, so
+   * collateral they already held stays theirs.
+   */
   const buildSell = async (
     vault: PropellerVaultConfig,
     payoutAssetId: string,
     collateral: bigint,
+    sellAll: boolean,
   ) => {
     const kind = getPayoutSell(vault, payoutAssetId)
     if (kind === "none" || collateral === 0n) return null
@@ -545,11 +552,10 @@ export function useClaim(options: VaultWriteOptions = {}) {
       .build()
       .then((built) => built.get())
     // the 1:1 unwrap returns exactly what it sells, so it takes no buffer
-    return buildPayoutSell(
-      tx.decodedCall,
-      collateral,
-      kind === "exact" ? { minAmountOut: collateral } : {},
-    )
+    return buildPayoutSell(tx.decodedCall, collateral, {
+      sellAll,
+      ...(kind === "exact" && { minAmountOut: collateral }),
+    })
   }
 
   /**
@@ -609,7 +615,8 @@ export function useClaim(options: VaultWriteOptions = {}) {
           evmAddress,
         )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      const sell = await buildSell(vault, payoutAssetId, collateral)
+      const sellsAll = getTransferableBalance(vault.assetId) === 0n
+      const sell = await buildSell(vault, payoutAssetId, collateral, sellsAll)
       const payouts = describePayouts(
         vault,
         payoutAssetId,
@@ -620,12 +627,12 @@ export function useClaim(options: VaultWriteOptions = {}) {
       const claim = {
         title: t("withdrawals.claim.title"),
         // an exact claim pays only this; an older vault's claim pays all
-        // settled at execution, and a sell sized before then leaves the
-        // newer tranche unsold, as the collateral itself
+        // settled at execution, and an exact sell sized before then leaves
+        // the newer tranche unsold, as the collateral itself
         description: t(
           complete || exact
             ? "withdrawals.claim.descriptionFinal"
-            : sell
+            : sell && !sellsAll
               ? "withdrawals.claim.descriptionUnsold"
               : "withdrawals.claim.description",
           {

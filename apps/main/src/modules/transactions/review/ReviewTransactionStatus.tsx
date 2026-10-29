@@ -12,7 +12,11 @@ import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolka
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
-import { isWalletRejection, stringifyErrorContext } from "@/utils/errors"
+import {
+  isNonceClash,
+  isWalletRejection,
+  stringifyErrorContext,
+} from "@/utils/errors"
 
 const ErrorCopyButton = () => {
   const { t } = useTranslation()
@@ -71,7 +75,11 @@ export const ReviewTransactionStatus = () => {
       status={status}
       errorTitle={rejected ? t("transaction.status.rejected.title") : undefined}
       errorDescription={
-        rejected ? t("transaction.status.rejected.description") : errorMessage
+        rejected
+          ? t("transaction.status.rejected.description")
+          : isNonceClash(error)
+            ? t("transaction.error.nonceClash")
+            : errorMessage
       }
       errorActions={
         <>

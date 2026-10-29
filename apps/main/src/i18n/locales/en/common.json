@@ -399,6 +399,7 @@
   "transaction.error.unsupportedTransaction": "Unsupported transaction or signer type",
   "transaction.error.permitWouldFail": "This transaction would fail on chain, so it wasn't sent. Nothing was spent.",
   "transaction.error.permitStale": "The signature has expired or was already used, so nothing was sent. Sign it again.",
+  "transaction.error.nonceClash": "Another transaction from this account went first, so this one wasn't sent and nothing was spent. Try again.",
   "search.placeholder.any": "Search...",
   "search.placeholder.assets": "Search assets...",
   "search.placeholder.chains": "Search chains...",

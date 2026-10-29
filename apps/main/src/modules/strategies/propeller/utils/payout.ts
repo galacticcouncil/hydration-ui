@@ -12,13 +12,19 @@ const NOT_A_SELL = "The payout trade is not a router sell"
 /**
  * The SDK's trade as a sell of exactly `amountIn`. The SDK emits sell_all when
  * the amount nears the balance, which would also sell collateral already held.
- * Keeps the SDK's route, its Dispatcher wrapper and, unless `minAmountOut` is
- * given, its slippage minimum.
+ * With `sellAll`, a sell of the whole balance instead: a claim pays everything
+ * settled at execution, which can be more than `amountIn`, and only a wallet
+ * that held no collateral before can sell all of it. Keeps the SDK's route,
+ * its Dispatcher wrapper and, unless `minAmountOut` is given, its slippage
+ * minimum, which a larger sell only exceeds.
  */
 export const buildPayoutSell = (
   call: unknown,
   amountIn: bigint,
-  { minAmountOut }: { minAmountOut?: bigint } = {},
+  {
+    minAmountOut,
+    sellAll = false,
+  }: { minAmountOut?: bigint; sellAll?: boolean } = {},
 ): DecodedCall => {
   if (!isCallNode(call) || !isCallNode(call.value)) throw new Error(NOT_A_SELL)
   const { type: method, value: args } = call.value
@@ -31,25 +37,27 @@ export const buildPayoutSell = (
         ...call.value,
         value: {
           ...args,
-          call: buildPayoutSell(args.call, amountIn, { minAmountOut }),
+          call: buildPayoutSell(args.call, amountIn, {
+            minAmountOut,
+            sellAll,
+          }),
         },
       },
     } as DecodedCall
   if (call.type !== "Router" || (method !== "sell" && method !== "sell_all"))
     throw new Error(NOT_A_SELL)
 
+  const limits = {
+    asset_in: args.asset_in,
+    asset_out: args.asset_out,
+    min_amount_out: minAmountOut ?? args.min_amount_out,
+    route: args.route,
+  }
   return {
     type: "Router",
-    value: {
-      type: "sell",
-      value: {
-        asset_in: args.asset_in,
-        asset_out: args.asset_out,
-        amount_in: amountIn,
-        min_amount_out: minAmountOut ?? args.min_amount_out,
-        route: args.route,
-      },
-    },
+    value: sellAll
+      ? { type: "sell_all", value: limits }
+      : { type: "sell", value: { ...limits, amount_in: amountIn } },
   } as DecodedCall
 }
 

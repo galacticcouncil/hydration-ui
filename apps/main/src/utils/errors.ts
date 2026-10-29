@@ -59,6 +59,16 @@ export const isWalletRejection = (error: unknown): boolean => {
   return WALLET_REJECTION.test(message)
 }
 
+/**
+ * The pool refused the transaction because its nonce was already used: another
+ * transaction from the account (another tab, another device) went first.
+ * Nothing was sent; signing again takes the next nonce.
+ */
+export const isNonceClash = (error: unknown): boolean => {
+  if (error === null || error === undefined) return false
+  return /^(\w*Error\.)?Invalid\.Stale$/.test(getErrorMessage(error).trim())
+}
+
 type ErrorContext = {
   message: string
   address: string
