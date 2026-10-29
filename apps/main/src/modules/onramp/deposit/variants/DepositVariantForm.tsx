@@ -87,9 +87,11 @@ export const DepositVariantForm: FC<DepositVariantFormProps> = ({
               <Separator />
             </>
           )}
-          <Stack px="xl" py="l" gap="m">
-            {destination}
-          </Stack>
+          {destination && (
+            <Stack px="xl" py="l" gap="m">
+              {destination}
+            </Stack>
+          )}
           {routeOptions}
           {summary}
           {notices && (

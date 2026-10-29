@@ -1,5 +1,6 @@
 import {
   Alert,
+  Box,
   Button,
   Flex,
   Separator,
@@ -71,7 +72,10 @@ type DepositPreviewFormProps = {
   assetSelection?: OnrampAssetAmountProps["selection"]
   onAssetClick?: () => void
   assetSelectorDisabled?: boolean
+  assetSelector?: (disabled: boolean) => ReactNode
+  assetSelectorLayout?: OnrampAssetAmountProps["assetSelectorLayout"]
   onBack?: () => void
+  onConnectDestination?: () => void
 }
 
 export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
@@ -84,7 +88,10 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   assetSelection,
   onAssetClick,
   assetSelectorDisabled,
+  assetSelector,
+  assetSelectorLayout,
   onBack,
+  onConnectDestination,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const { account } = useAccount()
@@ -286,6 +293,8 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
               }
               onAssetClick={variant === "simple" ? onAssetClick : undefined}
               assetSelectorDisabled={submit.isPending || assetSelectorDisabled}
+              assetSelector={assetSelector?.(submit.isPending)}
+              assetSelectorLayout={assetSelectorLayout}
               selectAssetLabel={t("deposit.quick.selectAssetNetwork")}
               selection={
                 variant === "simple" && assetSelection !== undefined
@@ -327,34 +336,34 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
           </Stack>
         }
         destination={
-          <>
-            {destination?.(submit.isPending) ?? (
-              <Stack gap="s" minWidth={0}>
-                <Flex gap="s" align="center">
-                  {destChain && (
-                    <ChainLogo
-                      ecosystem={destChain.ecosystem}
-                      chainId={getChainId(destChain)}
-                      size="small"
-                    />
-                  )}
-                  <Text fs="p5" color={getToken("text.medium")}>
-                    {t("deposit.variants.toHydration")}
-                    {destAccount &&
-                      ` · ${getWallet(destAccount.provider)?.title ?? ""}`}
-                  </Text>
-                </Flex>
-                <DepositAccountButton
-                  active
-                  name={destAccount?.name ?? t("deposit.onchain.customAddress")}
-                  address={destAddress}
-                  onClick={
-                    submit.isPending ? undefined : () => setPhase("destination")
-                  }
-                />
-              </Stack>
-            )}
-          </>
+          destination ? (
+            destination(submit.isPending)
+          ) : (
+            <Stack gap="s" minWidth={0}>
+              <Flex gap="s" align="center">
+                {destChain && (
+                  <ChainLogo
+                    ecosystem={destChain.ecosystem}
+                    chainId={getChainId(destChain)}
+                    size="small"
+                  />
+                )}
+                <Text fs="p5" color={getToken("text.medium")}>
+                  {t("deposit.variants.toHydration")}
+                  {destAccount &&
+                    ` · ${getWallet(destAccount.provider)?.title ?? ""}`}
+                </Text>
+              </Flex>
+              <DepositAccountButton
+                active
+                name={destAccount?.name ?? t("deposit.onchain.customAddress")}
+                address={destAddress}
+                onClick={
+                  submit.isPending ? undefined : () => setPhase("destination")
+                }
+              />
+            </Stack>
+          )
         }
         routeOptions={<DepositRouteSelect enabled={isSourceCompatible} />}
         notices={
@@ -398,19 +407,31 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         summary={<OnrampTransferSummary />}
         footer={
           <>
-            <XcmFooter
-              isSubmitting={submit.isPending}
-              canSubmit={
-                isSourceCompatible && destinationConfirmed && recipientReady
-              }
-              onSubmit={confirm}
-              submitLabel={t(
-                error
-                  ? "deposit.v3.amount.tryAgain"
-                  : "deposit.onchain.confirm",
-              )}
-            />
-            {footerHint && (
+            {onConnectDestination ? (
+              <Box px={["l", "xl"]} py="l">
+                <Button
+                  width="100%"
+                  size="large"
+                  onClick={onConnectDestination}
+                >
+                  {t("common:connectWallet")}
+                </Button>
+              </Box>
+            ) : (
+              <XcmFooter
+                isSubmitting={submit.isPending}
+                canSubmit={
+                  isSourceCompatible && destinationConfirmed && recipientReady
+                }
+                onSubmit={confirm}
+                submitLabel={t(
+                  error
+                    ? "deposit.v3.amount.tryAgain"
+                    : "deposit.onchain.confirm",
+                )}
+              />
+            )}
+            {footerHint && !onConnectDestination && (
               <Text
                 px="xl"
                 pb="l"

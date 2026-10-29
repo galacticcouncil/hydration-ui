@@ -5,6 +5,8 @@ import {
   Icon,
   Select,
   Stack,
+  TabsContent,
+  TabsRoot,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
@@ -16,15 +18,18 @@ import {
   Account,
   AccountWalletAvatar,
   useWeb3Connect,
+  WalletProviderStatus,
+  WalletRestoreState,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
-import { useCallback, useEffect, useState } from "react"
+import { ReactNode, useCallback, useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
+import { OnrampFlowSwitcher } from "@/modules/onramp/components/OnrampFlowSwitcher"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { withHydrationDepositSource } from "@/modules/onramp/deposit/DepositLocalSource.utils"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
@@ -33,6 +38,7 @@ import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/D
 import { DepositPreviewForm } from "@/modules/onramp/deposit/preview/steps/DepositPreviewForm"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { DepositGuidedDestination } from "@/modules/onramp/deposit/variants/DepositGuidedDestination"
+import { DepositQuickAssetDropdown } from "@/modules/onramp/deposit/variants/DepositQuickAssetDropdown"
 import { DepositQuickAssetSelect } from "@/modules/onramp/deposit/variants/DepositQuickAssetSelect"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
@@ -41,6 +47,7 @@ import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainA
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const DepositQuickStart = () => {
@@ -54,12 +61,23 @@ export const DepositQuickStart = () => {
   )
   const setAccount = useWeb3Connect((state) => state.setAccount)
   const accounts = useDepositAccounts({ signersOnly: true })
+  const catalogLoading = useAssets().all.size === 0
+  const walletsLoading = useWeb3Connect(
+    (state) =>
+      state.providers.some(
+        (provider) => provider.status === WalletProviderStatus.Pending,
+      ) ||
+      Object.values(state.restoreStates).some(
+        (status) => status === WalletRestoreState.Restoring,
+      ),
+  )
   const intent = useDepositJourneyStore((state) => state.assetIntent)
   const selection = useDepositJourneyStore((state) => state.selection)
   const [chainKey, setChainKey] = useState(intent?.chainKey ?? "")
   const [assetKey, setAssetKey] = useState(intent?.assetKey ?? "")
   const [sourceKey, setSourceKey] = useState("")
   const [selectingAsset, setSelectingAsset] = useState(false)
+  const [selectorVariant, setSelectorVariant] = useState("split")
   const [connecting, setConnecting] = useState(false)
   const pairs = withHydrationDepositSource(sourceChainAssetPairs).filter(
     ({ assets }) => assets.length > 0,
@@ -165,10 +183,43 @@ export const DepositQuickStart = () => {
     useOnrampStore.getState().paginateTo(OnrampScreen.MethodSelect)
     useOnrampModal.getState().setModal("deposit")
   }
+  const withSelectorTabs = (children: ReactNode) =>
+    directEntry ? (
+      <Flex asChild direction="column" sx={{ minHeight: 0 }}>
+        <TabsRoot
+          value={selectorVariant}
+          activationMode="manual"
+          onValueChange={(value) => {
+            setSelectorVariant(value)
+            setSelectingAsset(false)
+          }}
+        >
+          <TabsContent value={selectorVariant} asChild>
+            <Flex direction="column" sx={{ minHeight: 0 }}>
+              {children}
+            </Flex>
+          </TabsContent>
+          <OnrampFlowSwitcher
+            label={t("deposit.quick.selector.label")}
+            value={selectorVariant}
+            options={[
+              { value: "split", label: t("deposit.quick.selector.split") },
+              {
+                value: "dropdown",
+                label: t("deposit.quick.selector.dropdown"),
+              },
+            ]}
+          />
+        </TabsRoot>
+      </Flex>
+    ) : (
+      children
+    )
 
   if (selectingAsset)
-    return (
+    return withSelectorTabs(
       <DepositQuickAssetSelect
+        isLoading={catalogLoading}
         selectedAsset={selectedAsset}
         selectedChain={selectedPair?.chain}
         onBack={() => setSelectingAsset(false)}
@@ -176,7 +227,7 @@ export const DepositQuickStart = () => {
           assets.map((asset) => ({ asset, chain })),
         )}
         onSelect={choosePair}
-      />
+      />,
     )
 
   if (connecting && selectedPair && selectedAsset)
@@ -240,6 +291,7 @@ export const DepositQuickStart = () => {
         </Text>
         {directEntry || compatible.length > 0 ? (
           <Select
+            isLoading={walletsLoading && compatible.length === 0}
             fullWidth
             openOnHover={directEntry}
             size="medium"
@@ -308,9 +360,9 @@ export const DepositQuickStart = () => {
       selection.account.provider === selectedSource.provider &&
       selection.account.address === selectedSource.address)
   )
-    return (
+    return withSelectorTabs(
       <DepositGuidedDestination>
-        {({ destination, ready, sourceHint }) => (
+        {({ destination, ready, sourceHint, connectDestination }) => (
           <DepositPreviewForm
             key={`${chainKey}:${assetKey}:${selectedSource?.provider ?? ""}:${selectedSource?.address ?? ""}`}
             variant="simple"
@@ -323,14 +375,39 @@ export const DepositQuickStart = () => {
                 : null
             }
             onAssetClick={() => setSelectingAsset(true)}
+            assetSelectorLayout={
+              directEntry && selectorVariant === "dropdown" && !selectedAsset
+                ? "stacked"
+                : "inline"
+            }
+            assetSelector={
+              directEntry && selectorVariant === "dropdown"
+                ? (disabled) => (
+                    <DepositQuickAssetDropdown
+                      isLoading={catalogLoading}
+                      items={pairs.flatMap(({ chain, assets }) =>
+                        assets.map((asset) => ({ asset, chain })),
+                      )}
+                      selection={
+                        selectedPair && selectedAsset
+                          ? { chain: selectedPair.chain, asset: selectedAsset }
+                          : null
+                      }
+                      disabled={disabled || !pairs.length}
+                      onSelect={choosePair}
+                    />
+                  )
+                : undefined
+            }
             assetSelectorDisabled={!pairs.length}
             destination={destination}
+            onConnectDestination={connectDestination}
             footerHint={sourceHint}
             recipientReady={ready && !!selectedSource && sameRoute}
             onBack={back}
           />
         )}
-      </DepositGuidedDestination>
+      </DepositGuidedDestination>,
     )
 
   return (

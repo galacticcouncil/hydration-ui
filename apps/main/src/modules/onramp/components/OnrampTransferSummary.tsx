@@ -8,6 +8,7 @@ import { useOnrampReceiveEstimate } from "@/modules/onramp/hooks/useOnrampReceiv
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
+  BRIDGE_LABEL,
   BRIDGE_TIME,
   getPrimaryBridgeTag,
   isOmniRoute,
@@ -15,18 +16,31 @@ import {
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { XcmTag } from "@/states/transactions"
 
+import { hasReceiveAssetChange } from "./OnrampTransferSummary.utils"
+
 type OnrampTransferSummaryProps = {
   showReceive?: boolean
+  receiveOnlyOnAssetChange?: boolean
 }
 
 export const OnrampTransferSummary: FC<OnrampTransferSummaryProps> = ({
   showReceive = true,
+  receiveOnlyOnAssetChange = false,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const { selectedRoute, transfer } = useXcmProvider()
   const { watch } = useFormContext<XcmFormValues>()
-  const [destChain, destAsset] = watch(["destChain", "destAsset"])
+  const [srcAsset, destChain, destAsset] = watch([
+    "srcAsset",
+    "destChain",
+    "destAsset",
+  ])
   const bridgeTag = selectedRoute ? getPrimaryBridgeTag(selectedRoute) : null
+  const changedAsset = hasReceiveAssetChange(srcAsset, destAsset, selectedRoute)
+  const bridgeLabel =
+    receiveOnlyOnAssetChange && changedAsset && bridgeTag
+      ? BRIDGE_LABEL[bridgeTag]
+      : undefined
   const receiveEstimate = useOnrampReceiveEstimate()
   const estimatedTime =
     !isOmniRoute(selectedRoute) && bridgeTag
@@ -43,6 +57,7 @@ export const OnrampTransferSummary: FC<OnrampTransferSummaryProps> = ({
   return (
     <XcmSummary withFeeContext hideUnavailable>
       {showReceive &&
+        (!receiveOnlyOnAssetChange || changedAsset) &&
         destAsset &&
         (receiveEstimate.isLoading || hasReceiveEstimate) && (
           <SummaryRow
@@ -53,7 +68,7 @@ export const OnrampTransferSummary: FC<OnrampTransferSummaryProps> = ({
                 ? t("common:currency", {
                     value: receiveEstimate.amount,
                     symbol: destAsset.originSymbol,
-                  })
+                  }) + (bridgeLabel ? ` (${bridgeLabel})` : "")
                 : null
             }
           />

@@ -1,17 +1,20 @@
 import {
   Button,
+  Flex,
   ModalBody,
   Separator,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
+import { ChainLogo } from "@/components/ChainLogo"
 import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
@@ -38,10 +41,9 @@ export const DepositOnchainForm = () => {
   const { transfer, isConnectedAccountValid, isLoadingSrcBalances } =
     useXcmProvider()
   const { watch, handleSubmit, setValue } = useFormContext<XcmFormValues>()
-  const [srcChain, srcAsset, destAsset, destAccount, destAddress] = watch([
+  const [srcChain, srcAsset, destAccount, destAddress] = watch([
     "srcChain",
     "srcAsset",
-    "destAsset",
     "destAccount",
     "destAddress",
   ])
@@ -118,7 +120,8 @@ export const DepositOnchainForm = () => {
         </Stack>
         <Separator />
         <OnrampAssetAmount
-          label={t("deposit.onchain.asset")}
+          variant="transaction"
+          label={t("common:from")}
           selection={
             srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
           }
@@ -141,9 +144,19 @@ export const DepositOnchainForm = () => {
         />
         <Separator />
         <Stack px={["l", "xl"]} py={["m", "l"]} gap="s">
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("deposit.onchain.destination")}
-          </Text>
+          <Flex align="center" gap="s">
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("common:to")}
+            </Text>
+            <ChainLogo
+              chainId={HYDRATION_PARACHAIN_ID}
+              size="extra-small"
+              alt="Hydration"
+            />
+            <Text fs="p5" fw={500} color={getToken("text.high")}>
+              Hydration
+            </Text>
+          </Flex>
           {destAddress ? (
             <DepositAccountButton
               active
@@ -157,13 +170,8 @@ export const DepositOnchainForm = () => {
               {t("deposit.onchain.selectDestination")}
             </Button>
           )}
-          <Text fs="p5" color={getToken("text.low")}>
-            {t("deposit.onchain.receiving", {
-              symbol: destAsset?.originSymbol ?? "",
-            })}
-          </Text>
         </Stack>
-        <OnrampTransferSummary />
+        <OnrampTransferSummary receiveOnlyOnAssetChange />
         <Separator />
         <XcmFooter
           isSubmitting={submit.isPending}

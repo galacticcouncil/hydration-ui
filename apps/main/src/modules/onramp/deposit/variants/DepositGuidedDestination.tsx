@@ -33,6 +33,7 @@ type DepositGuidedDestinationProps = {
     destination: (disabled: boolean) => ReactNode
     ready: boolean
     sourceHint: string | undefined
+    connectDestination: (() => void) | undefined
   }) => ReactNode
 }
 
@@ -145,23 +146,24 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
     )
 
   return children({
+    connectDestination: current ? undefined : () => setConnecting(true),
     sourceHint: !selection ? t("deposit.guided.chooseSourceFirst") : undefined,
     ready:
       canContinue &&
       destAddress === receiverAddress &&
       destAccount?.provider === current?.provider &&
       destAccount?.address === current?.address,
-    destination: (disabled) => (
-      <Stack gap="base" data-onramp-step="deposit-guided-receiver">
-        <Flex align="center" justify="space-between" gap="m">
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("deposit.guided.receivingAccount")}
-          </Text>
-          <Text fs="p6" color={getToken("text.low")}>
-            {hydration?.name}
-          </Text>
-        </Flex>
-        {current ? (
+    destination: (disabled) =>
+      current ? (
+        <Stack gap="base" data-onramp-step="deposit-guided-receiver">
+          <Flex align="center" justify="space-between" gap="m">
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("deposit.guided.receivingAccount")}
+            </Text>
+            <Text fs="p6" color={getToken("text.low")}>
+              {hydration?.name}
+            </Text>
+          </Flex>
           <SDepositSourceAccount
             name={current.name}
             address={current.displayAddress}
@@ -183,42 +185,31 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
               </Button>
             }
           />
-        ) : (
-          <Button
-            type="button"
-            variant="tertiary"
-            width="100%"
-            disabled={disabled}
-            onClick={() => setConnecting(true)}
-          >
-            {t("common:connectWallet")}
-          </Button>
-        )}
-        {selection &&
-          current &&
-          (readinessError || needsActivation || bindingActivation) && (
-            <Alert
-              variant="warning"
-              description={t(
-                readinessError
-                  ? "deposit.v3.destination.unavailable"
-                  : needsActivation
-                    ? "deposit.v3.destination.activation"
-                    : "deposit.v3.destination.binding",
-                { symbol: symbol ?? "" },
-              )}
-            />
+          {selection &&
+            current &&
+            (readinessError || needsActivation || bindingActivation) && (
+              <Alert
+                variant="warning"
+                description={t(
+                  readinessError
+                    ? "deposit.v3.destination.unavailable"
+                    : needsActivation
+                      ? "deposit.v3.destination.activation"
+                      : "deposit.v3.destination.binding",
+                  { symbol: symbol ?? "" },
+                )}
+              />
+            )}
+          {(readinessError || needsActivation || bindingActivation) && (
+            <Button
+              variant="secondary"
+              disabled={disabled || isFetching}
+              onClick={retry}
+            >
+              {t("deposit.v3.destination.recheck")}
+            </Button>
           )}
-        {(readinessError || needsActivation || bindingActivation) && (
-          <Button
-            variant="secondary"
-            disabled={disabled || isFetching}
-            onClick={retry}
-          >
-            {t("deposit.v3.destination.recheck")}
-          </Button>
-        )}
-      </Stack>
-    ),
+        </Stack>
+      ) : null,
   })
 }

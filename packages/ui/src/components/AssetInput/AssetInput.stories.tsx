@@ -1,3 +1,4 @@
+import * as Popover from "@radix-ui/react-popover"
 import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
@@ -6,9 +7,11 @@ import { getToken } from "@/utils"
 
 import { Box } from "../Box"
 import { Logo } from "../Logo"
+import { Paper } from "../Paper"
+import { SContent } from "../Popover"
 import { Select } from "../Select"
 import { Stack } from "../Stack"
-import { AssetInput, AssetInputProps } from "./AssetInput"
+import { AssetButton, AssetInput, AssetInputProps } from "./AssetInput"
 
 type Story = StoryObj<typeof AssetInput>
 
@@ -67,6 +70,11 @@ const render = (args: AssetInputProps) => (
 )
 
 export const Default: Story = { render }
+
+export const StackedSelector: Story = {
+  render,
+  args: { assetSelectorLayout: "stacked" },
+}
 
 export const Empty: Story = { render, args: { asset: null } }
 
@@ -147,6 +155,28 @@ export const AllStates: Story = {
         <Field value="12" isValueLoading isDisplayValueLoading />
         <Field isDisabled />
       </Stack>
+    </Frame>
+  ),
+}
+
+export const PopoverSelector: Story = {
+  render: (args) => (
+    <Frame>
+      <Popover.Root>
+        <Field
+          {...args}
+          assetSelector={
+            <Popover.Trigger asChild>
+              <AssetButton asset={HDX} aria-label="Select asset" />
+            </Popover.Trigger>
+          }
+        />
+        <Popover.Portal>
+          <SContent sideOffset={8}>
+            <Paper p="m">Asset selector content</Paper>
+          </SContent>
+        </Popover.Portal>
+      </Popover.Root>
     </Frame>
   ),
 }

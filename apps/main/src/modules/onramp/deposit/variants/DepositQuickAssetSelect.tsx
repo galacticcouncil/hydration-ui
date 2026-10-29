@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next"
 import { useHydrationDisplayAssetId } from "@/api/xcm"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { useAssets } from "@/providers/assetsProvider"
@@ -25,6 +26,7 @@ import { useAssets } from "@/providers/assetsProvider"
 type AssetNetworkPair = { asset: Asset; chain: AnyChain }
 type DepositQuickAssetSelectProps = {
   items: AssetNetworkPair[]
+  isLoading?: boolean
   selectedAsset?: Asset
   selectedChain?: AnyChain
   onBack: () => void
@@ -33,6 +35,7 @@ type DepositQuickAssetSelectProps = {
 
 export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
   items,
+  isLoading = false,
   selectedAsset,
   selectedChain,
   onSelect,
@@ -102,6 +105,7 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
       >
         <Grid
           data-onramp-step="deposit-quick-assets"
+          aria-busy={isLoading}
           columnTemplate={`${pxToRem(isMobile ? 52 : 164)} minmax(0, 1fr)`}
           gap={isMobile ? "base" : "l"}
           p={isMobile ? "base" : "m"}
@@ -140,13 +144,17 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
               )}
             </Button>
             <Box flex={1} sx={{ minHeight: 0 }}>
-              <ChainList
-                compact
-                fillHeight
-                items={visibleChains}
-                selectedChain={activeChain}
-                setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
-              />
+              {isLoading ? (
+                <DepositAssetListSkeleton count={5} showBalance={false} />
+              ) : (
+                <ChainList
+                  compact
+                  fillHeight
+                  items={visibleChains}
+                  selectedChain={activeChain}
+                  setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
+                />
+              )}
             </Box>
           </Stack>
           <Stack
@@ -163,7 +171,9 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
               value={assetSearch}
               onChange={(event) => setAssetSearch(event.target.value)}
             />
-            {visibleAssets.length ? (
+            {isLoading ? (
+              <DepositAssetListSkeleton count={5} showBalance={false} />
+            ) : visibleAssets.length ? (
               <VirtualizedList
                 items={visibleAssets}
                 itemSize={50}

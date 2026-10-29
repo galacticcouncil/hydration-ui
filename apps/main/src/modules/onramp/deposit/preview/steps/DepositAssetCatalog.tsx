@@ -18,6 +18,7 @@ import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
@@ -28,10 +29,12 @@ import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelec
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { useAssets } from "@/providers/assetsProvider"
 
 export const DepositAssetCatalog = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { sourceChainAssetPairs } = useXcmProvider()
+  const isLoading = useAssets().all.size === 0
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
   const accounts = useDepositAccounts()
@@ -185,7 +188,9 @@ export const DepositAssetCatalog = () => {
               <Text fs="p5" px="m" color={getToken("text.medium")}>
                 {t("deposit.catalog.supported")}
               </Text>
-              {items.length ? (
+              {isLoading ? (
+                <DepositAssetListSkeleton count={5} showBalance={false} />
+              ) : items.length ? (
                 <VirtualizedList
                   items={items}
                   itemSize={60}

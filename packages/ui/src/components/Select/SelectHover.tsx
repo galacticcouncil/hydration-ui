@@ -9,6 +9,7 @@ import { ScrollArea } from "../ScrollArea"
 import type { SelectItem } from "./Select"
 import { SSelectHoverContent } from "./SelectHover.styled"
 import { getSelectHoverTarget } from "./SelectHover.utils"
+import { SelectSkeleton } from "./SelectSkeleton"
 
 type SelectHoverProps<TKey extends string> = {
   trigger: ReactElement
@@ -17,6 +18,7 @@ type SelectHoverProps<TKey extends string> = {
   onValueChange: (value: TKey) => void
   iconSize?: BoxProps["size"]
   disabled?: boolean
+  isLoading?: boolean
   onCloseAutoFocus?: (event: Event) => void
 }
 
@@ -27,6 +29,7 @@ export const SelectHover = <TKey extends string>({
   onValueChange,
   iconSize,
   disabled,
+  isLoading = false,
   onCloseAutoFocus,
 }: SelectHoverProps<TKey>) => {
   const [open, setOpen] = useState(false)
@@ -52,6 +55,7 @@ export const SelectHover = <TKey extends string>({
     if (item) optionRefs.current.get(item.key)?.focus()
   }
   const navigateOptions = (event: KeyboardEvent) => {
+    if (isLoading) return
     pinOpen()
     const active = items.find(
       (item) => optionRefs.current.get(item.key) === document.activeElement,
@@ -130,33 +134,37 @@ export const SelectHover = <TKey extends string>({
         >
           <ScrollArea>
             <Flex direction="column" gap="1px">
-              {items.map((item) => (
-                <MenuSelectionItem
-                  asChild
-                  key={item.key}
-                  variant="filterLink"
-                  aria-pressed={value === item.key}
-                  onClick={() => {
-                    onValueChange(item.key)
-                    setOpen(false)
-                  }}
-                >
-                  <button
-                    type="button"
-                    ref={(element) => {
-                      if (element) optionRefs.current.set(item.key, element)
-                      else optionRefs.current.delete(item.key)
+              {isLoading ? (
+                <SelectSkeleton />
+              ) : (
+                items.map((item) => (
+                  <MenuSelectionItem
+                    asChild
+                    key={item.key}
+                    variant="filterLink"
+                    aria-pressed={value === item.key}
+                    onClick={() => {
+                      onValueChange(item.key)
+                      setOpen(false)
                     }}
                   >
-                    <MenuItemLabel>
-                      {item.icon && (
-                        <Icon size={iconSize ?? "s"} component={item.icon} />
-                      )}
-                      {item.label}
-                    </MenuItemLabel>
-                  </button>
-                </MenuSelectionItem>
-              ))}
+                    <button
+                      type="button"
+                      ref={(element) => {
+                        if (element) optionRefs.current.set(item.key, element)
+                        else optionRefs.current.delete(item.key)
+                      }}
+                    >
+                      <MenuItemLabel>
+                        {item.icon && (
+                          <Icon size={iconSize ?? "s"} component={item.icon} />
+                        )}
+                        {item.label}
+                      </MenuItemLabel>
+                    </button>
+                  </MenuSelectionItem>
+                ))
+              )}
             </Flex>
           </ScrollArea>
         </SSelectHoverContent>

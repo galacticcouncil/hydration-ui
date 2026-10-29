@@ -15,6 +15,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@/components/ChainLogo"
+import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { withHydrationDepositSource } from "@/modules/onramp/deposit/DepositLocalSource.utils"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
@@ -22,11 +23,13 @@ import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDeposi
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { useAssets } from "@/providers/assetsProvider"
 
 import { DepositAssetOption } from "./DepositAssetOption"
 
 export const DepositGuidedAsset: FC = () => {
   const { t } = useTranslation("onramp")
+  const isLoading = useAssets().all.size === 0
   const { sourceChainAssetPairs: crossChainPairs } = useXcmProvider()
   const sourceChainAssetPairs = withHydrationDepositSource(crossChainPairs)
   const { getValues, reset } = useFormContext<XcmFormValues>()
@@ -146,51 +149,55 @@ export const DepositGuidedAsset: FC = () => {
             )}
           />
           <Stack gap="s" justify="flex-start">
-            {selected
-              ? visibleNetworks.map(({ chain }) => (
-                  <Button
-                    key={chain.key}
-                    variant="ghost"
-                    width="100%"
-                    onClick={() => selectNetwork(selected.asset.key, chain.key)}
-                    sx={{
-                      height: "auto",
-                      px: "m",
-                      py: "m",
-                      borderRadius: "m",
-                      gridTemplateColumns: "minmax(0, 1fr)",
-                    }}
-                  >
-                    <Flex gap="m" align="center" width="100%">
-                      <ChainLogo
-                        ecosystem={chain.ecosystem}
-                        chainId={getChainId(chain)}
-                      />
-                      <Stack gap="s" flex={1} align="start">
-                        <Text fs="p3" fw={500} color={getToken("text.high")}>
-                          {chain.name}
-                        </Text>
-                      </Stack>
-                      <Icon component={ChevronRight} size="m" />
-                    </Flex>
-                  </Button>
-                ))
-              : visibleAssets.map(({ asset, chain, supportedNetworks }) => (
-                  <DepositAssetOption
-                    key={asset.key}
-                    asset={asset}
-                    chain={chain}
-                    supportedNetworks={supportedNetworks}
-                    onSelect={() => {
-                      if (supportedNetworks.length === 1) {
-                        selectNetwork(asset.key, supportedNetworks[0]!.key)
-                      } else {
-                        setAssetKey(asset.key)
-                        setSearch("")
-                      }
-                    }}
-                  />
-                ))}
+            {isLoading ? (
+              <DepositAssetListSkeleton count={5} showBalance={false} />
+            ) : selected ? (
+              visibleNetworks.map(({ chain }) => (
+                <Button
+                  key={chain.key}
+                  variant="ghost"
+                  width="100%"
+                  onClick={() => selectNetwork(selected.asset.key, chain.key)}
+                  sx={{
+                    height: "auto",
+                    px: "m",
+                    py: "m",
+                    borderRadius: "m",
+                    gridTemplateColumns: "minmax(0, 1fr)",
+                  }}
+                >
+                  <Flex gap="m" align="center" width="100%">
+                    <ChainLogo
+                      ecosystem={chain.ecosystem}
+                      chainId={getChainId(chain)}
+                    />
+                    <Stack gap="s" flex={1} align="start">
+                      <Text fs="p3" fw={500} color={getToken("text.high")}>
+                        {chain.name}
+                      </Text>
+                    </Stack>
+                    <Icon component={ChevronRight} size="m" />
+                  </Flex>
+                </Button>
+              ))
+            ) : (
+              visibleAssets.map(({ asset, chain, supportedNetworks }) => (
+                <DepositAssetOption
+                  key={asset.key}
+                  asset={asset}
+                  chain={chain}
+                  supportedNetworks={supportedNetworks}
+                  onSelect={() => {
+                    if (supportedNetworks.length === 1) {
+                      selectNetwork(asset.key, supportedNetworks[0]!.key)
+                    } else {
+                      setAssetKey(asset.key)
+                      setSearch("")
+                    }
+                  }}
+                />
+              ))
+            )}
             {!(selected ? visibleNetworks : visibleAssets).length && (
               <Text
                 fs="p4"

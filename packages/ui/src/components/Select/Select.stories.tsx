@@ -21,6 +21,20 @@ import { Select, SelectItem } from "./Select"
 
 type Story = StoryObj<typeof Select>
 
+export const Loading: Story = {
+  args: {
+    items: [],
+    isLoading: true,
+    fullWidth: true,
+    onValueChange: () => {},
+  },
+}
+
+export const HoverLoading: Story = {
+  ...Loading,
+  args: { ...Loading.args, openOnHover: true },
+}
+
 export default {
   component: Select,
 } satisfies Meta<typeof Select>

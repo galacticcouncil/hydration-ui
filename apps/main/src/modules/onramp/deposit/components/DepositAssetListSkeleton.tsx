@@ -8,9 +8,10 @@ import {
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
-export const DepositAssetListSkeleton: FC<{ count?: number }> = ({
-  count = 3,
-}) => (
+export const DepositAssetListSkeleton: FC<{
+  count?: number
+  showBalance?: boolean
+}> = ({ count = 3, showBalance = true }) => (
   <Stack gap={0} separated aria-hidden>
     {Array.from({ length: count }, (_, index) => (
       <Flex
@@ -24,7 +25,7 @@ export const DepositAssetListSkeleton: FC<{ count?: number }> = ({
           <LogoSkeleton size="medium" />
           <AssetLabel symbol="" loading />
         </Flex>
-        <Skeleton width={60} />
+        {showBalance && <Skeleton width={60} />}
       </Flex>
     ))}
   </Stack>

@@ -1,4 +1,9 @@
-import { Flex, Stack, Text } from "@galacticcouncil/ui/components"
+import {
+  AssetInputProps,
+  Flex,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ComponentProps, FC, ReactNode } from "react"
 
@@ -14,6 +19,8 @@ export type OnrampAssetAmountProps = {
   variant?: "default" | "transaction"
   assetSelectorDisabled?: boolean
   selectAssetLabel?: string
+  assetSelector?: ReactNode
+  assetSelectorLayout?: AssetInputProps["assetSelectorLayout"]
   amountProps: ComponentProps<typeof AmountFormField>
 }
 

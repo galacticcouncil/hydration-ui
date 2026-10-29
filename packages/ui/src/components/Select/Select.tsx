@@ -9,6 +9,7 @@ import { Flex } from "../Flex"
 import { Icon } from "../Icon"
 import { MenuItemLabel, MenuSelectionItem } from "../Menu"
 import { ScrollArea } from "../ScrollArea"
+import { Skeleton } from "../Skeleton"
 import { Text } from "../Text"
 import {
   SSelectContent,
@@ -16,6 +17,7 @@ import {
   SSelectTrigger,
 } from "./Select.styled"
 import { SelectHover } from "./SelectHover"
+import { SelectSkeleton } from "./SelectSkeleton"
 
 const selectedIndicator = (
   <DropdownMenuPrimitive.ItemIndicator asChild forceMount>
@@ -54,6 +56,7 @@ export type SelectProps<TKey extends string> = SButtonProps &
     disabled?: boolean
     fullWidth?: boolean
     openOnHover?: boolean
+    isLoading?: boolean
     className?: string
     onCloseAutoFocus?: (event: Event) => void
   }
@@ -70,6 +73,7 @@ export const Select = <TKey extends string = string>({
   fullWidth,
   disabled,
   openOnHover = false,
+  isLoading = false,
   variant = "muted",
   outline = true,
   size = "small",
@@ -92,6 +96,7 @@ export const Select = <TKey extends string = string>({
       iconEnd={CaretDown}
       fullWidth={fullWidth}
       disabled={disabled}
+      aria-busy={isLoading}
       {...triggerProps}
     >
       <Flex as="span" gap="0.4em">
@@ -100,30 +105,34 @@ export const Select = <TKey extends string = string>({
             {label}:
           </Text>
         )}
-        {selectedItems.length
-          ? selectedItems.map((item, index) => (
-              <Flex
-                key={item.key}
-                as="span"
-                align="center"
-                gap={iconSize === undefined ? "0.3em" : "base"}
-              >
-                {item.icon && (
-                  <Icon
-                    size={iconSize ?? "1.15em"}
-                    sx={
-                      index === 0 && iconSize === undefined
-                        ? { marginInlineStart: "-0.5em" }
-                        : undefined
-                    }
-                    component={item.icon}
-                  />
-                )}
-                {item.label}
-                {index < selectedItems.length - 1 && ","}
-              </Flex>
-            ))
-          : placeholder}
+        {isLoading ? (
+          <Skeleton width={120} height="1em" />
+        ) : selectedItems.length ? (
+          selectedItems.map((item, index) => (
+            <Flex
+              key={item.key}
+              as="span"
+              align="center"
+              gap={iconSize === undefined ? "0.3em" : "base"}
+            >
+              {item.icon && (
+                <Icon
+                  size={iconSize ?? "1.15em"}
+                  sx={
+                    index === 0 && iconSize === undefined
+                      ? { marginInlineStart: "-0.5em" }
+                      : undefined
+                  }
+                  component={item.icon}
+                />
+              )}
+              {item.label}
+              {index < selectedItems.length - 1 && ","}
+            </Flex>
+          ))
+        ) : (
+          placeholder
+        )}
       </Flex>
     </SSelectTrigger>
   )
@@ -137,6 +146,7 @@ export const Select = <TKey extends string = string>({
         onValueChange={selection.onValueChange}
         iconSize={iconSize}
         disabled={disabled}
+        isLoading={isLoading}
         onCloseAutoFocus={onCloseAutoFocus}
       />
     )
@@ -155,7 +165,9 @@ export const Select = <TKey extends string = string>({
       >
         <ScrollArea>
           <Flex direction="column" gap="1px">
-            {selection.multiple ? (
+            {isLoading ? (
+              <SelectSkeleton />
+            ) : selection.multiple ? (
               items.map((item) => {
                 const isSelected = selectedKeys.includes(item.key)
 

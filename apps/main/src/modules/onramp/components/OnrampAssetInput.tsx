@@ -24,6 +24,8 @@ export const OnrampAssetInput: FC<OnrampAssetAmountProps> = ({
   onAssetClick,
   assetSelectorDisabled,
   selectAssetLabel,
+  assetSelector,
+  assetSelectorLayout,
   amountProps,
 }) => {
   const { t } = useTranslation("common")
@@ -65,6 +67,8 @@ export const OnrampAssetInput: FC<OnrampAssetAmountProps> = ({
   return (
     <Box px={["l", "xl"]} py={["m", "l"]}>
       <AssetInput
+        assetSelectorLayout={assetSelectorLayout}
+        isAmountHidden={assetSelectorLayout === "stacked" && !selection}
         label={label}
         labelAdornment={
           selection && (
@@ -82,12 +86,14 @@ export const OnrampAssetInput: FC<OnrampAssetAmountProps> = ({
           )
         }
         assetSelector={
-          <AssetButton
-            asset={asset}
-            onClick={onAssetClick}
-            selectAssetLabel={selectAssetLabel}
-            isDisabled={assetSelectorDisabled}
-          />
+          assetSelector ?? (
+            <AssetButton
+              asset={asset}
+              onClick={onAssetClick}
+              selectAssetLabel={selectAssetLabel}
+              isDisabled={assetSelectorDisabled}
+            />
+          )
         }
         value={field.value}
         onChange={field.onChange}
