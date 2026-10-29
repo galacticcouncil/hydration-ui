@@ -114,10 +114,11 @@ export const useStrategyVaultColumns = (
         // dust left under the cap reads as full, not as a long decimal
         if (isNearlyFull(stats.remaining, stats.cap))
           return (
+            // the warning alert's colour: a state to notice, not a figure
             <Text
               fs={["p5", null, "p6"]}
               fw={500}
-              color={getToken("text.high")}
+              color={getToken("accents.alertAlt.primary")}
             >
               {t("strategy.full")}
             </Text>

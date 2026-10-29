@@ -374,14 +374,19 @@ export const DepositForm = ({
               label={t("strategy.remainingCapacity")}
               loading={!capacity && !capacityError}
               content={
-                !capacity
-                  ? "-"
-                  : atCapacity
-                    ? t("strategy.full")
-                    : t("common:currency", {
-                        value: toDisplay(maximum),
-                        symbol: displayAsset.symbol,
-                      })
+                !capacity ? (
+                  "-"
+                ) : atCapacity ? (
+                  // the warning alert's colour, like the strategy overview
+                  <SummaryRowValue color={getToken("accents.alertAlt.primary")}>
+                    {t("strategy.full")}
+                  </SummaryRowValue>
+                ) : (
+                  t("common:currency", {
+                    value: toDisplay(maximum),
+                    symbol: displayAsset.symbol,
+                  })
+                )
               }
             />
             <SummaryRow

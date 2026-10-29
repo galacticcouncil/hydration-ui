@@ -32,7 +32,8 @@ export type PendingPositionStat = {
 type PendingPositionProps = {
   assetId: string
   value: string
-  displayValue?: string
+  /** one line, or several stacked under the amount */
+  displayValue?: string | ReadonlyArray<string>
   isLoading?: boolean
   stats?: PendingPositionStat[]
   status?: ReactNode

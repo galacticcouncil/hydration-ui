@@ -69,13 +69,26 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // queue ahead — an estimate, so it is shown coarse and never as a promise
   const eta =
     row.claimableInSeconds !== null ? formatEta(row.claimableInSeconds) : null
-  const etaLine = row.reserveShort
+  // what is still to settle, neither claimed nor claimable yet: named as an
+  // amount, so it never reads as the whole withdrawal or the whole position
+  const toSettle = Math.max(
+    (row.collateralOwed ?? 0) - (row.settledSoFar ?? 0),
+    0,
+  )
+  const moreLine = row.reserveShort
     ? t("withdrawals.eta.reserve")
-    : eta
-      ? t("withdrawals.eta.claimableIn", { eta })
+    : eta && toSettle > 0
+      ? t("withdrawals.eta.more", {
+          amount: t("common:currency", {
+            value: toSettle,
+            symbol,
+            maximumFractionDigits: 4,
+          }),
+          eta,
+        })
       : undefined
   const stats =
-    status === "pending" && etaLine
+    status === "pending" && (row.reserveShort || eta)
       ? [
           {
             // label above the value at every width: beside the value and
@@ -100,22 +113,34 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
           status !== "claimable"
         ? [
             {
-              // two lines, mirroring the amount column: what has settled,
-              // then when the rest is expected. The chip already says
-              // Settling. Progress of the whole withdrawal, claimed parts
-              // included, so a partial claim never looks like a reset to 0%
-              value: t("withdrawals.settledInline", {
-                settled: t("common:currency", {
-                  value: row.settledSoFar ?? 0,
-                  symbol,
-                  maximumFractionDigits: 4,
-                }),
-                pct: (
-                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
-                  100
-                ).toFixed(1),
-              }),
-              bottomLabel: etaLine,
+              // two lines, mirroring the amount column: progress of the
+              // whole withdrawal, then what is still to come and when. The
+              // chip already says Settling. Without a Claim button nothing
+              // claimable is left, so once a part was claimed the progress
+              // is what reached the wallet, and says so
+              value: t(
+                row.claimedEth > 0
+                  ? "withdrawals.claimedInline"
+                  : "withdrawals.settledInline",
+                {
+                  amount: t("common:currency", {
+                    value:
+                      row.claimedEth > 0
+                        ? row.claimedEth
+                        : (row.settledSoFar ?? 0),
+                    symbol,
+                    maximumFractionDigits: 4,
+                  }),
+                  pct: (
+                    ((row.claimedEth > 0
+                      ? row.claimedEth
+                      : (row.settledSoFar ?? 0)) /
+                      (row.collateralOwed || 1)) *
+                    100
+                  ).toFixed(1),
+                },
+              ),
+              bottomLabel: moreLine,
             },
           ]
         : undefined
@@ -133,14 +158,10 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
         })
       : null
   // a partly claimable row has its Claim button where the estimate goes, so
-  // the rest's estimate moves to the USD line
+  // what is still to come gets its own line under the USD one
   const rest =
     status === "claimable" && row.state === "partial"
-      ? row.reserveShort
-        ? t("withdrawals.eta.reserve")
-        : eta
-          ? t("withdrawals.eta.rest", { eta })
-          : null
+      ? (moreLine ?? null)
       : null
   // the contract keeps only when the unwind may start; the request came one
   // withdrawal delay earlier (exact while the delay is unchanged). It tells
@@ -149,7 +170,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   const amountMeta =
     claimed || rest || vaultStats === undefined || stats !== undefined
       ? // a narrow phone wraps the line between its parts, never inside one
-        [usd, claimed, rest]
+        [usd, claimed]
           .filter((part): part is string => !!part)
           .map((part) => part.replace(/ /g, "\u00a0"))
           // the dot stays with the part before it
@@ -166,7 +187,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
       <PendingPosition
         assetId={displayAsset.id}
         value={t("common:currency", { value: row.totalEth, symbol })}
-        displayValue={amountMeta}
+        displayValue={rest ? [amountMeta, rest] : amountMeta}
         stats={stats}
         status={
           status === "claimable" ? (
