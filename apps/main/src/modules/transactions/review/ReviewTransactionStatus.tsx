@@ -12,7 +12,7 @@ import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolka
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
-import { stringifyErrorContext } from "@/utils/errors"
+import { isWalletRejection, stringifyErrorContext } from "@/utils/errors"
 
 const ErrorCopyButton = () => {
   const { t } = useTranslation()
@@ -63,10 +63,16 @@ export const ReviewTransactionStatus = () => {
     return null
   }
 
+  // declining in the wallet sends nothing: there is no error to report or copy
+  const rejected = isWalletRejection(error)
+
   return (
     <TransactionStatus
       status={status}
-      errorDescription={errorMessage}
+      errorTitle={rejected ? t("transaction.status.rejected.title") : undefined}
+      errorDescription={
+        rejected ? t("transaction.status.rejected.description") : errorMessage
+      }
       errorActions={
         <>
           <Button
@@ -78,7 +84,7 @@ export const ReviewTransactionStatus = () => {
           >
             {t("transaction.status.error.tryAgain")}
           </Button>
-          {error && <ErrorCopyButton />}
+          {error && !rejected && <ErrorCopyButton />}
         </>
       }
     />

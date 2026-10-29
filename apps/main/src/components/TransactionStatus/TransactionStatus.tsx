@@ -10,12 +10,14 @@ import { TxStatus } from "@/modules/transactions/types"
 export type TransactionStatusProps = {
   status: Omit<TxStatus, "idle">
   errorActions?: React.ReactNode
+  errorTitle?: string
   errorDescription?: string
 }
 
 export const TransactionStatus: React.FC<TransactionStatusProps> = ({
   status,
   errorActions,
+  errorTitle,
   errorDescription,
 }) => {
   const { t } = useTranslation(["common"])
@@ -39,7 +41,7 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
       {status === "error" && (
         <>
           <TransactionStatusText
-            title={t("transaction.status.error.title")}
+            title={errorTitle ?? t("transaction.status.error.title")}
             description={
               errorDescription ?? t("transaction.status.error.description")
             }

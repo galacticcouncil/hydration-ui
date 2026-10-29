@@ -17,9 +17,10 @@ import {
   TooltipIcon,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { type ComponentType, useState } from "react"
+import { type ComponentType, useEffect, useRef, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isTruthy } from "remeda"
@@ -54,6 +55,7 @@ import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMa
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionClosedError } from "@/states/transactions"
+import { isWalletRejection } from "@/utils/errors"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
@@ -130,13 +132,15 @@ export const DepositForm = ({
     FEE_BUFFER_PCT,
   )
   // A swap keeps the pay asset's existential deposit: selling the whole balance
-  // empties it, and the sweep's leftover could not be received back.
+  // empties it, and the sweep's leftover could not be received back. GETH's 1:1
+  // conversion sweeps nothing back, and as an EVM token it has no ED to keep.
+  const keepsExistentialDeposit = isSwap && !isOneToOneDeposit(selected)
   const swapMax = Big(balance).minus(
     scaleHuman(asset.existentialDeposit, asset.decimals),
   )
   const spendable = Big.max(
     0,
-    isSwapDeposit(selected)
+    keepsExistentialDeposit
       ? Big.min(getMaxBalance(asset), swapMax)
       : getMaxBalance(asset),
   )
@@ -165,9 +169,11 @@ export const DepositForm = ({
     ? Big(capacityInPay).round(6, Big.roundDown).toString()
     : spendable
 
-  // closing the review is not a failure
+  // closing the review or rejecting in the wallet is not a failure
   const depositFailed =
-    deposit.isError && !(deposit.error instanceof TransactionClosedError)
+    deposit.isError &&
+    !(deposit.error instanceof TransactionClosedError) &&
+    !isWalletRejection(deposit.error)
 
   const form = useDepositForm({
     maxBalance: spendable,
@@ -179,6 +185,19 @@ export const DepositForm = ({
     decimals: asset.decimals,
   })
   const { control, handleSubmit, formState, reset, watch } = form
+
+  // the previous account's amount and failed deposit are not this account's
+  const { account } = useAccount()
+  const address = account?.address
+  const shownAddress = useRef(address)
+  const { reset: resetDeposit, isPending: isDepositPending } = deposit
+  useEffect(() => {
+    if (shownAddress.current === address) return
+    shownAddress.current = address
+    reset()
+    // a deposit still in flight keeps its state; its toast reports the result
+    if (!isDepositPending) resetDeposit()
+  }, [address, reset, resetDeposit, isDepositPending])
 
   const quote = useDepositQuote(selected, watch("amount"), asset.decimals)
   const exceedsCapacity =

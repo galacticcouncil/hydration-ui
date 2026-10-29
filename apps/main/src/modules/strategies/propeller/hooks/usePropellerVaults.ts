@@ -1,5 +1,6 @@
 import { PRIME_ASSET_ID } from "@galacticcouncil/utils"
 import { useQueries, useQuery } from "@tanstack/react-query"
+import { formatUnits } from "viem"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
 import {
@@ -11,6 +12,7 @@ import {
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import {
+  depositCapacityQuery,
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
@@ -110,6 +112,11 @@ export const usePropellerVaults = () => {
       vaultStatsQuery(rpc, vault, getAssetWithFallback(vault.assetId).decimals),
     ),
   })
+  // the deposit form polls this every 10 s; sharing it keeps the table's
+  // remaining capacity in step with the form (vault stats refresh every 30 s)
+  const capacityQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((vault) => depositCapacityQuery(rpc, vault)),
+  })
   const { data: subLoop, isLoading: isSubLoopLoading } = useQuery(
     subLoopQuery(rpc),
   )
@@ -122,11 +129,20 @@ export const usePropellerVaults = () => {
 
   const vaults = PROPELLER_VAULTS.map<PropellerVaultMarket>((vault, i) => {
     const data = statsQueries[i]?.data
+    const room = capacityQueries[i]?.data?.maximum
     const price = Number(getAssetPrice(vault.assetId).price || 0)
     const stats = data && {
       tvl: data.totalAssets,
       cap: data.tvlCap,
-      ...remainingCapacity(data.totalAssets, data.tvlCap),
+      ...remainingCapacity(
+        room === undefined
+          ? data.totalAssets
+          : data.tvlCap -
+              Number(
+                formatUnits(room, getAssetWithFallback(vault.assetId).decimals),
+              ),
+        data.tvlCap,
+      ),
       paused: data.paused,
       depositsPaused: data.depositsPaused,
       deficitStop: data.deficitStop,
