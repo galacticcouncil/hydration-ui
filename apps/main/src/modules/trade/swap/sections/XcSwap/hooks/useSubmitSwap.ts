@@ -25,9 +25,9 @@ import {
 import { scaleHuman } from "@/utils/formatting"
 
 const MARKET_INTENT_DURATION_MS = minutesToMilliseconds(10)
-// The deadline is fixed here but the match window starts at inclusion, so the
-// gap between the two is all the time the user has to sign
-const ORDER_MATCH_INTENT_DURATION_MS = minutesToMilliseconds(6)
+// The deadline is fixed here but the match window starts at inclusion; the gap
+// between the two, minus the time to sign, is what the AMM has to fill the rest
+const ORDER_MATCH_INTENT_DURATION_MS = minutesToMilliseconds(7)
 
 export const useSubmitSwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
@@ -121,7 +121,10 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
           .intentLimit({ ...swap, amountIn: iceAmounts.amountIn })
           .withBeneficiary(account.address)
           .withMinAmountOut(iceAmounts.amountOut)
-          .withPartial(false)
+          // An Order Match intent is offered to the solver only when opposite
+          // orders cover it; all-or-nothing, two opposite orders of slightly
+          // different value never cover each other, so it is always partial
+          .withPartial(values.isOrderMatch)
           .withDeadline(deadline)
 
         if (values.isOrderMatch) {
