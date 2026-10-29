@@ -19,23 +19,24 @@ export const XcSwapOptions = () => {
   const isSingleTrade = watch("isSingleTrade")
 
   const onChainQuote = quote?.kind === "oc" ? quote : null
-  const isShown = !isCrossChain && (isQuoteLoading || !!onChainQuote)
-
-  if (!isShown) {
-    return null
-  }
+  const isTradeModeShown = !isCrossChain && (isQuoteLoading || !!onChainQuote)
 
   // Order Match only applies where useSubmitSwap places an intent, and not to
   // a TWAP, whose DCA intent has no match window
-  const isIntentSwap =
+  const isOrderMatchShown =
+    !isCrossChain &&
     isIceEnabled &&
     !!sellAsset &&
     !!buyAsset &&
     !isATokenPair(getErc20AToken, sellAsset.id, buyAsset.id)
 
+  if (!isTradeModeShown && !isOrderMatchShown) {
+    return null
+  }
+
   return (
-    <Box py="l">
-      {isIntentSwap && (
+    <>
+      {isOrderMatchShown && (
         <Controller
           control={control}
           name="isOrderMatch"
@@ -48,14 +49,18 @@ export const XcSwapOptions = () => {
           )}
         />
       )}
-      <TradeModeOptions
-        sellAsset={sellAsset}
-        buyAsset={buyAsset}
-        swap={onChainQuote?.swap}
-        twap={onChainQuote?.twap}
-        isSwapLoading={isQuoteLoading}
-        isTwapLoading={isTwapLoading}
-      />
-    </Box>
+      {isTradeModeShown && (
+        <Box pt={isOrderMatchShown ? undefined : "l"} pb="l">
+          <TradeModeOptions
+            sellAsset={sellAsset}
+            buyAsset={buyAsset}
+            swap={onChainQuote?.swap}
+            twap={onChainQuote?.twap}
+            isSwapLoading={isQuoteLoading}
+            isTwapLoading={isTwapLoading}
+          />
+        </Box>
+      )}
+    </>
   )
 }

@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { getIntentDeadline } from "@/api/intents"
-import { ORDER_MATCH_WINDOW_MS } from "@/modules/trade/swap/lib/orderMatch"
 import {
   EXPIRY_MS,
   LimitFormValues,
@@ -30,7 +29,6 @@ export const useSubmitLimitOrder = () => {
         buyAmount,
         expiry,
         partiallyFillable,
-        isOrderMatch,
       } = values
 
       if (!sellAsset || !buyAsset) throw new Error("Invalid intent assets")
@@ -56,11 +54,6 @@ export const useSubmitLimitOrder = () => {
 
       if (expiryMs) {
         txBuilder.withDeadline(await getIntentDeadline(rpc, expiryMs))
-      }
-
-      // The shortest expiry (15min) still ends well after the match window
-      if (isOrderMatch) {
-        txBuilder.withMatchWindow(BigInt(ORDER_MATCH_WINDOW_MS))
       }
 
       const tx = await txBuilder.build()
