@@ -37,11 +37,11 @@ export const useStrategyVaultColumns = (
       id: "asset",
       header: t("strategy.col.asset"),
       cell: ({ row }) => {
-        const { vault, displayAsset } = row.original
+        const { displayAsset } = row.original
         return (
           <AssetLabelFullContainer>
             <AssetLogo id={displayAsset.id} />
-            <AssetLabel symbol={displayAsset.symbol} name={vault.shareName} />
+            <AssetLabel symbol={displayAsset.symbol} />
           </AssetLabelFullContainer>
         )
       },
