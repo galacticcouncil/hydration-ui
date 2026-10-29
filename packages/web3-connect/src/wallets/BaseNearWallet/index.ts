@@ -8,9 +8,7 @@ import {
   NearConnector,
   type NearWalletBase,
   SandboxWallet,
-  type WalletManifest,
 } from "@hot-labs/near-connect"
-import { z } from "zod/v4"
 
 import { WalletProviderType } from "@/config/providers"
 import { NearSigner } from "@/signers/NearSigner"
@@ -27,25 +25,7 @@ const MANIFEST_TIMEOUT_MS = 10_000
 const POPUP_WIDTH = 420
 const POPUP_HEIGHT = 680
 
-// near-connect registers only sandboxed wallets
-const sandboxWalletSchema = z.looseObject({
-  id: z.string(),
-  type: z.literal("sandbox"),
-  executor: z.url(),
-})
-
-const manifestSchema = z.object({
-  wallets: z.array(
-    z.custom<WalletManifest>(
-      (wallet) => sandboxWalletSchema.safeParse(wallet).success,
-    ),
-  ),
-})
-
 let connector: NearConnector | undefined
-
-// The extra manifests each connector holds, so each is fetched once
-const registrations = new WeakMap<NearConnector, Map<string, Promise<void>>>()
 
 /** One connector for every NEAR wallet; a wallet's code loads when called. */
 const getNearConnector = (): NearConnector => {
@@ -56,36 +36,6 @@ const getNearConnector = (): NearConnector => {
     footerBranding: null,
   })
   return connector
-}
-
-/** Adds the wallets of a manifest beside the default list, as NEAR's docs do. */
-const registerManifest = (nearConnector: NearConnector, url: string) => {
-  const registered =
-    registrations.get(nearConnector) ?? new Map<string, Promise<void>>()
-  registrations.set(nearConnector, registered)
-
-  let registration = registered.get(url)
-  if (!registration) {
-    registration = (async () => {
-      const res = await fetch(url)
-      if (!res.ok) {
-        throw new Error(`NEAR wallet manifest answered ${res.status}`)
-      }
-
-      const body: unknown = await res.json()
-      const { wallets } = manifestSchema.parse(body)
-
-      await nearConnector.whenManifestLoaded
-      await Promise.all(
-        wallets.map((wallet) => nearConnector.registerWallet(wallet)),
-      )
-    })()
-    // A failed fetch is tried again on the next connect
-    registration.catch(() => registered.delete(url))
-    registered.set(url, registration)
-  }
-
-  return registration
 }
 
 const popupUrls = new Set<string>()
@@ -156,8 +106,6 @@ export class BaseNearWallet implements Wallet {
   provider = "" as WalletProviderType
   /** Wallet id in the near-connect manifest. */
   accessor = ""
-  /** Manifest that lists the wallet, where NEAR's default one doesn't. */
-  manifestUrl = ""
   /** Page the wallet opens without a size, to open as a popup, not a tab. */
   popupUrl = ""
   title = ""
@@ -263,9 +211,6 @@ export class BaseNearWallet implements Wallet {
 
   private loadWallet = async (nearConnector: NearConnector) => {
     if (this.popupUrl) openAsPopup(this.popupUrl)
-    if (this.manifestUrl) {
-      await registerManifest(nearConnector, this.manifestUrl)
-    }
     return nearConnector.wallet(this.accessor)
   }
 
