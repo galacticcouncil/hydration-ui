@@ -321,7 +321,14 @@ export function useDeposit(
               await prepareFundedDeposit(evm, depositInput(assetBig)),
             ])
         return createTransaction(
-          { tx, toasts: depositToasts(assetBig) },
+          {
+            tx,
+            title: t("deposit"),
+            description: t("propeller:deposit.description.direct", {
+              amount: formatAmount(amount),
+            }),
+            toasts: depositToasts(assetBig),
+          },
           txOptionsForVault(vaultAddress),
         )
       }

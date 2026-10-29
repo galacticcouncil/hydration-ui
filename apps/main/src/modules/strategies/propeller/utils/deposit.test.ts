@@ -63,6 +63,7 @@ describe("Collateral-only deposit capacity", () => {
     const mock = mockClient()
     expect(await readDepositCapacity(mock.client, vault, asset)).toEqual({
       blockNumber: 100n,
+      cap: 10n * unit,
       maximum: 7n * unit,
       ready: true,
       blocker: null,

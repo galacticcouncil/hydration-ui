@@ -14,7 +14,10 @@ import {
   SUBLOOP_ADDRESS,
 } from "@/modules/strategies/propeller/constants"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
-import { type ExitBacklog } from "@/modules/strategies/propeller/utils/withdrawalEta"
+import {
+  type ExitBacklog,
+  typicalSliceSeconds,
+} from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 /** pendingIntent().kind of an exit sale */
@@ -29,8 +32,6 @@ const CADENCE_WINDOW_BLOCKS = 3_000n
 const CADENCE_GAPS = 20
 /** a longer pause between sales means no exit was open, not a slow keeper */
 const IDLE_GAP_SECONDS = 300
-/** a keeper turn on top of the pacing interval when no sales were seen */
-const KEEPER_SLACK_SECONDS = 5
 
 // block timestamps never change; keep them for the session
 const blockTimes = new Map<bigint, number>()
@@ -38,7 +39,7 @@ const blockTimes = new Map<bigint, number>()
 /**
  * Seconds per exit slice as the keeper has really run them: the pacing
  * interval is only a floor, missed keeper turns stretch it (60 s paced, 66
- * and 85 s measured on 0.lark). Falls back to the interval plus a turn.
+ * and 85 s measured on 0.lark).
  */
 const measureSliceSeconds = async (
   evm: TProviderContext["evm"],
@@ -69,9 +70,7 @@ const measureSliceSeconds = async (
     .slice(1)
     .map((b, i) => blockTimes.get(b)! - blockTimes.get(blocks[i]!)!)
     .filter((gap) => gap > 0 && gap <= IDLE_GAP_SECONDS)
-  if (gaps.length === 0) return interval + KEEPER_SLACK_SECONDS
-  const average = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length
-  return Math.max(average, interval)
+  return typicalSliceSeconds(gaps, interval)
 }
 
 /**

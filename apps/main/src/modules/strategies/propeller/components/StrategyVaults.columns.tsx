@@ -17,6 +17,7 @@ import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import {
+  isNearlyFull,
   type PropellerVaultMarket,
   vaultDepositState,
 } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
@@ -110,6 +111,17 @@ export const useStrategyVaultColumns = (
       cell: ({ row }) => {
         const { displayAsset, stats } = row.original
         if (!stats || stats.cap <= 0) return null
+        // dust left under the cap reads as full, not as a long decimal
+        if (isNearlyFull(stats.remaining, stats.cap))
+          return (
+            <Text
+              fs={["p5", null, "p6"]}
+              fw={500}
+              color={getToken("text.high")}
+            >
+              {t("strategy.full")}
+            </Text>
+          )
         return (
           <Stack gap="xs" width="100%" minWidth="3xl">
             <Flex justify="space-between" gap="s">

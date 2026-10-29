@@ -29,6 +29,16 @@ import { useAssetsPrice } from "@/states/displayAsset"
 
 const VAULT_ASSET_IDS = PROPELLER_VAULTS.map((vault) => vault.assetId)
 
+/**
+ * The room left at or below this share of the cap counts as full: the capacity
+ * bar already reads "<0.01% left", and the interest the vault accrues between
+ * signing and inclusion swallows a deposit that small.
+ */
+export const FULL_SHARE_BPS = 1n
+
+export const isNearlyFull = (remaining: number, cap: number) =>
+  remaining <= (cap * Number(FULL_SHARE_BPS)) / 10_000
+
 export const remainingCapacity = (tvl: number, cap: number) => {
   const remaining = Math.max(cap - tvl, 0)
   return { remaining, remainingPct: cap > 0 ? (remaining / cap) * 100 : 0 }
@@ -46,6 +56,7 @@ export const vaultDepositState = (
         | "deleverPending"
         | "deploying"
         | "remaining"
+        | "cap"
       >
     | undefined,
 ): VaultDepositState => {
@@ -53,7 +64,8 @@ export const vaultDepositState = (
   if (depositBlocker(stats) !== null) return "paused"
   // an unreadable stop fails closed like the deposit form
   if (stats.deficitStop === null) return "unavailable"
-  if (stats.remaining <= 0) return "full"
+  if (stats.remaining <= 0 || isNearlyFull(stats.remaining, stats.cap))
+    return "full"
   return "open"
 }
 

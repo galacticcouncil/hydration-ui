@@ -43,6 +43,7 @@ import {
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { useDepositFeeReferenceTx } from "@/modules/strategies/propeller/hooks/useDepositFeeReferenceTx"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
+import { FULL_SHARE_BPS } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
 import {
@@ -122,7 +123,9 @@ export const DepositForm = ({
   const unavailable =
     !rpc.isReady || !capacity || capacityError || !capacity.ready
   const maximum = formatUnits(capacity?.maximum ?? 0n, collateral.decimals)
-  const atCapacity = capacity?.maximum === 0n
+  // dust left under the cap counts as full (see FULL_SHARE_BPS)
+  const atCapacity =
+    !!capacity && capacity.maximum * 10_000n <= capacity.cap * FULL_SHARE_BPS
   const isPaused = capacity?.paused ?? false
 
   const isSwap = isSwapDeposit(selected)
@@ -371,12 +374,14 @@ export const DepositForm = ({
               label={t("strategy.remainingCapacity")}
               loading={!capacity && !capacityError}
               content={
-                capacity
-                  ? t("common:currency", {
-                      value: toDisplay(maximum),
-                      symbol: displayAsset.symbol,
-                    })
-                  : "-"
+                !capacity
+                  ? "-"
+                  : atCapacity
+                    ? t("strategy.full")
+                    : t("common:currency", {
+                        value: toDisplay(maximum),
+                        symbol: displayAsset.symbol,
+                      })
               }
             />
             <SummaryRow

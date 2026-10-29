@@ -76,6 +76,7 @@ export const readDepositCapacity = async (
   })
   return {
     blockNumber: at.blockNumber,
+    cap,
     maximum: cap > total ? cap - total : 0n,
     // Governance must bootstrap a fresh vault before opening public deposits.
     ready: supply > 0n && mainDebt !== zeroAddress,

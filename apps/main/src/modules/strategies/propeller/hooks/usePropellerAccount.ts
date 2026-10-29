@@ -149,6 +149,7 @@ export const buildWithdrawalRow = ({
     ? claimableInSeconds({
         backlog,
         notStartedHollar,
+        ownHollar: remainingCollateral * (shortfall?.debtPerCollateral ?? 0),
         // a lagging node serves an older block: never count cooldown the
         // wall clock already shows as over
         cooldownLeftSeconds:

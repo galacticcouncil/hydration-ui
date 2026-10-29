@@ -12,6 +12,9 @@ import {
   Separator,
   Summary,
   SummaryRow,
+  SummaryRowValue,
+  Tooltip,
+  TooltipIcon,
 } from "@galacticcouncil/ui/components"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -202,8 +205,16 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
             <Summary separator={<Separator mx="-xl" />}>
               <SummaryRow
                 label={t("withdraw.claimableIn")}
-                tooltip={t("withdraw.claimableInTooltip")}
-                content={formatEta(claimableIn)}
+                content={
+                  // an icon tooltip: the row's own opens sideways, where a
+                  // modal has no room for it
+                  <Flex align="center" gap="xs">
+                    <SummaryRowValue>{formatEta(claimableIn)}</SummaryRowValue>
+                    <Tooltip text={t("withdraw.claimableInTooltip")}>
+                      <TooltipIcon size="1em" />
+                    </Tooltip>
+                  </Flex>
+                }
               />
             </Summary>
           )}

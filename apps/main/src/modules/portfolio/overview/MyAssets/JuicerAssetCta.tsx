@@ -52,7 +52,11 @@ export const JuicerAssetCta: FC<JuicerAssetCtaProps> = ({
   // a deposit invitation only while deposit() would actually go through —
   // the same gate as the strategy table and the deposit form
   const state = vaultDepositState(
-    data && { ...data, ...remainingCapacity(data.totalAssets, data.tvlCap) },
+    data && {
+      ...data,
+      cap: data.tvlCap,
+      ...remainingCapacity(data.totalAssets, data.tvlCap),
+    },
   )
   if (!isReady || !featureFlags.propellerEnabled || !vault || state !== "open")
     return null

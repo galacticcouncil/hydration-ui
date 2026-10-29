@@ -26,6 +26,25 @@ const START_SECONDS = 30
 /** the vault pays out on the keeper turn after the last slice is credited */
 const SETTLE_SECONDS = 30
 
+/** a keeper turn on top of the pacing interval when no sales were seen */
+const KEEPER_SLACK_SECONDS = 5
+
+/**
+ * The keeper's usual seconds per exit slice: the median of the gaps between
+ * its sales. A missed turn or a quiet stretch between withdrawals stretches a
+ * few gaps (114, 234 s against a steady 60 s on 0.lark) and drags an average
+ * along; the median stays on the cadence the keeper runs most of the time.
+ * Never below the pacing interval; the interval plus a turn without gaps.
+ */
+export const typicalSliceSeconds = (gaps: number[], interval: number) => {
+  if (gaps.length === 0) return interval + KEEPER_SLACK_SECONDS
+  const sorted = [...gaps].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  const median =
+    sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+  return Math.max(median, interval)
+}
+
 /**
  * Seconds until a withdrawal is fully claimable:
  *
@@ -39,18 +58,25 @@ const SETTLE_SECONDS = 30
 export const claimableInSeconds = ({
   backlog,
   notStartedHollar,
+  ownHollar = 0,
   cooldownLeftSeconds,
   started,
 }: {
   backlog: ExitBacklog | null
   /** equity of requested withdrawals the keeper has not started, all vaults */
   notStartedHollar: number
+  /**
+   * this withdrawal's own equity still to free: the backlog can never be
+   * less, though a backlog read before the keeper started it says so
+   */
+  ownHollar?: number
   cooldownLeftSeconds: number
   started: boolean
 }): number | null => {
   if (!backlog || backlog.stalled || backlog.freedPerSlice <= 0) return null
   const slices =
-    (backlog.backlogHollar + notStartedHollar) / backlog.freedPerSlice
+    Math.max(backlog.backlogHollar + notStartedHollar, ownHollar) /
+    backlog.freedPerSlice
   return (
     Math.max(cooldownLeftSeconds, 0) +
     (started ? 0 : START_SECONDS) +

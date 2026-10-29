@@ -73,6 +73,11 @@ describe("Vault deposit state", () => {
 
   it("reports a full vault only when deposits are otherwise open", () => {
     expect(vaultDepositState(stats({ remaining: 0 }))).toBe("full")
+    // dust of at most 0.01% of the cap counts as full
+    expect(vaultDepositState(stats({ cap: 25, remaining: 0.0025 }))).toBe(
+      "full",
+    )
+    expect(vaultDepositState(stats({ cap: 25, remaining: 0.023 }))).toBe("open")
     expect(vaultDepositState(stats({ remaining: 0, deficitStop: true }))).toBe(
       "paused",
     )

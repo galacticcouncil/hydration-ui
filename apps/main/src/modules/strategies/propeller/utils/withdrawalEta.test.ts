@@ -5,6 +5,7 @@ import {
   formatEta,
   notStartedEquity,
   reserveCoversExit,
+  typicalSliceSeconds,
 } from "./withdrawalEta"
 
 // 0.lark block 57873 (2026-10-27): four withdrawals in both vaults started,
@@ -39,6 +40,31 @@ describe("claimableInSeconds", () => {
         started: false,
       }),
     ).toBe(250)
+  })
+
+  it("never counts less than the withdrawal's own equity still to free", () => {
+    // a backlog read before the keeper started the request reads 0: two
+    // slices of its own equity remain, not a single keeper turn
+    const backlog = { ...LARK_57873, backlogHollar: 0, freedPerSlice: 600 }
+    expect(
+      claimableInSeconds({
+        backlog,
+        notStartedHollar: 0,
+        ownHollar: 1200,
+        cooldownLeftSeconds: 0,
+        started: true,
+      }),
+    ).toBe(2 * 65 + 30)
+    // a fresh backlog already counts it, with everyone else's
+    expect(
+      claimableInSeconds({
+        backlog: { ...backlog, backlogHollar: 3000 },
+        notStartedHollar: 0,
+        ownHollar: 1200,
+        cooldownLeftSeconds: 0,
+        started: true,
+      }),
+    ).toBe(5 * 65 + 30)
   })
 
   it("gives no countdown while unknown or stalled", () => {
@@ -99,5 +125,20 @@ describe("formatEta", () => {
     expect(formatEta(40)).toBe("~1 min")
     expect(formatEta(380)).toBe("~6 min")
     expect(formatEta(4 * 3600)).toBe("~4 h")
+  })
+})
+
+describe("typicalSliceSeconds", () => {
+  it("follows the keeper's usual cadence, not the odd slow gap", () => {
+    // 0.lark 2026-10-29: steady 60 s sales with a few missed turns between
+    expect(typicalSliceSeconds([60, 114, 66, 234, 60, 60, 96, 60], 60)).toBe(63)
+  })
+
+  it("never runs faster than the pacing interval", () => {
+    expect(typicalSliceSeconds([30, 40, 45], 60)).toBe(60)
+  })
+
+  it("assumes the interval plus a keeper turn without sales", () => {
+    expect(typicalSliceSeconds([], 60)).toBe(65)
   })
 })
