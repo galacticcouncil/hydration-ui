@@ -1,11 +1,42 @@
 import type { NearTxOutcome } from "@galacticcouncil/xc-core"
-import type { NearTxObserver } from "@galacticcouncil/xc-sdk"
+import type { NearFunctionCall, NearTxObserver } from "@galacticcouncil/xc-sdk"
 
 // Relative: the app's tests load this file, and read "@/" as the app's src
 import { getWalletErrorMessage } from "./errors"
 
 const NEAR_TX_FAILED = "NEAR transaction failed"
 const NEAR_TX_NO_OUTCOME = "The wallet returned no transaction outcome"
+
+/** A NEP-518 account: the 0x… account of an Ethereum wallet on NEAR. */
+export const isEthImplicitAccount = (accountId: string) =>
+  /^0x[0-9a-f]{40}$/.test(accountId)
+
+/**
+ * A call's actions as a NEP-518 account sends them, one per transaction.
+ *
+ * - Its wallet contract runs a single action per transaction
+ * - A `storage_deposit` registration right ahead of a `near_deposit` is folded
+ *   into it, saving a confirmation: w-near's `near_deposit` registers a new
+ *   caller out of its deposit, and the deployed wrap.near has that path
+ */
+export const toSingleActions = (actions: NearFunctionCall[]) =>
+  actions.reduce<NearFunctionCall[]>((result, action) => {
+    const previous = result[result.length - 1]
+    if (
+      action.methodName === "near_deposit" &&
+      previous?.methodName === "storage_deposit" &&
+      previous.args.registration_only === true
+    ) {
+      result[result.length - 1] = {
+        ...action,
+        gas: previous.gas + action.gas,
+        deposit: previous.deposit + action.deposit,
+      }
+    } else {
+      result.push(action)
+    }
+    return result
+  }, [])
 
 export type NearTxCallbacks = {
   onSubmitted: (txHash: string) => void
