@@ -24,7 +24,7 @@ import { type ComponentType, useEffect, useRef, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isTruthy } from "remeda"
-import { formatUnits } from "viem"
+import { formatUnits, parseUnits } from "viem"
 
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
@@ -114,6 +114,7 @@ export const DepositForm = ({
     onSuccess: () => {
       deposit.reset()
       // the spent amount would otherwise read "Insufficient balance"
+      setMaxChosen(false)
       form.reset()
       onSuccess?.()
     },
@@ -174,6 +175,17 @@ export const DepositForm = ({
     deposit.isError &&
     !(deposit.error instanceof TransactionClosedError) &&
     !isWalletRejection(deposit.error)
+  // the collateral the failed deposit tried to add; once it exceeds the room
+  // left, other deposits took that room first
+  const failedCollateral = deposit.variables
+    ? (deposit.variables.trade?.quotedAmountOut ??
+      parseUnits(deposit.variables.amount, collateral.decimals))
+    : null
+  const filledFirst =
+    depositFailed &&
+    !!capacity &&
+    failedCollateral !== null &&
+    failedCollateral > capacity.maximum
 
   const form = useDepositForm({
     maxBalance: spendable,
@@ -184,7 +196,16 @@ export const DepositForm = ({
     symbol: asset.symbol,
     decimals: asset.decimals,
   })
-  const { control, handleSubmit, formState, reset, watch } = form
+  const { control, handleSubmit, formState, reset, watch, setValue } = form
+
+  // MAX means "as much as fits": the balance, the fee and the room left move
+  // every block, so a number fixed at the click soon exceeds the maximum.
+  // Follow the maximum while MAX stays chosen.
+  const [maxChosen, setMaxChosen] = useState(false)
+  useEffect(() => {
+    if (maxChosen)
+      setValue("amount", maxButtonBalance, { shouldValidate: true })
+  }, [maxChosen, maxButtonBalance, setValue])
 
   // the previous account's amount and failed deposit are not this account's
   const { account } = useAccount()
@@ -194,6 +215,7 @@ export const DepositForm = ({
   useEffect(() => {
     if (shownAddress.current === address) return
     shownAddress.current = address
+    setMaxChosen(false)
     reset()
     // a deposit still in flight keeps its state; its toast reports the result
     if (!isDepositPending) resetDeposit()
@@ -241,6 +263,7 @@ export const DepositForm = ({
     const next = options.find((o) => o.assetId === selectedAsset.id)
     if (!next || next.assetId === assetId) return
     setSelected(next)
+    setMaxChosen(false)
     deposit.reset()
     reset()
     onSelect?.(next)
@@ -277,15 +300,23 @@ export const DepositForm = ({
                 selectedAsset={asset}
                 setSelectedAsset={assets.length > 1 ? onSelectAsset : undefined}
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(value) => {
+                  setMaxChosen(false)
+                  field.onChange(value)
+                }}
                 balance={{
                   value: balance,
                   max: maxButtonBalance,
-                  onMax: () => field.onChange(maxButtonBalance),
-                  onPercentage: (percent) =>
+                  onMax: () => {
+                    setMaxChosen(true)
+                    field.onChange(maxButtonBalance)
+                  },
+                  onPercentage: (percent) => {
+                    setMaxChosen(percent >= 100)
                     field.onChange(
                       percentageOf(maxButtonBalance, percent, asset.decimals),
-                    ),
+                    )
+                  },
                   isMaxDisabled: !(Number(maxButtonBalance) > 0),
                 }}
                 amountError={
@@ -400,12 +431,30 @@ export const DepositForm = ({
                   description={
                     isNonceClash(deposit.error)
                       ? t("common:transaction.error.nonceClash")
-                      : isSwap
-                        ? // what the wallet actually holds and the picker lists
-                          t("deposit.swap.failed", {
-                            symbol: collateral.symbol,
-                          })
-                        : t("deposit.failed")
+                      : filledFirst
+                        ? [
+                            t(
+                              isSwap
+                                ? "deposit.swap.failed.filled"
+                                : "deposit.failed.filled",
+                            ),
+                            ...(atCapacity
+                              ? []
+                              : [
+                                  t("deposit.failed.room", {
+                                    amount: t("common:currency", {
+                                      value: toDisplay(maximum),
+                                      symbol: displayAsset.symbol,
+                                    }),
+                                  }),
+                                ]),
+                          ].join(" ")
+                        : isSwap
+                          ? // what the wallet actually holds and the picker lists
+                            t("deposit.swap.failed", {
+                              symbol: collateral.symbol,
+                            })
+                          : t("deposit.failed")
                   }
                 />
               )}

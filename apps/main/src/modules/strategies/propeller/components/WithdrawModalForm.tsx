@@ -202,6 +202,7 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
             <Summary separator={<Separator mx="-xl" />}>
               <SummaryRow
                 label={t("withdraw.claimableIn")}
+                tooltip={t("withdraw.claimableInTooltip")}
                 content={formatEta(claimableIn)}
               />
             </Summary>
