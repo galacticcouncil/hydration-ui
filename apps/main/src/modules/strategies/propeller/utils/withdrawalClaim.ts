@@ -17,7 +17,9 @@ export const prepareWithdrawalClaim = async (
   receiver: Hex,
 ) => {
   // Refresh both payouts at one block; the table may still show an already claimed balance.
-  const blockNumber = await client.getBlockNumber()
+  // The cached block number can trail the row's read by seconds, and the claim
+  // pays exactly what that block had settled, short of what the button showed.
+  const blockNumber = await client.getBlockNumber({ cacheTime: 0 })
   const args = [BigInt(requestId)] as const
   const [redemption, mainDebt] = await Promise.all([
     client.readContract({
