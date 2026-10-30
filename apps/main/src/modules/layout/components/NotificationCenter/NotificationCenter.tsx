@@ -11,6 +11,7 @@ import {
   Stack,
 } from "@galacticcouncil/ui/components"
 import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, RefObject } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,6 +21,8 @@ import { MultisigNotification } from "@/modules/layout/components/NotificationCe
 import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
 import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
+import { BankSetupResume } from "@/modules/ramp/BankSetupResume"
+import { useBankPreviewStore } from "@/modules/ramp/useBankPreviewStore"
 import { useClaimableTransactions } from "@/modules/xcm/history/hooks/useClaimableTransactions"
 import { useMultisigContext } from "@/providers/MultisigProvider"
 import { useToasts } from "@/states/toasts"
@@ -39,6 +42,10 @@ export const NotificationCenter: FC<NotificationCenterProps> = ({
 
   const { totalPendingTxCount, multisigs, pendingTxsByMultisig } =
     useMultisigContext()
+  const { account } = useAccount()
+  const bankSetup = useBankPreviewStore(
+    (state) => state.setups[account?.address ?? ""],
+  )
   const { toasts } = useToasts()
   const visibleClaimable = useClaimableTransactions()
 
@@ -50,7 +57,8 @@ export const NotificationCenter: FC<NotificationCenterProps> = ({
   const completed = groups.completed ?? []
 
   const totalclaimableCount = visibleClaimable.length
-  const totalImportantCount = totalclaimableCount + totalPendingTxCount
+  const totalImportantCount =
+    totalclaimableCount + totalPendingTxCount + (bankSetup ? 1 : 0)
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -89,6 +97,7 @@ export const NotificationCenter: FC<NotificationCenterProps> = ({
           <Stack gap="xl">
             {totalImportantCount > 0 && (
               <NotificationGroup label={t("important")} defaultOpen>
+                <BankSetupResume notification />
                 {multisigs.map((multisig) => {
                   const address = safeConvertPublicKeyToSS58(multisig.pubKey)
                   const pendingTxs = pendingTxsByMultisig.get(address) ?? []

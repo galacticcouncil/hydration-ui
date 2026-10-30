@@ -21,6 +21,8 @@ export const PortfolioOverviewSubpageLayoutActions = () => {
   const setOnrampModal = useOnrampModal((state) => state.setModal)
   const openWithdraw = useOnrampModal((state) => state.openWithdraw)
 
+  if (!account) return null
+
   return (
     <Flex gap="m">
       <Button

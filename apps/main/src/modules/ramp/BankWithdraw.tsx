@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next"
 import { BankFlowPreviewNotice } from "./BankFlowPreviewNotice"
 import { BankFlowSwitcher, BankFlowVariant } from "./BankFlowSwitcher"
 import {
+  BANK_SIMPLIFIED_PREVIEW_FEE,
   BankWithdrawalQuote,
   getBankWithdrawalQuote,
   getDemoWithdrawalBank,
@@ -25,6 +26,7 @@ import {
 import { BankWithdrawAccount } from "./BankWithdrawAccount"
 import { BankWithdrawAmount } from "./BankWithdrawAmount"
 import { BankWithdrawReview } from "./BankWithdrawReview"
+import { BankWithdrawSimplified } from "./BankWithdrawSimplified"
 import { BankWithdrawTracking } from "./BankWithdrawTracking"
 import { BankWithdrawV2 } from "./BankWithdrawV2"
 import {
@@ -38,7 +40,7 @@ const setupSteps = ["amount", "account", "review"] as const
 
 export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
   const { t } = useTranslation(["onramp", "common"])
-  const [variant, setVariant] = useState<BankFlowVariant>("current")
+  const [variant, setVariant] = useState<BankFlowVariant>("simplified")
   const [bankSource, setBankSource] =
     useState<BankWithdrawV2BankSource>("saved")
   const [manualBanks, setManualBanks] = useState<
@@ -66,7 +68,11 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
     useState<BankWithdrawalQuote | null>(null)
   const [submittedBank, setSubmittedBank] =
     useState<BankWithdrawV2BankDetails | null>(null)
-  const quote = getBankWithdrawalQuote(amount, currency)
+  const quote = getBankWithdrawalQuote(
+    amount,
+    currency,
+    variant === "simplified" ? BANK_SIMPLIFIED_PREVIEW_FEE : undefined,
+  )
   const effectiveBank: BankWithdrawV2BankDetails =
     bankSource === "manual"
       ? manualBanks[currency]
@@ -134,14 +140,16 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
       setStep("amount")
     }
   }
+  const BankWithdrawSteps =
+    variant === "simplified" ? BankWithdrawSimplified : BankWithdrawV2
   return (
     <BankFlowSwitcher
       variant={variant}
       onVariantChange={setVariant}
       stepKey={step === "tracking" ? `${step}:${status}` : step}
     >
-      {variant === "v2" ? (
-        <BankWithdrawV2
+      {variant !== "current" ? (
+        <BankWithdrawSteps
           step={step}
           amount={amount}
           currency={currency}

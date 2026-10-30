@@ -1,7 +1,10 @@
 import { ArrowDownToLineIcon, Search } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Input, Stack, Text } from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { BankSetupResume } from "@/modules/ramp/BankSetupResume"
 
 import { PortfolioDepositClaims } from "./PortfolioDepositClaims"
 import {
@@ -20,7 +23,10 @@ export const PortfolioDepositsSection: FC<PortfolioDepositsSectionProps> = ({
   embedded = false,
 }) => {
   const { t } = useTranslation("onramp")
+  const { account } = useAccount()
   const [search, setSearch] = useState("")
+
+  if (!account) return null
 
   return (
     <Stack
@@ -57,6 +63,7 @@ export const PortfolioDepositsSection: FC<PortfolioDepositsSectionProps> = ({
           width={["100%", null, "4xl"]}
         />
       </Flex>
+      <BankSetupResume />
       <PortfolioDepositClaims />
       <PortfolioTransferHistory
         search={search}

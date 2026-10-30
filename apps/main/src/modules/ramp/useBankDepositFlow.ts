@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useCallback, useEffect, useState } from "react"
 
 import { BankFlowVariant } from "./BankFlowSwitcher"
@@ -11,6 +12,7 @@ import {
   exampleDeposits,
   RailStatus,
 } from "./deposit.mock"
+import { useBankPreviewStore } from "./useBankPreviewStore"
 
 export type BankDepositScreen =
   | "entry"
@@ -23,24 +25,84 @@ export type BankDepositV2Stage = "amount" | "review" | "waiting"
 export const BANK_DEPOSIT_PREVIEW_WALLET = "0x1234…89ab"
 
 export const useBankDepositFlow = () => {
-  const [variant, setVariant] = useState<BankFlowVariant>("current")
+  const { account } = useAccount()
+  const address = account?.address ?? ""
+  const saved = useBankPreviewStore.getState().setups[address]
+  const [owner, setOwner] = useState(address)
+  const [variant, setVariant] = useState<BankFlowVariant>("simplified")
   const [v2Stage, setV2Stage] = useState<BankDepositV2Stage>("amount")
-  const [amount, setAmount] = useState("500")
-  const [screen, setScreen] = useState<BankDepositScreen>("entry")
-  const [currency, setCurrency] = useState<DepositCurrency>("USD")
-  const [accountType, setAccountType] = useState("Individual")
-  const [onboardingStep, setOnboardingStep] = useState(0)
+  const [amount, setAmount] = useState(saved?.amount ?? "500")
+  const [screen, setScreen] = useState<BankDepositScreen>(
+    saved?.screen ?? "entry",
+  )
+  const [currency, setCurrency] = useState<DepositCurrency>(
+    saved?.currency ?? "USD",
+  )
+  const [accountType, setAccountType] = useState(
+    saved?.accountType ?? "Individual",
+  )
+  const [onboardingStep, setOnboardingStep] = useState(
+    saved?.onboardingStep ?? 0,
+  )
   const [railStatus, setRailStatus] = useState<
     Record<DepositCurrency, RailStatus>
-  >({ USD: "available", EUR: "in review" })
-  const [accounts, setAccounts] = useState<DepositCurrency[]>([])
+  >(saved?.railStatus ?? { USD: "available", EUR: "in review" })
+  const [accounts, setAccounts] = useState<DepositCurrency[]>(
+    saved?.accounts ?? [],
+  )
   const [selectedDeposit, setSelectedDeposit] = useState(exampleDeposits[0]!)
   const [status, setStatus] = useState<DepositStatus>(selectedDeposit.status)
   const [providerHandoff, setProviderHandoff] =
-    useState<BankProviderHandoffState>("idle")
+    useState<BankProviderHandoffState>(saved?.providerHandoff ?? "idle")
   const [providerPreviewResponse, setProviderPreviewResponse] =
     useState<RailStatus>("in review")
   const [preparingStep, setPreparingStep] = useState(0)
+
+  useEffect(() => {
+    if (owner !== address) {
+      const draft = useBankPreviewStore.getState().setups[address]
+      setOwner(address)
+      setAmount(draft?.amount ?? "500")
+      setCurrency(draft?.currency ?? "USD")
+      setAccountType(draft?.accountType ?? "Individual")
+      setOnboardingStep(draft?.onboardingStep ?? 0)
+      setRailStatus(draft?.railStatus ?? { USD: "available", EUR: "in review" })
+      setAccounts(draft?.accounts ?? [])
+      setProviderHandoff(draft?.providerHandoff ?? "idle")
+      setScreen(draft?.screen ?? "entry")
+      setV2Stage("amount")
+      return
+    }
+    if (
+      variant !== "simplified" ||
+      !address ||
+      screen === "entry" ||
+      screen === "tracking"
+    )
+      return
+    useBankPreviewStore.getState().saveSetup(address, {
+      amount,
+      currency,
+      accountType,
+      onboardingStep,
+      railStatus,
+      accounts,
+      providerHandoff,
+      screen: screen === "preparing" ? "account" : screen,
+    })
+  }, [
+    owner,
+    address,
+    variant,
+    screen,
+    amount,
+    currency,
+    accountType,
+    onboardingStep,
+    railStatus,
+    accounts,
+    providerHandoff,
+  ])
 
   useEffect(() => {
     if (screen !== "preparing") return

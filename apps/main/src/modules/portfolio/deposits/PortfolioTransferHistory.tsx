@@ -11,7 +11,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -109,13 +109,17 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
               : "xcm:history.emptyState.connectWallet",
           )}
           action={
-            <Button
-              size="medium"
-              variant="secondary"
-              onClick={() => setModal("deposit")}
-            >
-              {t("deposit.portfolio.empty.cta")}
-            </Button>
+            account ? (
+              <Button
+                size="medium"
+                variant="secondary"
+                onClick={() => setModal("deposit")}
+              >
+                {t("deposit.portfolio.empty.cta")}
+              </Button>
+            ) : (
+              <Web3ConnectButton variant="secondary" size="medium" />
+            )
           }
         />
       </Box>
@@ -124,25 +128,29 @@ export const PortfolioTransferHistory: FC<PortfolioTransferHistoryProps> = ({
   return (
     <Stack gap="l" data-testid="portfolio-transfer-history">
       <Paper overflow="hidden">
-        <TabMenu
-          p="m"
-          gap="base"
-          size="small"
-          variant="muted"
-          horizontalEdgeOffset="m"
-          hideScrollbar
-          items={(
-            ["all", "pending", "completed", "attention"] as const
-          ).map<TabItem>((value) => ({
-            to: filterTo,
-            title: t(`deposit.portfolio.filter.${value}`),
-            search: {
-              depositStatus: value,
-            },
-            resetScroll: false,
-          }))}
-        />
-        <Separator />
+        {account && (
+          <>
+            <TabMenu
+              p="m"
+              gap="base"
+              size="small"
+              variant="muted"
+              horizontalEdgeOffset="m"
+              hideScrollbar
+              items={(
+                ["all", "pending", "completed", "attention"] as const
+              ).map<TabItem>((value) => ({
+                to: filterTo,
+                title: t(`deposit.portfolio.filter.${value}`),
+                search: {
+                  depositStatus: value,
+                },
+                resetScroll: false,
+              }))}
+            />
+            <Separator />
+          </>
+        )}
         <SPortfolioDepositTableContainer>
           <DataTable
             ref={tableRef}

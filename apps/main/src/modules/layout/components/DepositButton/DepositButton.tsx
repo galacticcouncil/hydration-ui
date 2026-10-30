@@ -34,6 +34,8 @@ export const DepositButton = ({ onClaimClick }: DepositButtonProps) => {
   const count =
     pendingDeposits.length + v3Transfers.filter((item) => !item.error).length
 
+  if (!account) return null
+
   return (
     <SDepositButton
       variant="accent"

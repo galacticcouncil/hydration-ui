@@ -19,6 +19,7 @@ export type BankWithdrawalQuote = {
 
 // These values describe the interactive preview, not a provider quote.
 export const BANK_WITHDRAWAL_PREVIEW_FEE = "0.005"
+export const BANK_SIMPLIFIED_PREVIEW_FEE = "0.0005"
 const PREVIEW_RATES: Record<WithdrawalCurrency, string> = {
   USD: "1",
   EUR: "0.92",
@@ -27,11 +28,12 @@ const PREVIEW_RATES: Record<WithdrawalCurrency, string> = {
 export const getBankWithdrawalQuote = (
   amount: string,
   currency: WithdrawalCurrency,
+  feeRate = BANK_WITHDRAWAL_PREVIEW_FEE,
 ): BankWithdrawalQuote | null => {
   if (!/^(?:\d+\.?\d*|\.\d+)$/.test(amount) || amount.length > 80) return null
   const value = Big(amount)
   if (value.lte(0)) return null
-  const fee = value.times(BANK_WITHDRAWAL_PREVIEW_FEE)
+  const fee = value.times(feeRate)
   const rate = PREVIEW_RATES[currency]
   const received = value.minus(fee).times(rate).toFixed(2, Big.roundDown)
   if (Big(received).lte(0)) return null

@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  BANK_SIMPLIFIED_PREVIEW_FEE,
   getBankWithdrawalAmountError,
   getBankWithdrawalQuote,
   getDemoWithdrawalBank,
 } from "./BankWithdraw.utils"
 
 describe("bank withdrawal preview", () => {
+  it("keeps the simplified preview fee explicit without changing legacy quotes", () => {
+    expect(
+      getBankWithdrawalQuote("100", "USD", BANK_SIMPLIFIED_PREVIEW_FEE),
+    ).toMatchObject({ fee: "0.05", received: "99.95", currency: "USD" })
+    expect(
+      getBankWithdrawalQuote("100", "EUR", BANK_SIMPLIFIED_PREVIEW_FEE),
+    ).toMatchObject({ fee: "0.05", received: "91.95", currency: "EUR" })
+    expect(getBankWithdrawalQuote("100", "USD")?.received).toBe("99.50")
+  })
   it("subtracts the illustrative fee before conversion and rounds the bank amount down", () => {
     expect(getBankWithdrawalQuote("100.01", "EUR")).toEqual({
       amount: "100.01",

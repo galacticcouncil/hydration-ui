@@ -46,7 +46,9 @@ export const PortfolioTabMenu: FC<PortfolioTabMenuProps> = ({
 
   return (
     <TabMenu
-      items={items}
+      items={items.filter(
+        (item) => account || item.to !== LINKS.portfolioDeposits,
+      )}
       scrollable={false}
       renderItem={(item) => (
         <SPortfolioTabMenuItem

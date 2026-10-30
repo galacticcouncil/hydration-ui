@@ -23,6 +23,7 @@ import {
 import { RailStatus } from "./deposit.mock"
 
 type BankProviderHandoffProps = {
+  compactHandoff?: boolean
   state: BankProviderHandoffState
   status: RailStatus
   verified: boolean
@@ -43,6 +44,7 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
   state,
   status,
   verified,
+  compactHandoff = false,
   previewResponse,
   onPreviewResponseChange,
   onPreviewApproval,
@@ -51,7 +53,9 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
   const action = getBankProviderHandoffAction({ state, status, verified })
   const view =
     action === "return"
-      ? "away"
+      ? compactHandoff
+        ? "review"
+        : "away"
       : action === "continue"
         ? "ready"
         : action === "check"
@@ -88,7 +92,10 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
           {t(`bankProvider.description.${view}`)}
         </Text>
         {view !== "intro" && view !== "away" && (
-          <BankDepositStatusChip status={status} size="large" />
+          <BankDepositStatusChip
+            status={compactHandoff && state === "away" ? "in review" : status}
+            size="large"
+          />
         )}
         {view === "review" && (
           <Button variant="tertiary" size="small" onClick={onPreviewApproval}>

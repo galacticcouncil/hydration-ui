@@ -32,6 +32,7 @@ import { useTranslation } from "react-i18next"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 
 import { BankDepositInstructions } from "./BankDepositInstructions"
+import { BankDepositSimplified } from "./BankDepositSimplified"
 import { BankDepositStatusChip } from "./BankDepositStatusChip"
 import { BankDepositV2 } from "./BankDepositV2"
 import { BankFlowPreviewNotice } from "./BankFlowPreviewNotice"
@@ -128,7 +129,13 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
       onVariantChange={setVariant}
       stepKey={`${screen}:${flow.v2Stage}:${onboardingStep}:${flow.providerHandoff}`}
     >
-      {variant === "v2" ? (
+      {variant === "simplified" ? (
+        <BankDepositSimplified
+          flow={flow}
+          onBack={onBack}
+          onHistory={openHistory}
+        />
+      ) : variant === "v2" ? (
         <BankDepositV2 flow={flow} onBack={onBack} onHistory={openHistory} />
       ) : (
         <>
