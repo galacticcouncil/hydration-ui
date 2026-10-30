@@ -30,6 +30,8 @@ export interface QueueEntry {
   mainDebt: Hex
   surplusHollar: number
   sourcePending: boolean
+  /** this request or an earlier one in the vault still waits for the loop's unwind */
+  waitsOnUnwind: boolean
 }
 
 /** collateral an active request still waits for, whoever owns it */
@@ -38,6 +40,8 @@ export interface QueuedRequest {
   remaining: number
   /** the keeper has started its unwind; its equity is in the exit backlog */
   started: boolean
+  /** settles only as the loop's unwind frees HOLLAR; assumed until the exit starts */
+  unwinding: boolean
 }
 
 export const vaultQueueQuery = (
@@ -109,7 +113,7 @@ export const vaultQueueQuery = (
           fund: wallet,
         })
       }
-      const queue: QueueEntry[] = []
+      const queue: Omit<QueueEntry, "waitsOnUnwind">[] = []
       // everyone's open requests: the queue is FIFO, so what is ahead of a
       // request decides when it settles
       const queued: QueuedRequest[] = []
@@ -135,6 +139,15 @@ export const vaultQueueQuery = (
             ] = await contract.read.redemptions([id], options)
             if (owner === zeroAddress) return null
             const started = id < unwind
+            const isUser = owner.toLowerCase() === evmAddress?.toLowerCase()
+            const owed = repaid < debtShare
+            const position =
+              started &&
+              mainDebt !== zeroAddress &&
+              (isUser || (active && owed))
+                ? await ledger.read.positions([id + 1n], options)
+                : null
+            const sourcePending = (position?.[3] ?? 0n) > 0n
             if (active) {
               // collateral is released in step with the debt repaid
               const left = started
@@ -143,22 +156,23 @@ export const vaultQueueQuery = (
                     (1 - Number(repaid) / Number(debtShare))
                   : 0
                 : Number(formatUnits(shares, decimals)) * exchangeRate
-              queued.push({ requestId: Number(id), remaining: left, started })
+              queued.push({
+                requestId: Number(id),
+                remaining: left,
+                started,
+                unwinding: !started || (owed && sourcePending),
+              })
             }
-            if (owner.toLowerCase() !== evmAddress?.toLowerCase()) return null
-            const [eligibleAt, claimed, position, surplus, funded] =
-              await Promise.all([
-                contract.read.unwindEligibleAt([id], options),
-                contract.read.claimedCollateral([id], options),
-                started && mainDebt !== zeroAddress
-                  ? ledger.read.positions([id + 1n], options)
-                  : null,
-                started && mainDebt !== zeroAddress
-                  ? ledger.read.surplusOf([id], options)
-                  : 0n,
-                // a started unwind already counts them in its shares
-                started ? 0n : readRequestFunded(id),
-              ])
+            if (!isUser) return null
+            const [eligibleAt, claimed, surplus, funded] = await Promise.all([
+              contract.read.unwindEligibleAt([id], options),
+              contract.read.claimedCollateral([id], options),
+              started && mainDebt !== zeroAddress
+                ? ledger.read.surplusOf([id], options)
+                : 0n,
+              // a started unwind already counts them in its shares
+              started ? 0n : readRequestFunded(id),
+            ])
             return {
               requestId: Number(id),
               owner,
@@ -181,14 +195,20 @@ export const vaultQueueQuery = (
               eligibleAt: Number(eligibleAt) * 1000,
               observedAt: Number(block.timestamp) * 1000,
               surplusHollar: Number(formatUnits(surplus, 18)),
-              sourcePending: (position?.[3] ?? 0n) > 0n,
+              sourcePending,
             }
           }),
         )
         queue.push(...rows.filter((row) => row !== null))
       }
+      // the vault settles FIFO: an unwinding request holds every later one
       return {
-        queue,
+        queue: queue.map((entry) => ({
+          ...entry,
+          waitsOnUnwind: queued.some(
+            (q) => q.unwinding && q.requestId <= entry.requestId,
+          ),
+        })),
         queued: queued.sort((a, b) => a.requestId - b.requestId),
         totalQueuedShares: Number(formatUnits(totalQueued, decimals)),
       }
