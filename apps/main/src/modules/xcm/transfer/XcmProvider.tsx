@@ -29,6 +29,7 @@ import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
   isOmniRoute,
+  isPsmRoute,
   resolveValidBridgeProvider,
   shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
@@ -151,6 +152,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const isOmni = isOmniRoute(selectedRoute)
   const isOmniWithdrawal = isOmni && !!destChain?.isZec()
+  const isPsm = isPsmRoute(selectedRoute)
 
   const requiresBinding = requiresEvmBinding(
     selectedRoute,
@@ -257,15 +259,19 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     requiresBinding,
   )
 
-  // An Omni withdrawal's bridge fee is rated on the amount, so what lands
-  // reads it per amount rather than the build-time snapshot
-  const { data: omniDestFee } = useQuery(
+  // An Omni withdrawal's bridge fee and a PSM redeem's vault fee are rated on
+  // the amount, so what lands reads it per amount rather than the build-time
+  // snapshot, which the sdk quotes without one
+  const isAmountRatedDestFee = isOmniWithdrawal || isPsm
+  const { data: amountDestFeeData } = useQuery(
     xcmDestinationFeeQuery(
-      isOmniWithdrawal ? xcmTransfer : null,
+      isAmountRatedDestFee ? xcmTransfer : null,
       srcAmount,
       transferArgs,
     ),
   )
+  // The disabled query still serves the last route's fee as placeholder
+  const amountDestFee = isAmountRatedDestFee ? amountDestFeeData : undefined
 
   useEffect(() => {
     setTransfer(xcmTransfer)
@@ -277,11 +283,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
             srcAmount,
             xcmTransfer,
             !!selectedRoute?.destination.fee.prepaid,
-            omniDestFee,
+            amountDestFee,
           )
         : "",
     )
-  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer, omniDestFee])
+  }, [form, selectedRoute, srcAmount, srcAsset, xcmTransfer, amountDestFee])
 
   // Only the assets actually in view are subscribed now - the asset picker
   // fetches the full set on its own.
@@ -320,9 +326,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const isLoadingBalances = isLoadingSrcBalances || isLoadingDestBalances
   // Only the report checks an Omni deposit or withdrawal against its minimum
-  // and the NEAR leg's limits, neither of which can be undone, so submit
-  // waits for it
-  const isLoadingBridgeReport = isOmni && isLoadingReport
+  // and the NEAR leg's limits, neither of which can be undone, and a PSM
+  // transfer against the corridor's pauses and limits, so submit waits for it
+  const isLoadingBridgeReport = (isOmni || isPsm) && isLoadingReport
   const isLoading =
     isLoadingTransfer ||
     isLoadingBalances ||
