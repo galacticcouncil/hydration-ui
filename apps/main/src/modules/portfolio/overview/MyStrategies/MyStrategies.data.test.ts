@@ -359,7 +359,14 @@ describe("Portfolio strategy position projection", () => {
     ).toBeNull()
     expect(
       useAction({
-        withdrawals: [withdrawal({ state: "partial", collateralSettled: 0.5 })],
+        withdrawals: [
+          withdrawal({
+            state: "partial",
+            collateralOwed: 1,
+            settledSoFar: 0.5,
+            collateralSettled: 0.5,
+          }),
+        ],
       }),
     ).toBe("claim")
   })

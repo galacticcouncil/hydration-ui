@@ -62,8 +62,7 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
     ),
   )
   const claimPaused = vaultStats?.paused === true
-  // anything settled is claimable: the contract takes any amount, so the UI
-  // never holds a partial claim back
+  // a partial claim surfaces in quarters of the request; the rest once repaid
   const status = getWithdrawalStateLabel(row)
   // when the whole withdrawal is claimable: measured keeper pace behind the
   // queue ahead — an estimate, so it is shown coarse and never as a promise
