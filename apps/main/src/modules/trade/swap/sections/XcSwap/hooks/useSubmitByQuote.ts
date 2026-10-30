@@ -125,6 +125,7 @@ export const useSubmitByQuote = ({
     buyAmount: values.buyAmount,
     type: values.type,
     isSingleTrade: values.isSingleTrade,
+    isOrderMatch: values.isOrderMatch,
   })
 
   const onSubmit = (values: XcSwapFormValues) => {
