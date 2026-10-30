@@ -68,10 +68,15 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // queue ahead — an estimate, so it is shown coarse and never as a promise
   const eta =
     row.claimableInSeconds !== null ? formatEta(row.claimableInSeconds) : null
-  // what is still to settle, neither claimed nor claimable yet: named as an
-  // amount, so it never reads as the whole withdrawal or the whole position
+  // what is still to come, named as an amount so it never reads as the whole
+  // withdrawal: beside a Claim button, what follows that claim; otherwise all
+  // not yet claimed, a part settled between quarters included, so claimed
+  // plus this is the whole withdrawal
   const toSettle = Math.max(
-    (row.collateralOwed ?? 0) - (row.settledSoFar ?? 0),
+    (row.collateralOwed ?? 0) -
+      (status === "claimable"
+        ? (row.settledSoFar ?? 0)
+        : (row.settledSoFar ?? 0) - (row.collateralSettled ?? 0)),
     0,
   )
   const moreLine = row.reserveShort
