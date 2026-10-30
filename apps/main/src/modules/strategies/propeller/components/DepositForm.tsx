@@ -110,8 +110,9 @@ export const DepositForm = ({
     depositCapacityQuery(rpc, vault),
   )
   const deposit = useDeposit(vault, {
+    // runs once the deposit is submitted, before its result: keep the
+    // mutation, so a deposit that fails on chain still explains why
     onSuccess: () => {
-      deposit.reset()
       // the spent amount would otherwise read "Insufficient balance"
       setMaxChosen(false)
       form.reset()
