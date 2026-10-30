@@ -262,8 +262,6 @@ export const WalletManagementContent = () => {
   )
 
   const isProvidersConnecting = pendingProviderTypes.length > 0
-  const pendingProvider = pendingProviderTypes[0]
-  const pendingWallet = pendingProvider ? getWallet(pendingProvider) : undefined
   const errorWallet =
     recentProvider && (!modeProviders || modeProviders.includes(recentProvider))
       ? getWallet(recentProvider)
@@ -282,7 +280,7 @@ export const WalletManagementContent = () => {
   const showErrorState =
     !!error &&
     (!modeProviders || !!errorWallet) &&
-    (selectedSource === "all" || selectedSource === recentProvider)
+    selectedSource === recentProvider
 
   const {
     recentGroups: recentWalletGroups,
@@ -927,7 +925,6 @@ export const WalletManagementContent = () => {
                           variant={
                             showAccountPanel ? "management" : "firstConnection"
                           }
-                          disabled={isConnectingAll || isProvidersConnecting}
                           aria-expanded={showAdditionalWallets}
                           aria-controls={additionalWalletsId}
                           action={
@@ -1261,13 +1258,14 @@ export const WalletManagementContent = () => {
                         }
                 }
               />
-            ) : isProvidersConnecting && pendingWallet ? (
+            ) : selectedWalletStatus === WalletProviderStatus.Pending &&
+              selectedWallet ? (
               <WalletConnectionState
                 title={t("provider.waitingForAuth")}
                 description={t("provider.authorizeDescription")}
                 visual={{
                   type: "loading",
-                  wallet: pendingWallet,
+                  wallet: selectedWallet,
                 }}
                 action={{
                   label: t("provider.connectingWallet"),
