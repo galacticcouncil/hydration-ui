@@ -50,12 +50,12 @@ import {
   CHAIN_WAIT,
   encodeApproval,
   encodeDeposit,
-  isUnwrapRoute,
   prepareApproval,
   prepareFundedDeposit,
   readSellLimit,
 } from "@/modules/strategies/propeller/utils/deposit"
 import {
+  isOneToOneDeposit,
   isSwapDeposit,
   type PropellerDepositOption,
 } from "@/modules/strategies/propeller/utils/depositOptions"
@@ -477,18 +477,20 @@ export function useDepositReferenceTx(
       if (!isSwapDeposit(deposit))
         return batch(parseExactAmount(balance, collateralDecimals))
 
-      const { swap, tx } = await rpc.queryClient.ensureQueryData(
-        bestSellWithTxQuery(rpc, {
-          assetIn: assetId,
-          assetOut: vault.assetId,
-          amountIn: balance,
-          slippage,
-          address,
-        }),
-      )
       const assetIn = Number(assetId)
       const assetOut = Number(vault.assetId)
-      if (isUnwrapRoute(swap.swaps, { assetIn, assetOut })) {
+      // only the 1:1 conversion deposits through a sell; every other swap
+      // deposit buys, so it never builds one
+      if (isOneToOneDeposit(deposit)) {
+        const { swap, tx } = await rpc.queryClient.ensureQueryData(
+          bestSellWithTxQuery(rpc, {
+            assetIn: assetId,
+            assetOut: vault.assetId,
+            amountIn: balance,
+            slippage,
+            address,
+          }),
+        )
         if (!tx) throw new Error("No conversion to size the fee from")
         return batch(swap.amountIn, tx.decodedCall)
       }
