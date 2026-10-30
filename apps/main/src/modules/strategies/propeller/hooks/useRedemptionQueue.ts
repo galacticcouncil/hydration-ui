@@ -1,5 +1,11 @@
 import { queryOptions } from "@tanstack/react-query"
-import { formatUnits, getContract, type Hex, zeroAddress } from "viem"
+import {
+  formatUnits,
+  getContract,
+  type Hex,
+  parseUnits,
+  zeroAddress,
+} from "viem"
 
 import {
   MAIN_DEBT_ABI,
@@ -8,8 +14,13 @@ import {
 } from "@/modules/strategies/propeller/config/abi"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
 import { withdrawalComplete } from "@/modules/strategies/propeller/utils/accounting"
+import {
+  type HeadroomState,
+  projectHeadroomExits,
+} from "@/modules/strategies/propeller/utils/headroomExit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { requestFundedShares } from "@/modules/strategies/propeller/utils/requestFunded"
+import { START_SECONDS } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export interface QueueEntry {
@@ -40,8 +51,18 @@ export interface QueuedRequest {
   remaining: number
   /** the keeper has started its unwind; its equity is in the exit backlog */
   started: boolean
-  /** settles only as the loop's unwind frees HOLLAR; assumed until the exit starts */
+  /**
+   * settles only as the loop's unwind frees HOLLAR; before the exit starts it
+   * is assumed, until projectQueue judges the start against the headroom
+   */
   unwinding: boolean
+  /** when the keeper may start it, ms */
+  eligibleAt: number
+  /**
+   * Main debt (HOLLAR) the unwind still has to free for it: exact once
+   * started, projected for its start by projectQueue before
+   */
+  debt?: number
 }
 
 export const vaultQueueQuery = (
@@ -148,6 +169,12 @@ export const vaultQueueQuery = (
                 ? await ledger.read.positions([id + 1n], options)
                 : null
             const sourcePending = (position?.[3] ?? 0n) > 0n
+            // every waiting request's start decides whether the ones behind it
+            // settle from headroom
+            const eligibleAt =
+              active && !started
+                ? await contract.read.unwindEligibleAt([id], options)
+                : 0n
             if (active) {
               // collateral is released in step with the debt repaid
               const left = started
@@ -161,18 +188,25 @@ export const vaultQueueQuery = (
                 remaining: left,
                 started,
                 unwinding: !started || (owed && sourcePending),
+                eligibleAt: Number(eligibleAt) * 1000,
+                ...(started && {
+                  debt: Number(formatUnits(owed ? debtShare - repaid : 0n, 18)),
+                }),
               })
             }
             if (!isUser) return null
-            const [eligibleAt, claimed, surplus, funded] = await Promise.all([
-              contract.read.unwindEligibleAt([id], options),
-              contract.read.claimedCollateral([id], options),
-              started && mainDebt !== zeroAddress
-                ? ledger.read.surplusOf([id], options)
-                : 0n,
-              // a started unwind already counts them in its shares
-              started ? 0n : readRequestFunded(id),
-            ])
+            const [userEligibleAt, claimed, surplus, funded] =
+              await Promise.all([
+                started
+                  ? contract.read.unwindEligibleAt([id], options)
+                  : eligibleAt,
+                contract.read.claimedCollateral([id], options),
+                started && mainDebt !== zeroAddress
+                  ? ledger.read.surplusOf([id], options)
+                  : 0n,
+                // a started unwind already counts them in its shares
+                started ? 0n : readRequestFunded(id),
+              ])
             return {
               requestId: Number(id),
               owner,
@@ -192,7 +226,7 @@ export const vaultQueueQuery = (
                   ? Number(repaid) / Number(debtShare)
                   : 1
                 : 0,
-              eligibleAt: Number(eligibleAt) * 1000,
+              eligibleAt: Number(userEligibleAt) * 1000,
               observedAt: Number(block.timestamp) * 1000,
               surplusHollar: Number(formatUnits(surplus, 18)),
               sourcePending,
@@ -201,17 +235,11 @@ export const vaultQueueQuery = (
         )
         queue.push(...rows.filter((row) => row !== null))
       }
-      // the vault settles FIFO: an unwinding request holds every later one
-      return {
-        queue: queue.map((entry) => ({
-          ...entry,
-          waitsOnUnwind: queued.some(
-            (q) => q.unwinding && q.requestId <= entry.requestId,
-          ),
-        })),
+      return withWaits({
+        queue,
         queued: queued.sort((a, b) => a.requestId - b.requestId),
         totalQueuedShares: Number(formatUnits(totalQueued, decimals)),
-      }
+      })
     },
     // a settling withdrawal is the one moment the user is actually watching
     refetchInterval: (query) =>
@@ -219,3 +247,90 @@ export const vaultQueueQuery = (
         ? 10_000
         : 30_000,
   })
+
+type VaultQueue = {
+  queue: QueueEntry[]
+  queued: QueuedRequest[]
+  totalQueuedShares: number
+}
+
+// the vault settles FIFO: an unwinding request holds every later one
+const withWaits = ({
+  queue,
+  ...rest
+}: Omit<VaultQueue, "queue"> & {
+  queue: Omit<QueueEntry, "waitsOnUnwind">[]
+}): VaultQueue => ({
+  ...rest,
+  queue: queue.map((entry) => ({
+    ...entry,
+    waitsOnUnwind: rest.queued.some(
+      (q) => q.unwinding && q.requestId <= entry.requestId,
+    ),
+  })),
+})
+
+/** collateral as the vault's integer units; null past what toFixed writes plainly */
+export const collateralUnits = (amount: number, decimals: number) =>
+  amount > 0 && amount < 1e21
+    ? parseUnits(amount.toFixed(decimals), decimals)
+    : null
+
+export type ProjectedExtra = {
+  viaHeadroom: boolean
+  /** Main debt (HOLLAR) it takes into the unwind when it starts */
+  debt: number
+}
+
+/**
+ * The queue with each waiting request judged as the keeper will start it:
+ * from headroom, or by unwinding, with the debt it carries into the unwind
+ * (see projectHeadroomExits). `extra` is a withdrawal not requested yet,
+ * appended last; its own judgement comes back as `extra`.
+ */
+export const projectQueue = (
+  data: VaultQueue,
+  headroom: (HeadroomState & { observedAt: number }) | null | undefined,
+  decimals: number,
+  extra?: { collateral: number; startsIn: number },
+): VaultQueue & { extra: ProjectedExtra | null } => {
+  if (!headroom) return { ...data, extra: null }
+  const waiting = data.queued.filter((q) => !q.started)
+  const exits = [
+    ...waiting.map((q) => ({
+      collateral: collateralUnits(q.remaining, decimals),
+      startsIn:
+        Math.max(q.eligibleAt - headroom.observedAt, 0) / 1000 + START_SECONDS,
+    })),
+    ...(extra
+      ? [
+          {
+            collateral: collateralUnits(extra.collateral, decimals),
+            startsIn: extra.startsIn,
+          },
+        ]
+      : []),
+  ]
+  if (exits.some((e) => e.collateral === null)) return { ...data, extra: null }
+  const projected = projectHeadroomExits(
+    headroom,
+    exits.map((e) => ({ collateral: e.collateral!, startsIn: e.startsIn })),
+  )
+  const debtOf = (debt: bigint) => Number(formatUnits(debt, 18))
+  const judged = new Map(waiting.map((q, i) => [q.requestId, projected[i]!]))
+  const own = extra ? projected[waiting.length] : undefined
+  return {
+    ...withWaits({
+      ...data,
+      queued: data.queued.map((q) => {
+        const exit = judged.get(q.requestId)
+        return exit
+          ? { ...q, unwinding: !exit.viaHeadroom, debt: debtOf(exit.debt) }
+          : q
+      }),
+    }),
+    extra: own
+      ? { viaHeadroom: own.viaHeadroom, debt: debtOf(own.debt) }
+      : null,
+  }
+}

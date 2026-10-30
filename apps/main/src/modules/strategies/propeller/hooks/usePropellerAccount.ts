@@ -7,8 +7,10 @@ import {
 } from "@/modules/strategies/propeller/config/vaults"
 import { baseRateQuery } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { exitBacklogQuery } from "@/modules/strategies/propeller/hooks/useExitBacklog"
+import { exitHeadroomQuery } from "@/modules/strategies/propeller/hooks/useExitHeadroom"
 import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import {
+  projectQueue,
   type QueueEntry,
   vaultQueueQuery,
 } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
@@ -101,6 +103,7 @@ export const buildWithdrawalRow = ({
   backlog = null,
   notStartedHollar = 0,
   ahead = 0,
+  ownDebt,
   shortfall,
   now = 0,
 }: {
@@ -115,6 +118,12 @@ export const buildWithdrawalRow = ({
   notStartedHollar?: number
   /** collateral still to settle for earlier requests in this vault */
   ahead?: number
+  /**
+   * Main debt (HOLLAR) the unwind still frees for this request: exact once
+   * started, projected for its start (0 from headroom); the vault's debt ratio
+   * stands in without it
+   */
+  ownDebt?: number
   shortfall?: Omit<Parameters<typeof reserveCoversExit>[0], "collateral">
   /** wall clock, ms: the live countdown flips on it, so the estimate must too */
   now?: number
@@ -149,7 +158,8 @@ export const buildWithdrawalRow = ({
     ? claimableInSeconds({
         backlog,
         notStartedHollar,
-        ownHollar: remainingCollateral * (shortfall?.debtPerCollateral ?? 0),
+        ownHollar:
+          ownDebt ?? remainingCollateral * (shortfall?.debtPerCollateral ?? 0),
         // a lagging node serves an older block: never count cooldown the
         // wall clock already shows as over
         cooldownLeftSeconds:
@@ -242,8 +252,18 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
       vaultQueueQuery(rpc, vault, decimalsOf(vault), evmAddress),
     ),
   })
-  const userQueues = queueQueries.map((q) =>
-    (q.data?.queue ?? []).filter((entry) => entry.isUser),
+  const headroomQueries = useQueries({
+    queries: PROPELLER_VAULTS.map((vault) => exitHeadroomQuery(rpc, vault)),
+  })
+  // each waiting request judged as the keeper will start it
+  const projectedQueues = PROPELLER_VAULTS.map((vault, i) => {
+    const data = queueQueries[i]?.data
+    return data
+      ? projectQueue(data, headroomQueries[i]?.data, decimalsOf(vault))
+      : undefined
+  })
+  const userQueues = projectedQueues.map((q) =>
+    (q?.queue ?? []).filter((entry) => entry.isUser),
   )
   const settleLogQueries = useQueries({
     queries: PROPELLER_VAULTS.map((vault) =>
@@ -283,7 +303,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
     debtPerCollateral(markets[i]?.stats?.mainDebtUsd, markets[i]?.stats?.tvl)
   const notStartedHollar = notStartedDebt(
     PROPELLER_VAULTS.map((_, i) => ({
-      queued: queueQueries[i]?.data?.queued ?? [],
+      queued: projectedQueues[i]?.queued ?? [],
       debtPerCollateral: debtPerCollateralOf(i),
     })),
   )
@@ -324,7 +344,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const withdrawals = sortWithdrawalRows(
     PROPELLER_VAULTS.flatMap((vault, i) => {
       const market = markets[i]
-      const queued = queueQueries[i]?.data?.queued ?? []
+      const queued = projectedQueues[i]?.queued ?? []
       const stats = market?.stats
       const shortfall = {
         carry: subLoop?.negativeCarry ?? null,
@@ -345,6 +365,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
           ahead: queued
             .filter((q) => q.requestId < entry.requestId)
             .reduce((sum, q) => sum + q.remaining, 0),
+          ownDebt: queued.find((q) => q.requestId === entry.requestId)?.debt,
           shortfall,
           now: Date.now(),
         }),

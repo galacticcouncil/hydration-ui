@@ -27,7 +27,7 @@ export type ExitBacklog = {
 }
 
 /** the keeper starts an eligible unwind on its next cycle */
-const START_SECONDS = 30
+export const START_SECONDS = 30
 /** the vault pays out on the keeper turn after the last slice is credited */
 const SETTLE_SECONDS = 30
 
@@ -104,7 +104,13 @@ export const claimableInSeconds = ({
  */
 export const notStartedDebt = (
   vaults: {
-    queued: { remaining: number; started: boolean }[]
+    queued: {
+      remaining: number
+      started: boolean
+      unwinding?: boolean
+      /** projected for its start; the vault's debt ratio stands in without it */
+      debt?: number
+    }[]
     /** HOLLAR of Main debt per collateral unit; null while unknown */
     debtPerCollateral: number | null
   }[],
@@ -113,8 +119,12 @@ export const notStartedDebt = (
     (sum, { queued, debtPerCollateral }) =>
       sum +
       queued
-        .filter((q) => !q.started)
-        .reduce((s, q) => s + q.remaining * (debtPerCollateral ?? 0), 0),
+        // a waiting exit headroom will settle adds nothing to the unwind
+        .filter((q) => !q.started && q.unwinding !== false)
+        .reduce(
+          (s, q) => s + (q.debt ?? q.remaining * (debtPerCollateral ?? 0)),
+          0,
+        ),
     0,
   )
 

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest"
 
-import { headroomExitFits, type HeadroomState } from "./headroomExit"
+import {
+  headroomExitFits,
+  type HeadroomState,
+  type PendingExit,
+  projectHeadroomExits,
+} from "./headroomExit"
+
+const settles = (s: HeadroomState, exits: PendingExit[]) =>
+  projectHeadroomExits(s, exits).map((e) => e.viaHeadroom)
 
 const unit = 10n ** 18n
 const base = 10n ** 8n
@@ -75,5 +83,88 @@ describe("headroomExitFits", () => {
   it("queues without loop shares or anything to exit", () => {
     expect(headroomExitFits({ ...STATE, loopShares: 0n }, unit)).toBe(false)
     expect(headroomExitFits(STATE, 0n)).toBe(false)
+  })
+})
+
+describe("projectHeadroomExits", () => {
+  const now = (collateral: bigint) => ({ collateral, startsIn: 0 })
+
+  it("judges each waiting exit on the room the ones ahead left", () => {
+    // 2 fit alone; after them, 2 more would leave 6 of 10 at 83% LTV
+    expect(settles(STATE, [now(2n * unit), now(2n * unit)])).toEqual([
+      true,
+      false,
+    ])
+  })
+
+  it("counts an unwinding exit ahead as leaving while its debt is unpaid", () => {
+    // 3 queue for the unwind; their collateral leaves but Aave still holds
+    // $5,000 of debt, so 1 more would leave 6 of 10 at 83%
+    expect(settles(STATE, [now(3n * unit), now(unit)])).toEqual([false, false])
+  })
+
+  it("deploys the keeper's waiting credit before a later start", () => {
+    // 500 HOLLAR a slice per minute toward the 68% band target
+    const deploying: HeadroomState = {
+      ...STATE,
+      deployment: {
+        credit: 10n * unit,
+        bandGapBps: 500,
+        sliceHollar: 500n * unit,
+        sliceSeconds: 60,
+      },
+    }
+    // started at once, 2 fit as before: 50 / 80 = 62.5%
+    expect(settles(deploying, [now(2n * unit)])).toEqual([true])
+    // a slice later, $5,500 of debt on 8 of 10 collateral is 68.75%
+    expect(
+      settles(deploying, [{ collateral: 2n * unit, startsIn: 30 }]),
+    ).toEqual([false])
+  })
+
+  it("stops deploying at the band target", () => {
+    const deploying: HeadroomState = {
+      ...STATE,
+      deployment: {
+        credit: 10n * unit,
+        bandGapBps: 3300,
+        sliceHollar: 500n * unit,
+        sliceSeconds: 60,
+      },
+    }
+    // a 40% target sits under today's 50%: nothing deploys, 2 still fit
+    expect(
+      settles(deploying, [{ collateral: 2n * unit, startsIn: 600 }]),
+    ).toEqual([true])
+  })
+})
+
+describe("projected exit debt", () => {
+  it("is what the exit takes into the unwind at its start", () => {
+    // 3 of 10 shares unwind with 30% of $5,000; a headroom exit takes none
+    expect(
+      projectHeadroomExits(STATE, [
+        { collateral: 2n * unit, startsIn: 0 },
+        { collateral: 3n * unit, startsIn: 0 },
+      ]).map((e) => e.debt),
+    ).toEqual([0n, 1_875n * unit])
+  })
+
+  it("counts the debt the keeper borrows before the start", () => {
+    const deploying: HeadroomState = {
+      ...STATE,
+      deployment: {
+        credit: 10n * unit,
+        bandGapBps: 500,
+        sliceHollar: 500n * unit,
+        sliceSeconds: 60,
+      },
+    }
+    // two slices by the start: 3 of 10 shares of $6,000
+    expect(
+      projectHeadroomExits(deploying, [
+        { collateral: 3n * unit, startsIn: 90 },
+      ])[0]!.debt,
+    ).toBe(1_800n * unit)
   })
 })
