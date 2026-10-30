@@ -116,14 +116,15 @@ try {
     isLoading: false,
     isError: false,
     tx: "trade-tx",
-    minAmountOut: 983n * 10n ** 15n,
+    depositAmount: 983n * 10n ** 15n,
+    maxAmountIn: 10n ** 18n,
   }
   await update({
     pending: false,
     mode: "swapDeposit",
     submitted: [],
     balance: 8n * 10n ** 18n,
-    quote: { ...quote, isLoading: true, tx: null, minAmountOut: undefined },
+    quote: { ...quote, isLoading: true, tx: null, depositAmount: undefined },
   })
   await input.fill("1")
   await isDisabled(true)
@@ -137,7 +138,7 @@ try {
   console.log(
     "PASS paying with the base asset waits for a quote and hands its trade to the deposit",
   )
-  await update({ quote: { ...quote, minAmountOut: 8n * 10n ** 18n } })
+  await update({ quote: { ...quote, depositAmount: 8n * 10n ** 18n } })
   await isDisabled(true)
   assert.match(
     await page.locator("body").innerText(),
@@ -146,7 +147,7 @@ try {
   await update({ quote: { ...quote, tx: null } })
   await isDisabled(true)
   await update({
-    quote: { ...quote, isError: true, tx: null, minAmountOut: undefined },
+    quote: { ...quote, isError: true, tx: null, depositAmount: undefined },
   })
   await page.getByText(/quote is available right now/).waitFor()
   await isDisabled(true)

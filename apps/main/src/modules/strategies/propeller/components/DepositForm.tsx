@@ -40,9 +40,11 @@ import {
   useBaseRates,
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { useDepositMaxBalance } from "@/modules/strategies/propeller/hooks/useDepositMaxBalance"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { isSwapDepositReady } from "@/modules/strategies/propeller/utils/deposit"
 import {
   getDepositOptions,
   isOneToOneDeposit,
@@ -120,6 +122,10 @@ export const DepositForm = ({
 
   const isSwap = isSwapDeposit(selected)
   const balance = scaleHuman(getTransferableBalance(assetId), asset.decimals)
+  const reserve = useDepositMaxBalance(selected, balance)
+  // an unresolved estimate only holds validation at the wallet balance: MAX and
+  // submit wait for it
+  const spendable = reserve.isResolved ? reserve.maxBalance : balance
   // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
   // the cap in the pay asset at spot. The swap executes below spot (fees,
   // impact), so a spot-converted fill always lands under the cap.
@@ -136,17 +142,18 @@ export const DepositForm = ({
   // filling it EXACTLY guarantees an over-max by the next refetch and an
   // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
   // to a 6-decimal floor the drift cannot overtake between signing and inclusion.
-  const capacityBound = capacityInPay !== null && Big(balance).gt(capacityInPay)
+  const capacityBound =
+    capacityInPay !== null && Big(spendable).gt(capacityInPay)
   const maxButtonBalance = capacityBound
     ? Big(capacityInPay).round(6, Big.roundDown).toString()
-    : balance
+    : spendable
 
   // closing the review is not a failure
   const depositFailed =
     deposit.isError && !(deposit.error instanceof TransactionClosedError)
 
   const form = useDepositForm({
-    maxBalance: balance,
+    maxBalance: spendable,
     maxCapacity:
       capacityInPay === null
         ? undefined
@@ -162,12 +169,7 @@ export const DepositForm = ({
     !!capacity &&
     quote.depositAmount !== undefined &&
     quote.depositAmount > capacity.maximum
-  const isSwapReady =
-    !isSwap ||
-    (!!quote.tx &&
-      !quote.isLoading &&
-      !exceedsCapacity &&
-      (quote.depositAmount ?? 0n) > 0n)
+  const isSwapReady = !isSwap || (isSwapDepositReady(quote) && !exceedsCapacity)
 
   const canSubmit =
     formState.isValid &&
@@ -175,7 +177,8 @@ export const DepositForm = ({
     !deposit.isPending &&
     !isPaused &&
     !atCapacity &&
-    !unavailable
+    !unavailable &&
+    reserve.isResolved
 
   const ctaLabel = (() => {
     if (unavailable) return t("deposit.cta.unavailable")
@@ -206,13 +209,16 @@ export const DepositForm = ({
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
     deposit.mutate(
-      isSwap && quote.tx
+      isSwap && quote.tx && quote.depositAmount && quote.maxAmountIn
         ? {
             amount,
             trade: {
               assetIn: assetId,
               tx: quote.tx,
-              quotedAmountIn: quote.swap?.amountIn ?? 0n,
+              exact: quote.exact,
+              depositAmount: quote.depositAmount,
+              maxAmountIn: quote.maxAmountIn,
+              leftover: quote.leftover,
             },
           }
         : { amount },
@@ -242,7 +248,8 @@ export const DepositForm = ({
                     field.onChange(
                       percentageOf(maxButtonBalance, percent, asset.decimals),
                     ),
-                  isMaxDisabled: !(Number(maxButtonBalance) > 0),
+                  isMaxDisabled:
+                    !reserve.isResolved || !(Number(maxButtonBalance) > 0),
                 }}
                 amountError={
                   fieldState.error?.message ??
@@ -332,7 +339,10 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          {(blockedDescription || quote.isError || depositFailed) && (
+          {(blockedDescription ||
+            quote.isError ||
+            reserve.isError ||
+            depositFailed) && (
             <Stack gap="base">
               {blockedDescription && (
                 <Alert
@@ -350,13 +360,20 @@ export const DepositForm = ({
                   })}
                 />
               )}
+              {reserve.isError && (
+                <Alert
+                  variant="warning"
+                  description={t("deposit.fee.unavailable", {
+                    symbol: asset.symbol,
+                  })}
+                />
+              )}
               {depositFailed && (
                 <Alert
                   variant="error"
                   description={
                     isSwap
-                      ? // what the wallet actually holds and the picker lists
-                        t("deposit.swap.failed", { symbol: collateral.symbol })
+                      ? t("deposit.swap.failed", { symbol: asset.symbol })
                       : t("deposit.failed")
                   }
                 />

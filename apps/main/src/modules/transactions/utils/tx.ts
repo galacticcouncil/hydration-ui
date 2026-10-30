@@ -80,21 +80,38 @@ export const transformAnyToPapiTx = (
   return null
 }
 
-export function containsEvmCall(tx: AnyTransaction): boolean {
-  if (!isPapiTransaction(tx)) return false
+/** The call inside Dispatcher.dispatch_evm_call, or null for any other call. */
+const readDispatchedEvmCall = (decoded: DecodedCallEnum) => {
+  if (
+    decoded.type !== "Dispatcher" ||
+    !isObjectType(decoded.value) ||
+    !("type" in decoded.value) ||
+    decoded.value.type !== "dispatch_evm_call" ||
+    !("value" in decoded.value) ||
+    !isObjectType(decoded.value.value) ||
+    !("call" in decoded.value.value)
+  ) {
+    return null
+  }
 
-  const decoded = tx.decodedCall
+  const { call } = decoded.value.value
+  return isDecodedCallEnum(call) ? call : null
+}
+
+const isEvmCallDecoded = (decoded: unknown): boolean => {
   if (!isDecodedCallEnum(decoded)) return false
 
   if (decoded.type === "EVM") return true
 
   if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
-    return decoded.value.value.calls.some(
-      (call) => isDecodedCallEnum(call) && call.type === "EVM",
-    )
+    return decoded.value.value.calls.some(isEvmCallDecoded)
   }
 
-  return false
+  return isEvmCallDecoded(readDispatchedEvmCall(decoded))
+}
+
+export function containsEvmCall(tx: AnyTransaction): boolean {
+  return isPapiTransaction(tx) && isEvmCallDecoded(tx.decodedCall)
 }
 
 const getEvmCallFeeFromDecoded = (decoded: DecodedCallEnum): bigint => {
@@ -134,7 +151,8 @@ const collectNestedEvmCallFees = (decoded: DecodedCallEnum): bigint => {
     )
   }
 
-  return 0n
+  const dispatched = readDispatchedEvmCall(decoded)
+  return dispatched ? collectNestedEvmCallFees(dispatched) : 0n
 }
 
 export const getNestedEvmCallsFeeWei = (tx: AnyTransaction): bigint => {

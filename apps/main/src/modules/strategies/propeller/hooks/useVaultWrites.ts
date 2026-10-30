@@ -13,6 +13,7 @@ import { CallType } from "@galacticcouncil/xc-core"
 import {
   useMutation,
   useMutationState,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
 import Big from "big.js"
@@ -30,6 +31,7 @@ import {
 
 import { getDryRunError } from "@/api/dryRun"
 import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
+import { bestSellWithTxQuery } from "@/api/trade"
 import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
@@ -41,22 +43,26 @@ import {
   useBaseRates,
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { swapDepositBuyQuery } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { withdrawalRowId } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { useFormatSurplusHollar } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
 import {
+  buildDepositBuy,
   CHAIN_WAIT,
+  encodeApproval,
   encodeDeposit,
-  InterruptedDepositError,
   isCallNode,
+  isUnwrapRoute,
   prepareApproval,
-  prepareDeliveredDeposit,
   prepareFundedDeposit,
-  prepareSwapDeposit,
   readSellLimit,
-  waitForSwapBlock,
 } from "@/modules/strategies/propeller/utils/deposit"
+import {
+  isSwapDeposit,
+  type PropellerDepositOption,
+} from "@/modules/strategies/propeller/utils/depositOptions"
 import {
   buildPayoutSell,
   getPayoutSell,
@@ -69,11 +75,8 @@ import { useAssets } from "@/providers/assetsProvider"
 import { type Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
-  getTxResultBlockHeight,
-  isSubstrateTxResult,
   type TransactionCommon,
   type TransactionOptions,
-  type TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
 
@@ -265,8 +268,16 @@ const waitForChain = async (
 export type DepositVariables = {
   /** in units of the asset paid with */
   amount: string
-  /** sell of the asset paid with for the collateral */
-  trade?: { assetIn: string; tx: AnyPapiTx; quotedAmountIn: bigint }
+  /** buys the collateral from the asset paid with, in the deposit's own batch */
+  trade?: {
+    assetIn: string
+    tx: AnyPapiTx
+    /** a 1:1 unwrap, with no leftover */
+    exact: boolean
+    depositAmount: bigint
+    maxAmountIn: bigint
+    leftover?: bigint
+  }
 }
 
 export function useDeposit(
@@ -277,9 +288,7 @@ export function useDeposit(
   const rpc = useRpcProvider()
   const { evm } = rpc
   const { account } = useAccount()
-  const wallet = useWallet()
   const { getAssetWithFallback } = useAssets()
-  const queryClient = useQueryClient()
   const getErc20Allowance = useErc20Allowance()
   const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
     useVaultEvmCall(options)
@@ -310,6 +319,7 @@ export function useDeposit(
         submitted: t("propeller:deposit.toast.submitted", { amount: value }),
         success: t("propeller:deposit.toast.success", { amount: value }),
       },
+      executedAmount: { amount: formatUnits(amount, decimals), assetId },
     }
   }
 
@@ -336,94 +346,6 @@ export function useDeposit(
     pendingComponent: PendingApproval,
   })
 
-  // the swap has landed: whatever goes wrong now, its collateral is in the wallet
-  // named as the wallet and the deposit picker list it (2-Pool-GETH)
-  const heldSymbol = getAssetWithFallback(assetId).symbol
-  const interrupted = (delivered: bigint | undefined) =>
-    delivered === undefined
-      ? t("propeller:deposit.swap.interrupted.unknown", { symbol: heldSymbol })
-      : t("propeller:deposit.swap.interrupted", {
-          amount: formatAmount(formatUnits(delivered, decimals), heldSymbol),
-        })
-
-  /** Deposits exactly what the swap delivered, in one atomic approve and deposit batch. */
-  const deliveredDepositStep = () => ({
-    stepTitle: t("deposit"),
-    pendingComponent: PendingApproval,
-    tx: async (results: TSuccessResult[]) => {
-      let delivered: bigint | undefined
-      try {
-        // the swap is the step right before, after any bind
-        const swapResult = results.at(-1)
-        const height = swapResult ? getTxResultBlockHeight(swapResult) : null
-        if (height === null) throw new Error("The swap's block is unknown")
-        const prepared = await prepareDeliveredDeposit(evm, {
-          vault: vaultAddress,
-          asset: assetAddress,
-          owner: evmAddress,
-          block: BigInt(height),
-        })
-        delivered = prepared.delivered
-        const { amount, approval } = prepared
-        const tx = await buildBatch(
-          [
-            ...(approval ? [approval] : []),
-            encodeDeposit(depositInput(amount)),
-          ],
-          { atomic: true },
-        )
-        const at = await waitForSwapBlock(rpc, {
-          number: height,
-          hash:
-            swapResult && isSubstrateTxResult(swapResult)
-              ? swapResult.block.hash
-              : undefined,
-        })
-        if (swapResult && "blockHash" in swapResult) {
-          const block = await evm.getBlock({ blockNumber: BigInt(height) })
-          if (block.hash !== swapResult.blockHash)
-            throw new Error("The swap is no longer in the best chain")
-        }
-        // Finalized state can predate the swap; check the batch at the verified best block.
-        const dryRunError = await getDryRunError(
-          rpc,
-          account?.address ?? "",
-          tx,
-          { at },
-        )
-        if (dryRunError)
-          throw new Error(`Deposit dry run failed: ${dryRunError.name}`)
-
-        const format = (value: bigint) =>
-          formatAmount(formatUnits(value, decimals))
-        const value = format(amount)
-        return {
-          tx,
-          description:
-            amount < delivered
-              ? t("propeller:deposit.swap.delivered.clamped", {
-                  amount: value,
-                  delivered: format(delivered),
-                  rest: format(delivered - amount),
-                })
-              : t("propeller:deposit.swap.delivered", { amount: value }),
-          toasts: {
-            submitted: t("propeller:deposit.toast.submitted", {
-              amount: value,
-            }),
-            success: t("propeller:deposit.toast.success", { amount: value }),
-            error: interrupted(delivered),
-          },
-          errorMessage: interrupted(delivered),
-        }
-      } catch (error) {
-        if (error instanceof InterruptedDepositError)
-          delivered = error.delivered
-        throw new Error(interrupted(delivered), { cause: error })
-      }
-    },
-  })
-
   return useMutation({
     mutationFn: async ({ amount, trade }: DepositVariables) => {
       if (!trade) {
@@ -444,105 +366,13 @@ export function useDeposit(
         )
       }
 
-      const {
-        exact,
-        amount: depositAmount,
-        approval,
-      } = await prepareSwapDeposit(evm, {
-        vault: vaultAddress,
-        asset: assetAddress,
-        owner: evmAddress,
-        collateralId: assetId,
-        assetIn: trade.assetIn,
-        quotedAmountIn: trade.quotedAmountIn,
-        tradeCall: trade.tx.decodedCall,
-      })
-      const amountIn = formatAmount(
-        amount,
-        getAssetWithFallback(trade.assetIn).symbol,
-      )
+      const { exact, depositAmount, maxAmountIn, leftover } = trade
+      const payAsset = getAssetWithFallback(trade.assetIn)
+      const formatPay = (value: bigint) =>
+        formatAmount(formatUnits(value, payAsset.decimals), payAsset.symbol)
       const deposited = formatAmount(formatUnits(depositAmount, decimals))
-      // GETH unwraps 1:1 into the collateral: a conversion, not a swap
-      const swapStep = (tx: AnyPapiTx) => ({
-        tx,
-        stepTitle: t(
-          exact
-            ? "propeller:deposit.step.convert"
-            : "propeller:deposit.step.swap",
-        ),
-        toasts: {
-          submitted: t(
-            exact
-              ? "propeller:deposit.convertStep.toast.submitted"
-              : "propeller:deposit.swapStep.toast.submitted",
-            { amountIn, symbol },
-          ),
-          success: t(
-            exact
-              ? "propeller:deposit.convertStep.toast.success"
-              : "propeller:deposit.swapStep.toast.success",
-            { amountIn, symbol },
-          ),
-        },
-      })
-
-      if (!exact) {
-        const isBound = await queryClient.fetchQuery({
-          ...evmAccountBindingQuery(rpc, account?.address ?? ""),
-          staleTime: 0,
-        })
-        // the delivered amount is read through the collateral's EVM precompile,
-        // which sees a substrate account's balance only once it is bound
-        const bindStep = {
-          tx: rpc.papi.tx.EVMAccounts.bind_evm_address(),
-          stepTitle: t("propeller:deposit.step.bind"),
-          title: t("propeller:deposit.bind.title"),
-          description: t("propeller:deposit.bind.description"),
-          toasts: {
-            submitted: t("propeller:deposit.bind.toast.submitted"),
-            success: t("propeller:deposit.bind.toast.success"),
-          },
-        }
-        return createTransaction(
-          {
-            tx: [
-              ...(isBound ? [] : [bindStep]),
-              swapStep(trade.tx),
-              deliveredDepositStep(),
-            ],
-          },
-          txOptionsForVault(vaultAddress),
-        )
-      }
-
-      if (isEthereumSigner(wallet?.signer)) {
-        return createTransaction(
-          {
-            tx: [
-              {
-                ...swapStep(trade.tx),
-                beforeNext: () =>
-                  waitForChain(
-                    async () =>
-                      (await evm.readContract({
-                        address: assetAddress,
-                        abi: erc20Abi,
-                        functionName: "balanceOf",
-                        args: [evmAddress],
-                      })) >= depositAmount,
-                    t("propeller:deposit.swapStep.timeout"),
-                  ),
-              },
-              ...(approval
-                ? [await approvalStep(approval, depositAmount)]
-                : []),
-              depositStep(depositAmount),
-            ],
-          },
-          txOptionsForVault(vaultAddress),
-        )
-      }
-
+      // also asserts the vault is ready, unpaused and still has room
+      const approval = await prepareApproval(evm, depositInput(depositAmount))
       const tx = await buildBatch(
         [
           ...(approval ? [approval] : []),
@@ -566,13 +396,18 @@ export function useDeposit(
       return createTransaction(
         {
           tx,
-          // only the 1:1 GETH unwrap takes this path: to the user it's a deposit
           title: t("deposit"),
-          description: t("propeller:deposit.swap.description.exact", {
-            amountIn,
-            amount: deposited,
-            symbol,
-          }),
+          description: exact
+            ? t("propeller:deposit.swap.description.exact", {
+                amountIn: formatAmount(amount, payAsset.symbol),
+                amount: deposited,
+                symbol,
+              })
+            : t("propeller:deposit.swap.description", {
+                amount: deposited,
+                maxAmountIn: formatPay(maxAmountIn),
+                leftover: formatPay(leftover ?? 0n),
+              }),
           toasts: {
             submitted: t("propeller:deposit.toast.submitted", {
               amount: deposited,
@@ -581,8 +416,95 @@ export function useDeposit(
               amount: deposited,
             }),
           },
+          // the review checks what's left of the fee asset after this
+          executedAmount: {
+            amount: formatUnits(maxAmountIn, payAsset.decimals),
+            assetId: trade.assetIn,
+          },
         },
         txOptionsForVault(vaultAddress),
+      )
+    },
+  })
+}
+
+/**
+ * The batch a deposit of the whole balance would sign, to size the fee MAX leaves
+ * behind. A reference, not a worst case: a smaller trade can take another route,
+ * which the review's fee check catches. Approval is always included.
+ */
+export function useDepositReferenceTx(
+  deposit: PropellerDepositOption,
+  balance: string,
+  enabled: boolean,
+) {
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const { evmAddress, buildBatch } = useVaultEvmCall()
+  const { vault, assetId } = deposit
+  const { vaultAddress } = vault
+  const address = useAccount().account?.address ?? ""
+  const payDecimals = getAssetWithFallback(assetId).decimals
+  const collateralDecimals = getAssetWithFallback(vault.assetId).decimals
+
+  return useQuery({
+    queryKey: [
+      ...propellerQueryKeys.vault(vaultAddress),
+      "deposit-reference",
+      address,
+      assetId,
+      balance,
+    ],
+    enabled: enabled && rpc.isReady && !!address && Big(balance || "0").gt(0),
+    queryFn: async () => {
+      const input = (amount: bigint) => ({
+        vault: vaultAddress,
+        asset: getAddressFromAssetId(vault.assetId) as Hex,
+        owner: evmAddress,
+        amount,
+      })
+      const batch = (amount: bigint, leading?: AnyPapiTx["decodedCall"]) =>
+        buildBatch(
+          [encodeApproval(input(amount)), encodeDeposit(input(amount))],
+          {
+            leading: leading ? [leading] : undefined,
+            atomic: true,
+          },
+        )
+
+      if (!isSwapDeposit(deposit))
+        return batch(parseExactAmount(balance, collateralDecimals))
+
+      const { swap, tx } = await rpc.queryClient.ensureQueryData(
+        bestSellWithTxQuery(rpc, {
+          assetIn: assetId,
+          assetOut: vault.assetId,
+          amountIn: balance,
+          slippage: 0,
+          address,
+        }),
+      )
+      const assetIn = Number(assetId)
+      const assetOut = Number(vault.assetId)
+      if (isUnwrapRoute(swap.swaps, { assetIn, assetOut })) {
+        if (!tx) throw new Error("No conversion to size the fee from")
+        return batch(swap.amountIn, tx.decodedCall)
+      }
+
+      const buy = await rpc.queryClient.ensureQueryData(
+        swapDepositBuyQuery(rpc, {
+          vault,
+          assetIn: assetId,
+          amountIn: balance,
+          decimalsIn: payDecimals,
+          collateralDecimals,
+          address,
+        }),
+      )
+      if (!buy) throw new Error("No buy to size the fee from")
+      return batch(
+        buy.amountOut,
+        buildDepositBuy(rpc.papi, { ...buy, assetIn, assetOut }).decodedCall,
       )
     },
   })
