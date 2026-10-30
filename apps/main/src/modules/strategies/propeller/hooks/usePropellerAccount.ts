@@ -154,6 +154,7 @@ export const buildWithdrawalRow = ({
         cooldownLeftSeconds:
           (entry.eligibleAt - Math.max(entry.observedAt, now)) / 1000,
         started: entry.started,
+        waitsOnUnwind: entry.waitsOnUnwind,
       })
     : null
   const reserveShort =

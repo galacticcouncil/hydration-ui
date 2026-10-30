@@ -19,6 +19,11 @@ export const VAULT_ABI = [
     "function claimedCollateral(uint256) view returns (uint256)",
     // shares held outright; balanceOf adds the funded earnings
     "function walletOf(address account) view returns (uint256)",
+    "function collateralAToken() view returns (address)",
+    "function roundingReserve() view returns (uint256)",
+    "function totalQueuedCollateral() view returns (uint256)",
+    "function totalQueuedDebt() view returns (uint256)",
+    "function loopShares() view returns (uint256)",
   ]),
   {
     type: "function",
@@ -185,17 +190,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "requestId", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  {
-    type: "function",
-    name: "claim",
-    inputs: [
-      { name: "requestId", type: "uint256" },
-      { name: "receiver", type: "address" },
-    ],
-    outputs: [{ name: "amountOut", type: "uint256" }],
-    stateMutability: "nonpayable",
-  },
-  // newer vaults claim an exact amount, so a batch can size the sell after it
+  // pays exactly `amount`, so a batch can size the sell after it; max pays all settled
   {
     type: "function",
     name: "claim",
@@ -266,6 +261,9 @@ export const SUBLOOP_ABI = [
     "function executionController() view returns (address)",
     "function primeAToken() view returns (address)",
     "function pendingIntent() view returns (uint64 nonce, uint64 deadline, uint8 kind, bool controlled, uint128 amountIn, uint128 minOut, uint128 fairOut, uint128 inBase, uint128 outBase)",
+    // exits that fit under the LTV cap less the gap settle without selling the loop
+    "function exitHeadroom(address vault) view returns (bool enabled, uint16 gapBps)",
+    "function sharesOf(address vault) view returns (uint256)",
   ]),
   {
     type: "function",
@@ -384,6 +382,7 @@ export const MAIN_DEBT_ABI = parseAbi([
   "function positions(uint256) view returns (uint256 units, uint256 principal, uint256 cash, uint256 sourceRemaining, address owner)",
   "function surplusOf(uint256 id) view returns (uint256 amount)",
   "function protocolReserve() view returns (uint256)",
+  "function activePosition() view returns (uint256 debt, uint256 principal, uint256 cash)",
   "function claimSurplus(uint256 id) returns (uint256 amount)",
 ])
 
@@ -415,6 +414,7 @@ export const YIELD_ACCOUNTING_ABI = parseAbi([
   "function epoch() view returns (uint256)",
   "function unitScale() view returns (uint256)",
   "function totalUnits() view returns (uint256)",
+  "function reservedShares() view returns (uint256)",
 ])
 
 export const EXECUTION_CONTROLLER_ABI = parseAbi([

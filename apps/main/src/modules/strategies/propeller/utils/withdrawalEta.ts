@@ -34,29 +34,33 @@ const SETTLE_SECONDS = 30
  * plus the cooldown left and a keeper turn to start it, then one to pay out.
  * Every started withdrawal finishes together, so the whole backlog counts,
  * never just the queue ahead. Withdrawals that start later push it back; null
- * while the inputs are unknown or the keeper is stalled.
+ * while the inputs are unknown or the keeper is stalled. An exit that does not
+ * wait for the unwind (a headroom exit) pays out on the keeper turns alone.
  */
 export const claimableInSeconds = ({
   backlog,
   notStartedHollar,
   cooldownLeftSeconds,
   started,
+  waitsOnUnwind = true,
 }: {
   backlog: ExitBacklog | null
   /** equity of requested withdrawals the keeper has not started, all vaults */
   notStartedHollar: number
   cooldownLeftSeconds: number
   started: boolean
+  waitsOnUnwind?: boolean
 }): number | null => {
-  if (!backlog || backlog.stalled || backlog.freedPerSlice <= 0) return null
-  const slices =
-    (backlog.backlogHollar + notStartedHollar) / backlog.freedPerSlice
-  return (
+  if (!backlog || backlog.stalled) return null
+  const turns =
     Math.max(cooldownLeftSeconds, 0) +
     (started ? 0 : START_SECONDS) +
-    slices * backlog.sliceSeconds +
     SETTLE_SECONDS
-  )
+  if (!waitsOnUnwind) return turns
+  if (backlog.freedPerSlice <= 0) return null
+  const slices =
+    (backlog.backlogHollar + notStartedHollar) / backlog.freedPerSlice
+  return turns + slices * backlog.sliceSeconds
 }
 
 /**

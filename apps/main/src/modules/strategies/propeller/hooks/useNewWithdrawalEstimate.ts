@@ -1,17 +1,19 @@
 import { useQueries, useQuery } from "@tanstack/react-query"
-import { type Hex } from "viem"
+import { type Hex, parseUnits } from "viem"
 
 import {
   PROPELLER_VAULTS,
   type PropellerVaultConfig,
 } from "@/modules/strategies/propeller/config/vaults"
 import { exitBacklogQuery } from "@/modules/strategies/propeller/hooks/useExitBacklog"
+import { exitHeadroomQuery } from "@/modules/strategies/propeller/hooks/useExitHeadroom"
 import { debtPerCollateral } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
 import { vaultQueueQuery } from "@/modules/strategies/propeller/hooks/useRedemptionQueue"
 import {
   subLoopQuery,
   vaultStatsQuery,
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
+import { headroomExitFits } from "@/modules/strategies/propeller/utils/headroomExit"
 import {
   claimableInSeconds,
   notStartedEquity,
@@ -23,7 +25,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 /**
  * When a withdrawal requested now would be fully claimable: the cooldown, then
  * the keeper's exit backlog, which every started withdrawal in every vault
- * shares, with this one and the requests not started yet added to it.
+ * shares, with this one and the requests not started yet added to it. An exit
+ * the vault's headroom would absorb skips the backlog.
  */
 export const useNewWithdrawalEstimate = (
   vault: PropellerVaultConfig,
@@ -48,6 +51,7 @@ export const useNewWithdrawalEstimate = (
   })
   const { data: subLoop } = useQuery(subLoopQuery(rpc))
   const { data: backlog } = useQuery(exitBacklogQuery(rpc))
+  const { data: headroom } = useQuery(exitHeadroomQuery(rpc, vault))
 
   const debtPerCollateralOf = (i: number) =>
     debtPerCollateral(
@@ -73,16 +77,33 @@ export const useNewWithdrawalEstimate = (
       debtPerCollateral: perCollateral,
       collateral: ahead + collateral,
     })
+    // the vault settles FIFO, so an unwinding exit ahead holds this one too
+    const viaHeadroom =
+      !!headroom &&
+      !!queue &&
+      !queue.queued.some((q) => q.unwinding) &&
+      // toFixed turns exponential from 1e21 on, which parseUnits rejects
+      collateral > 0 &&
+      collateral < 1e21 &&
+      headroomExitFits(
+        headroom,
+        parseUnits(collateral.toFixed(decimalsOf(vault)), decimalsOf(vault)),
+      )
     return {
       reserveShort,
       seconds:
-        reserveShort || !stats || !queue || perCollateral === null
+        reserveShort ||
+        !stats ||
+        !queue ||
+        (perCollateral === null && !viaHeadroom)
           ? null
           : claimableInSeconds({
               backlog: backlog ?? null,
-              notStartedHollar: notStartedHollar + collateral * perCollateral,
+              notStartedHollar:
+                notStartedHollar + collateral * (perCollateral ?? 0),
               cooldownLeftSeconds: stats.withdrawalDelay,
               started: false,
+              waitsOnUnwind: !viaHeadroom,
             }),
     }
   }

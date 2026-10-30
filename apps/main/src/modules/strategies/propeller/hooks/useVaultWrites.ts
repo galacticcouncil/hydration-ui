@@ -794,13 +794,12 @@ export function useClaim(options: VaultWriteOptions = {}) {
       requestId,
       payoutAssetId = vault.assetId,
     }: ClaimVariables) => {
-      const { calls, collateral, surplusHollar, complete, exact } =
-        await prepareWithdrawalClaim(
-          evm,
-          vault.vaultAddress,
-          requestId,
-          evmAddress,
-        )
+      const { calls, collateral, surplusHollar } = await prepareWithdrawalClaim(
+        evm,
+        vault.vaultAddress,
+        requestId,
+        evmAddress,
+      )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
       const sell = await buildSell(vault, payoutAssetId, collateral)
       const payouts = describePayouts(
@@ -812,20 +811,8 @@ export function useClaim(options: VaultWriteOptions = {}) {
       )
       const claim = {
         title: t("withdrawals.claim.title"),
-        // an exact claim pays only this; an older vault's claim pays all
-        // settled at execution, and a sell sized before then leaves the
-        // newer tranche unsold, as the collateral itself
-        description: t(
-          complete || exact
-            ? "withdrawals.claim.descriptionFinal"
-            : sell
-              ? "withdrawals.claim.descriptionUnsold"
-              : "withdrawals.claim.description",
-          {
-            payouts,
-            collateral: getAssetWithFallback(vault.assetId).symbol,
-          },
-        ),
+        // the claim pays exactly this; a later tranche waits for the next one
+        description: t("withdrawals.claim.descriptionFinal", { payouts }),
         toasts: {
           submitted: t("withdrawals.claim.submitted"),
           success: t("withdrawals.claim.success"),

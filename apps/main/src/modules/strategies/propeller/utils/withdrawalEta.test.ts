@@ -41,6 +41,19 @@ describe("claimableInSeconds", () => {
     ).toBe(250)
   })
 
+  it("skips the backlog for an exit that does not wait for the unwind", () => {
+    // 60 s cooldown + 30 s start + 30 s settle
+    expect(
+      claimableInSeconds({
+        backlog: LARK_57873,
+        notStartedHollar: 1200,
+        cooldownLeftSeconds: 60,
+        started: false,
+        waitsOnUnwind: false,
+      }),
+    ).toBe(120)
+  })
+
   it("gives no countdown while unknown or stalled", () => {
     const base = { notStartedHollar: 0, cooldownLeftSeconds: 0, started: true }
     expect(claimableInSeconds({ ...base, backlog: null })).toBeNull()
