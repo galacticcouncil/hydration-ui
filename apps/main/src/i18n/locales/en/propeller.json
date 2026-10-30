@@ -51,7 +51,6 @@
   "withdrawals.state.claimed": "Claimed",
   "withdrawals.settledProgress": "{{ settled }} ({{ pct }}%)",
   "withdrawals.settledInline": "{{ amount }} settled ({{ pct }}%)",
-  "withdrawals.claimedInline": "{{ amount }} claimed ({{ pct }}%)",
   "withdrawals.claimedSoFar": "{{ amount }} claimed",
   "withdrawals.eta.more": "+{{ amount }} in {{ eta }}",
   "withdrawals.eta.label": "Claimable in:",

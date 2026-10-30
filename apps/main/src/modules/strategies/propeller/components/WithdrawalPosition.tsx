@@ -114,40 +114,28 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
             {
               // two lines, mirroring the amount column: progress of the
               // whole withdrawal, then what is still to come and when. The
-              // chip already says Settling. Without a Claim button nothing
-              // claimable is left, so once a part was claimed the progress
-              // is what reached the wallet, and says so
-              value: t(
-                row.claimedEth > 0
-                  ? "withdrawals.claimedInline"
-                  : "withdrawals.settledInline",
-                {
-                  amount: t("common:currency", {
-                    value:
-                      row.claimedEth > 0
-                        ? row.claimedEth
-                        : (row.settledSoFar ?? 0),
-                    symbol,
-                    maximumFractionDigits: 4,
-                  }),
-                  pct: (
-                    ((row.claimedEth > 0
-                      ? row.claimedEth
-                      : (row.settledSoFar ?? 0)) /
-                      (row.collateralOwed || 1)) *
-                    100
-                  ).toFixed(1),
-                },
-              ),
+              // chip already says Settling. Between quarters a settled part
+              // waits for its Claim button, so the progress counts all that
+              // settled, claimed or not, and adds up with what is to come
+              value: t("withdrawals.settledInline", {
+                amount: t("common:currency", {
+                  value: row.settledSoFar ?? 0,
+                  symbol,
+                  maximumFractionDigits: 4,
+                }),
+                pct: (
+                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
+                  100
+                ).toFixed(1),
+              }),
               bottomLabel: moreLine,
             },
           ]
         : undefined
 
-  // a settling row's stat already counts claimed parts in its progress; a
-  // row with a Claim button has no stat, so it says what was claimed
+  // what already reached the wallet, beside the USD value
   const claimed =
-    row.claimedEth > 0 && stats === undefined
+    row.claimedEth > 0
       ? t("withdrawals.claimedSoFar", {
           amount: t("common:currency", {
             value: row.claimedEth,
