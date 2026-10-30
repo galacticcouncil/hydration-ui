@@ -106,9 +106,11 @@ export const DepositForm = ({
     : DEPOSIT_OPTIONS
   const assets = options.map((o) => getAsset(o.assetId)).filter(isTruthy)
 
-  const { data: capacity, isError: capacityError } = useQuery(
-    depositCapacityQuery(rpc, vault),
-  )
+  const {
+    data: capacity,
+    isError: capacityError,
+    refetch: refetchCapacity,
+  } = useQuery(depositCapacityQuery(rpc, vault))
   const deposit = useDeposit(vault, {
     // runs once the deposit is submitted, before its result: keep the
     // mutation, so a deposit that fails on chain still explains why
@@ -175,6 +177,11 @@ export const DepositForm = ({
     ? (deposit.variables.trade?.depositAmount ??
       parseUnits(deposit.variables.amount, collateral.decimals))
     : null
+  // a deposit beaten to the room fails before the next capacity poll shows
+  // it; read the room now, so the failure says why without a wait
+  useEffect(() => {
+    if (depositFailed) void refetchCapacity()
+  }, [depositFailed, refetchCapacity])
   const filledFirst =
     depositFailed &&
     !!capacity &&
