@@ -131,7 +131,11 @@ export const DepositForm = ({
   const reserve = useDepositMaxBalance(selected, balance)
   // an unresolved estimate only holds validation at the wallet balance: MAX and
   // submit wait for it
-  const spendable = reserve.isResolved ? reserve.maxBalance : balance
+  // the fee math is not bound to the asset's decimals; a longer amount fails
+  // validation, so round down to what the asset can hold
+  const spendable = reserve.isResolved
+    ? Big(reserve.maxBalance).round(asset.decimals, Big.roundDown).toFixed()
+    : balance
   // a buy deposit sizes its own fill to the room and spends only what that
   // costs, so the whole balance is a valid amount and the room never binds it
   const isBuyDeposit = isSwap && !isOneToOneDeposit(selected)
@@ -306,7 +310,9 @@ export const DepositForm = ({
                     )
                   },
                   isMaxDisabled:
-                    !reserve.isResolved || !(Number(maxButtonBalance) > 0),
+                    atCapacity ||
+                    !reserve.isResolved ||
+                    !(Number(maxButtonBalance) > 0),
                 }}
                 amountError={
                   fieldState.error?.message ??

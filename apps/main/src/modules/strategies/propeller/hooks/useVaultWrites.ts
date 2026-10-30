@@ -445,6 +445,8 @@ export function useDepositReferenceTx(
   const address = useAccount().account?.address ?? ""
   const payDecimals = getAssetWithFallback(assetId).decimals
   const collateralDecimals = getAssetWithFallback(vault.assetId).decimals
+  // a whole-balance sell builds as sell_all, which rejects a zero slippage
+  const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
 
   return useQuery({
     queryKey: [
@@ -453,6 +455,7 @@ export function useDepositReferenceTx(
       address,
       assetId,
       balance,
+      slippage,
     ],
     enabled: enabled && rpc.isReady && !!address && Big(balance || "0").gt(0),
     queryFn: async () => {
@@ -479,7 +482,7 @@ export function useDepositReferenceTx(
           assetIn: assetId,
           assetOut: vault.assetId,
           amountIn: balance,
-          slippage: 0,
+          slippage,
           address,
         }),
       )
