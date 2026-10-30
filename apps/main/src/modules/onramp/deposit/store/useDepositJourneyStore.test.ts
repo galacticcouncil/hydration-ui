@@ -46,6 +46,16 @@ beforeEach(() =>
 )
 
 describe("v3 deposit journey", () => {
+  it("uses the active portfolio receiver when reopening instead of an older saved destination", () => {
+    journey().setDestination("old", { ...recipient, address: "old" })
+    journey().start(recipient)
+    expect(journey()).toMatchObject({
+      suggestedDestinationAccount: recipient,
+      destinationAccount: null,
+      destinationAddress: "",
+      destinationConfirmed: false,
+    })
+  })
   it("checks a guided receiver in place without losing the amount or source", () => {
     journey().setSelection(
       { account: source, chainKey: "solana", assetKey: "sol" },

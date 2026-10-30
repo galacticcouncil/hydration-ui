@@ -1,5 +1,6 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
 import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import type { Account } from "@galacticcouncil/web3-connect"
 import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
@@ -50,6 +51,7 @@ export type TExecutedAmount = {
 }
 
 export type TransactionCommon = {
+  signingAccount?: Account
   title?: string
   description?: string
   fee?: TransactionFee
@@ -92,7 +94,7 @@ type MultiTransactionConfig = (
   beforeNext?: () => Promise<void>
 }
 
-interface MultiTransactionInput {
+interface MultiTransactionInput extends TransactionCommon {
   tx: MultiTransactionConfig[]
 }
 

@@ -12,6 +12,7 @@ import { getChainId } from "@galacticcouncil/utils"
 import {
   Account,
   useAccount,
+  useAccountOverride,
   useWeb3Connect,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
@@ -95,6 +96,8 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const { account } = useAccount()
+  const accountOverride = useAccountOverride()
+  const setAccount = useWeb3Connect((state) => state.setAccount)
   const {
     transfer,
     selectedRoute,
@@ -133,7 +136,6 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
     account?.address === selectedAccount.address &&
     account?.provider === selectedAccount.provider &&
     canUseDepositAccount(account, srcChain)
-  const setAccount = useWeb3Connect((state) => state.setAccount)
   const queryClient = useQueryClient()
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const bridgeTag = selectedRoute ? getPrimaryBridgeTag(selectedRoute) : null
@@ -215,7 +217,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
     onBack ?? (() => setPhase(variant === "guided" ? "sources" : "assets"))
   const changeSource = (row: DepositBalanceRow, signer: Account) => {
     if (!canUseDepositAccount(signer, row.source.chain)) return
-    setAccount(signer)
+    if (accountOverride === undefined) setAccount(signer)
     reset(getDepositSourceFormValues(getValues(), row))
     useDepositJourneyStore.getState().setSelection({
       account: signer,
@@ -378,7 +380,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
                       <Button
                         variant="secondary"
                         size="small"
-                        onClick={() => setAccount(selectedAccount)}
+                        onClick={() => setPhase("sources")}
                       >
                         {t("deposit.flow.amount.useSource")}
                       </Button>
@@ -472,10 +474,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
               description={t("deposit.flow.amount.sourceChanged")}
             />
             {selectedAccount && (
-              <Button
-                variant="secondary"
-                onClick={() => setAccount(selectedAccount)}
-              >
+              <Button variant="secondary" onClick={() => setPhase("sources")}>
                 {t("deposit.flow.amount.useSource")}
               </Button>
             )}

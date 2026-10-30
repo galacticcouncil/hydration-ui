@@ -12,7 +12,7 @@ import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
 import {
   Account,
-  useWeb3Connect,
+  useAccount,
   WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
@@ -61,7 +61,7 @@ export const DepositQuickHydrationForm: FC<Props> = ({
   const { papi } = useRpcProvider()
   const { tradable } = useAssets()
   const accounts = useDepositAccounts({ signersOnly: true })
-  const active = useWeb3Connect((state) => state.account)
+  const { account: sourceSigner } = useAccount()
   const savedReceiver = useDepositJourneyStore(
     (state) => state.destinationAccount ?? state.suggestedDestinationAccount,
   )
@@ -91,13 +91,13 @@ export const DepositQuickHydrationForm: FC<Props> = ({
     setValue("address", receiver?.rawAddress ?? "", {
       shouldValidate: !!sourceAccount,
     })
-  }, [receiver?.rawAddress, active?.publicKey, sourceAccount, setValue])
+  }, [receiver?.rawAddress, sourceSigner?.publicKey, sourceAccount, setValue])
   const close = () => useOnrampModal.getState().setModal(null)
   const submit = useSubmitTransferPosition({ onClose: close })
   const sourceCurrent =
     !!sourceAccount &&
-    active?.provider === sourceAccount.provider &&
-    active.address === sourceAccount.address
+    sourceSigner?.provider === sourceAccount.provider &&
+    sourceSigner.address === sourceAccount.address
   const eligibleReceiver = (account: Account) => account.canUseOnHydration
 
   if (connecting)
@@ -234,11 +234,10 @@ export const DepositQuickHydrationForm: FC<Props> = ({
                 disabled={!sourceCurrent || !form.formState.isValid}
                 onClick={() => {
                   void form.handleSubmit((values) => {
-                    const current = useWeb3Connect.getState().account
                     if (
                       sourceAccount &&
-                      current?.provider === sourceAccount.provider &&
-                      current.address === sourceAccount.address
+                      sourceSigner?.provider === sourceAccount.provider &&
+                      sourceSigner.address === sourceAccount.address
                     )
                       submit.mutate(values)
                   })()

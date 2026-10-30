@@ -19,7 +19,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { useWeb3Connect } from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
@@ -60,8 +60,10 @@ export const DepositConnectedAssets = () => {
   const { sourceChainAssetPairs } = useXcmProvider()
   const { getValues, setValue } = useFormContext<XcmFormValues>()
   const resetAmounts = useResetAmounts()
-  const setAccount = useWeb3Connect((state) => state.setAccount)
-  const activeAccount = useWeb3Connect((state) => state.account)
+  const setSourceAccount = useOnrampModal(
+    (state) => state.setDepositSourceAccount,
+  )
+  const { account: activeAccount } = useAccount()
   const paginateTo = useOnrampStore((state) => state.paginateTo)
   const setWalletFirstAsset = useOnrampModal(
     (state) => state.setWalletFirstAsset,
@@ -126,7 +128,7 @@ export const DepositConnectedAssets = () => {
     setValue("srcAsset", asset)
   }
   const selectHolding = (row: DepositBalanceRow) => {
-    setAccount(row.source.account)
+    setSourceAccount(row.source.account)
     selectAsset(
       row.source.chain,
       row.source.assets.find((asset) => asset.key === row.balance.key) ??

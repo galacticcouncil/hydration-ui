@@ -65,8 +65,8 @@ export const DepositQuickStart = () => {
   const setWalletContentWidth = useOnrampModal(
     (state) => state.setWalletContentWidth,
   )
-  const setAccount = useWeb3Connect((state) => state.setAccount)
   const accounts = useDepositAccounts({ signersOnly: true })
+  const setAccount = useWeb3Connect((state) => state.setAccount)
   const catalogLoading = useAssets().all.size === 0
   const intent = useDepositJourneyStore((state) => state.assetIntent)
   const selection = useDepositJourneyStore((state) => state.selection)
@@ -131,14 +131,25 @@ export const DepositQuickStart = () => {
         return
       const journey = useDepositJourneyStore.getState()
       const values = getValues()
-      const active = useWeb3Connect.getState().account
-      if (
-        active?.provider !== account.provider ||
-        active.address !== account.address
-      )
-        setAccount(account)
+      if (!directEntry) setAccount(account)
       // Native Hydration transfers share the quick UI, but do not use XCM routes.
-      if (selectedPair.chain.key === HYDRATION_CHAIN_KEY) return
+      if (selectedPair.chain.key === HYDRATION_CHAIN_KEY) {
+        if (
+          journey.selection?.account.provider !== account.provider ||
+          journey.selection.account.address !== account.address ||
+          journey.selection.chainKey !== selectedPair.chain.key ||
+          journey.selection.assetKey !== selectedAsset.key
+        )
+          journey.setSelection(
+            {
+              account,
+              chainKey: selectedPair.chain.key,
+              assetKey: selectedAsset.key,
+            },
+            { stayOnSources: true },
+          )
+        return
+      }
       if (
         journey.selection?.chainKey === selectedPair.chain.key &&
         journey.selection.assetKey === selectedAsset.key &&
@@ -169,7 +180,7 @@ export const DepositQuickStart = () => {
         { stayOnSources: true },
       )
     },
-    [selectedPair, selectedAsset, getValues, setAccount, reset],
+    [selectedPair, selectedAsset, getValues, reset, directEntry, setAccount],
   )
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
+import { useAccountOverride } from "@/context/AccountOverrideContext"
 import { Account, useWeb3Connect } from "@/hooks/useWeb3Connect"
 import { toAccount } from "@/utils"
 
@@ -20,9 +21,20 @@ type UseAccountReturn =
     }
 
 export const useAccount = (): UseAccountReturn => {
-  const { account, accounts, disconnect } = useWeb3Connect(
-    useShallow(pick(["account", "accounts", "disconnect"])),
-  )
+  const {
+    account: activeAccount,
+    accounts,
+    disconnect,
+  } = useWeb3Connect(useShallow(pick(["account", "accounts", "disconnect"])))
+  const override = useAccountOverride()
+  const account =
+    override === undefined
+      ? activeAccount
+      : (accounts.find(
+          (item) =>
+            item.provider === override?.provider &&
+            item.address === override.address,
+        ) ?? null)
 
   return useMemo(
     () =>

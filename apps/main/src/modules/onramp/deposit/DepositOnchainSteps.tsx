@@ -1,8 +1,4 @@
-import {
-  useWeb3Connect,
-  WalletMode,
-  Web3ConnectPage,
-} from "@galacticcouncil/web3-connect"
+import { WalletMode, Web3ConnectPage } from "@galacticcouncil/web3-connect"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -15,10 +11,7 @@ import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import {
-  getWalletModeByChain,
-  getXcmFormDefaults,
-} from "@/modules/xcm/transfer/utils/chain"
+import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const DepositOnchainSteps = () => {
@@ -30,7 +23,9 @@ export const DepositOnchainSteps = () => {
   const setWalletContentWidth = useOnrampModal(
     (state) => state.setWalletContentWidth,
   )
-  const setAccount = useWeb3Connect((state) => state.setAccount)
+  const setSourceAccount = useOnrampModal(
+    (state) => state.setDepositSourceAccount,
+  )
   const { getValues, setValue } = useFormContext<XcmFormValues>()
 
   if (page === OnrampScreen.DepositOnchainWallet) {
@@ -74,12 +69,7 @@ export const DepositOnchainSteps = () => {
           useOnrampModal.getState().setModal("deposit")
         }}
         onAccountSelect={(account) => {
-          setAccount(account)
-          const defaults = getXcmFormDefaults(account)
-          if (!getValues("destAddress")) {
-            setValue("destAddress", defaults.destAddress)
-            setValue("destAccount", defaults.destAccount)
-          }
+          setSourceAccount(account)
           if (resumingAsset && canUseDepositAccount(account, sourceChain)) {
             setValue("srcAmount", "")
             setValue("destAmount", "")

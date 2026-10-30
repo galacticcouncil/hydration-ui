@@ -7,6 +7,10 @@ export { Web3ConnectModal } from "@/components/Web3ConnectModal"
 export { Web3ConnectPage } from "@/components/Web3ConnectPage"
 export { Web3ConnectSession } from "@/components/Web3ConnectSession"
 export { Web3ConnectModalPage } from "@/config/modal"
+export {
+  AccountOverrideProvider,
+  useAccountOverride,
+} from "@/context/AccountOverrideContext"
 export * from "@/hooks"
 export type { MultisigConfig, MultisigStore } from "@/hooks/useMultisigStore"
 export { useMultisigStore } from "@/hooks/useMultisigStore"

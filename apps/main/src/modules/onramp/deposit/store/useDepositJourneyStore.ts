@@ -103,7 +103,11 @@ export const useDepositJourneyStore = create<DepositJourneyStore>()(
           active: true,
           pendingTransfers: previous.pendingTransfers,
           suggestedDestinationAccount: activeAccount ?? null,
-          ...(previous.destinationConfirmed && previous.destinationAccount
+          ...(previous.destinationConfirmed &&
+          previous.destinationAccount &&
+          (!activeAccount?.canUseOnHydration ||
+            (previous.destinationAccount.provider === activeAccount.provider &&
+              previous.destinationAccount.address === activeAccount.address))
             ? {
                 destinationAddress: previous.destinationAddress,
                 destinationAccount: previous.destinationAccount,

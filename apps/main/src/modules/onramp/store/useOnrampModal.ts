@@ -1,5 +1,6 @@
 import { isAddressValidOnHydration } from "@galacticcouncil/utils"
 import {
+  Account,
   toAccount,
   useWeb3Connect,
   WalletProviderStatus,
@@ -49,6 +50,8 @@ type OnrampModalState = {
   openSelectedDepositFlow: () => void
   openDepositChoice: () => void
   walletFirstFlow: DepositWalletFirstFlow
+  depositSourceAccount: Account | null
+  setDepositSourceAccount: (account: Account) => void
   walletFirstAsset: DepositAssetIntent | null
   setWalletFirstAsset: (selection: DepositAssetIntent | null) => void
   withdrawFlow: WithdrawFlow
@@ -100,6 +103,9 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
     })
   },
   walletFirstFlow: "current",
+  depositSourceAccount: null,
+  setDepositSourceAccount: (depositSourceAccount) =>
+    set({ depositSourceAccount }),
   walletFirstAsset: null,
   setWalletFirstAsset: (walletFirstAsset) => set({ walletFirstAsset }),
   withdrawFlow: "guided",
@@ -183,6 +189,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       set({
         modal: "depositOnchain",
         walletFirstFlow: flow,
+        depositSourceAccount: null,
         walletFirstAsset: options?.assetIntent ?? null,
       })
       return
