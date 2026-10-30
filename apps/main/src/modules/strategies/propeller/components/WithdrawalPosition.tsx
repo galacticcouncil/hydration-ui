@@ -68,88 +68,72 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
   // queue ahead — an estimate, so it is shown coarse and never as a promise
   const eta =
     row.claimableInSeconds !== null ? formatEta(row.claimableInSeconds) : null
-  // what is still to come, named as an amount so it never reads as the whole
-  // withdrawal: beside a Claim button, what follows that claim; otherwise all
-  // not yet claimed, a part settled between quarters included, so claimed
-  // plus this is the whole withdrawal
-  const toSettle = Math.max(
-    (row.collateralOwed ?? 0) -
-      (status === "claimable"
-        ? (row.settledSoFar ?? 0)
-        : (row.settledSoFar ?? 0) - (row.collateralSettled ?? 0)),
-    0,
-  )
-  const moreLine = row.reserveShort
+  // the row tells the whole withdrawal, what was claimed and what is left:
+  // claimed plus left is the whole, however settlement and the quarters a
+  // partial claim waits for split what is left
+  const left = Math.max((row.collateralOwed ?? 0) - row.claimedEth, 0)
+  const leftAmount = t("common:currency", {
+    value: left,
+    symbol,
+    maximumFractionDigits: 4,
+  })
+  const hasClaimed = row.claimedEth > 0
+  const allClaimableIn = row.reserveShort
     ? t("withdrawals.eta.reserve")
-    : eta && toSettle > 0
-      ? t("withdrawals.eta.more", {
-          amount: t("common:currency", {
-            value: toSettle,
-            symbol,
-            maximumFractionDigits: 4,
-          }),
-          eta,
-        })
+    : eta
+      ? t("withdrawals.eta.all", { eta })
       : undefined
-  const stats =
-    status === "pending" && (row.reserveShort || eta)
+  // before the first claim what is left is the whole withdrawal: the row
+  // only says when, as while it is queued
+  const showsWhen =
+    (status === "pending" || (status === "settling" && !hasClaimed)) &&
+    (row.reserveShort || eta)
+  const stats = showsWhen
+    ? [
+        {
+          // label above the value at every width: beside the value and
+          // the chip, the label leaves a narrow phone no room
+          value: (
+            <Flex direction="column" align="flex-end">
+              <ValueStatsLabel>{t("withdrawals.eta.label")}</ValueStatsLabel>
+              <Text as="span" whiteSpace="nowrap">
+                {row.reserveShort ? t("withdrawals.eta.reserveShort") : eta}
+              </Text>
+            </Flex>
+          ),
+          tooltip: row.reserveShort
+            ? t("withdrawals.eta.reserveTooltip")
+            : undefined,
+        },
+      ]
+    : // a claim button stands where the stat goes, and next to it the stat
+      // overflows the card — show it only while there is no button
+      status === "settling" && left > 0
       ? [
           {
-            // label above the value at every width: beside the value and
-            // the chip, the label leaves a narrow phone no room
-            value: (
-              <Flex direction="column" align="flex-end">
-                <ValueStatsLabel>{t("withdrawals.eta.label")}</ValueStatsLabel>
-                <Text as="span" whiteSpace="nowrap">
-                  {row.reserveShort ? t("withdrawals.eta.reserveShort") : eta}
-                </Text>
-              </Flex>
-            ),
-            tooltip: row.reserveShort
-              ? t("withdrawals.eta.reserveTooltip")
-              : undefined,
+            value: t("withdrawals.left", { amount: leftAmount }),
+            bottomLabel: allClaimableIn,
           },
         ]
-      : // a claim button already names the settled amount, and next to it
-        // the stat overflows the card — show it only while there is no button
-        row.state === "partial" &&
-          (row.collateralOwed ?? 0) > 0 &&
-          status !== "claimable"
-        ? [
-            {
-              // two lines, mirroring the amount column: progress of the
-              // whole withdrawal, then what is still to come and when. The
-              // chip already says Settling. Between quarters a settled part
-              // waits for its Claim button, so the progress counts all that
-              // settled, claimed or not; as a share only, since the amount
-              // column already names the claimed part
-              value: t("withdrawals.settledInline", {
-                pct: (
-                  ((row.settledSoFar ?? 0) / (row.collateralOwed || 1)) *
-                  100
-                ).toFixed(1),
-              }),
-              bottomLabel: moreLine,
-            },
-          ]
-        : undefined
+      : undefined
 
   // what already reached the wallet, beside the USD value
-  const claimed =
-    row.claimedEth > 0
-      ? t("withdrawals.claimedSoFar", {
-          amount: t("common:currency", {
-            value: row.claimedEth,
-            symbol,
-            maximumFractionDigits: 4,
-          }),
-        })
-      : null
-  // a partly claimable row has its Claim button where the estimate goes, so
-  // what is still to come gets its own line under the USD one
+  const claimed = hasClaimed
+    ? t("withdrawals.claimedSoFar", {
+        amount: t("common:currency", {
+          value: row.claimedEth,
+          symbol,
+          maximumFractionDigits: 4,
+        }),
+      })
+    : null
+  // a partly claimable row has its Claim button where the stat goes, so what
+  // is left gets its own line under the USD one
   const rest =
-    status === "claimable" && row.state === "partial"
-      ? (moreLine ?? null)
+    status === "claimable" && row.state === "partial" && allClaimableIn
+      ? hasClaimed
+        ? t("withdrawals.leftAll", { amount: leftAmount, all: allClaimableIn })
+        : allClaimableIn
       : null
   // the contract keeps only when the unwind may start; the request came one
   // withdrawal delay earlier (exact while the delay is unchanged). It tells
