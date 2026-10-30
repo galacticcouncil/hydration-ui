@@ -34,7 +34,10 @@ import { useTranslation } from "react-i18next"
 import { neckworkClient } from "@/api/neckwork"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { withHydrationDepositSource } from "@/modules/onramp/deposit/DepositLocalSource.utils"
-import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import {
+  canUseDepositAccount,
+  isDepositReceivingAccount,
+} from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { DepositPreviewForm } from "@/modules/onramp/deposit/preview/steps/DepositPreviewForm"
@@ -70,6 +73,12 @@ export const DepositQuickStart = () => {
   const catalogLoading = useAssets().all.size === 0
   const intent = useDepositJourneyStore((state) => state.assetIntent)
   const selection = useDepositJourneyStore((state) => state.selection)
+  const receivingAddress = useDepositJourneyStore(
+    (state) =>
+      state.destinationAccount?.rawAddress ??
+      state.suggestedDestinationAccount?.rawAddress ??
+      "",
+  )
   const [chainKey, setChainKey] = useState(intent?.chainKey ?? "")
   const [assetKey, setAssetKey] = useState(intent?.assetKey ?? "")
   const [sourceKey, setSourceKey] = useState("")
@@ -113,7 +122,8 @@ export const DepositQuickStart = () => {
   const eligible = (account: Account) =>
     !!selectedPair &&
     !!selectedAsset &&
-    canUseDepositAccount(account, selectedPair.chain)
+    canUseDepositAccount(account, selectedPair.chain) &&
+    (!directEntry || !isDepositReceivingAccount(account, receivingAddress))
   const compatible = accounts.filter(eligible)
   const sameRoute =
     selection?.chainKey === chainKey && selection?.assetKey === assetKey
@@ -126,7 +136,8 @@ export const DepositQuickStart = () => {
       if (
         !selectedPair ||
         !selectedAsset ||
-        !canUseDepositAccount(account, selectedPair.chain)
+        !canUseDepositAccount(account, selectedPair.chain) ||
+        (directEntry && isDepositReceivingAccount(account, receivingAddress))
       )
         return
       const journey = useDepositJourneyStore.getState()
@@ -180,8 +191,28 @@ export const DepositQuickStart = () => {
         { stayOnSources: true },
       )
     },
-    [selectedPair, selectedAsset, getValues, reset, directEntry, setAccount],
+    [
+      selectedPair,
+      selectedAsset,
+      getValues,
+      reset,
+      directEntry,
+      receivingAddress,
+      setAccount,
+    ],
   )
+
+  useEffect(() => {
+    if (
+      !directEntry ||
+      !selection ||
+      !isDepositReceivingAccount(selection.account, receivingAddress)
+    )
+      return
+    setSourceKey("")
+    useDepositJourneyStore.setState({ selection: null, amount: "" })
+    reset({ ...getValues(), srcAmount: "", destAmount: "" })
+  }, [directEntry, selection, receivingAddress, getValues, reset])
 
   useEffect(() => {
     if (selectedSource) selectSource(selectedSource)

@@ -1,9 +1,16 @@
+import {
+  safeConvertAddressSS58,
+  safeConvertH160toSS58,
+} from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { describe, expect, it, vi } from "vitest"
 
-import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import {
+  canUseDepositAccount,
+  isDepositReceivingAccount,
+} from "@/modules/onramp/deposit/DepositOnchain.utils"
 
 // The picker owns address validation; the native wallet mode gate remains upstream.
 vi.mock("@/modules/xcm/transfer/utils/chain", () => ({
@@ -35,6 +42,25 @@ const substrate = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 const evm = "0x0000000000000000000000000000000000000001"
 
 describe("Deposit source accounts", () => {
+  it("excludes the receiving address even through another wallet and SS58 prefix", () => {
+    const source = account(WalletProviderType.PolkadotJS, substrate)
+    expect(
+      isDepositReceivingAccount(source, safeConvertAddressSS58(substrate, 63)),
+    ).toBe(true)
+  })
+  it("matches an EVM receiver with its Hydration representation", () => {
+    expect(
+      isDepositReceivingAccount(
+        account(WalletProviderType.MetaMask, evm),
+        safeConvertH160toSS58(evm),
+      ),
+    ).toBe(true)
+  })
+  it("keeps different source accounts and accounts without a receiver available", () => {
+    const source = account(WalletProviderType.MetaMask, evm)
+    expect(isDepositReceivingAccount(source, substrate)).toBe(false)
+    expect(isDepositReceivingAccount(source, "")).toBe(false)
+  })
   it("requires a selected account", () => {
     expect(canUseDepositAccount(null, chain("assethub"))).toBe(false)
   })

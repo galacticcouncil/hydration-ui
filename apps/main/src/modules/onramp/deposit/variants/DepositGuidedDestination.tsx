@@ -140,6 +140,10 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
         onAccountSelect={(account) => {
           if (!eligible(account)) return
           setCandidate(account)
+          useDepositJourneyStore.setState({
+            destinationAccount: account,
+            destinationConfirmed: false,
+          })
           setConnecting(false)
         }}
       />
