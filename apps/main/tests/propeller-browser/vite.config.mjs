@@ -19,6 +19,7 @@ const imports = [
   "@/modules/strategies/propeller/hooks/useVaultWrites",
   "@/modules/strategies/propeller/hooks/usePropellerVaults",
   "@/modules/strategies/propeller/hooks/useDepositQuote",
+  "@/modules/strategies/propeller/hooks/useDepositMaxBalance",
   "@/modules/strategies/propeller/hooks/useCollateralEquivalent",
   "@tanstack/react-query",
 ]

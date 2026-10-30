@@ -64,36 +64,41 @@ describe("Native EVM binding composition", () => {
   })
 })
 
-describe("EVM calls inside a dispatch_evm_call", () => {
-  const evmCall = (gas: bigint, price: bigint) => ({
+describe("nested EVM calls", () => {
+  const evmCall = {
     type: "EVM",
     value: {
       type: "call",
-      value: { gas_limit: gas, max_fee_per_gas: [price, 0n, 0n, 0n] },
+      value: { gas_limit: 10n, max_fee_per_gas: [3n, 0n, 0n, 0n] },
     },
-  })
-  const dispatched = (inner: unknown) => ({
+  }
+  const dispatched = {
     type: "Dispatcher",
-    value: { type: "dispatch_evm_call", value: { call: inner } },
-  })
-  const asTx = (tx: AnyPapiTx) =>
-    ({ ...tx, signSubmitAndWatch: () => undefined }) as unknown as AnyPapiTx
-  const sell = { type: "Router", value: { type: "sell", value: {} } }
-
-  it("counts them as EVM calls and adds their up-front gas to the fee", () => {
-    const tx = asTx(
-      batch([
-        sell,
-        dispatched(evmCall(2_000_000n, 3n)),
-        dispatched(evmCall(1_000_000n, 3n)),
-      ]),
-    )
-    expect(containsEvmCall(tx)).toBe(true)
-    expect(getNestedEvmCallsFeeWei(tx)).toBe(9_000_000n)
+    value: { type: "dispatch_evm_call", value: { call: evmCall } },
+  }
+  const trade = { type: "Router", value: { type: "buy", value: {} } }
+  const asTx = (decodedCall: unknown) =>
+    ({
+      decodedCall,
+      signSubmitAndWatch: vi.fn(),
+    }) as unknown as AnyPapiTx
+  const batchOf = (calls: unknown[]) => ({
+    type: "Utility",
+    value: { type: "batch_all", value: { calls } },
   })
 
-  it("finds no EVM call in a batch without one", () => {
-    expect(containsEvmCall(asTx(batch([sell, binding])))).toBe(false)
-    expect(getNestedEvmCallsFeeWei(asTx(batch([sell])))).toBe(0n)
+  it("sees an EVM call inside dispatch_evm_call, alone or in a batch", () => {
+    expect(containsEvmCall(asTx(dispatched))).toBe(true)
+    expect(containsEvmCall(asTx(batchOf([trade, dispatched])))).toBe(true)
+  })
+
+  it("does not see one where there is none", () => {
+    expect(containsEvmCall(asTx(batchOf([trade])))).toBe(false)
+  })
+
+  it("collects each dispatched call's gas", () => {
+    expect(
+      getNestedEvmCallsFeeWei(asTx(batchOf([trade, dispatched, dispatched]))),
+    ).toBe(60n)
   })
 })

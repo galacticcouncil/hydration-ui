@@ -1,3 +1,4 @@
+import { type Trade } from "@galacticcouncil/sdk-next/sor"
 import {
   decodeFunctionData,
   erc20Abi,
@@ -9,18 +10,20 @@ import { describe, expect, it, vi } from "vitest"
 
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import { DEPOSIT_MIN_GAS } from "@/modules/strategies/propeller/constants"
+import { type Papi } from "@/providers/rpcProvider"
 
 import {
   assertDepositCapacity,
-  bufferedDeposit,
+  buildDepositBuy,
   encodeDeposit,
+  isSwapDepositReady,
   prepareApproval,
   prepareFundedDeposit,
-  prepareSwapDeposit,
+  readBuyLimit,
   readDepositCapacity,
   readSellLimit,
   readSwapDeposit,
-  sweepCall,
+  sizeSwapDeposit,
 } from "./deposit"
 
 const vault = "0x0000000000000000000000000000000000000001"
@@ -353,105 +356,13 @@ describe("Sell limit of a trade call", () => {
   })
 })
 
-describe("Swap deposit", () => {
-  const swapArgs = {
-    vault,
-    asset,
-    owner,
-    collateralId: "4200",
-    assetIn: "34",
-    quotedAmountIn: 3n * unit,
-    quotedAmountOut: 2n * unit,
-    tradeCall: routerSell(),
-  } as const
-
-  it("deposits and approves the buffered quote of a pool route, which the sell must deliver", async () => {
-    const swap = await prepareSwapDeposit(mockClient().client, swapArgs)
-    const amount = bufferedDeposit(2n * unit)
-    expect(swap).toMatchObject({ exact: false, amount, sellsAll: false })
-    expect(minOut(swap.tradeCall)).toBe(amount)
-    expect(
-      swap.approval &&
-        decodeFunctionData({ abi: erc20Abi, data: swap.approval.data }),
-    ).toEqual({ functionName: "approve", args: [vault, amount] })
-  })
-
-  it("refuses a pool route before the swap while the vault takes no deposits", async () => {
-    for (const overrides of [
-      { totalSupply: 0n },
-      { paused: true },
-      { totalAssets: 10n * unit },
-    ])
-      await expect(
-        prepareSwapDeposit(mockClient(overrides).client, swapArgs),
-      ).rejects.toThrow("availability changed")
-  })
-
-  it("approves exactly the full amount of a 1:1 Aave unwrap", async () => {
-    const { amount, approval } = await prepareSwapDeposit(mockClient().client, {
-      ...swapArgs,
-      assetIn: "420",
-      tradeCall: withExtraGas(aaveSell()),
-    })
-    expect(amount).toBe(3n * unit - 2n)
-    expect(
-      approval && decodeFunctionData({ abi: erc20Abi, data: approval.data }),
-    ).toEqual({ functionName: "approve", args: [vault, 3n * unit - 2n] })
-  })
-
-  it("skips the approval when the allowance already covers the output", async () => {
-    const mock = mockClient({ allowance: 3n * unit })
-    expect(
-      (
-        await prepareSwapDeposit(mock.client, {
-          ...swapArgs,
-          assetIn: "420",
-          tradeCall: aaveSell(),
-        })
-      ).approval,
-    ).toBe(null)
-  })
-
-  it("rejects a trade that does not buy this vault's collateral before reading the vault", async () => {
-    const mock = mockClient()
-    for (const tradeCall of [
-      routerSell({ asset_out: 1000765 }),
-      routerSell({ asset_in: 5 }),
-      { type: "Router", value: { type: "buy", value: {} } },
-    ])
-      await expect(
-        prepareSwapDeposit(mock.client, { ...swapArgs, tradeCall }),
-      ).rejects.toThrow("does not buy")
-    expect(mock.readContract).not.toHaveBeenCalled()
-  })
-
-  it("checks a 1:1 unwrap against the remaining capacity", async () => {
-    await expect(
-      prepareSwapDeposit(mockClient().client, {
-        ...swapArgs,
-        assetIn: "420",
-        tradeCall: aaveSell({ amount_in: 8n * unit }),
-      }),
-    ).rejects.toThrow("availability changed")
-  })
-
-  it("checks a pool route's deposit against the remaining capacity", async () => {
-    await expect(
-      prepareSwapDeposit(mockClient().client, {
-        ...swapArgs,
-        quotedAmountOut: 8n * unit,
-      }),
-    ).rejects.toThrow("availability changed")
-  })
-
-  it("encodes the batched deposit for the swapped amount with a gas limit above the floor", () => {
-    const call = encodeDeposit({ ...args, amount: 2n * unit })
-    expect(call.to).toBe(vault)
-    expect(call.gas).toBeGreaterThanOrEqual(DEPOSIT_MIN_GAS)
-    expect(decodeFunctionData({ abi: VAULT_ABI, data: call.data })).toEqual({
-      functionName: "deposit",
-      args: [2n * unit, owner],
-    })
+it("encodes the batched deposit for the swapped amount with a gas limit above the floor", () => {
+  const call = encodeDeposit({ ...args, amount: 2n * unit })
+  expect(call.to).toBe(vault)
+  expect(call.gas).toBeGreaterThanOrEqual(DEPOSIT_MIN_GAS)
+  expect(decodeFunctionData({ abi: VAULT_ABI, data: call.data })).toEqual({
+    functionName: "deposit",
+    args: [2n * unit, owner],
   })
 })
 
@@ -471,16 +382,11 @@ const geth = {
   assetIn: "420",
   collateralId: "4200",
   quotedAmountIn: 3n * unit,
-  quotedAmountOut: 3n * unit,
 }
 
 describe("Deposit amount of a swap", () => {
   it("deposits the full input of a single Aave hop into the collateral, less 2 wei", () => {
-    const { exact, depositAmount, tradeCall } = readSwapDeposit(
-      aaveSell(),
-      geth,
-    )
-    expect(exact).toBe(true)
+    const { depositAmount, tradeCall } = readSwapDeposit(aaveSell(), geth)
     expect(depositAmount).toBe(3n * unit - 2n)
     expect(minOut(tradeCall)).toBe(3n * unit - 2n)
   })
@@ -509,31 +415,14 @@ describe("Deposit amount of a swap", () => {
     expect(minOut(tradeCall)).toBe(5n * unit - 2n)
   })
 
-  it("deposits the buffered quote of a pool route and makes it the sell's minimum", () => {
-    for (const [assetIn, route] of [
-      [
-        "34",
-        [
-          hop({ type: "Aave" }, 34, 1007),
-          hop({ type: "Stableswap", value: 4200 }, 1007, 4200),
-        ],
-      ],
-      ["1000809", [hop({ type: "Stableswap", value: 4200 }, 1000809, 4200)]],
-    ] as const) {
-      const call = routerSell({ asset_in: Number(assetIn), route })
-      const result = readSwapDeposit(call, {
-        ...geth,
-        assetIn,
-        quotedAmountOut: 4n * unit,
-      })
-      const amount = 4n * unit - (4n * unit * 5n) / 10_000n
-      expect(result).toMatchObject({
-        exact: false,
-        depositAmount: amount,
-        sellsAll: false,
-      })
-      expect(minOut(result.tradeCall)).toBe(amount)
-    }
+  it("rejects a pool route, which is bought rather than sold", () => {
+    const route = [
+      hop({ type: "Aave" }, 34, 1007),
+      hop({ type: "Stableswap", value: 4200 }, 1007, 4200),
+    ]
+    expect(() =>
+      readSwapDeposit(routerSell({ route }), { ...geth, assetIn: "34" }),
+    ).toThrow("not a 1:1 unwrap")
   })
 
   it("rejects an Aave hop that does not buy the collateral", () => {
@@ -559,59 +448,169 @@ describe("Deposit amount of a swap", () => {
   })
 })
 
-describe("Sweep of what a swap delivers above its minimum", () => {
-  const ethRoute = [
-    hop({ type: "Aave" }, 34, 1007),
-    hop({ type: "Stableswap", value: 4200 }, 1007, 4200),
-  ]
+describe("Swap deposit sizing", () => {
+  const decimals = 18
+  const floorUnit = 10n ** 12n
 
-  it("sells all of the collateral back along the reverse route", () => {
-    expect(sweepCall(routerSell({ route: ethRoute }))).toEqual({
+  it("buys 0.3% under the sell quote when the vault has room", () => {
+    expect(sizeSwapDeposit(unit, 10n * unit, decimals)).toBe(997n * 10n ** 15n)
+  })
+
+  it("caps at the room, floored to 6 decimals", () => {
+    expect(sizeSwapDeposit(unit, unit / 2n + 7n, decimals)).toBe(unit / 2n)
+  })
+
+  it("keeps a room already on the 6-decimal boundary: the floor is only a mitigation", () => {
+    expect(sizeSwapDeposit(unit, 5n * floorUnit, decimals)).toBe(5n * floorUnit)
+  })
+
+  it("buys nothing when the room is below one rounding unit, so the deposit isn't ready", () => {
+    const depositAmount = sizeSwapDeposit(unit, floorUnit - 1n, decimals)
+    expect(depositAmount).toBe(0n)
+    expect(
+      isSwapDepositReady({
+        tx: "buy",
+        isLoading: false,
+        isError: false,
+        depositAmount,
+      }),
+    ).toBe(false)
+  })
+
+  it("rejects at submit when the room shrank below the quoted deposit", async () => {
+    await expect(
+      prepareApproval(mockClient({ totalAssets: 10n * unit - 1n }).client, {
+        ...args,
+        amount: 2n,
+      }),
+    ).rejects.toThrow("availability changed")
+  })
+})
+
+describe("Swap deposit spend limit", () => {
+  const stable = { pool: "Stableswap" }
+  const aave = { pool: "Aave" }
+
+  it("adds the buffer to the quoted cost", () => {
+    expect(
+      readBuyLimit([stable], {
+        amountIn: 100n * unit,
+        typedAmount: 1000n * unit,
+      }),
+    ).toBe(1003n * 10n ** 17n)
+  })
+
+  it("follows the quoted cost, not the typed amount, when capacity shrinks the buy", () => {
+    const limit = readBuyLimit([stable], {
+      amountIn: unit,
+      typedAmount: 50n * unit,
+    })
+    expect(limit).toBe(1003n * 10n ** 15n)
+  })
+
+  it("never exceeds the typed amount", () => {
+    expect(readBuyLimit([stable], { amountIn: 999n, typedAmount: 1000n })).toBe(
+      1000n,
+    )
+  })
+
+  it("adds 2 wei per Aave hop to both the check and the limit", () => {
+    expect(
+      readBuyLimit([aave, aave, stable], { amountIn: 0n, typedAmount: 4n }),
+    ).toBe(4n)
+    expect(
+      readBuyLimit([aave, aave, stable], { amountIn: 0n, typedAmount: 3n }),
+    ).toBe(null)
+    expect(
+      readBuyLimit([aave], { amountIn: 10_000n, typedAmount: 20_000n }),
+    ).toBe(10_032n)
+  })
+
+  it("rejects a buy that costs more than the typed amount", () => {
+    expect(readBuyLimit([stable], { amountIn: 11n, typedAmount: 10n })).toBe(
+      null,
+    )
+  })
+})
+
+describe("Swap deposit buy call", () => {
+  const papi = {
+    tx: {
+      Router: {
+        buy: (value: unknown) => ({
+          decodedCall: { type: "Router", value: { type: "buy", value } },
+        }),
+      },
+      Dispatcher: {
+        dispatch_with_extra_gas: (value: unknown) => ({
+          decodedCall: {
+            type: "Dispatcher",
+            value: { type: "dispatch_with_extra_gas", value },
+          },
+        }),
+      },
+    },
+  } as unknown as Papi
+  const input = {
+    assetIn: 34,
+    assetOut: 4200,
+    amountOut: 2n * unit,
+    maxAmountIn: 3n * unit,
+    swaps: [
+      { pool: "Aave", assetIn: 34, assetOut: 1007 },
+      { pool: "Stableswap", poolId: 4200, assetIn: 1007, assetOut: 4200 },
+    ] as unknown as Trade["swaps"],
+  }
+
+  it("buys the exact amount up to the limit through the router", () => {
+    expect(buildDepositBuy(papi, input).decodedCall).toMatchObject({
       type: "Router",
       value: {
-        type: "sell_all",
+        type: "buy",
         value: {
-          asset_in: 4200,
-          asset_out: 34,
-          min_amount_out: 0n,
-          route: [
-            hop({ type: "Stableswap", value: 4200 }, 4200, 1007),
-            hop({ type: "Aave" }, 1007, 34),
-          ],
+          asset_in: 34,
+          asset_out: 4200,
+          amount_out: 2n * unit,
+          max_amount_in: 3n * unit,
+          route: [{ asset_in: 34 }, { asset_out: 4200 }],
         },
       },
     })
   })
 
-  it("keeps the extra gas dispatch an Aave leg needs", () => {
+  it("wraps only when extra gas is set", () => {
     expect(
-      sweepCall(withExtraGas(routerSell({ route: ethRoute }))),
+      buildDepositBuy(papi, { ...input, extraGas: 9n }).decodedCall,
     ).toMatchObject({
       type: "Dispatcher",
       value: {
         type: "dispatch_with_extra_gas",
-        value: {
-          extra_gas: 1n,
-          call: { type: "Router", value: { type: "sell_all" } },
-        },
+        value: { extra_gas: 9n, call: { type: "Router" } },
       },
     })
   })
+})
 
-  it("has no sweep for calls that are not router sells", () => {
-    for (const call of [
-      { type: "Omnipool", value: { type: "sell", value: {} } },
-      withExtraGas(undefined),
-      undefined,
-    ])
-      expect(sweepCall(call)).toBeNull()
+describe("Swap deposit readiness", () => {
+  const ready = {
+    tx: "buy",
+    isLoading: false,
+    isError: false,
+    depositAmount: 1n,
+  }
+
+  it("accepts a built buy", () => {
+    expect(isSwapDepositReady(ready)).toBe(true)
   })
 
-  it("marks sell-all, whose emptied pay asset could not take the sweep", () => {
-    const sellAll = routerSell({ amount_in: undefined, route: ethRoute })
-    sellAll.value.type = "sell_all"
-    expect(readSwapDeposit(sellAll, { ...geth, assetIn: "34" }).sellsAll).toBe(
-      true,
-    )
+  it("waits for the call, the quote and an amount, and refuses a failed quote", () => {
+    for (const change of [
+      { tx: null },
+      { isLoading: true },
+      { isError: true },
+      { depositAmount: 0n },
+      { depositAmount: undefined },
+    ])
+      expect(isSwapDepositReady({ ...ready, ...change })).toBe(false)
   })
 })

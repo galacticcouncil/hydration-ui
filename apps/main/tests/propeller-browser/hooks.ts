@@ -35,6 +35,11 @@ export const useDepositQuote = () =>
     isError: false,
     tx: null,
   }
+export const useDepositMaxBalance = (_, balance) => ({
+  maxBalance: balance,
+  isResolved: true,
+  isError: false,
+})
 export const useCollateralEquivalent = () => () => null
 export const useRequestRedeem = () => ({
   mutate: (request) => window.fixture.withdrawals.push(request),

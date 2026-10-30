@@ -1,3 +1,5 @@
+import { type Trade, TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
+import { minutesToMilliseconds } from "date-fns"
 import { isBigInt, isNumber, isPlainObject, isString } from "remeda"
 import {
   encodeFunctionData,
@@ -10,14 +12,16 @@ import {
 
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
-  DEPOSIT_BUFFER_BPS,
   DEPOSIT_MIN_GAS,
+  DEPOSIT_SWAP_BUFFER_BPS,
   EVM_CALL_GAS,
 } from "@/modules/strategies/propeller/constants"
 import {
   depositBlocker,
   readMainDebtBusy,
 } from "@/modules/strategies/propeller/utils/depositGates"
+import { type AnyPapiTx } from "@/modules/transactions/types"
+import { type Papi } from "@/providers/rpcProvider"
 
 const MAX_NATIVE_TX_GAS = 1n << 24n
 type DepositInput = { vault: Hex; asset: Hex; owner: Hex; amount: bigint }
@@ -100,6 +104,9 @@ export const assertDepositCapacity = (
     )
 }
 
+/** how long to wait for a node to catch up with a landed transaction */
+export const CHAIN_WAIT = { interval: 1000, timeout: minutesToMilliseconds(3) }
+
 const depositRequest = ({ vault, owner, amount }: DepositInput) =>
   ({
     account: owner,
@@ -147,14 +154,25 @@ export const encodeDeposit = (input: DepositInput) => ({
   gas: EVM_CALL_GAS,
 })
 
+export const encodeApproval = ({ vault, asset, amount }: DepositInput) => ({
+  to: asset,
+  abi: erc20Abi,
+  data: encodeFunctionData({
+    abi: erc20Abi,
+    functionName: "approve",
+    args: [vault, amount],
+  }),
+})
+
 /**
  * Approval is the only preparatory wallet transaction; keepers deploy later.
  * Returns the approve call, or null when the allowance already covers the amount.
  */
 export const prepareApproval = async (
   client: PublicClient,
-  { vault, asset, owner, amount }: DepositInput,
+  input: DepositInput,
 ) => {
+  const { vault, asset, owner, amount } = input
   if (owner === zeroAddress)
     throw new Error("Connect an account before depositing")
   assertDepositCapacity(await readDepositCapacity(client, vault, asset), amount)
@@ -167,16 +185,7 @@ export const prepareApproval = async (
     functionName: "allowance",
     args: [owner, vault],
   })
-  if (allowance >= amount) return null
-  return {
-    to: asset,
-    abi: erc20Abi,
-    data: encodeFunctionData({
-      abi: erc20Abi,
-      functionName: "approve",
-      args: [vault, amount],
-    }),
-  }
+  return allowance >= amount ? null : encodeApproval(input)
 }
 
 export const isCallNode = (
@@ -238,29 +247,120 @@ export const readSellLimit = (
 /** the runtime's AAVE_ROUNDING_BUFFER, in wei */
 const AAVE_ROUNDING_BUFFER = 2n
 
+const BPS = 10_000n
+/** room is floored to this precision when it caps a swap deposit */
+const CAPPED_DEPOSIT_DECIMALS = 6
+
+/** A single Aave hop into the collateral: a fee-free 1:1 unwrap. */
+export const isUnwrapRoute = (
+  route: readonly Pick<Hop, "pool" | "assetIn" | "assetOut">[] | undefined,
+  { assetIn, assetOut }: { assetIn: number; assetOut: number },
+) => {
+  const hop = route?.length === 1 ? route[0] : undefined
+  return (
+    hop?.pool === "Aave" && hop.assetIn === assetIn && hop.assetOut === assetOut
+  )
+}
+
 /**
- * A single Aave hop into the collateral is a fee-free 1:1 unwrap: it deposits the
- * amount in less the runtime's rounding buffer. Null for any other route.
+ * A 1:1 unwrap deposits the amount in less the runtime's rounding buffer.
+ * Null for any other route.
  */
 export const readUnwrapDeposit = (
-  route: readonly Hop[] | undefined,
+  route: readonly Pick<Hop, "pool" | "assetIn" | "assetOut">[] | undefined,
   {
     assetIn,
     assetOut,
     amountIn,
   }: { assetIn: number; assetOut: number; amountIn: bigint },
 ) => {
-  const hop = route?.length === 1 ? route[0] : undefined
-  if (
-    hop?.pool !== "Aave" ||
-    hop.assetIn !== assetIn ||
-    hop.assetOut !== assetOut
-  )
-    return null
+  if (!isUnwrapRoute(route, { assetIn, assetOut })) return null
   const amount = amountIn - AAVE_ROUNDING_BUFFER
   if (amount <= 0n) throw new Error("The swap amount is too small")
   return amount
 }
+
+/**
+ * The collateral a swap deposit buys: just under what the typed amount sells
+ * for, within the vault's room. Flooring the room only mitigates its drift (a
+ * room already on the boundary loses nothing), so submit re-checks capacity.
+ */
+export const sizeSwapDeposit = (
+  sellAmountOut: bigint,
+  room: bigint,
+  decimals: number,
+) => {
+  const buffered =
+    sellAmountOut - (sellAmountOut * DEPOSIT_SWAP_BUFFER_BPS) / BPS
+  if (buffered <= room) return buffered
+  const unit = 10n ** BigInt(Math.max(decimals - CAPPED_DEPOSIT_DECIMALS, 0))
+  return room - (room % unit)
+}
+
+/**
+ * The most a swap deposit's buy may spend: its quoted cost plus the buffer, never
+ * above the typed amount. Null when the typed amount can't cover that cost; the
+ * chain charges 2 wei per Aave hop more than the SDK prices.
+ */
+export const readBuyLimit = (
+  route: readonly Pick<Hop, "pool">[],
+  { amountIn, typedAmount }: { amountIn: bigint; typedAmount: bigint },
+) => {
+  const aaveHops = route.filter((hop) => hop.pool === "Aave").length
+  const cost = amountIn + BigInt(aaveHops) * AAVE_ROUNDING_BUFFER
+  if (cost > typedAmount) return null
+  const limit = cost + (amountIn * DEPOSIT_SWAP_BUFFER_BPS + BPS - 1n) / BPS
+  return limit < typedAmount ? limit : typedAmount
+}
+
+/** Built directly: the SDK derives its limit from slippage and can emit Omnipool.buy. */
+export const buildDepositBuy = (
+  papi: Papi,
+  {
+    assetIn,
+    assetOut,
+    amountOut,
+    maxAmountIn,
+    swaps,
+    extraGas,
+  }: {
+    assetIn: number
+    assetOut: number
+    amountOut: bigint
+    maxAmountIn: bigint
+    swaps: Trade["swaps"]
+    /** set when sdk.api.aave.requiresExtraGas holds for the asset in */
+    extraGas?: bigint
+  },
+): AnyPapiTx => {
+  const buy = papi.tx.Router.buy({
+    asset_in: assetIn,
+    asset_out: assetOut,
+    amount_out: amountOut,
+    max_amount_in: maxAmountIn,
+    route: TradeRouteBuilder.build(swaps) as Parameters<
+      typeof papi.tx.Router.buy
+    >[0]["route"],
+  })
+  return extraGas === undefined
+    ? buy
+    : papi.tx.Dispatcher.dispatch_with_extra_gas({
+        call: buy.decodedCall,
+        extra_gas: extraGas,
+      })
+}
+
+export const isSwapDepositReady = ({
+  tx,
+  isLoading,
+  isError,
+  depositAmount,
+}: {
+  tx: unknown
+  isLoading: boolean
+  isError: boolean
+  depositAmount?: bigint
+}) => !!tx && !isLoading && !isError && (depositAmount ?? 0n) > 0n
 
 const withMinAmountOut = (call: unknown, minAmountOut: bigint): unknown => {
   if (!isCallNode(call) || !isCallNode(call.value)) return call
@@ -272,28 +372,14 @@ const withMinAmountOut = (call: unknown, minAmountOut: bigint): unknown => {
   return { ...call, value: { ...call.value, value: next } }
 }
 
-/** What a swap deposit can count on: its quote, less a small buffer for the price moving before inclusion. */
-export const bufferedDeposit = (quotedAmountOut: bigint) =>
-  quotedAmountOut - (quotedAmountOut * DEPOSIT_BUFFER_BPS) / 10_000n
-
-/**
- * The sell's guaranteed minimum is what the batch deposits, so the deposit
- * amount is known when signing. A 1:1 unwrap deposits its full amount; any other
- * route deposits its buffered quote and accepts nothing less.
- */
+/** A 1:1 unwrap deposits its full amount and the sell accepts nothing less. */
 export const readSwapDeposit = (
   tradeCall: unknown,
   {
     assetIn,
     collateralId,
     quotedAmountIn,
-    quotedAmountOut,
-  }: {
-    assetIn: string
-    collateralId: string
-    quotedAmountIn: bigint
-    quotedAmountOut: bigint
-  },
+  }: { assetIn: string; collateralId: string; quotedAmountIn: bigint },
 ) => {
   const sell = readSellLimit(tradeCall)
   if (
@@ -303,95 +389,13 @@ export const readSwapDeposit = (
   )
     throw new Error("The swap does not buy this vault's collateral")
 
-  const unwrap = readUnwrapDeposit(sell.route, {
+  const depositAmount = readUnwrapDeposit(sell.route, {
     ...sell,
     amountIn: sell.amountIn ?? quotedAmountIn,
   })
-  const depositAmount = unwrap ?? bufferedDeposit(quotedAmountOut)
-  if (depositAmount <= 0n) throw new Error("The swap amount is too small")
+  if (depositAmount === null) throw new Error("The swap is not a 1:1 unwrap")
   return {
-    exact: unwrap !== null,
     depositAmount,
     tradeCall: withMinAmountOut(tradeCall, depositAmount),
-    /** sell_all leaves no pay asset to receive the sweep */
-    sellsAll: sell.amountIn === undefined,
-  } as const
-}
-
-/**
- * Sells whatever the swap delivered above its minimum back along the reverse
- * route, so no collateral (2-Pool-GETH) is left in the wallet. Sell-all is
- * sized at execution, so it needs no amount; it fails on a zero balance.
- */
-export const sweepCall = (tradeCall: unknown): unknown => {
-  if (!isCallNode(tradeCall) || !isCallNode(tradeCall.value)) return null
-  const { type: method, value: args } = tradeCall.value
-  if (!isPlainObject(args)) return null
-  if (tradeCall.type === "Dispatcher" && method === "dispatch_with_extra_gas") {
-    const call = sweepCall(args.call)
-    return (
-      call && {
-        ...tradeCall,
-        value: { ...tradeCall.value, value: { ...args, call } },
-      }
-    )
-  }
-  if (
-    tradeCall.type !== "Router" ||
-    !Array.isArray(args.route) ||
-    !isNumber(args.asset_in) ||
-    !isNumber(args.asset_out)
-  )
-    return null
-  const route = (args.route as Record<string, unknown>[])
-    .map((hop) => ({
-      ...hop,
-      asset_in: hop.asset_out,
-      asset_out: hop.asset_in,
-    }))
-    .reverse()
-  return {
-    type: "Router",
-    value: {
-      type: "sell_all",
-      value: {
-        asset_in: args.asset_out,
-        asset_out: args.asset_in,
-        min_amount_out: 0n,
-        route,
-      },
-    },
-  }
-}
-
-/** Approves the swap's guaranteed minimum for the same batch, after checking the vault takes it. */
-export const prepareSwapDeposit = async (
-  client: PublicClient,
-  {
-    collateralId,
-    assetIn,
-    quotedAmountIn,
-    quotedAmountOut,
-    tradeCall,
-    ...input
-  }: Omit<DepositInput, "amount"> & {
-    collateralId: string
-    assetIn: string
-    quotedAmountIn: bigint
-    quotedAmountOut: bigint
-    tradeCall: unknown
-  },
-) => {
-  const swap = readSwapDeposit(tradeCall, {
-    assetIn,
-    collateralId,
-    quotedAmountIn,
-    quotedAmountOut,
-  })
-  const amount = swap.depositAmount
-  return {
-    ...swap,
-    amount,
-    approval: await prepareApproval(client, { ...input, amount }),
   }
 }

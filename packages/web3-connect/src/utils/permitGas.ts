@@ -9,12 +9,12 @@ import {
 const GAS_LIMIT_SURPLUS_PERCENT = 30n
 const GAS_PRICE_SURPLUS_PERCENT = 5n
 
-// the surplus is added once, by getPermitGasLimit
-export const getPermitGasFromWeight = (weight: bigint): bigint =>
-  clampBigInt(weight / EVM_GAS_TO_WEIGHT, {
+export const getPermitGasFromWeight = (weight: bigint): bigint => {
+  return clampBigInt(weight / EVM_GAS_TO_WEIGHT, {
     min: EVM_MIN_GAS_LIMIT,
     max: EVM_MAX_GAS_LIMIT,
   })
+}
 
 export const getPermitGasLimit = (gas: bigint, weight: bigint): bigint => {
   const gasByWeight = weight / EVM_GAS_TO_WEIGHT

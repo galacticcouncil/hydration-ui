@@ -41,18 +41,18 @@ import {
   useBaseRates,
   useVaultDisplayAsset,
 } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
-import { useDepositFeeReferenceTx } from "@/modules/strategies/propeller/hooks/useDepositFeeReferenceTx"
+import { useDepositMaxBalance } from "@/modules/strategies/propeller/hooks/useDepositMaxBalance"
 import { useDepositQuote } from "@/modules/strategies/propeller/hooks/useDepositQuote"
 import { FULL_SHARE_BPS } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
 import { depositCapacityQuery } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/propeller/hooks/useVaultWrites"
+import { isSwapDepositReady } from "@/modules/strategies/propeller/utils/deposit"
 import {
   getDepositOptions,
   isOneToOneDeposit,
   isSwapDeposit,
   type PropellerDepositOption,
 } from "@/modules/strategies/propeller/utils/depositOptions"
-import { useFormMaxBalanceWithFee } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionClosedError } from "@/states/transactions"
@@ -60,8 +60,6 @@ import { isNonceClash, isWalletRejection } from "@/utils/errors"
 import { percentageOf, scaleHuman } from "@/utils/formatting"
 
 const DEPOSIT_OPTIONS = getDepositOptions(PROPELLER_VAULTS)
-// a deposit is up to three transactions; the reference batch pays one base fee
-const FEE_BUFFER_PCT = 50
 
 type Props = {
   initialDeposit: PropellerDepositOption
@@ -130,27 +128,10 @@ export const DepositForm = ({
 
   const isSwap = isSwapDeposit(selected)
   const balance = scaleHuman(getTransferableBalance(assetId), asset.decimals)
-  // when the asset paid with also pays the fees, MAX keeps them back
-  const { getMaxBalance } = useFormMaxBalanceWithFee(
-    useDepositFeeReferenceTx(selected),
-    FEE_BUFFER_PCT,
-  )
-  // A swap keeps the pay asset's existential deposit: selling the whole balance
-  // empties it, and the sweep's leftover could not be received back. GETH's 1:1
-  // conversion sweeps nothing back, and as an EVM token it has no ED to keep.
-  const keepsExistentialDeposit = isSwap && !isOneToOneDeposit(selected)
-  const swapMax = Big(balance).minus(
-    scaleHuman(asset.existentialDeposit, asset.decimals),
-  )
-  const spendable = Big.max(
-    0,
-    keepsExistentialDeposit
-      ? Big.min(getMaxBalance(asset), swapMax)
-      : getMaxBalance(asset),
-  )
-    // the fee math can run past the asset's decimals
-    .round(asset.decimals, Big.roundDown)
-    .toFixed()
+  const reserve = useDepositMaxBalance(selected, balance)
+  // an unresolved estimate only holds validation at the wallet balance: MAX and
+  // submit wait for it
+  const spendable = reserve.isResolved ? reserve.maxBalance : balance
   // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
   // the cap in the pay asset at spot. The swap executes below spot (fees,
   // impact), so a spot-converted fill always lands under the cap.
@@ -181,7 +162,7 @@ export const DepositForm = ({
   // the collateral the failed deposit tried to add; once it exceeds the room
   // left, other deposits took that room first
   const failedCollateral = deposit.variables
-    ? (deposit.variables.trade?.quotedAmountOut ??
+    ? (deposit.variables.trade?.depositAmount ??
       parseUnits(deposit.variables.amount, collateral.decimals))
     : null
   const filledFirst =
@@ -230,12 +211,7 @@ export const DepositForm = ({
     !!capacity &&
     quote.depositAmount !== undefined &&
     quote.depositAmount > capacity.maximum
-  const isSwapReady =
-    !isSwap ||
-    (!!quote.tx &&
-      !quote.isLoading &&
-      !exceedsCapacity &&
-      (quote.depositAmount ?? 0n) > 0n)
+  const isSwapReady = !isSwap || (isSwapDepositReady(quote) && !exceedsCapacity)
 
   const canSubmit =
     formState.isValid &&
@@ -243,7 +219,8 @@ export const DepositForm = ({
     !deposit.isPending &&
     !isPaused &&
     !atCapacity &&
-    !unavailable
+    !unavailable &&
+    reserve.isResolved
 
   const ctaLabel = (() => {
     if (unavailable) return t("deposit.cta.unavailable")
@@ -275,14 +252,16 @@ export const DepositForm = ({
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
     deposit.mutate(
-      isSwap && quote.tx
+      isSwap && quote.tx && quote.depositAmount && quote.maxAmountIn
         ? {
             amount,
             trade: {
               assetIn: assetId,
               tx: quote.tx,
-              quotedAmountIn: quote.swap?.amountIn ?? 0n,
-              quotedAmountOut: quote.swap?.amountOut ?? 0n,
+              exact: quote.exact,
+              depositAmount: quote.depositAmount,
+              maxAmountIn: quote.maxAmountIn,
+              leftover: quote.leftover,
             },
           }
         : { amount },
@@ -320,7 +299,8 @@ export const DepositForm = ({
                       percentageOf(maxButtonBalance, percent, asset.decimals),
                     )
                   },
-                  isMaxDisabled: !(Number(maxButtonBalance) > 0),
+                  isMaxDisabled:
+                    !reserve.isResolved || !(Number(maxButtonBalance) > 0),
                 }}
                 amountError={
                   fieldState.error?.message ??
@@ -417,7 +397,10 @@ export const DepositForm = ({
               }
             />
           </Summary>
-          {(blockedDescription || quote.isError || depositFailed) && (
+          {(blockedDescription ||
+            quote.isError ||
+            reserve.isError ||
+            depositFailed) && (
             <Stack gap="base">
               {blockedDescription && (
                 <Alert
@@ -432,6 +415,14 @@ export const DepositForm = ({
                   description={t("deposit.swap.unavailable", {
                     symbolIn: asset.symbol,
                     symbol: collateralDisplay.symbol,
+                  })}
+                />
+              )}
+              {reserve.isError && (
+                <Alert
+                  variant="warning"
+                  description={t("deposit.fee.unavailable", {
+                    symbol: asset.symbol,
                   })}
                 />
               )}
@@ -460,10 +451,7 @@ export const DepositForm = ({
                                 ]),
                           ].join(" ")
                         : isSwap
-                          ? // what the wallet actually holds and the picker lists
-                            t("deposit.swap.failed", {
-                              symbol: collateral.symbol,
-                            })
+                          ? t("deposit.swap.failed", { symbol: asset.symbol })
                           : t("deposit.failed")
                   }
                 />

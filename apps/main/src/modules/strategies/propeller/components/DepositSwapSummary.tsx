@@ -53,8 +53,7 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
             ),
             loading: isLoading,
           },
-          // the 1:1 unwrap has no price, impact or fee to show; no swap deposit
-          // uses the trade limit, it deposits exactly the amount above
+          // the 1:1 unwrap has no price, impact, fee or trade limit to show
           ...(exact
             ? []
             : [
