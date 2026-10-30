@@ -185,17 +185,7 @@ export const VAULT_ABI = [
     outputs: [{ name: "requestId", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  {
-    type: "function",
-    name: "claim",
-    inputs: [
-      { name: "requestId", type: "uint256" },
-      { name: "receiver", type: "address" },
-    ],
-    outputs: [{ name: "amountOut", type: "uint256" }],
-    stateMutability: "nonpayable",
-  },
-  // newer vaults claim an exact amount, so a batch can size the sell after it
+  // pays exactly `amount`, so a batch can size the sell after it; max pays all settled
   {
     type: "function",
     name: "claim",
