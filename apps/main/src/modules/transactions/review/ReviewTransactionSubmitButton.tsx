@@ -30,6 +30,7 @@ export const ReviewTransactionSubmitButton = ({
     tx,
     meta,
     isSigning,
+    isLoading: isPreparing,
     signAndSubmit,
     isChangingFeePaymentAsset,
     setFeePaymentModalOpen,
@@ -78,7 +79,7 @@ export const ReviewTransactionSubmitButton = ({
   }
 
   const isLoading = isSigning || isChangingFeePaymentAsset
-  const isDisabled = disabled || isSigningBlocked || hasAlerts
+  const isDisabled = disabled || isSigningBlocked || hasAlerts || isPreparing
 
   return (
     <LoadingButton

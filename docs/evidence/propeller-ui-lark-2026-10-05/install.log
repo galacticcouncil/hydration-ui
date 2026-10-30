@@ -1,0 +1,61 @@
+yarn install v1.22.22
+[1/4] Resolving packages...
+warning Resolution field "typescript@5.7.3" is incompatible with requested version "typescript@^6.0.3"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.1.2"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.1.0"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.0.1"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.0.1"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.0.1"
+warning Resolution field "typescript@5.7.3" is incompatible with requested version "typescript@^6.0.3"
+warning Resolution field "strip-ansi@6.0.1" is incompatible with requested version "strip-ansi@^7.1.2"
+(node:2654139) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2/4] Fetching packages...
+warning @defuse-protocol/one-click-sdk-typescript@0.1.25: The engine "pnpm" appears to be invalid.
+warning @zip.js/zip.js@2.8.26: The engine "deno" appears to be invalid.
+warning @zip.js/zip.js@2.8.26: The engine "bun" appears to be invalid.
+[3/4] Linking dependencies...
+warning " > polkadot-api@2.2.2" has unmet peer dependency "rxjs@>=7.8.0".
+warning "polkadot-api > @polkadot-api/observable-client@0.18.8" has unmet peer dependency "rxjs@>=7.8.0".
+warning "polkadot-api > @polkadot-api/ws-middleware@0.3.6" has unmet peer dependency "rxjs@>=7.8.0".
+warning "polkadot-api > @polkadot-api/ws-provider@0.9.1" has unmet peer dependency "rxjs@>=7.8.0".
+warning "polkadot-api > @rx-state/core@0.1.4" has unmet peer dependency "rxjs@>=7".
+warning "polkadot-api > @polkadot-api/cli > rollup-plugin-esbuild@6.2.1" has unmet peer dependency "esbuild@>=0.18.0".
+warning " > @galacticcouncil/common@1.2.0" has unmet peer dependency "rxjs@^7.8.0".
+warning " > @galacticcouncil/sdk-next@2.3.2" has unmet peer dependency "viem@^2.38.3".
+warning " > @galacticcouncil/xc-core@2.6.0" has unmet peer dependency "rxjs@^7.8.0".
+warning " > @galacticcouncil/xc-core@2.6.0" has unmet peer dependency "viem@^2.55.4".
+warning "@galacticcouncil/xc-cfg > @galacticcouncil/xc-core > @wormhole-foundation/sdk-solana-ntt > @solana/spl-token > @solana/spl-token-metadata > @solana/codecs > @solana/codecs-strings@2.0.0-rc.1" has unmet peer dependency "fastestsmallesttextencoderdecoder@^1.0.22".
+warning " > @galacticcouncil/xc-swap@0.9.0" has unmet peer dependency "viem@^2.38.3".
+warning " > react-hook-form@7.72.1" has unmet peer dependency "react@^16.8.0 || ^17 || ^18 || ^19".
+warning " > react-use@17.6.0" has unmet peer dependency "react@*".
+warning " > react-use@17.6.0" has unmet peer dependency "react-dom@*".
+warning "react-use > nano-css@5.6.2" has unmet peer dependency "react@*".
+warning "react-use > nano-css@5.6.2" has unmet peer dependency "react-dom@*".
+warning "react-use > react-universal-interface@0.6.2" has unmet peer dependency "react@*".
+warning " > use-debounce@10.1.1" has unmet peer dependency "react@*".
+warning " > vite-plugin-svgr@5.2.0" has unmet peer dependency "vite@>=3.0.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @mdx-js/rollup@3.1.1" has unmet peer dependency "rollup@>=2".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @rolldown/plugin-babel@0.2.3" has unmet peer dependency "@babel/core@^7.29.0 || ^8.0.0-rc.1".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @rolldown/plugin-babel@0.2.3" has unmet peer dependency "rolldown@^1.0.0-rc.5".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/indexer > @graphql-codegen/typescript-graphql-request@6.4.0" has unmet peer dependency "graphql-tag@^2.0.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/money-market > @aave/contract-helpers@1.23.1" has unmet peer dependency "bignumber.js@^9.x".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/money-market > @aave/contract-helpers@1.23.1" has unmet peer dependency "tslib@^2.4.x".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/money-market > @aave/math-utils@1.23.1" has unmet peer dependency "bignumber.js@^9.x".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/money-market > @aave/math-utils@1.23.1" has unmet peer dependency "tslib@^2.4.x".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/ui > @storybook/react-vite@10.3.5" has unmet peer dependency "vite@^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @tanstack/react-devtools > @tanstack/devtools@0.12.2" has unmet peer dependency "solid-js@>=1.9.7".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @tanstack/react-router-devtools > @tanstack/router-devtools-core@1.168.0" has unmet peer dependency "@tanstack/router-core@^1.170.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/ui > @storybook/react-vite > @joshwooding/vite-plugin-react-docgen-typescript@0.7.0" has unmet peer dependency "vite@^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/ui > @storybook/react-vite > @storybook/builder-vite@10.3.5" has unmet peer dependency "vite@^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/ui > storybook > @testing-library/user-event@14.6.1" has unmet peer dependency "@testing-library/dom@>=7.21.4".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/web3-connect > @reown/appkit > @lit/react@1.0.8" has unmet peer dependency "@types/react@17 || 18 || 19".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @tanstack/react-devtools > @tanstack/devtools > goober@2.1.18" has unmet peer dependency "csstype@^3.0.10".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/ui > style-dictionary > @bundled-es-modules/memfs > memfs@4.57.2" has unmet peer dependency "tslib@2".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @tanstack/devtools-vite > oxc-parser > @oxc-parser/binding-wasm32-wasi > @napi-rs/wasm-runtime@1.1.4" has unmet peer dependency "@emnapi/core@^1.7.1".
+warning "workspace-aggregator-9ff49b7a-1a86-4f8e-a68d-8b6dceb87d05 > @galacticcouncil/main > @tanstack/devtools-vite > oxc-parser > @oxc-parser/binding-wasm32-wasi > @napi-rs/wasm-runtime@1.1.4" has unmet peer dependency "@emnapi/runtime@^1.7.1".
+warning Workspaces can only be enabled in private projects.
+warning Workspaces can only be enabled in private projects.
+[4/4] Building fresh packages...
+warning Ignored scripts due to flag.
+Done in 4.06s.
