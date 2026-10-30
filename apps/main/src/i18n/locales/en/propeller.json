@@ -61,7 +61,7 @@
   "withdrawals.action.claim": "Claim",
   "withdrawals.action.claimAmount": "Claim {{ amount }}",
   "withdrawals.action.claimPaused": "Vault paused",
-  "withdrawals.action.claimPartial": "Claim ≥ {{ amount }}",
+  "withdrawals.action.claimPartial": "Claim {{ amount }}",
   "withdrawals.claim.label": "Claim available payouts for {{symbol}} withdrawal",
   "withdrawals.claim.title": "Claim withdrawal",
   "withdrawals.claim.descriptionFinal": "Claiming {{ payouts }}.",
