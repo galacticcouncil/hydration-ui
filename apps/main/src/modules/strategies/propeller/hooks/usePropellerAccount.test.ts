@@ -29,6 +29,7 @@ const vault = {
 const BACKLOG = {
   backlogHollar: 1200,
   freedPerSlice: 600,
+  equityShare: 1,
   sliceSeconds: 60,
   stalled: false,
 }

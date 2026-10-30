@@ -190,6 +190,7 @@ export const exitBacklogQuery = ({ isReady, evm }: TProviderContext) =>
           0,
         ),
         freedPerSlice,
+        equityShare,
         // a safety de-lever frees nothing for withdrawals; a pause stops all
         stalled: deleverTarget > 0n || paused,
       }

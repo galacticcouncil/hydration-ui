@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   claimableInSeconds,
   formatEta,
-  notStartedEquity,
+  notStartedDebt,
   reserveCoversExit,
   typicalSliceSeconds,
 } from "./withdrawalEta"
@@ -13,6 +13,8 @@ import {
 const LARK_57873 = {
   backlogHollar: 11_673,
   freedPerSlice: 547.8,
+  // unit-neutral: these cases count in one unit
+  equityShare: 1,
   sliceSeconds: 65,
   stalled: false,
 }
@@ -80,6 +82,26 @@ describe("claimableInSeconds", () => {
     ).toBe(120)
   })
 
+  it("counts a not-started exit's debt as the equity the keeper frees", () => {
+    // 4.lark, 2026-10-30: 0.3 tBTC owing 17,290 HOLLAR of Main debt; a
+    // 2,671 HOLLAR slice freed 855 of equity. Settled in 7.8 min; read as
+    // debt it was estimated at 22.
+    const backlog = {
+      backlogHollar: 0,
+      freedPerSlice: 855,
+      equityShare: 855 / 2671,
+      sliceSeconds: 65,
+      stalled: false,
+    }
+    const seconds = claimableInSeconds({
+      backlog,
+      notStartedHollar: 17_290,
+      cooldownLeftSeconds: 60,
+      started: false,
+    })
+    expect(seconds! / 60).toBeCloseTo(9, 0)
+  })
+
   it("gives no countdown while unknown or stalled", () => {
     const base = { notStartedHollar: 0, cooldownLeftSeconds: 0, started: true }
     expect(claimableInSeconds({ ...base, backlog: null })).toBeNull()
@@ -92,10 +114,10 @@ describe("claimableInSeconds", () => {
   })
 })
 
-describe("notStartedEquity", () => {
+describe("notStartedDebt", () => {
   it("counts only requests the keeper has not started, in every vault", () => {
     expect(
-      notStartedEquity([
+      notStartedDebt([
         {
           queued: [
             { remaining: 1, started: true },

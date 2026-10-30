@@ -15,6 +15,11 @@ export type ExitBacklog = {
   backlogHollar: number
   /** HOLLAR of withdrawal equity one slice frees */
   freedPerSlice: number
+  /**
+   * the loop's equity per HOLLAR of its position: a withdrawal owes Main debt,
+   * and the backlog and the pace count only the equity that debt carries
+   */
+  equityShare: number
   /** seconds per slice: the keeper's measured cadence, never below pacing */
   sliceSeconds: number
   /** a safety de-lever or a pause: withdrawals make no progress */
@@ -48,7 +53,7 @@ export const typicalSliceSeconds = (gaps: number[], interval: number) => {
 /**
  * Seconds until a withdrawal is fully claimable:
  *
- *   (backlog + not started) / freed per slice × seconds per slice
+ *   (backlog + not started × equity share) / freed per slice × seconds per slice
  *
  * plus the cooldown left and a keeper turn to start it, then one to pay out.
  * Every started withdrawal finishes together, so the whole backlog counts,
@@ -65,10 +70,10 @@ export const claimableInSeconds = ({
   waitsOnUnwind = true,
 }: {
   backlog: ExitBacklog | null
-  /** equity of requested withdrawals the keeper has not started, all vaults */
+  /** Main debt of requested withdrawals the keeper has not started, all vaults */
   notStartedHollar: number
   /**
-   * this withdrawal's own equity still to free: the backlog can never be
+   * this withdrawal's own Main debt still to free: the backlog can never be
    * less, though a backlog read before the keeper started it says so
    */
   ownHollar?: number
@@ -83,17 +88,21 @@ export const claimableInSeconds = ({
     SETTLE_SECONDS
   if (!waitsOnUnwind) return turns
   if (backlog.freedPerSlice <= 0) return null
+  // debt to the equity the backlog and the pace count in
+  const { equityShare } = backlog
   const slices =
-    Math.max(backlog.backlogHollar + notStartedHollar, ownHollar) /
-    backlog.freedPerSlice
+    Math.max(
+      backlog.backlogHollar + notStartedHollar * equityShare,
+      ownHollar * equityShare,
+    ) / backlog.freedPerSlice
   return turns + slices * backlog.sliceSeconds
 }
 
 /**
- * HOLLAR equity of requested withdrawals the keeper has not started yet, in
- * every vault: each joins the shared backlog within a keeper turn.
+ * Main debt (HOLLAR) of requested withdrawals the keeper has not started yet,
+ * in every vault: each joins the shared backlog within a keeper turn.
  */
-export const notStartedEquity = (
+export const notStartedDebt = (
   vaults: {
     queued: { remaining: number; started: boolean }[]
     /** HOLLAR of Main debt per collateral unit; null while unknown */

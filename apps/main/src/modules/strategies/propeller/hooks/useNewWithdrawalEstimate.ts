@@ -16,7 +16,7 @@ import {
 import { headroomExitFits } from "@/modules/strategies/propeller/utils/headroomExit"
 import {
   claimableInSeconds,
-  notStartedEquity,
+  notStartedDebt,
   reserveCoversExit,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { useAssets } from "@/providers/assetsProvider"
@@ -61,7 +61,7 @@ export const useNewWithdrawalEstimate = (
   const stats = statsQueries[index]?.data
   const queue = queueQueries[index]?.data
   const ahead = (queue?.queued ?? []).reduce((sum, q) => sum + q.remaining, 0)
-  const notStartedHollar = notStartedEquity(
+  const notStartedHollar = notStartedDebt(
     PROPELLER_VAULTS.map((_, i) => ({
       queued: queueQueries[i]?.data?.queued ?? [],
       debtPerCollateral: debtPerCollateralOf(i),

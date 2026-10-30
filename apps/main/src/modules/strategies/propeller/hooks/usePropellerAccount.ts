@@ -25,7 +25,7 @@ import { type HarvestStatus } from "@/modules/strategies/propeller/utils/harvest
 import {
   claimableInSeconds,
   type ExitBacklog,
-  notStartedEquity,
+  notStartedDebt,
   reserveCoversExit,
   type SettleLog,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
@@ -281,7 +281,7 @@ export const usePropellerAccount = (evmAddress: Hex | undefined) => {
   const { data: backlog } = useQuery(exitBacklogQuery(rpc))
   const debtPerCollateralOf = (i: number) =>
     debtPerCollateral(markets[i]?.stats?.mainDebtUsd, markets[i]?.stats?.tvl)
-  const notStartedHollar = notStartedEquity(
+  const notStartedHollar = notStartedDebt(
     PROPELLER_VAULTS.map((_, i) => ({
       queued: queueQueries[i]?.data?.queued ?? [],
       debtPerCollateral: debtPerCollateralOf(i),
