@@ -19,8 +19,10 @@ const unit = 10n ** 18n
 const redemption = (shares: bigint, collateralOwed = 0n) =>
   [owner, shares, collateralOwed, 0n, 0n, 0n, 0n, 0n, true] as const
 
-const queue = async (requestUnits: bigint) => {
-  const values: Record<string, (args: readonly unknown[]) => unknown> = {
+type Reads = Record<string, (args: readonly unknown[]) => unknown>
+
+const queue = async (requestUnits: bigint, overrides: Reads = {}) => {
+  const values: Reads = {
     queueTail: () => 2n,
     totalQueuedShares: () => unit,
     // request 0 started its unwind, request 1 still waits
@@ -41,6 +43,7 @@ const queue = async (requestUnits: bigint) => {
     unitScale: () => 0n,
     totalUnits: () => 100n * unit,
     walletOf: ([account]) => (account === accounting ? 50n * unit : 0n),
+    ...overrides,
   }
   const readContract = vi.fn(
     async ({
@@ -91,8 +94,44 @@ describe("Withdrawal queue shares", () => {
     const { result } = await queue(0n)
     // request 0 has no debt left to repay; request 1 waits with 2 shares
     expect(result.queued).toEqual([
-      { requestId: 0, remaining: 0, started: true },
-      { requestId: 1, remaining: 2, started: false },
+      { requestId: 0, remaining: 0, started: true, unwinding: false },
+      { requestId: 1, remaining: 2, started: false, unwinding: true },
+    ])
+  })
+})
+
+describe("Withdrawal queue unwind", () => {
+  // both started: request 0 still owes debt, request 1 left from the headroom
+  const started = (sourceRemaining: bigint) =>
+    queue(0n, {
+      queueUnwind: () => 2n,
+      redemptions: ([id]) =>
+        id === 0n
+          ? ([owner, unit, 2n * unit, 10n, 0n, 0n, 0n, 0n, true] as const)
+          : redemption(unit, 2n * unit),
+      positions: ([key]) => [
+        0n,
+        0n,
+        0n,
+        key === 1n ? sourceRemaining : 0n,
+        owner,
+      ],
+    })
+
+  it("holds a headroom exit behind an earlier one the unwind still owes", async () => {
+    const { result } = await started(5n)
+    expect(result.queue.map((entry) => entry.waitsOnUnwind)).toEqual([
+      true,
+      true,
+    ])
+  })
+
+  it("lets exits the unwind no longer owes settle on the keeper's turn", async () => {
+    // request 0's debt has no source claim left: the reserve covers it
+    const { result } = await started(0n)
+    expect(result.queue.map((entry) => entry.waitsOnUnwind)).toEqual([
+      false,
+      false,
     ])
   })
 })

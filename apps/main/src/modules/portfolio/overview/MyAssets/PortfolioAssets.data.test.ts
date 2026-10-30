@@ -8,6 +8,35 @@ import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
 import { mergePortfolioAssets } from "./PortfolioAssets.data"
 
 vi.mock("@/api/assets", () => ({ AssetType: { BOND: "Bond", ERC20: "Erc20" } }))
+// a GETH vault beside a plain one, whatever the live deployment lists
+vi.mock(
+  "@/modules/strategies/propeller/config/vaults",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("@/modules/strategies/propeller/config/vaults")
+    >()),
+    PROPELLER_VAULTS: [
+      {
+        assetId: "4200",
+        vaultAddress: "0x0000000000000000000000000000000000000e01",
+        shareAssetId: "5552",
+        shareSymbol: "jETH",
+        shareName: "Juicer ETH",
+        baseAssetId: "34",
+        payAssetIds: ["420", "34", "1000809"],
+        payoutAssetIds: ["34", "420", "1000809"],
+        collateralDisplayId: "420",
+      },
+      {
+        assetId: "1000765",
+        vaultAddress: "0x0000000000000000000000000000000000000b01",
+        shareAssetId: "5553",
+        shareSymbol: "jBTC",
+        shareName: "Juicer BTC",
+      },
+    ],
+  }),
+)
 
 const asset = (id: string, symbol: string): MyAsset => ({
   id,

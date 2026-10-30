@@ -27,6 +27,10 @@ export const propellerQueryKeys = {
     ...vault(vaultAddress),
     "loop-position",
   ],
+  exitHeadroom: (vaultAddress: string) => [
+    ...vault(vaultAddress),
+    "exit-headroom",
+  ],
   vaultSettlePace: (vaultAddress: string) => [
     ...vault(vaultAddress),
     "settle-pace",

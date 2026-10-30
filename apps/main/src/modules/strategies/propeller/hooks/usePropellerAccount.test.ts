@@ -57,6 +57,7 @@ const row = (
       mainDebt: "0x0000000000000000000000000000000000000003",
       surplusHollar: 0,
       sourcePending: false,
+      waitsOnUnwind: true,
       ...entry,
     },
     exchangeRate: 1,
@@ -94,6 +95,21 @@ describe("Claimable estimate", () => {
     expect(
       row(BACKLOG, { ...waiting, observedAt: 1_000 }).claimableInSeconds,
     ).toBe(240)
+  })
+
+  it("pays a headroom exit on the next keeper turn, past the backlog", () => {
+    const headroom = { complete: true, collateralSettled: 0 }
+    expect(
+      row(BACKLOG, { ...headroom, waitsOnUnwind: false }).claimableInSeconds,
+    ).toBe(30)
+    expect(
+      row({ ...BACKLOG, freedPerSlice: 0 }, { waitsOnUnwind: false })
+        .claimableInSeconds,
+    ).toBe(30)
+    expect(
+      row({ ...BACKLOG, stalled: true }, { waitsOnUnwind: false })
+        .claimableInSeconds,
+    ).toBeNull()
   })
 
   it("stays empty while unknown, stalled or when claimed", () => {

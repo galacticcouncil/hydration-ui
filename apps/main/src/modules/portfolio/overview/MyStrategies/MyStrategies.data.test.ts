@@ -24,6 +24,35 @@ import {
 } from "./MyStrategies.data"
 
 vi.mock("@galacticcouncil/web3-connect", () => ({ useEvmAddress: vi.fn() }))
+// a GETH vault beside a plain one, whatever the live deployment lists
+vi.mock(
+  "@/modules/strategies/propeller/config/vaults",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("@/modules/strategies/propeller/config/vaults")
+    >()),
+    PROPELLER_VAULTS: [
+      {
+        assetId: "4200",
+        vaultAddress: "0x0000000000000000000000000000000000000e01",
+        shareAssetId: "5552",
+        shareSymbol: "jETH",
+        shareName: "Juicer ETH",
+        baseAssetId: "34",
+        payAssetIds: ["420", "34", "1000809"],
+        payoutAssetIds: ["34", "420", "1000809"],
+        collateralDisplayId: "420",
+      },
+      {
+        assetId: "1000765",
+        vaultAddress: "0x0000000000000000000000000000000000000b01",
+        shareAssetId: "5553",
+        shareSymbol: "jBTC",
+        shareName: "Juicer BTC",
+      },
+    ],
+  }),
+)
 vi.mock("@/modules/strategies/bil/context/BilStrategyContext", () => ({
   useBilStrategy: vi.fn(),
 }))
