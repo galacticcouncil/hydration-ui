@@ -20,7 +20,10 @@ import {
 } from "@/modules/strategies/propeller/utils/headroomExit"
 import { propellerQueryKeys } from "@/modules/strategies/propeller/utils/queryKeys"
 import { requestFundedShares } from "@/modules/strategies/propeller/utils/requestFunded"
-import { START_SECONDS } from "@/modules/strategies/propeller/utils/withdrawalEta"
+import {
+  type LoopDeployment,
+  START_SECONDS,
+} from "@/modules/strategies/propeller/utils/withdrawalEta"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export interface QueueEntry {
@@ -59,10 +62,12 @@ export interface QueuedRequest {
   /** when the keeper may start it, ms */
   eligibleAt: number
   /**
-   * Main debt (HOLLAR) the unwind still has to free for it: exact once
-   * started, projected for its start by projectQueue before
+   * HOLLAR the loop's unwind still has to free for it: the ledger's exact
+   * remainder once started, projected for its start by projectQueue before
    */
-  debt?: number
+  unwind?: number
+  /** the keeper's deployment into the loop around its start, as projected */
+  deployment?: LoopDeployment
 }
 
 export const vaultQueueQuery = (
@@ -190,7 +195,17 @@ export const vaultQueueQuery = (
                 unwinding: !started || (owed && sourcePending),
                 eligibleAt: Number(eligibleAt) * 1000,
                 ...(started && {
-                  debt: Number(formatUnits(owed ? debtShare - repaid : 0n, 18)),
+                  // its claim still with the loop, up to the debt left
+                  unwind: Number(
+                    formatUnits(
+                      !owed
+                        ? 0n
+                        : position && position[3] < debtShare - repaid
+                          ? position[3]
+                          : debtShare - repaid,
+                      18,
+                    ),
+                  ),
                 }),
               })
             }
@@ -278,13 +293,15 @@ export const collateralUnits = (amount: number, decimals: number) =>
 
 export type ProjectedExtra = {
   viaHeadroom: boolean
-  /** Main debt (HOLLAR) it takes into the unwind when it starts */
-  debt: number
+  /** HOLLAR the loop's unwind must free for it (see projectHeadroomExits) */
+  unwind: number
+  /** the keeper's deployment into the loop around its start */
+  deployment: LoopDeployment
 }
 
 /**
  * The queue with each waiting request judged as the keeper will start it:
- * from headroom, or by unwinding, with the debt it carries into the unwind
+ * from headroom, or by unwinding, with what the unwind must free for it
  * (see projectHeadroomExits). `extra` is a withdrawal not requested yet,
  * appended last; its own judgement comes back as `extra`.
  */
@@ -316,7 +333,18 @@ export const projectQueue = (
     headroom,
     exits.map((e) => ({ collateral: e.collateral!, startsIn: e.startsIn })),
   )
-  const debtOf = (debt: bigint) => Number(formatUnits(debt, 18))
+  const hollar = (amount: bigint) => Number(formatUnits(amount, 18))
+  const d = headroom.deployment
+  const perSecond = !d
+    ? 0
+    : d.sliceSeconds > 0
+      ? hollar(d.sliceHollar) / d.sliceSeconds
+      : Infinity
+  const deploymentOf = (exit: (typeof projected)[number]) => ({
+    byStart: hollar(exit.deployed),
+    later: hollar(exit.deployLater),
+    perSecond,
+  })
   const judged = new Map(waiting.map((q, i) => [q.requestId, projected[i]!]))
   const own = extra ? projected[waiting.length] : undefined
   return {
@@ -325,12 +353,21 @@ export const projectQueue = (
       queued: data.queued.map((q) => {
         const exit = judged.get(q.requestId)
         return exit
-          ? { ...q, unwinding: !exit.viaHeadroom, debt: debtOf(exit.debt) }
+          ? {
+              ...q,
+              unwinding: !exit.viaHeadroom,
+              unwind: hollar(exit.unwind),
+              deployment: deploymentOf(exit),
+            }
           : q
       }),
     }),
     extra: own
-      ? { viaHeadroom: own.viaHeadroom, debt: debtOf(own.debt) }
+      ? {
+          viaHeadroom: own.viaHeadroom,
+          unwind: hollar(own.unwind),
+          deployment: deploymentOf(own),
+        }
       : null,
   }
 }

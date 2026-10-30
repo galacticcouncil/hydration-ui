@@ -172,23 +172,25 @@ export const exitBacklogQuery = ({ isReady, evm }: TProviderContext) =>
       const sliceHollar =
         (Number(formatUnits(slice, primeDecimals)) * Number(primePrice)) /
         Number(hollarPrice)
+      // HOLLAR already in the loop (deposit cash not bought in yet, a filled
+      // slice) is credited on the next keeper turn, as is an exit sale in flight
+      const idle = Math.max(
+        Number(formatUnits(idleHollar - reservedFreed, 18)),
+        0,
+      )
+      // the loop frees equity against its gross value, idle cash included, as
+      // SubLoopLogic._unwindNeedAPrime sizes it (USD base, HOLLAR at par)
       const [collateralBase, debtBase] = account
-      const equityShare =
-        collateralBase > 0n ? 1 - Number(debtBase) / Number(collateralBase) : 0
+      const gross = Number(collateralBase) / 1e8 + idle
+      const equityShare = gross > 0 ? 1 - Number(debtBase) / 1e8 / gross : 0
       const freedPerSlice = sliceHollar * equityShare
-      // HOLLAR already in the loop (a filled slice, deposit cash) is credited
-      // on the next keeper turn, as is an exit sale still in flight
-      const idle = Number(formatUnits(idleHollar - reservedFreed, 18))
-      const comingSoon =
-        Math.max(idle, 0) * equityShare +
-        (pendingIntent[2] === EXIT_INTENT ? freedPerSlice : 0)
 
       return {
         sliceSeconds: await measureSliceSeconds(evm, head, Number(interval)),
-        backlogHollar: Math.max(
-          Number(formatUnits(unwindTargetEquity, 18)) - comingSoon,
-          0,
-        ),
+        backlogHollar: Number(formatUnits(unwindTargetEquity, 18)),
+        comingSoonHollar:
+          idle * equityShare +
+          (pendingIntent[2] === EXIT_INTENT ? freedPerSlice : 0),
         freedPerSlice,
         equityShare,
         // a safety de-lever frees nothing for withdrawals; a pause stops all

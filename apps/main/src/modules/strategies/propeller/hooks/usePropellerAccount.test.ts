@@ -28,6 +28,7 @@ const vault = {
 // one slice frees 600 HOLLAR every 60 s
 const BACKLOG = {
   backlogHollar: 1200,
+  comingSoonHollar: 0,
   freedPerSlice: 600,
   equityShare: 1,
   sliceSeconds: 60,

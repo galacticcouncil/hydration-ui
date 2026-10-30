@@ -139,15 +139,29 @@ describe("projectHeadroomExits", () => {
   })
 })
 
-describe("projected exit debt", () => {
-  it("is what the exit takes into the unwind at its start", () => {
-    // 3 of 10 shares unwind with 30% of $5,000; a headroom exit takes none
+describe("projected unwind", () => {
+  it("is the slice's equity up to the debt it owes; headroom frees none", () => {
+    // 3 of the 8 shares left after the headroom exit owe $1,875 and hold
+    // $2,170 of loop equity: the unwind frees what repays the debt
     expect(
       projectHeadroomExits(STATE, [
         { collateral: 2n * unit, startsIn: 0 },
         { collateral: 3n * unit, startsIn: 0 },
-      ]).map((e) => e.debt),
+      ]).map((e) => e.unwind),
     ).toEqual([0n, 1_875n * unit])
+  })
+
+  it("frees only the equity when it covers less than the debt", () => {
+    // $300 of equity against $500 owed: cash and the reserve settle the rest
+    const underwater = {
+      ...STATE,
+      sourceEquity: 3_000n * base,
+      headroomOn: false,
+    }
+    expect(
+      projectHeadroomExits(underwater, [{ collateral: unit, startsIn: 0 }])[0]!
+        .unwind,
+    ).toBe(300n * unit)
   })
 
   it("counts the debt the keeper borrows before the start", () => {
@@ -164,7 +178,7 @@ describe("projected exit debt", () => {
     expect(
       projectHeadroomExits(deploying, [
         { collateral: 3n * unit, startsIn: 90 },
-      ])[0]!.debt,
+      ])[0]!.unwind,
     ).toBe(1_800n * unit)
   })
 })

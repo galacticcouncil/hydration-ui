@@ -24,7 +24,7 @@ import { TProviderContext } from "@/providers/rpcProvider"
 
 /**
  * What a headroom exit is judged on, at one block, with how the keeper will
- * deploy waiting credit before the exit starts; null while the vault has them off.
+ * deploy waiting credit before the exit starts.
  */
 export type HeadroomSnapshot = HeadroomState & {
   /** the block's timestamp, ms: exits start relative to it */
@@ -37,8 +37,11 @@ const REBALANCED = parseAbiItem(
 /** how far back the vault's rebalances are read to time the keeper */
 const CADENCE_WINDOW_BLOCKS = 3_000n
 const CADENCE_GAPS = 20
-/** a longer pause between rebalances means nothing was waiting to deploy */
-const IDLE_GAP_SECONDS = 300
+/**
+ * a longer pause between rebalances means nothing was waiting to deploy: with
+ * credit waiting the keeper borrows a slice every 6-54 s (4.lark)
+ */
+const IDLE_GAP_SECONDS = 90
 
 // block timestamps never change; keep them for the session
 const blockTimes = new Map<bigint, number>()
@@ -121,7 +124,7 @@ const readDeployment = async (
   }
 }
 
-/** What a headroom exit is judged on, at one block; null while the vault has them off. */
+/** What a waiting exit is judged on as the keeper will start it, at one block. */
 export const exitHeadroomQuery = (
   { isReady, evm }: TProviderContext,
   vault: PropellerVaultConfig,
@@ -129,7 +132,7 @@ export const exitHeadroomQuery = (
   queryOptions({
     queryKey: propellerQueryKeys.exitHeadroom(vault.vaultAddress),
     enabled: isReady,
-    queryFn: async (): Promise<HeadroomSnapshot | null> => {
+    queryFn: async (): Promise<HeadroomSnapshot> => {
       const block = await evm.getBlock()
       const options = { blockNumber: block.number }
       const subLoop = getContract({
@@ -137,11 +140,11 @@ export const exitHeadroomQuery = (
         abi: SUBLOOP_ABI,
         client: evm,
       })
-      const [enabled, gapBps] = await subLoop.read.exitHeadroom(
-        [vault.vaultAddress],
-        options,
-      )
-      if (!enabled) return null
+      // off, or a loop from before headroom exits: every exit unwinds, and its
+      // claim on the loop is still what the estimate needs
+      const [enabled, gapBps] = await subLoop.read
+        .exitHeadroom([vault.vaultAddress], options)
+        .catch(() => [false, 0] as const)
       const contract = getContract({
         address: vault.vaultAddress,
         abi: VAULT_ABI,
@@ -223,6 +226,7 @@ export const exitHeadroomQuery = (
         contract.read.reinvestAssets(options),
       ])
       return {
+        headroomOn: enabled,
         gapBps,
         reserveConfig,
         supplied,

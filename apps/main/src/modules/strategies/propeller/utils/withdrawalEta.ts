@@ -13,17 +13,30 @@ export type SettleLog = {
 export type ExitBacklog = {
   /** HOLLAR still to free for started withdrawals, all vaults */
   backlogHollar: number
+  /** of that, what the next keeper turn frees from the loop's idle cash */
+  comingSoonHollar: number
   /** HOLLAR of withdrawal equity one slice frees */
   freedPerSlice: number
-  /**
-   * the loop's equity per HOLLAR of its position: a withdrawal owes Main debt,
-   * and the backlog and the pace count only the equity that debt carries
-   */
+  /** equity freed per HOLLAR the loop gives up, idle cash included */
   equityShare: number
   /** seconds per slice: the keeper's measured cadence, never below pacing */
   sliceSeconds: number
   /** a safety de-lever or a pause: withdrawals make no progress */
   stalled: boolean
+}
+
+/**
+ * The keeper borrowing the vault's waiting credit into the loop, before and
+ * during an unwind: that cash waits there unbought, and the unwind frees it
+ * first, alongside its sales.
+ */
+export type LoopDeployment = {
+  /** HOLLAR deployed by the exit's start */
+  byStart: number
+  /** HOLLAR still to deploy after it */
+  later: number
+  /** HOLLAR deployed per second; Infinity when it goes at once */
+  perSecond: number
 }
 
 /** the keeper starts an eligible unwind on its next cycle */
@@ -53,8 +66,9 @@ export const typicalSliceSeconds = (gaps: number[], interval: number) => {
 /**
  * Seconds until a withdrawal is fully claimable:
  *
- *   (backlog + not started × equity share) / freed per slice × seconds per slice
+ *   (backlog + not started − freed from idle cash) / freed per slice × seconds per slice
  *
+ * less what deployed cash frees while the slices sell *
  * plus the cooldown left and a keeper turn to start it, then one to pay out.
  * Every started withdrawal finishes together, so the whole backlog counts,
  * never just the queue ahead. Withdrawals that start later push it back; null
@@ -65,18 +79,23 @@ export const claimableInSeconds = ({
   backlog,
   notStartedHollar,
   ownHollar = 0,
+  deployment,
   cooldownLeftSeconds,
   started,
   waitsOnUnwind = true,
 }: {
   backlog: ExitBacklog | null
-  /** Main debt of requested withdrawals the keeper has not started, all vaults */
+  /**
+   * HOLLAR the loop's unwind must free for requested withdrawals the keeper
+   * has not started, all vaults: each one's claim on the loop
+   */
   notStartedHollar: number
   /**
-   * this withdrawal's own Main debt still to free: the backlog can never be
+   * this withdrawal's own claim still to free: the backlog can never be
    * less, though a backlog read before the keeper started it says so
    */
   ownHollar?: number
+  deployment?: LoopDeployment
   cooldownLeftSeconds: number
   started: boolean
   waitsOnUnwind?: boolean
@@ -88,28 +107,44 @@ export const claimableInSeconds = ({
     SETTLE_SECONDS
   if (!waitsOnUnwind) return turns
   if (backlog.freedPerSlice <= 0) return null
-  // debt to the equity the backlog and the pace count in
   const { equityShare } = backlog
-  const slices =
-    Math.max(
-      backlog.backlogHollar + notStartedHollar * equityShare,
-      ownHollar * equityShare,
-    ) / backlog.freedPerSlice
-  return turns + slices * backlog.sliceSeconds
+  const atOnce = deployment?.perSecond === Infinity
+  const idle =
+    backlog.comingSoonHollar +
+    ((deployment?.byStart ?? 0) + (atOnce ? deployment!.later : 0)) *
+      equityShare
+  const need = Math.max(
+    Math.max(backlog.backlogHollar + notStartedHollar, ownHollar) - idle,
+    0,
+  )
+  // freed per second by sales, and by cash deployed while they sell
+  const selling = backlog.freedPerSlice / backlog.sliceSeconds
+  const cash = atOnce ? 0 : (deployment?.perSecond ?? 0) * equityShare
+  const later = cash > 0 ? (deployment?.later ?? 0) * equityShare : 0
+  const together = later > 0 && cash > 0 ? need / (selling + cash) : Infinity
+  const seconds =
+    together * cash <= later
+      ? together
+      : ((need - later) / backlog.freedPerSlice) * backlog.sliceSeconds
+  return turns + Math.max(seconds, 0)
 }
 
 /**
- * Main debt (HOLLAR) of requested withdrawals the keeper has not started yet,
- * in every vault: each joins the shared backlog within a keeper turn.
+ * HOLLAR the loop's unwind must free for requested withdrawals the keeper has
+ * not started yet, in every vault: each joins the shared backlog within a
+ * keeper turn.
  */
-export const notStartedDebt = (
+export const notStartedUnwind = (
   vaults: {
     queued: {
       remaining: number
       started: boolean
       unwinding?: boolean
-      /** projected for its start; the vault's debt ratio stands in without it */
-      debt?: number
+      /**
+       * its claim on the loop, projected for its start; without a projection
+       * its Main debt stands in (a claim's equity tracks the debt it backs)
+       */
+      unwind?: number
     }[]
     /** HOLLAR of Main debt per collateral unit; null while unknown */
     debtPerCollateral: number | null
@@ -122,7 +157,7 @@ export const notStartedDebt = (
         // a waiting exit headroom will settle adds nothing to the unwind
         .filter((q) => !q.started && q.unwinding !== false)
         .reduce(
-          (s, q) => s + (q.debt ?? q.remaining * (debtPerCollateral ?? 0)),
+          (s, q) => s + (q.unwind ?? q.remaining * (debtPerCollateral ?? 0)),
           0,
         ),
     0,

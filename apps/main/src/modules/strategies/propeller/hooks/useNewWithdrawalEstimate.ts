@@ -18,7 +18,7 @@ import {
 } from "@/modules/strategies/propeller/hooks/useVaultReads"
 import {
   claimableInSeconds,
-  notStartedDebt,
+  notStartedUnwind,
   reserveCoversExit,
   START_SECONDS,
 } from "@/modules/strategies/propeller/utils/withdrawalEta"
@@ -77,7 +77,7 @@ export const useNewWithdrawalEstimate = (
   const stats = statsQueries[index]?.data
   const queue = queueQueries[index]?.data
   const ahead = (queue?.queued ?? []).reduce((sum, q) => sum + q.remaining, 0)
-  const notStartedHollar = notStartedDebt(
+  const notStartedHollar = notStartedUnwind(
     PROPELLER_VAULTS.map((_, i) => ({
       queued: projectedOf(i)?.queued ?? [],
       debtPerCollateral: debtPerCollateralOf(i),
@@ -112,13 +112,14 @@ export const useNewWithdrawalEstimate = (
           ? null
           : claimableInSeconds({
               backlog: backlog ?? null,
-              // the debt it carries at its start; a headroom exit carries
-              // none into the unwind it may wait behind
+              // what the unwind must free for it from its start; a headroom
+              // exit needs none from the unwind it may wait behind
               notStartedHollar:
                 notStartedHollar +
-                (own ? own.debt : collateral * (perCollateral ?? 0)),
+                (own ? own.unwind : collateral * (perCollateral ?? 0)),
               cooldownLeftSeconds: stats.withdrawalDelay,
               started: false,
+              deployment: own?.deployment,
               waitsOnUnwind,
             }),
     }

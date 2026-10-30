@@ -20,6 +20,8 @@ export type DeploymentState = {
 
 /** one block of the vault, loop and Main debt state a headroom exit is judged on */
 export type HeadroomState = {
+  /** false while the vault has headroom exits off: every exit unwinds */
+  headroomOn?: boolean
   gapBps: number
   /** the collateral reserve's configuration bitmap; bits 0-15 are max LTV */
   reserveConfig: bigint
@@ -95,6 +97,7 @@ const headroomOpen = (
   need: bigint,
   cash: bigint,
 ) => {
+  if (s.headroomOn === false) return false
   const cap = s.reserveConfig & LTV_MASK
   const gap = BigInt(s.gapBps)
   if (cap <= gap || slice === 0n) return false
@@ -220,8 +223,16 @@ export type PendingExit = {
 export type ProjectedExit = {
   /** settles from headroom at its start; otherwise it waits for the unwind */
   viaHeadroom: boolean
-  /** Main debt (HOLLAR) the exit takes into the unwind when it starts */
-  debt: bigint
+  /**
+   * HOLLAR the loop's unwind must free before the exit settles: its slice's
+   * equity, up to the debt it owes; its cash share and a reserve-covered
+   * shortfall settle on the first keeper turn, and headroom frees nothing
+   */
+  unwind: bigint
+  /** HOLLAR the keeper has deployed into the loop by its start */
+  deployed: bigint
+  /** HOLLAR it still deploys after the start, toward the band target */
+  deployLater: bigint
 }
 
 /**
@@ -253,13 +264,20 @@ export const projectHeadroomExits = (
       }
     }
     const q = quoteExit(state, collateral)
-    if (!q) return { viaHeadroom: false, debt: 0n }
+    if (!q)
+      return {
+        viaHeadroom: false,
+        unwind: 0n,
+        deployed,
+        deployLater: total - deployed,
+      }
     state = startExit(state, q, collateral)
     const owed = q.need > q.cash ? q.need - q.cash : 0n
     return {
       viaHeadroom: q.headroom,
-      // a headroom exit carries only a shortfall the reserve takes
-      debt: !q.headroom ? owed : owed > q.value ? owed - q.value : 0n,
+      unwind: q.headroom ? 0n : q.value < owed ? q.value : owed,
+      deployed,
+      deployLater: total - deployed,
     }
   })
 }

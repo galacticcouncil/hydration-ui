@@ -100,7 +100,7 @@ describe("Withdrawal queue shares", () => {
         started: true,
         unwinding: false,
         eligibleAt: 0,
-        debt: 0,
+        unwind: 0,
       },
       {
         requestId: 1,
