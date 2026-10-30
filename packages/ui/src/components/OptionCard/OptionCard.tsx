@@ -1,5 +1,6 @@
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { isValidElement } from "react"
 
 import { SOptionCardContainer } from "@/components/OptionCard/OptionCard.styled"
 
@@ -8,7 +9,8 @@ export type OptionCardProps = {
   description?: string
   value: React.ReactNode
   displayValue?: React.ReactNode
-  icon?: React.ComponentType
+  /** a component rendered as an icon, or a ready element such as an asset logo */
+  icon?: React.ComponentType | React.ReactElement
   disabled?: boolean
   isActive: boolean
   onClick: () => void
@@ -31,7 +33,9 @@ export const OptionCard: React.FC<OptionCardProps> = ({
       active={isActive}
       disabled={disabled}
     >
-      {icon && <Icon component={icon} size="xl" />}
+      {isValidElement(icon)
+        ? icon
+        : icon && <Icon component={icon} size="xl" />}
       <Flex direction="column" flex={1}>
         <Text fs="p3" lh={1} color={getToken("text.high")}>
           {label}

@@ -87,7 +87,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
-  const { isFork } = useRpcProvider()
+  const { isFork, isReady } = useRpcProvider()
   const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
@@ -253,6 +253,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const isLoading =
     !hasRendered ||
+    (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
+      (!isReady || (!hasInitialError && !fee))) ||
     isLoadingNonce ||
     isLoadingFeeEstimate ||
     isLoadingPaymentInfo
