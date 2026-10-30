@@ -132,18 +132,23 @@ export const DepositForm = ({
   // an unresolved estimate only holds validation at the wallet balance: MAX and
   // submit wait for it
   const spendable = reserve.isResolved ? reserve.maxBalance : balance
-  // Capacity is in collateral; a swap deposit bounds its OUTPUT, so express
-  // the cap in the pay asset at spot. The swap executes below spot (fees,
-  // impact), so a spot-converted fill always lands under the cap.
+  // a buy deposit sizes its own fill to the room and spends only what that
+  // costs, so the whole balance is a valid amount and the room never binds it
+  const isBuyDeposit = isSwap && !isOneToOneDeposit(selected)
+  // Capacity is in collateral; the 1:1 swap bounds its OUTPUT, so express the
+  // cap in the pay asset at spot. The swap executes below spot (fees, impact),
+  // so a spot-converted fill always lands under the cap.
   const { data: paySpot } = useQuery({
     ...spotPriceQuery(rpc, vault.assetId, assetId),
-    enabled: rpc.isReady && isSwap,
+    enabled: rpc.isReady && isSwap && !isBuyDeposit,
   })
-  const capacityInPay = !isSwap
-    ? maximum
-    : paySpot?.spotPrice
-      ? Big(maximum).times(paySpot.spotPrice).toString()
-      : null
+  const capacityInPay = isBuyDeposit
+    ? null
+    : !isSwap
+      ? maximum
+      : paySpot?.spotPrice
+        ? Big(maximum).times(paySpot.spotPrice).toString()
+        : null
   // Remaining capacity shrinks every block as totalAssets accrues interest, so
   // filling it EXACTLY guarantees an over-max by the next refetch and an
   // ExceedsTvlCap revert by inclusion time. When the cap binds, shave the fill
@@ -208,6 +213,7 @@ export const DepositForm = ({
   const quote = useDepositQuote(selected, watch("amount"), asset.decimals)
   const exceedsCapacity =
     isSwap &&
+    !isBuyDeposit &&
     !!capacity &&
     quote.depositAmount !== undefined &&
     quote.depositAmount > capacity.maximum
@@ -226,7 +232,7 @@ export const DepositForm = ({
     if (unavailable) return t("deposit.cta.unavailable")
     if (isPaused) return t("deposit.cta.paused")
     if (atCapacity) return t("deposit.cta.full")
-    return isSwap && !isOneToOneDeposit(selected)
+    return isBuyDeposit
       ? t("deposit.cta.swapAndDeposit")
       : t("deposit.cta.deposit")
   })()
