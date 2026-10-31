@@ -1,5 +1,5 @@
 import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
-import { ReactNode } from "react"
+import { ComponentPropsWithRef, ReactNode } from "react"
 
 import { Button } from "@/components/Button"
 import { Icon } from "@/components/Icon"
@@ -44,6 +44,9 @@ export type AssetInputProps = {
   label?: ReactNode
   labelAdornment?: ReactNode
   asset?: AssetInputAsset | null
+  /** Replaces the asset button; the custom control owns its disabled/loading state. */
+  assetSelector?: ReactNode
+  assetSelectorLayout?: "inline" | "stacked"
   onAssetClick?: () => void
   selectAssetLabel?: string
   value?: string
@@ -68,6 +71,8 @@ export const AssetInput = ({
   label,
   labelAdornment,
   asset,
+  assetSelector,
+  assetSelectorLayout = "inline",
   onAssetClick,
   selectAssetLabel,
   value,
@@ -95,7 +100,12 @@ export const AssetInput = ({
       : (amountError ?? assetError)
 
   return (
-    <SRoot isAmountHidden={isAmountHidden} className={className}>
+    <SRoot
+      data-asset-input
+      isAmountHidden={isAmountHidden}
+      isSelectorStacked={assetSelectorLayout === "stacked"}
+      className={className}
+    >
       {(label || labelAdornment || balance) && (
         <SHeader>
           {label && <SLabel>{label}</SLabel>}
@@ -110,16 +120,21 @@ export const AssetInput = ({
         </SHeader>
       )}
 
-      <SAssetGroup isFullWidth={isAmountHidden}>
-        <AssetButton
-          asset={asset}
-          onClick={onAssetClick}
-          selectAssetLabel={selectAssetLabel}
-          isLoading={isLoading}
-          isError={!!assetError && !isLoading}
-          isDisabled={isDisabled}
-          fullWidth={isAmountHidden}
-        />
+      <SAssetGroup
+        isFullWidth={isAmountHidden}
+        isStacked={assetSelectorLayout === "stacked"}
+      >
+        {assetSelector ?? (
+          <AssetButton
+            asset={asset}
+            onClick={onAssetClick}
+            selectAssetLabel={selectAssetLabel}
+            isLoading={isLoading}
+            isError={!!assetError && !isLoading}
+            isDisabled={isDisabled}
+            fullWidth={isAmountHidden || assetSelectorLayout === "stacked"}
+          />
+        )}
         {onLock && (
           <Tooltip text={lockLabel} size="small" asChild>
             <SLockButton
@@ -138,7 +153,7 @@ export const AssetInput = ({
       </SAssetGroup>
 
       {!isAmountHidden && (
-        <SAmount>
+        <SAmount data-asset-input-amount>
           <SAmountInput
             variant="embedded"
             placeholder="0"
@@ -217,7 +232,10 @@ const AssetInputBalanceView = ({
   </SBalance>
 )
 
-export type AssetButtonProps = {
+export type AssetButtonProps = Omit<
+  ComponentPropsWithRef<"button">,
+  "children" | "disabled"
+> & {
   asset?: AssetInputAsset | null
   onClick?: () => void
   selectAssetLabel?: string
@@ -237,12 +255,15 @@ export const AssetButton = ({
   isDisabled = false,
   fullWidth = false,
   className,
+  ...props
 }: AssetButtonProps) => {
   const isInteractive = !!onClick && !isDisabled && !isLoading
 
   return (
     <SAssetButton
+      {...props}
       type="button"
+      data-asset-button
       className={className}
       isLoading={isLoading}
       isEmpty={!asset && !isLoading}

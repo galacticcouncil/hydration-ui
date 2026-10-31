@@ -132,7 +132,10 @@ function findWormholeTwin(list: XcJourney[], incoming: XcJourney) {
   return matches.length === 1 ? matches[0] : undefined
 }
 
-function isSameTransfer(optimistic: XcJourney, incoming: XcJourney): boolean {
+export function isSameTransfer(
+  optimistic: XcJourney,
+  incoming: XcJourney,
+): boolean {
   if (!isOptimisticJourney(optimistic)) return false
   if (optimistic.origin !== incoming.origin) return false
   if (optimistic.destination !== incoming.destination) return false

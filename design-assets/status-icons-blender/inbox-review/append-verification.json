@@ -1,0 +1,21 @@
+{
+  "base": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/revisions/before-review-inbox-2026-10-22/status-icons.blend",
+  "baseSha256": "619ebe5ac3dab5b0018f70341723f6761527caa27306fd5433300fca1fc4fc4f",
+  "candidate": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-candidate.blend",
+  "stagedOutput": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/status-icons.blend",
+  "preservedScenes": [
+    "01 - Hourglass",
+    "02 - Review Document"
+  ],
+  "preservedObjects": 31,
+  "preservedMaterials": 5,
+  "beforeDigest": "47758f1e659e80ed9327f167ef6c8d5c07af3fdbe5f1c6716fee52d69de32ea9",
+  "reopenedDigest": "47758f1e659e80ed9327f167ef6c8d5c07af3fdbe5f1c6716fee52d69de32ea9",
+  "priorScenesUnchanged": true,
+  "scenes": [
+    "01 - Hourglass",
+    "02 - Review Document",
+    "03 - Review Inbox"
+  ],
+  "sharedStudio": "STUDIO - Shared Softboxes"
+}

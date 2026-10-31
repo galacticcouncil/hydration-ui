@@ -15,6 +15,7 @@ export type XAssetLogoProps = {
   asset: Asset
   chain: AnyChain
   className?: string
+  showChainLogo?: boolean
 }
 
 /**
@@ -31,6 +32,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   asset,
   chain,
   className,
+  showChainLogo = true,
 }) => {
   const metadata = useAssetMetadata()
   const getDisplayAssetId = useHydrationDisplayAssetId()
@@ -53,7 +55,11 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
       return (
         <AssetLogoPrimitive
           src={metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, registryId)}
-          chainSrc={metadata.getChainLogoSrc(chainId, ecosystem)}
+          chainSrc={
+            showChainLogo
+              ? metadata.getChainLogoSrc(chainId, ecosystem)
+              : undefined
+          }
           className={className}
         />
       )
@@ -65,6 +71,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
         ecosystem={ecosystem}
         chainId={chainId}
         className={className}
+        showChainLogo={showChainLogo}
       />
     )
   }
@@ -74,5 +81,11 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   const fallbackRegistryId =
     registryId ?? getHydrationAssetId(asset, chain.key) ?? ""
 
-  return <AssetLogo id={fallbackRegistryId} className={className} />
+  return (
+    <AssetLogo
+      id={fallbackRegistryId}
+      className={className}
+      showChainLogo={showChainLogo}
+    />
+  )
 }

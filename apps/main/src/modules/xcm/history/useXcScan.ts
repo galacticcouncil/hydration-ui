@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { sortBy } from "remeda"
 
+import { xcScanAssetsQuery, xcScanChainsQuery } from "@/api/xcScanMetadata"
 import { useScanJourneys } from "@/modules/xcm/history/useScanJourneys"
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import {
@@ -11,6 +12,10 @@ import {
   isXcSwapReceiverJourney,
   journeyDate,
 } from "@/modules/xcm/history/utils/journey"
+import {
+  enrichJourneyAssets,
+  hasJourneyAssetMetadata,
+} from "@/modules/xcm/history/utils/metadata"
 import {
   addJourney,
   mergeLoadedJourneys,
@@ -23,6 +28,7 @@ import { xcStore } from "./xcScanStore"
 export const createXcScanQueryKey = (address: string) => ["xcscan", address]
 
 const NO_JOURNEYS: XcJourney[] = []
+const NO_METADATA = {}
 
 // xc-scan answers a NEAR id or a Zcash address with a 500, so only substrate
 // and evm accounts are looked up there
@@ -51,7 +57,7 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
   // What the transfers scan indexes comes from it, xc-scan has the rest
   const scan = useScanJourneys(address)
 
-  const data = useMemo(() => {
+  const journeys = useMemo(() => {
     const indexed = isIndexed ? xcscan.data : NO_JOURNEYS
     // xc-scan's copies of the scan's transfers stand in until it answers
     const journeys = scan.data ? withoutScanTwins(indexed, scan.data) : indexed
@@ -67,10 +73,33 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
     )
   }, [claimableOnly, isIndexed, scan.data, xcscan.data])
 
+  const chains = useQuery({
+    ...xcScanChainsQuery(),
+    enabled: journeys.length > 0,
+  })
+  const chainMetadata = chains.data ?? NO_METADATA
+  const nativeEnriched = useMemo(
+    () => enrichJourneyAssets(journeys, chainMetadata),
+    [journeys, chainMetadata],
+  )
+  const missingAssetKeys = nativeEnriched.flatMap((journey) =>
+    journey.assets
+      .filter(
+        (asset) => !hasJourneyAssetMetadata(asset) && asset.asset.includes("|"),
+      )
+      .map((asset) => asset.asset),
+  )
+  const assets = useQuery(xcScanAssetsQuery(missingAssetKeys))
+  const data = useMemo(
+    () => enrichJourneyAssets(nativeEnriched, chainMetadata, assets.data),
+    [nativeEnriched, chainMetadata, assets.data],
+  )
+
   return {
     // The scan's rows replace xc-scan's, so the list waits for its first answer
     isLoading: (isIndexed && xcscan.dataUpdatedAt === 0) || scan.isLoading,
     data,
+    chainMetadata,
   }
 }
 

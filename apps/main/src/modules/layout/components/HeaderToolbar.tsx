@@ -1,7 +1,7 @@
 import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
 import { Button, ExternalLink } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, lazy } from "react"
+import { FC, lazy, useRef, useState } from "react"
 
 import { HYDRATION_DOCS_LINK } from "@/config/links"
 import { DepositButton } from "@/modules/layout/components/DepositButton/DepositButton"
@@ -21,6 +21,8 @@ export const HeaderToolbar: FC = () => {
   const hasTopNavbar = useHasTopNavbar()
   const { gte } = useBreakpoints()
   const isFullHeader = gte(FULL_HEADER_BREAKPOINT)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const notificationReturnFocus = useRef<HTMLElement | null>(null)
 
   return (
     <SHeaderToolbar>
@@ -34,9 +36,20 @@ export const HeaderToolbar: FC = () => {
           <ExternalLink href={HYDRATION_DOCS_LINK} />
         </Button>
       )}
-      <NotificationCenter />
+      <NotificationCenter
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        returnFocusRef={notificationReturnFocus}
+      />
       {hasTopNavbar && <Settings />}
-      {hasTopNavbar && isFullHeader && <DepositButton />}
+      {hasTopNavbar && isFullHeader && (
+        <DepositButton
+          onClaimClick={(event) => {
+            notificationReturnFocus.current = event.currentTarget
+            setNotificationsOpen(true)
+          }}
+        />
+      )}
       <HeaderWeb3ConnectButton />
     </SHeaderToolbar>
   )

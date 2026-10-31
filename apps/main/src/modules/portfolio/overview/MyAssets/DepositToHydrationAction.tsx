@@ -1,10 +1,9 @@
 import { Button, TableRowAction } from "@galacticcouncil/ui/components"
 import { AnyChain } from "@galacticcouncil/xc-core"
-import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { LINKS } from "@/config/navigation"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 
 type DepositAsset = {
   readonly canDeposit?: boolean
@@ -15,6 +14,15 @@ type DepositAsset = {
 export const canDepositToHydration = (asset: DepositAsset) =>
   Boolean(asset.canDeposit && asset.origin && asset.xcAssetKey)
 
+const openAssetDeposit = (asset: DepositAsset) => {
+  if (!canDepositToHydration(asset)) return
+  const { openOnchain } = useOnrampModal.getState()
+  openOnchain("connected", {
+    entryChoice: true,
+    assetIntent: { chainKey: asset.origin!.key, assetKey: asset.xcAssetKey! },
+  })
+}
+
 export const DepositToHydrationTableAction: FC<{
   readonly asset: DepositAsset
 }> = ({ asset }) => {
@@ -23,16 +31,8 @@ export const DepositToHydrationTableAction: FC<{
   if (!canDepositToHydration(asset)) return null
 
   return (
-    <TableRowAction asChild>
-      <Link
-        to={LINKS.crossChain}
-        search={{
-          srcChain: asset.origin!.key,
-          srcAsset: asset.xcAssetKey!,
-        }}
-      >
-        {t("myAssets.actions.depositToHydration")}
-      </Link>
+    <TableRowAction onClick={() => openAssetDeposit(asset)}>
+      {t("myAssets.actions.depositToHydration")}
     </TableRowAction>
   )
 }
@@ -47,20 +47,12 @@ export const DepositToHydrationButton: FC<{ readonly asset: DepositAsset }> = ({
   return (
     <Button
       size="large"
-      asChild
       variant="muted"
       outline
       sx={{ gridColumn: "1 / -1" }}
+      onClick={() => openAssetDeposit(asset)}
     >
-      <Link
-        to={LINKS.crossChain}
-        search={{
-          srcChain: asset.origin!.key,
-          srcAsset: asset.xcAssetKey!,
-        }}
-      >
-        {t("myAssets.actions.depositToHydration")}
-      </Link>
+      {t("myAssets.actions.depositToHydration")}
     </Button>
   )
 }

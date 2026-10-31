@@ -4,6 +4,8 @@ import { useState } from "react"
 import {
   Bitcoin,
   Droplets,
+  FiatEur,
+  FiatUsd,
   Flower,
   Gem,
   Hexagon,
@@ -18,6 +20,32 @@ import { Flex, Logo } from "@/components"
 import { Select, SelectItem } from "./Select"
 
 type Story = StoryObj<typeof Select>
+
+export const Loading: Story = {
+  args: {
+    items: [],
+    isLoading: true,
+    placeholder: "Choose an option",
+    fullWidth: true,
+    onValueChange: () => {},
+  },
+}
+
+export const HoverLoading: Story = {
+  ...Loading,
+  args: { ...Loading.args, openOnHover: true },
+}
+
+export const LoadingWithAction: Story = {
+  ...Loading,
+  args: {
+    ...Loading.args,
+    openOnHover: true,
+    items: [
+      { key: "connect", label: "Connect another wallet", alwaysVisible: true },
+    ],
+  },
+}
 
 export default {
   component: Select,
@@ -94,6 +122,7 @@ type TemplateProps = Pick<
   | "placeholder"
   | "disabled"
   | "fullWidth"
+  | "openOnHover"
 > & { items?: ReadonlyArray<SelectItem<string>> }
 
 const Single = (props: TemplateProps) => {
@@ -129,6 +158,10 @@ export const Default: Story = {
   render: () => <Single />,
 }
 
+export const OpenOnHover: Story = {
+  render: () => <Single openOnHover items={itemsWithIcons} />,
+}
+
 export const WithLabel: Story = {
   render: () => <Single label="Chain" />,
 }
@@ -145,6 +178,26 @@ export const WithIcons: Story = {
       <Multiple items={itemsWithIcons} />
     </Flex>
   ),
+}
+
+export const WithAssetIcons: Story = {
+  render: () => {
+    const [currency, setCurrency] = useState<"USD" | "EUR">("USD")
+
+    return (
+      <Select
+        value={currency}
+        onValueChange={setCurrency}
+        variant="secondary"
+        size="medium"
+        iconSize={24}
+        items={[
+          { key: "USD", label: "USD · ACH", icon: FiatUsd },
+          { key: "EUR", label: "EUR · SEPA", icon: FiatEur },
+        ]}
+      />
+    )
+  },
 }
 
 export const ManyItems: Story = {

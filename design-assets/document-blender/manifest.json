@@ -1,0 +1,100 @@
+{
+  "blender": "5.2.2 LTS",
+  "source": "design-assets/document-blender/document.blend",
+  "render": "design-assets/document-blender/document-1024.png",
+  "resolution": 1024,
+  "samples": 192,
+  "device": "CPU",
+  "reference": "references/imagegen-document.webp",
+  "palette": {
+    "page": "#4168C4",
+    "magnifier": "#A58DC9",
+    "strokes": "#DCDDBA"
+  },
+  "lighting": {
+    "keyWatts": 600,
+    "fillWatts": 150,
+    "rimWatts": 75,
+    "keySize": 5,
+    "source": "hourglass-blender"
+  },
+  "construction": {
+    "page": [
+      2,
+      0.24,
+      2.6
+    ],
+    "pageBevel": 0.1,
+    "foldMaterialSameAsPage": true,
+    "foldThickness": 0.035,
+    "foldLift": 0.11,
+    "ringOuterRadius": 0.69,
+    "ringInnerRadius": 0.465,
+    "ringDepth": 0.25
+  },
+  "camera": {
+    "type": "ORTHO",
+    "scale": 3.6500000953674316,
+    "location": [
+      -2.799999952316284,
+      -8.399999618530273,
+      0.6000000238418579
+    ],
+    "target": [
+      0.1599999964237213,
+      0.0,
+      1.5499999523162842
+    ],
+    "rollDegrees": 5.5
+  },
+  "objects": [
+    {
+      "name": "Document - Blue Page with Clipped Corner",
+      "type": "MESH"
+    },
+    {
+      "name": "Document - Naturally Folded Blue Corner",
+      "type": "MESH"
+    },
+    {
+      "name": "Document - Long Ivory Stroke",
+      "type": "MESH"
+    },
+    {
+      "name": "Document - Short Ivory Stroke",
+      "type": "MESH"
+    },
+    {
+      "name": "Magnifier - Chunky Lavender Ring",
+      "type": "MESH"
+    },
+    {
+      "name": "Magnifier - Smoky Inset Glass Lens",
+      "type": "MESH"
+    },
+    {
+      "name": "Magnifier - Rounded Lavender Handle",
+      "type": "MESH"
+    },
+    {
+      "name": "Document and Magnifier - Presentation Tilt",
+      "type": "EMPTY"
+    },
+    {
+      "name": "Camera - Three Quarter Soft Studio",
+      "type": "CAMERA"
+    },
+    {
+      "name": "Key - Large Softbox Upper Left",
+      "type": "LIGHT"
+    },
+    {
+      "name": "Fill - Broad Cool Front",
+      "type": "LIGHT"
+    },
+    {
+      "name": "Rim - Subtle Rear",
+      "type": "LIGHT"
+    }
+  ]
+}

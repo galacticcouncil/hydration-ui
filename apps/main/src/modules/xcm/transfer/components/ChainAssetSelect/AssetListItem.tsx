@@ -14,6 +14,7 @@ import {
   AssetRoute,
 } from "@galacticcouncil/xc-core"
 import Big from "big.js"
+import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { isBigInt } from "remeda"
 
@@ -34,6 +35,8 @@ export type AssetListItemProps = {
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
+  showChainLogo?: boolean
+  trailingElement?: ReactNode
   onClick: () => void
 }
 
@@ -45,6 +48,8 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   balance,
   balanceDisplay,
   chain,
+  showChainLogo = true,
+  trailingElement,
   isLoading,
   isSelected,
   onClick,
@@ -54,7 +59,13 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
       <Flex align="start" gap="base">
-        {chain && <XAssetLogo asset={asset} chain={chain} />}
+        {chain && (
+          <XAssetLogo
+            asset={asset}
+            chain={chain}
+            showChainLogo={showChainLogo}
+          />
+        )}
 
         <Text truncate as="div">
           <AssetLabel symbol={symbol} name={name} />
@@ -63,44 +74,48 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
           )}
         </Text>
       </Flex>
-      <Text
-        fs="p4"
-        fw={500}
-        as="div"
-        color={
-          isBigInt(balance?.amount) && balance.amount > 0n
-            ? getToken("text.high")
-            : getToken("text.low")
-        }
-      >
-        {isLoading ? (
-          <Skeleton width={60} />
-        ) : balance ? (
-          <Flex direction="column" align="flex-end">
-            <Text fs="p5" lh={1} fw={600}>
-              {t("number", {
-                value: toDecimal(balance.amount, balance.decimals),
-                symbol: asset?.originSymbol,
-              })}
-            </Text>
-            {Big(balanceDisplay ?? "0").gt(0) && (
-              <Text fs="p6" color={getToken("text.low")}>
-                {t("currency", {
-                  value: balanceDisplay,
+      {trailingElement !== undefined ? (
+        trailingElement
+      ) : (
+        <Text
+          fs="p4"
+          fw={500}
+          as="div"
+          color={
+            isBigInt(balance?.amount) && balance.amount > 0n
+              ? getToken("text.high")
+              : getToken("text.low")
+          }
+        >
+          {isLoading ? (
+            <Skeleton width={60} />
+          ) : balance ? (
+            <Flex direction="column" align="flex-end">
+              <Text fs="p5" lh={1} fw={600}>
+                {t("number", {
+                  value: toDecimal(balance.amount, balance.decimals),
+                  symbol: asset?.originSymbol,
                 })}
               </Text>
-            )}
-          </Flex>
-        ) : (
-          <Icon
-            as="span"
-            display="inline-flex"
-            color={getToken("text.low")}
-            component={Minus}
-            size="m"
-          />
-        )}
-      </Text>
+              {Big(balanceDisplay ?? "0").gt(0) && (
+                <Text fs="p6" color={getToken("text.low")}>
+                  {t("currency", {
+                    value: balanceDisplay,
+                  })}
+                </Text>
+              )}
+            </Flex>
+          ) : (
+            <Icon
+              as="span"
+              display="inline-flex"
+              color={getToken("text.low")}
+              component={Minus}
+              size="m"
+            />
+          )}
+        </Text>
+      )}
     </SAssetListItem>
   )
 }

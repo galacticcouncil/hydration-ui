@@ -10,14 +10,15 @@ import {
 import { mq } from "@galacticcouncil/ui/theme"
 import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
-type PanelProps = { showAccountPanel: boolean }
+type PanelProps = { showAccountPanel: boolean; isPage?: boolean }
 
-type MobileColumnProps = { mobileHidden: boolean }
+type MobileColumnProps = { mobileHidden: boolean; isPage?: boolean }
 
-const shouldForwardProp = (prop: string) => prop !== "showAccountPanel"
+const shouldForwardProp = (prop: string) =>
+  prop !== "showAccountPanel" && prop !== "isPage"
 
 const shouldForwardColumnProp = (prop: string) =>
-  prop !== "showAccountPanel" && prop !== "mobileHidden"
+  prop !== "showAccountPanel" && prop !== "mobileHidden" && prop !== "isPage"
 
 export const SSearchInput = styled(SearchInput)(
   ({ theme }) => css`
@@ -38,34 +39,50 @@ export const SScrollAreaContent = styled(Flex)(
   `,
 )
 
-export const SWalletManagementShell = styled(Box)(
-  () => css`
+export const SWalletManagementShell = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "isPage",
+})<{ isPage?: boolean }>(
+  ({ isPage }) => css`
     width: 100%;
     max-width: 100%;
-    max-height: 75dvh;
+    max-height: ${isPage ? "none" : "75dvh"};
+    height: ${isPage ? pxToRem(520) : "auto"};
 
     display: flex;
     flex-direction: column;
     overflow: hidden;
 
     ${mq("max-xs")} {
-      height: 100dvh;
-      max-height: 100dvh;
+      height: ${isPage ? "100%" : "100dvh"};
+      max-height: ${isPage ? "100%" : "100dvh"};
+      flex: ${isPage ? 1 : "initial"};
+      min-height: 0;
     }
   `,
 )
 
-export const SModalHeader = styled(ModalHeader)(
-  ({ theme }) => css`
-    padding-bottom: ${theme.space.l};
+export const SModalHeader = styled(ModalHeader, {
+  shouldForwardProp: (prop) => prop !== "embedded",
+})<{ embedded?: boolean }>(
+  ({ theme, embedded }) => css`
+    ${embedded
+      ? css`
+          padding-block: ${theme.space.m};
+        `
+      : css`
+          padding-bottom: ${theme.space.l};
+        `}
     flex-shrink: 0;
   `,
 )
 
-export const SModalBody = styled(ModalBody)(
-  ({ theme }) => css`
-    padding: 0 ${theme.space.base} ${theme.space.base};
-    border-top: 0;
+export const SModalBody = styled(ModalBody, {
+  shouldForwardProp: (prop) => prop !== "embedded",
+})<{ embedded?: boolean }>(
+  ({ theme, embedded }) => css`
+    padding: ${embedded ? theme.space.base : "0"} ${theme.space.base}
+      ${theme.space.base};
+    border-top: ${embedded ? `1px solid ${theme.details.separators}` : "0"};
 
     flex: 1;
     display: flex;
@@ -73,14 +90,19 @@ export const SModalBody = styled(ModalBody)(
     min-height: 0;
     overflow: hidden;
 
+    ${mq("sm")} {
+      padding-top: ${embedded ? theme.space.m : "0"};
+    }
+
     ${mq("md")} {
-      padding: 0 ${theme.space.s} ${theme.space.m} ${theme.space.m};
+      padding: ${embedded ? theme.space.m : "0"} ${theme.space.s}
+        ${theme.space.m} ${theme.space.m};
     }
   `,
 )
 
 export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
-  ({ theme, showAccountPanel }) => css`
+  ({ theme, showAccountPanel, isPage }) => css`
     display: grid;
     grid-template-columns: 1fr;
     gap: ${theme.space.base};
@@ -93,16 +115,20 @@ export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
     overflow: hidden;
 
     ${mq("md")} {
-      grid-template-columns: ${showAccountPanel
-        ? `${pxToRem(200)} calc(100% - ${pxToRem(200)} - ${theme.space.s})`
-        : "100% 0px"};
-      gap: ${showAccountPanel ? theme.space.s : 0};
+      grid-template-columns: ${isPage
+        ? "100%"
+        : showAccountPanel
+          ? `${pxToRem(200)} calc(100% - ${pxToRem(200)} - ${theme.space.s})`
+          : "100% 0px"};
+      gap: ${!isPage && showAccountPanel ? theme.space.s : 0};
     }
 
     @media (prefers-reduced-motion: no-preference) {
       transition:
-        grid-template-columns 320ms ${theme.easings.outExpo},
-        gap 320ms ${theme.easings.outExpo};
+        grid-template-columns var(--modal-resize-duration, 320ms)
+          var(--modal-resize-easing, ${theme.easings.outExpo}),
+        gap var(--modal-resize-duration, 320ms)
+          var(--modal-resize-easing, ${theme.easings.outExpo});
     }
   `,
 )
@@ -110,7 +136,7 @@ export const SLayoutGrid = styled(Grid, { shouldForwardProp })<PanelProps>(
 export const SSourceColumn = styled(Flex, {
   shouldForwardProp: shouldForwardColumnProp,
 })<MobileColumnProps>(
-  ({ theme, mobileHidden }) => css`
+  ({ theme, mobileHidden, isPage }) => css`
     flex-direction: column;
     gap: ${theme.space.base};
 
@@ -125,6 +151,7 @@ export const SSourceColumn = styled(Flex, {
     }
 
     ${mq("md")} {
+      display: ${isPage && mobileHidden ? "none" : "flex"};
       max-height: 100%;
     }
   `,
@@ -176,7 +203,7 @@ const revealUp = keyframes`
 export const SRightPanelFrame = styled(Box, {
   shouldForwardProp: shouldForwardColumnProp,
 })<PanelProps & MobileColumnProps>(
-  ({ theme, showAccountPanel, mobileHidden }) => css`
+  ({ theme, showAccountPanel, mobileHidden, isPage }) => css`
     min-width: 0;
     min-height: 0;
     max-height: ${showAccountPanel ? "none" : 0};
@@ -185,11 +212,18 @@ export const SRightPanelFrame = styled(Box, {
     opacity: ${showAccountPanel ? 1 : 0};
     visibility: ${showAccountPanel ? "visible" : "hidden"};
     pointer-events: ${showAccountPanel ? "auto" : "none"};
-    transition: ${showAccountPanel
-      ? "opacity 160ms ease-out 80ms"
-      : "opacity 80ms ease-out, visibility 0s linear 80ms"};
+    transition: ${isPage
+      ? "none"
+      : showAccountPanel
+        ? "opacity 160ms ease-out 80ms"
+        : "opacity 80ms ease-out, visibility 0s linear 80ms"};
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
 
     ${showAccountPanel &&
+    !isPage &&
     css`
       @media (prefers-reduced-motion: no-preference) {
         & > :not([aria-live]) > *,
@@ -217,7 +251,7 @@ export const SRightPanelFrame = styled(Box, {
     }
 
     ${mq("md")} {
-      display: flex;
+      display: ${isPage && !showAccountPanel ? "none" : "flex"};
       flex-direction: column;
       height: 100%;
       /* hidden panel must not size the grid row */

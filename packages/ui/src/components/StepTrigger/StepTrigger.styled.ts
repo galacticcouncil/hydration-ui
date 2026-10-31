@@ -1,8 +1,9 @@
 import styled from "@emotion/styled"
-import { Flex } from "@galacticcouncil/ui/components"
-import { createVariants, css } from "@galacticcouncil/ui/utils"
 
-import { StepTriggerState } from "@/components/multisig/components/StepTrigger"
+import { Flex } from "@/components"
+import { createVariants, css } from "@/utils"
+
+import { StepTriggerState } from "./StepTrigger"
 
 const stepIndicatorVariants = createVariants<StepTriggerState>((theme) => ({
   active: css`

@@ -94,6 +94,19 @@ const toNearJourney = (destination: string): XcJourney => {
 }
 
 describe("resolveChainFromUrn", () => {
+  it("keeps parachains with the same id in different ecosystems distinct", () => {
+    const polkadot = resolveChainFromUrn("urn:ocn:polkadot:1000")
+    const kusama = resolveChainFromUrn("urn:ocn:kusama:1000")
+
+    expect(polkadot).toBe(getChain("assethub"))
+    expect(kusama).toBe(getChain("assethub_kusama"))
+    expect(kusama).not.toBe(polkadot)
+  })
+
+  it("does not resolve an unsupported ecosystem through a matching parachain id", () => {
+    expect(resolveChainFromUrn("urn:ocn:paseo:1000")).toBeUndefined()
+  })
+
   it("resolves the xc-scan NEAR urn to NEAR mainnet", () => {
     const chain = resolveChainFromUrn("urn:ocn:near:397")
 

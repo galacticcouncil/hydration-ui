@@ -1,0 +1,14 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/status-icons.blend",
+  "sourceSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+  "scene": "03 - Review Inbox",
+  "sourceUnchanged": true,
+  "render": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-1024.png",
+  "renderSha256": "453b73fc40e17e49df3f70b08e4c790e0c6329020d575b5c917f5fce973d6e55",
+  "resolution": [
+    1024,
+    1024
+  ],
+  "samples": 128,
+  "engine": "CYCLES"
+}

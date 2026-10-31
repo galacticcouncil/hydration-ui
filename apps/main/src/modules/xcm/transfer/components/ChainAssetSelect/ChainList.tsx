@@ -8,7 +8,7 @@ import {
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { useTranslation } from "react-i18next"
@@ -18,20 +18,33 @@ import { ENV } from "@/config/env"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 
 const CHAIN_ITEM_HEIGHT = 40
+export const COMPACT_CHAIN_ITEM_HEIGHT = 32
 const MAX_VISIBLE_CHAIN_ITEMS = 10
 
 export type ChainListProps = {
-  items: ChainAssetPair[]
+  items: Pick<ChainAssetPair, "chain" | "assets">[]
   selectedChain: AnyChain | null
   setSelectedChain: (chain: AnyChain | null) => void
+  variant?: "rail" | "list"
+  fillHeight?: boolean
+  compact?: boolean
 }
 
 export const ChainList: React.FC<ChainListProps> = ({
   items,
   selectedChain,
   setSelectedChain,
+  variant = "rail",
+  fillHeight = false,
+  compact = false,
 }) => {
   const { isMobile } = useBreakpoints()
+  const isList = variant === "list"
+  const isCompactRail = compact && !isList && !isMobile
+  const railItemHeight = isCompactRail
+    ? COMPACT_CHAIN_ITEM_HEIGHT
+    : CHAIN_ITEM_HEIGHT
+  const itemHeight = isList ? 56 : isMobile ? 48 : railItemHeight
   const { t } = useTranslation(["xcm", "common"])
   const chainIndex = selectedChain
     ? items.findIndex(({ chain }) => chain.key === selectedChain.key)
@@ -43,28 +56,41 @@ export const ChainList: React.FC<ChainListProps> = ({
   return (
     <VirtualizedList
       items={items}
-      itemSize={CHAIN_ITEM_HEIGHT}
-      maxVisibleItems={MAX_VISIBLE_CHAIN_ITEMS}
+      itemSize={itemHeight}
+      maxVisibleItems={fillHeight ? undefined : MAX_VISIBLE_CHAIN_ITEMS}
+      height={fillHeight ? "100%" : undefined}
       initialScrollIndex={initialScrollIndex}
       sx={{
-        px: "base",
-        minHeight: CHAIN_ITEM_HEIGHT * MAX_VISIBLE_CHAIN_ITEMS,
+        px: isMobile && !isList ? 0 : "base",
+        minHeight:
+          isList || fillHeight ? 0 : railItemHeight * MAX_VISIBLE_CHAIN_ITEMS,
       }}
       renderItem={({ chain, assets }) => {
         const isActive = chain.key === selectedChain?.key
         const isDisabled = ENV.VITE_WORMHOLE_DISABLED && assets.length === 0
 
         return (
-          <Flex pb="s" align="center">
+          <Flex pb={isCompactRail ? "xs" : "s"} align="center">
             <Button
-              variant={isActive ? "accent" : "transparent"}
+              variant={isActive ? "accent" : isList ? "muted" : "transparent"}
               outline={isActive}
               aria-disabled={isDisabled}
+              aria-label={chain.name}
               sx={{
-                width: ["auto", "100%"],
-                justifyContent: ["center", "flex-start"],
-                height: "auto",
+                width: isList ? "100%" : isMobile ? pxToRem(44) : "100%",
+                justifyContent: isList
+                  ? "flex-start"
+                  : ["center", "flex-start"],
+                height: isList
+                  ? pxToRem(52)
+                  : isMobile
+                    ? pxToRem(44)
+                    : isCompactRail
+                      ? pxToRem(30)
+                      : "auto",
+                borderRadius: isList || isMobile ? "m" : undefined,
                 px: "base",
+                py: isCompactRail ? "s" : undefined,
               }}
               onClick={() => !isDisabled && setSelectedChain(chain)}
             >
@@ -75,7 +101,7 @@ export const ChainList: React.FC<ChainListProps> = ({
               />
               <Text
                 flex={1}
-                display={["none", "block"]}
+                display={isList ? "block" : ["none", "block"]}
                 color={
                   isActive ? getToken("text.high") : getToken("text.medium")
                 }

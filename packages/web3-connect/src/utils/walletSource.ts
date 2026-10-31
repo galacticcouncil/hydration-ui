@@ -44,6 +44,64 @@ export const isWalletSourceGroupId = (
   source: WalletSourceId,
 ): source is WalletSourceGroupId => source.startsWith("walletGroup:")
 
+/** Other account types supplied by the same wallet brand. */
+export const getConflictingWalletProviders = (
+  wallets: WalletSourceLike[],
+  provider: WalletProviderType,
+): WalletProviderType[] => {
+  if (provider === WalletProviderType.Multisig) return []
+
+  const selectedWallet = wallets.find((wallet) => wallet.provider === provider)
+  if (!selectedWallet?.title) return []
+
+  return uniqueBy(
+    wallets
+      .filter(
+        (wallet) =>
+          wallet.provider !== provider &&
+          wallet.provider !== WalletProviderType.Multisig &&
+          wallet.title === selectedWallet.title,
+      )
+      .map((wallet) => wallet.provider),
+    (type) => type,
+  )
+}
+
+/**
+ * Keep one account type per wallet brand, preferring active/recent types when
+ * supplied. Retained providers stay in their original order. Unknown sources
+ * and multisig remain independent, rather than sharing a fallback brand.
+ */
+export const getExclusiveWalletProviderTypes = (
+  wallets: WalletSourceLike[],
+  providerTypes: WalletProviderType[],
+  preferredTypes: WalletProviderType[] = [],
+): WalletProviderType[] => {
+  const available = new Set(providerTypes)
+  const retained = new Map<string, WalletProviderType>()
+  const walletsByProvider = new Map(
+    wallets.map((wallet) => [wallet.provider, wallet]),
+  )
+
+  for (const provider of [...preferredTypes, ...providerTypes]) {
+    if (!available.has(provider)) continue
+
+    const wallet = walletsByProvider.get(provider)
+    const brand =
+      provider !== WalletProviderType.Multisig && wallet?.title
+        ? getWalletSourceGroupId(wallet)
+        : `provider:${provider}`
+
+    if (!retained.has(brand)) retained.set(brand, provider)
+  }
+
+  const selected = new Set(retained.values())
+  return uniqueBy(
+    providerTypes.filter((provider) => selected.has(provider)),
+    (provider) => provider,
+  )
+}
+
 /**
  * One group per wallet brand. Talisman ships four providers (substrate, EVM,
  * H160, Solana) that the user thinks of as one wallet, so they are offered as
@@ -76,13 +134,24 @@ export const groupWalletsBySource = <T extends WalletSourceLike>(
   return Array.from(groups.values())
 }
 
-export const getWalletSourceModes = getWalletChainModes
+export const getWalletSourceModes = (
+  provider: WalletProviderType,
+  mode: WalletMode = WalletMode.Default,
+) => {
+  const modes = getWalletChainModes(provider)
+  if (mode === WalletMode.Default) return modes
+  if (!WALLET_MODES[mode].providers.includes(provider)) return []
+  return WALLET_MODES[mode].chain
+    ? modes.filter((walletMode) => walletMode === mode)
+    : modes
+}
 
 export const getWalletGroupSourceModes = <T extends WalletSourceLike>(
   group: WalletSourceGroup<T>,
+  mode: WalletMode = WalletMode.Default,
 ) =>
   uniqueBy(
-    group.providers.flatMap((provider) => getWalletSourceModes(provider)),
+    group.providers.flatMap((provider) => getWalletSourceModes(provider, mode)),
     (walletMode) => walletMode,
   )
 
@@ -210,22 +279,45 @@ export const selectWalletSources = <T extends WalletSourceLike>(
   }
 }
 
+/** Actual connections across source sections, without the recent-wallet cap. */
+export const getConnectedWalletSourceGroups = <T extends WalletSourceLike>(
+  groups: WalletSourceGroup<T>[],
+  connectedProviderTypes: WalletProviderType[],
+): WalletSourceGroup<T>[] =>
+  uniqueBy(
+    groups.filter((group) =>
+      group.providers.some((provider) =>
+        connectedProviderTypes.includes(provider),
+      ),
+    ),
+    (group) => group.id,
+  )
+
 /**
  * What "Connect all" enables: installed wallets that can sign Hydration
  * transactions, minus WalletConnect, whose QR flow can't run in a batch. A
- * brand keeps every compatible provider, so Talisman brings its substrate and
- * EVM accounts but not Solana. With a single wallet its own row does the same
- * job, so nothing is offered.
+ * brand contributes one compatible account type, preferring its current or
+ * recent type. With a single wallet its own row does the same job, so nothing
+ * is offered.
  */
 export const getConnectAllGroups = <T extends WalletSourceLike>(
   wallets: T[],
+  preferredTypes: WalletProviderType[] = [],
 ) => {
+  const compatibleWallets = wallets.filter(
+    ({ installed, provider }) =>
+      installed &&
+      provider !== WalletProviderType.WalletConnect &&
+      COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+  )
+  const providerTypes = getExclusiveWalletProviderTypes(
+    compatibleWallets,
+    compatibleWallets.map((wallet) => wallet.provider),
+    preferredTypes,
+  )
   const groups = groupWalletsBySource(
-    wallets.filter(
-      ({ installed, provider }) =>
-        installed &&
-        provider !== WalletProviderType.WalletConnect &&
-        COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+    compatibleWallets.filter((wallet) =>
+      providerTypes.includes(wallet.provider),
     ),
   )
 

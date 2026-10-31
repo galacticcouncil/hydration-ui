@@ -18,7 +18,7 @@ import {
   ChainRoutes,
   Ntt,
 } from "@galacticcouncil/xc-core"
-import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
+import { Transfer, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
   queryOptions,
@@ -33,12 +33,13 @@ import { isString } from "remeda"
 import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
-import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+import { buildXcmTransfer } from "./xcmRoute"
 
 const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
@@ -104,8 +105,8 @@ export const useCrossChainConfig = () => {
   })
 }
 
-const useHydrationClient = () => {
-  return useSuspenseQuery({
+export const hydrationClientQuery = () =>
+  queryOptions({
     queryKey: ["xcm", "hydrationClient"],
     queryFn: () => {
       const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
@@ -116,7 +117,8 @@ const useHydrationClient = () => {
     staleTime: Infinity,
     gcTime: Infinity,
   })
-}
+
+const useHydrationClient = () => useSuspenseQuery(hydrationClientQuery())
 
 export const useCrossChainConfigService = () => {
   const { data } = useCrossChainConfig()
@@ -398,6 +400,7 @@ export type XcmTransferArgs = {
   readonly destAsset: string
   readonly destChain: string
   readonly bridgeTag?: string
+  readonly automaticBridgeSelection?: boolean
 }
 
 const hasAssetOnChain = (assetKey: string, chainKey: string) =>
@@ -416,6 +419,7 @@ export const xcmTransferQuery = (
     destChain,
     destAsset,
     bridgeTag,
+    automaticBridgeSelection,
   } = transferArgs ?? {}
 
   return queryOptions({
@@ -433,27 +437,12 @@ export const xcmTransferQuery = (
       srcChain,
       destChain,
       bridgeTag,
+      ...(automaticBridgeSelection ? ["automatic"] : []),
     ],
     queryFn: async () => {
       if (!transferArgs) throw new Error("Invalid transfer args")
 
-      const builder = TransferBuilder(wallet)
-        .withAsset(transferArgs.srcAsset)
-        .withSource(transferArgs.srcChain)
-        .withDestination(transferArgs.destChain)
-
-      const { tag, destAsset: dstAsset } = resolveRouteBuilderArgs(
-        builder.routes,
-        transferArgs.destAsset,
-        transferArgs.bridgeTag,
-      )
-
-      const transfer = await builder.build({
-        srcAddress: transferArgs.srcAddress,
-        dstAddress: transferArgs.destAddress,
-        dstAsset,
-        tag,
-      })
+      const transfer = await buildXcmTransfer(wallet, transferArgs)
 
       const { balance, fee, max } = transfer.source
       if (balance.isSame(fee) && max.amount > 0n) {

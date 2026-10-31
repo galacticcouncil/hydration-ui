@@ -56,6 +56,24 @@ describe("WALLET_MODES invariants", () => {
 describe("chipModesForAccounts", () => {
   const account = (provider: WalletProviderType) => ({ provider })
 
+  it.each([WalletMode.EVM, WalletMode.Substrate])(
+    "keeps a route fixed to %s even when WalletConnect supports both account types",
+    (mode) => {
+      expect(
+        chipModesForAccounts([account(WalletProviderType.WalletConnect)], mode),
+      ).toEqual([])
+    },
+  )
+
+  it("keeps both compatible account types available for a Hydration receiver", () => {
+    expect(
+      chipModesForAccounts(
+        [account(WalletProviderType.WalletConnect)],
+        WalletMode.SubstrateEVM,
+      ),
+    ).toEqual([WalletMode.Default, WalletMode.Substrate, WalletMode.EVM])
+  })
+
   it("returns no chips for an empty account list", () => {
     expect(chipModesForAccounts([])).toEqual([])
   })
