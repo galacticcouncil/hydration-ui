@@ -1,0 +1,87 @@
+name: IPFS
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+concurrency:
+  group: ipfs
+  cancel-in-progress: false
+permissions:
+  contents: read
+  deployments: write
+env:
+  KUBO_IMAGE: ipfs/kubo:v0.43.1@sha256:b293923d66e490e70ced64df42ea7a6cf7eac2740e3fb29101df18070fa7be48
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: yarn
+          node-version-file: '.nvmrc'
+      - run: yarn install --frozen-lockfile
+      - run: yarn run build
+      - name: Pack
+        id: pack
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e IPFS_PATH=/tmp/ipfs \
+            -v "$PWD/apps/main/build:/build:ro" -v "$RUNNER_TEMP:/out" \
+            --entrypoint sh "$KUBO_IMAGE" -c \
+            'ipfs init -e -p test >/dev/null && cid=$(ipfs add -r -Q --cid-version=1 /build) && ipfs dag export "$cid" > /out/build.car && echo "$cid" > /out/cid'
+          echo "cid=$(cat "$RUNNER_TEMP/cid")" >> "$GITHUB_OUTPUT"
+      - name: Pin
+        env:
+          CID: ${{ steps.pack.outputs.cid }}
+          SHELLFISH_TOKEN: ${{ secrets.IPFS_SHELLFISH_TOKEN }}
+          FILEBASE_TOKEN: ${{ secrets.FILEBASE_IPFS_TOKEN }}
+        run: |
+          pin() {
+            res=$(curl -sS --retry 3 --max-time 300 -X POST -H "Authorization: Bearer $2" \
+              -F "file=@$RUNNER_TEMP/build.car;type=application/vnd.ipld.car" \
+              "$1/api/v0/dag/import?pin-roots=true") || true
+            root=$(jq -rs 'map(select(.Root)) | .[0].Root.Cid["/"] // empty' <<<"$res" 2>/dev/null) || true
+            err=$(jq -rs 'map(select(.Root)) | .[0].Root.PinErrorMsg // empty' <<<"$res" 2>/dev/null) || true
+            if [ "$root" != "$CID" ] || [ -n "$err" ]; then
+              echo "::error::$1 pin failed: root=${root:-none} err=${err:-none} body=${res:0:300}"
+              return 1
+            fi
+            echo "pinned $CID on $1"
+          }
+          pinned=0 failed=0
+          if [ -n "$SHELLFISH_TOKEN" ]; then
+            if pin https://ipfs.shellfish.hydration.cloud "$SHELLFISH_TOKEN"; then pinned=$((pinned + 1)); else failed=1; fi
+          fi
+          if [ -n "$FILEBASE_TOKEN" ]; then
+            if pin https://rpc.filebase.io "$FILEBASE_TOKEN"; then pinned=$((pinned + 1)); else failed=1; fi
+          fi
+          if [ "$pinned" -eq 0 ] && [ "$failed" -eq 0 ]; then
+            echo "::error::no pinning target configured"
+          fi
+          [ "$pinned" -gt 0 ] && [ "$failed" -eq 0 ]
+      - name: Record
+        env:
+          CID: ${{ steps.pack.outputs.cid }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(jq -n --arg ref "$GITHUB_SHA" --arg cid "$CID" \
+            '{ref: $ref, environment: "ipfs", auto_merge: false, required_contexts: [], description: $cid}' \
+            | gh api "repos/$GITHUB_REPOSITORY/deployments" --input - --jq .id)
+          gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
+            -f state=success -f environment_url="https://$CID.ipfs.dweb.link/" -f description="$CID" >/dev/null
+          {
+            echo "### \`$CID\`"
+            echo
+            echo "- https://$CID.ipfs.dweb.link/"
+            echo "- https://$CID.ipfs.inbrowser.link/"
+            echo "- ipfs://$CID/"
+            echo
+            echo "rebuild \`$GITHUB_SHA\` with node $(node --version) (\`yarn install --frozen-lockfile && yarn run build\`), then:"
+            echo
+            echo '```sh'
+            echo "docker run --rm -v \"\$PWD/apps/main/build:/build:ro\" --entrypoint sh $KUBO_IMAGE -c 'ipfs init -e -p test >/dev/null && ipfs add -r -Q --cid-version=1 /build'"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
