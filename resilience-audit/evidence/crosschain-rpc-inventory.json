@@ -1,0 +1,262 @@
+{
+  "package": "@galacticcouncil/xc-cfg",
+  "version": "2.7.0",
+  "chains": [
+    {
+      "key": "base",
+      "name": "Base",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://mainnet.base.org"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://stylish-quick-firefly.base-mainnet.quiknode.pro/"
+      ],
+      "explorer": "https://basescan.org/"
+    },
+    {
+      "key": "ethereum",
+      "name": "Ethereum",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://ethereum.reth.rs/rpc"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://ethereum-rpc.publicnode.com",
+        "https://cosmopolitan-dimensional-diagram.quiknode.pro"
+      ],
+      "explorer": "https://etherscan.io/"
+    },
+    {
+      "key": "robinhood",
+      "name": "Robinhood",
+      "type": "evm-chain",
+      "ecosystem": "Ethereum",
+      "evmRpcUrls": {
+        "default": {
+          "http": [
+            "https://rpc.mainnet.chain.robinhood.com",
+            "https://rpc.ordofi.network"
+          ],
+          "webSocket": [
+            "wss://rpc.ordofi.network"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://rpc.mainnet.chain.robinhood.com"
+      ],
+      "explorer": "https://robinhoodchain.blockscout.com/"
+    },
+    {
+      "key": "assethub",
+      "name": "AssetHub Polkadot",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io"
+      ],
+      "explorer": "https://assethub-polkadot.subscan.io"
+    },
+    {
+      "key": "assethub_cex",
+      "name": "AssetHub (CEX)",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "wss://polkadot-asset-hub-rpc.polkadot.io"
+      ],
+      "explorer": "https://assethub-polkadot.subscan.io"
+    },
+    {
+      "key": "astar",
+      "name": "Astar",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://rpc.astar.network",
+      "explorer": "https://astar.subscan.io"
+    },
+    {
+      "key": "bifrost",
+      "name": "Bifrost",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+        "wss://hk.p.bifrost-rpc.liebi.com/ws",
+        "wss://bifrost-polkadot.dotters.network"
+      ],
+      "explorer": "https://bifrost.subscan.io"
+    },
+    {
+      "key": "hydration",
+      "name": "Hydration",
+      "type": "evm-parachain",
+      "ecosystem": "Polkadot",
+      "ws": [
+        "wss://hydration-rpc.n.dwellir.com",
+        "wss://rpc.kril.hydration.cloud",
+        "wss://hydration.rotko.net",
+        "wss://rpc.sin.hydration.cloud",
+        "wss://rpc.coke.hydration.cloud"
+      ],
+      "evmRpcUrls": {
+        "public": {
+          "http": [
+            "https://hydration-rpc.n.dwellir.com",
+            "https://rpc.kril.hydration.cloud",
+            "https://hydration.rotko.net",
+            "https://rpc.sin.hydration.cloud",
+            "https://rpc.coke.hydration.cloud"
+          ],
+          "webSocket": [
+            "wss://hydration-rpc.n.dwellir.com",
+            "wss://rpc.kril.hydration.cloud",
+            "wss://hydration.rotko.net",
+            "wss://rpc.sin.hydration.cloud",
+            "wss://rpc.coke.hydration.cloud"
+          ]
+        },
+        "default": {
+          "http": [
+            "https://hydration-rpc.n.dwellir.com",
+            "https://rpc.kril.hydration.cloud",
+            "https://hydration.rotko.net",
+            "https://rpc.sin.hydration.cloud",
+            "https://rpc.coke.hydration.cloud"
+          ],
+          "webSocket": [
+            "wss://hydration-rpc.n.dwellir.com",
+            "wss://rpc.kril.hydration.cloud",
+            "wss://hydration.rotko.net",
+            "wss://rpc.sin.hydration.cloud",
+            "wss://rpc.coke.hydration.cloud"
+          ]
+        }
+      },
+      "evmClientRpcs": [
+        "https://hydration-rpc.n.dwellir.com",
+        "https://rpc.kril.hydration.cloud",
+        "https://hydration.rotko.net",
+        "https://rpc.sin.hydration.cloud",
+        "https://rpc.coke.hydration.cloud"
+      ],
+      "explorer": "https://hydration.subscan.io"
+    },
+    {
+      "key": "neuroweb",
+      "name": "Neuroweb",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://parachain-rpc.origin-trail.network",
+      "explorer": "https://neuroweb.subscan.io"
+    },
+    {
+      "key": "mythos",
+      "name": "Mythos",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://mythos-rpc.dmarket.com",
+      "explorer": "https://mythos.subscan.io"
+    },
+    {
+      "key": "pendulum",
+      "name": "Pendulum",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://rpc-pendulum.prd.pendulumchain.tech",
+      "explorer": "https://pendulum.subscan.io"
+    },
+    {
+      "key": "polkadot",
+      "name": "Polkadot",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://polkadot-rpc.n.dwellir.com",
+      "explorer": "https://polkadot.subscan.io"
+    },
+    {
+      "key": "unique",
+      "name": "Unique network",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://ws.unique.network",
+      "explorer": "https://unique.subscan.io"
+    },
+    {
+      "key": "energywebx",
+      "name": "Energy Web X",
+      "type": "parachain",
+      "ecosystem": "Polkadot",
+      "ws": "wss://wnp-rpc.mainnet.energywebx.com",
+      "explorer": "https://energywebx.subscan.io"
+    },
+    {
+      "key": "solana",
+      "name": "Solana",
+      "type": "solana-chain",
+      "ecosystem": "Solana",
+      "rpcUrls": {
+        "http": [
+          "https://wispy-palpable-market.solana-mainnet.quiknode.pro"
+        ],
+        "webSocket": [
+          "wss://wispy-palpable-market.solana-mainnet.quiknode.pro"
+        ]
+      },
+      "explorer": "https://explorer.solana.com/"
+    },
+    {
+      "key": "sui",
+      "name": "Sui",
+      "type": "sui-chain",
+      "ecosystem": "Sui",
+      "rpc": "https://rpc-mainnet.suiscan.xyz",
+      "explorer": "https://suiscan.xyz/"
+    },
+    {
+      "key": "assethub_kusama",
+      "name": "AssetHub Kusama",
+      "type": "parachain",
+      "ecosystem": "Kusama",
+      "ws": "wss://asset-hub-kusama-rpc.n.dwellir.com",
+      "explorer": "https://assethub-kusama.subscan.io"
+    },
+    {
+      "key": "basilisk",
+      "name": "Basilisk",
+      "type": "parachain",
+      "ecosystem": "Kusama",
+      "ws": "wss://basilisk-rpc.n.dwellir.com",
+      "explorer": "https://basilisk.subscan.io"
+    },
+    {
+      "key": "near",
+      "name": "NEAR",
+      "type": "near-chain",
+      "ecosystem": "Near",
+      "rpc": "https://free.rpc.fastnear.com",
+      "explorer": "https://nearblocks.io/"
+    },
+    {
+      "key": "zec",
+      "name": "Zcash",
+      "type": "zec-chain",
+      "ecosystem": "Zcash",
+      "explorer": "https://mainnet.zcashexplorer.app/",
+      "balanceReaderConfigured": false
+    }
+  ]
+}
