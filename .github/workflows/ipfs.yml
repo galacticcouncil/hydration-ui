@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - feat/ipfs-deploy
   workflow_dispatch:
 concurrency:
   group: ipfs
@@ -73,11 +72,10 @@ jobs:
             '{ref: $ref, environment: "ipfs", auto_merge: false, required_contexts: [], description: $cid}' \
             | gh api "repos/$GITHUB_REPOSITORY/deployments" --input - --jq .id)
           gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
-            -f state=success -f environment_url="https://$CID.ipfs.dweb.link/" -f description="$CID" >/dev/null
+            -f state=success -f environment_url="https://$CID.ipfs.inbrowser.link/" -f description="$CID" >/dev/null
           {
             echo "### \`$CID\`"
             echo
-            echo "- https://$CID.ipfs.dweb.link/"
             echo "- https://$CID.ipfs.inbrowser.link/"
             echo "- ipfs://$CID/"
             echo
