@@ -35,6 +35,7 @@ import { BankDepositInstructions } from "./BankDepositInstructions"
 import { BankDepositSimplified } from "./BankDepositSimplified"
 import { BankDepositStatusChip } from "./BankDepositStatusChip"
 import { BankDepositV2 } from "./BankDepositV2"
+import { BankDepositV3 } from "./BankDepositV3"
 import { BankFlowPreviewNotice } from "./BankFlowPreviewNotice"
 import { BankFlowSwitcher } from "./BankFlowSwitcher"
 import { BankProviderHandoff } from "./BankProviderHandoff"
@@ -126,10 +127,13 @@ export const BankDeposit: FC<BankDepositProps> = ({ onBack }) => {
   return (
     <BankFlowSwitcher
       variant={variant}
+      variants={["current", "v2", "simplified", "v3"]}
       onVariantChange={setVariant}
       stepKey={`${screen}:${flow.v2Stage}:${onboardingStep}:${flow.providerHandoff}`}
     >
-      {variant === "simplified" ? (
+      {variant === "v3" ? (
+        <BankDepositV3 flow={flow} onBack={onBack} onHistory={openHistory} />
+      ) : variant === "simplified" ? (
         <BankDepositSimplified
           flow={flow}
           onBack={onBack}

@@ -3,58 +3,100 @@
 <title>Hydration · New UI icons</title>
 <style>
 :root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3f5f9;background:#060b16}*{box-sizing:border-box}body{margin:0;padding:48px 24px 56px}main{max-width:1180px;margin:auto}header{margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#a4c8eb;margin:0 0 12px}h1{font:400 36px Georgia,serif;margin:0 0 12px}header p{color:#aab0bc;font-size:14px;line-height:1.6;margin:0;max-width:620px}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}.filters{display:flex;gap:6px;flex-wrap:wrap}button,input{font:inherit}button{border:1px solid #293446;background:#0e1525;border-radius:24px;color:#abb7c7;padding:9px 13px;font-size:12px;cursor:pointer}button span{opacity:.65;margin-left:5px}button[aria-pressed=true]{background:#b3d7fa;border-color:#b3d7fa;color:#08101c}button:hover{border-color:#7ea4c9}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #b3d7fa;outline-offset:4px}input{width:260px;max-width:100%;padding:11px 16px;border:1px solid #293446;background:#0e1525;border-radius:24px;color:#f3f5f9;font-size:12px}input::placeholder{color:#8d99ab}.count{color:#8d99ab;font-size:12px;margin:0 0 20px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.card{background:#0e1525;border:1px solid #29303d;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;min-width:0}.card[hidden]{display:none}.card-head{padding:21px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #222b3b}h2{font-size:14px;font-weight:500;margin:0;line-height:1.35}.tag{font-size:10px;color:#a4b7cc;background:#182335;border-radius:20px;padding:5px 9px;white-space:nowrap}.render{display:grid;place-items:center;padding:24px;min-height:276px;text-decoration:none}.render img{display:block;width:228px;height:228px;max-width:100%;object-fit:contain}.currency .render img{width:120px;height:120px}.usage{padding:2px 22px 24px;flex:1}h3{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#7f91a8;margin:0 0 10px}ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}li{font-size:12px;line-height:1.6;color:#b9c3d0;overflow-wrap:anywhere}.native{border-top:1px solid #222b3b;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:128px}.native span{font-size:11px;color:#8393a9}.native img{object-fit:contain;max-width:96px;max-height:96px}.currency .native img{width:24px;height:24px}.no-results{padding:48px 24px;color:#aab0bc;text-align:center}.no-results[hidden]{display:none}footer{margin-top:28px;color:#77889e;font-size:11px;line-height:1.6}@media(max-width:1020px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:660px){body{padding:28px 16px 36px}h1{font-size:29px}.toolbar{gap:14px}input{width:100%}.filters{gap:5px}button{padding:8px 11px;font-size:11px}.grid{grid-template-columns:1fr;gap:20px}.render{min-height:264px}.render img{width:224px;height:224px}.card-head{padding:20px 22px}}
-</style></head><body><main>
-<header><p class="eyebrow">Hydration · Design reference</p><h1 id="new-icons-title">New UI icons</h1><p>New artwork created for these flows and used in the interface. Each icon lists where it appears. Click an image to open the exact UI asset.</p></header>
-<div class="toolbar"><div class="filters" role="group" aria-label="Filter icons"><button type="button" data-filter="all" aria-pressed="true">All <span>7</span></button><button type="button" data-filter="empty" aria-pressed="false">Empty states <span>2</span></button><button type="button" data-filter="status" aria-pressed="false">Status <span>3</span></button><button type="button" data-filter="currency" aria-pressed="false">Currency <span>2</span></button></div><input type="search" id="search" placeholder="Find an icon or usage…" aria-label="Find an icon or usage"></div>
-<p class="count" id="count" aria-live="polite">7 assets in use</p>
-<section class="grid" aria-label="New icons used in the UI"><article class="card empty" data-category="empty" id="deposit-empty">
+.library-links,.asset-links{display:flex;gap:10px;flex-wrap:wrap}.library-links{margin-top:18px}.asset-links{padding:0 22px 20px}.library-links a,.asset-links a{display:inline-block;text-decoration:none;color:#b3d7fa;border:1px solid #405774;border-radius:24px;padding:8px 12px;font-size:12px}.library-links a:hover,.asset-links a:hover{border-color:#b3d7fa}.ready .tag{color:#edc9ef;background:#362440}</style></head><body><main>
+<header><p class="eyebrow">Hydration · Design reference</p><h1 id="new-icons-title">New UI icons</h1><p>New artwork used in the interface, in designs, or ready for future use. Each icon lists its current usage or availability, with downloads below.</p><nav class="library-links" aria-label="Icon library"><a href="library/index.html">Open source library</a><a href="new-icons.zip" download>Download icon pack</a></nav></header>
+<div class="toolbar"><div class="filters" role="group" aria-label="Filter icons"><button type="button" data-filter="all" aria-pressed="true">All <span>12</span></button><button type="button" data-filter="account" aria-pressed="false">Account type <span>2</span></button><button type="button" data-filter="empty" aria-pressed="false">Empty states <span>2</span></button><button type="button" data-filter="status" aria-pressed="false">Status <span>4</span></button><button type="button" data-filter="currency" aria-pressed="false">Currency <span>2</span></button><button type="button" data-filter="ready" aria-pressed="false">Ready to use <span>1</span></button><button type="button" data-filter="design" aria-pressed="false">Design <span>1</span></button></div><input type="search" id="search" placeholder="Find an icon or usage…" aria-label="Find an icon or usage"></div>
+<p class="count" id="count" aria-live="polite">12 icons · 10 in use · 1 in design · 1 ready</p>
+<section class="grid" aria-label="New icon catalog"><article class="card empty" data-category="empty" id="deposit-empty">
 <div class="card-head"><h2>No deposits</h2><span class="tag">Empty states</span></div>
 <a class="render" href="assets/DepositEmptyLounger.webp?v=abcb42200653" target="_blank" rel="noopener" aria-label="Open No deposits image"><img src="assets/DepositEmptyLounger.webp?v=abcb42200653" alt="No deposits" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Portfolio → Deposits · No transfer history</li><li>Portfolio → Overview → Deposits · No transfer history</li></ul></div>
+<nav class="asset-links" aria-label="Download No deposits"><a href="library/exports/deposit-empty.webp" download>UI export</a><a href="library/masters/deposit-empty-1024.png" download>PNG</a><a href="library/blender/deposit-lounger.blend" download>Blender</a></nav>
 <div class="native"><span>Small preview · 96px</span><img src="assets/DepositEmptyLounger.webp?v=abcb42200653" alt="" width="96" height="96" loading="lazy"></div>
 </article>
 <article class="card empty" data-category="empty" id="tracked-wallets">
 <div class="card-head"><h2>Tracked wallets</h2><span class="tag">Empty states</span></div>
 <a class="render" href="assets/TrackedWalletGlasses.webp?v=9d4e577f9c58" target="_blank" rel="noopener" aria-label="Open Tracked wallets image"><img src="assets/TrackedWalletGlasses.webp?v=9d4e577f9c58" alt="Tracked wallets" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Portfolio → Overview → Tracked wallets · No saved addresses</li><li>Portfolio → Tracked wallets · Empty state</li></ul></div>
+<nav class="asset-links" aria-label="Download Tracked wallets"><a href="library/exports/tracked-wallets.webp" download>UI export</a><a href="library/masters/tracked-wallets-1024.png" download>PNG</a><a href="library/blender/tracked-wallet-glasses.blend" download>Blender</a></nav>
 <div class="native"><span>Small preview · 96px</span><img src="assets/TrackedWalletGlasses.webp?v=9d4e577f9c58" alt="" width="96" height="96" loading="lazy"></div>
 </article>
 <article class="card status" data-category="status" id="waiting">
 <div class="card-head"><h2>Waiting</h2><span class="tag">Status</span></div>
 <a class="render" href="assets/Waiting3D.webp?v=7b63359c309d" target="_blank" rel="noopener" aria-label="Open Waiting image"><img src="assets/Waiting3D.webp?v=7b63359c309d" alt="Waiting" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Bank deposit · Awaiting transfer or processing</li><li>Bank withdrawal · Pending or processing</li></ul></div>
+<nav class="asset-links" aria-label="Download Waiting"><a href="library/exports/waiting.webp" download>UI export</a><a href="library/masters/waiting-1024.png" download>PNG</a><a href="library/blender/status-icons.blend" download>Blender</a></nav>
 <div class="native"><span>Small preview · 96px</span><img src="assets/Waiting3D.webp?v=7b63359c309d" alt="" width="96" height="96" loading="lazy"></div>
 </article>
 <article class="card status" data-category="status" id="review">
 <div class="card-head"><h2>Provider review</h2><span class="tag">Status</span></div>
 <a class="render" href="assets/Review3D.webp?v=3c5b71cde8ae" target="_blank" rel="noopener" aria-label="Open Provider review image"><img src="assets/Review3D.webp?v=3c5b71cde8ae" alt="Provider review" width="240" height="240" loading="lazy"></a>
-<div class="usage"><h3>Used in</h3><ul><li>Bank deposit · Provider setup and verification review</li></ul></div>
+<div class="usage"><h3>Used in</h3><ul><li>Bank deposit · Provider setup and Bridge handoff</li></ul></div>
+<nav class="asset-links" aria-label="Download Provider review"><a href="library/exports/review.webp" download>UI export</a><a href="library/masters/review-1024.png" download>PNG</a><a href="library/blender/status-icons.blend" download>Blender</a></nav>
 <div class="native"><span>Small preview · 96px</span><img src="assets/Review3D.webp?v=3c5b71cde8ae" alt="" width="96" height="96" loading="lazy"></div>
+</article>
+<article class="card status" data-category="status" id="review-clock">
+<div class="card-head"><h2>In review</h2><span class="tag">Status</span></div>
+<a class="render" href="assets/ReviewClock3D.webp?v=93a16e30062e" target="_blank" rel="noopener" aria-label="Open In review image"><img src="assets/ReviewClock3D.webp?v=93a16e30062e" alt="In review" width="240" height="240" loading="lazy"></a>
+<div class="usage"><h3>Used in</h3><ul><li>Bank deposit · Verification in review</li></ul></div>
+<nav class="asset-links" aria-label="Download In review"><a href="library/exports/review-clock.webp" download>UI export</a><a href="library/masters/review-clock-1024.png" download>PNG</a><a href="library/blender/status-icons.blend" download>Blender</a></nav>
+<div class="native"><span>Small preview · 96px</span><img src="assets/ReviewClock3D.webp?v=93a16e30062e" alt="" width="96" height="96" loading="lazy"></div>
 </article>
 <article class="card status" data-category="status" id="bank">
 <div class="card-head"><h2>At your bank</h2><span class="tag">Status</span></div>
 <a class="render" href="assets/Bank3D.webp?v=f878044b8b6b" target="_blank" rel="noopener" aria-label="Open At your bank image"><img src="assets/Bank3D.webp?v=f878044b8b6b" alt="At your bank" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Bank withdrawal → Tracking · At your bank</li></ul></div>
+<nav class="asset-links" aria-label="Download At your bank"><a href="library/exports/bank.webp" download>UI export</a><a href="library/masters/bank-1024.png" download>PNG</a><a href="library/blender/bank.blend" download>Blender</a></nav>
 <div class="native"><span>Small preview · 96px</span><img src="assets/Bank3D.webp?v=f878044b8b6b" alt="" width="96" height="96" loading="lazy"></div>
+</article>
+<article class="card account" data-category="account" id="individual">
+<div class="card-head"><h2>Individual</h2><span class="tag">Account type</span></div>
+<a class="render" href="assets/IndividualBeachChair3D.webp?v=9bdbc6e04008" target="_blank" rel="noopener" aria-label="Open Individual image"><img src="assets/IndividualBeachChair3D.webp?v=9bdbc6e04008" alt="Individual" width="240" height="240" loading="lazy"></a>
+<div class="usage"><h3>Used in</h3><ul><li>Bank deposit → Setup · Individual account</li></ul></div>
+<nav class="asset-links" aria-label="Download Individual"><a href="library/exports/individual.webp" download>UI export</a><a href="library/masters/individual-1024.png" download>PNG</a><a href="library/blender/account-types.blend" download>Blender</a></nav>
+<div class="native"><span>Small preview · 48px</span><img src="assets/IndividualBeachChair3D.webp?v=9bdbc6e04008" alt="" width="48" height="48" loading="lazy"></div>
+</article>
+<article class="card account" data-category="account" id="business">
+<div class="card-head"><h2>Business</h2><span class="tag">Account type</span></div>
+<a class="render" href="assets/BusinessKiosk3D.webp?v=e2d2c83ae244" target="_blank" rel="noopener" aria-label="Open Business image"><img src="assets/BusinessKiosk3D.webp?v=e2d2c83ae244" alt="Business" width="240" height="240" loading="lazy"></a>
+<div class="usage"><h3>Used in</h3><ul><li>Bank deposit → Setup · Business account</li></ul></div>
+<nav class="asset-links" aria-label="Download Business"><a href="library/exports/business.webp" download>UI export</a><a href="library/masters/business-1024.png" download>PNG</a><a href="library/blender/account-types.blend" download>Blender</a></nav>
+<div class="native"><span>Small preview · 48px</span><img src="assets/BusinessKiosk3D.webp?v=e2d2c83ae244" alt="" width="48" height="48" loading="lazy"></div>
+</article>
+<article class="card design" data-category="design" id="pearl-shell">
+<div class="card-head"><h2>Pearl shell</h2><span class="tag">Design</span></div>
+<a class="render" href="assets/PearlShell3D.webp?v=5beb22f2f7d2" target="_blank" rel="noopener" aria-label="Open Pearl shell image"><img src="assets/PearlShell3D.webp?v=5beb22f2f7d2" alt="Pearl shell" width="240" height="240" loading="lazy"></a>
+<div class="usage"><h3>Used in</h3><ul><li>Portfolio → Dashboard · Header illustration (Figma)</li></ul></div>
+<nav class="asset-links" aria-label="Download Pearl shell"><a href="library/exports/pearl-shell.webp" download>UI export</a><a href="library/masters/pearl-shell-1024.png" download>PNG</a><a href="library/blender/pearl-shell.blend" download>Blender</a></nav>
+<div class="native"><span>Small preview · 96px</span><img src="assets/PearlShell3D.webp?v=5beb22f2f7d2" alt="" width="96" height="96" loading="lazy"></div>
+</article>
+<article class="card ready" data-category="ready" id="citrus-press">
+<div class="card-head"><h2>Citrus press</h2><span class="tag">Ready to use</span></div>
+<a class="render" href="assets/CitrusPress3D.webp?v=5c77c5098ddf" target="_blank" rel="noopener" aria-label="Open Citrus press image"><img src="assets/CitrusPress3D.webp?v=5c77c5098ddf" alt="Citrus press" width="240" height="240" loading="lazy"></a>
+<div class="usage"><h3>Availability</h3><ul><li>Available for future use · not yet assigned to a screen</li></ul></div>
+<nav class="asset-links" aria-label="Download Citrus press"><a href="library/exports/citrus-press.webp" download>UI export</a><a href="library/masters/citrus-press-1024.png" download>PNG</a><a href="library/blender/citrus-press.blend" download>Blender</a></nav>
+<div class="native"><span>Small preview · 96px</span><img src="assets/CitrusPress3D.webp?v=5c77c5098ddf" alt="" width="96" height="96" loading="lazy"></div>
 </article>
 <article class="card currency" data-category="currency" id="usd">
 <div class="card-head"><h2>USD</h2><span class="tag">Currency</span></div>
 <a class="render" href="assets/FiatUsd.svg?v=39340f8095e8" target="_blank" rel="noopener" aria-label="Open USD image"><img src="assets/FiatUsd.svg?v=39340f8095e8" alt="USD" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Bank deposit → Amount · Currency selector</li><li>Bank withdrawal → Estimated receive · Currency selector</li></ul></div>
+<nav class="asset-links" aria-label="Download USD"><a href="library/exports/usd.svg" download>UI export</a></nav>
 <div class="native"><span>Small preview · 24px</span><img src="assets/FiatUsd.svg?v=39340f8095e8" alt="" width="24" height="24" loading="lazy"></div>
 </article>
 <article class="card currency" data-category="currency" id="eur">
 <div class="card-head"><h2>EUR</h2><span class="tag">Currency</span></div>
 <a class="render" href="assets/FiatEur.svg?v=97b18189803b" target="_blank" rel="noopener" aria-label="Open EUR image"><img src="assets/FiatEur.svg?v=97b18189803b" alt="EUR" width="240" height="240" loading="lazy"></a>
 <div class="usage"><h3>Used in</h3><ul><li>Bank deposit → Amount · Currency selector</li><li>Bank withdrawal → Estimated receive · Currency selector</li></ul></div>
+<nav class="asset-links" aria-label="Download EUR"><a href="library/exports/eur.svg" download>UI export</a></nav>
 <div class="native"><span>Small preview · 24px</span><img src="assets/FiatEur.svg?v=97b18189803b" alt="" width="24" height="24" loading="lazy"></div>
 </article></section><p class="no-results" id="empty" hidden>No icons match your search.</p>
-<footer>Only newly created icons currently used in the UI are shown. Usage labels describe the current screens and states.</footer>
+<footer>Current selected new icons, plus artwork ready for future use. The icon pack includes UI exports, high-resolution PNGs and editable Blender sources.</footer>
 </main><script>
 const cards=[...document.querySelectorAll('.card')];
 const buttons=[...document.querySelectorAll('[data-filter]')];
 let filter='all';
-function update(){const query=document.querySelector('#search').value.trim().toLowerCase();let visible=0;for(const card of cards){const show=(filter==='all'||card.dataset.category===filter)&&card.textContent.toLowerCase().includes(query);card.hidden=!show;if(show)visible++}document.querySelector('#count').textContent=visible+' of '+cards.length+' assets';document.querySelector('#empty').hidden=visible!==0}
+function update(){const query=document.querySelector('#search').value.trim().toLowerCase();let visible=0;for(const card of cards){const show=(filter==='all'||card.dataset.category===filter)&&card.textContent.toLowerCase().includes(query);card.hidden=!show;if(show)visible++}document.querySelector('#count').textContent=visible+' of '+cards.length+' icons';document.querySelector('#empty').hidden=visible!==0}
 for(const button of buttons)button.addEventListener('click',()=>{filter=button.dataset.filter;for(const other of buttons)other.setAttribute('aria-pressed',String(other===button));update()});
 document.querySelector('#search').addEventListener('input',update);
 </script></body></html>

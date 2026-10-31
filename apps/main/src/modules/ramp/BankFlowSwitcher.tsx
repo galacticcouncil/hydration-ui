@@ -9,11 +9,12 @@ import { ONRAMP_STEP_TRANSITION } from "@/modules/onramp/components/OnrampModalC
 
 import { SBankFlowContent, SBankFlowRoot } from "./BankFlowSwitcher.styled"
 
-export type BankFlowVariant = "current" | "v2" | "simplified"
+export type BankFlowVariant = "current" | "v2" | "simplified" | "v3"
 
 type BankFlowSwitcherProps = {
   variant: BankFlowVariant
   onVariantChange: (variant: BankFlowVariant) => void
+  variants?: readonly BankFlowVariant[]
   stepKey?: string
   children: ReactNode
 }
@@ -22,6 +23,7 @@ export const BankFlowSwitcher: FC<BankFlowSwitcherProps> = ({
   variant,
   onVariantChange,
   stepKey,
+  variants = ["current", "v2", "simplified"],
   children,
 }) => {
   const { t } = useTranslation("onramp")
@@ -76,7 +78,7 @@ export const BankFlowSwitcher: FC<BankFlowSwitcherProps> = ({
         <OnrampFlowSwitcher
           label={t("bankV2.tabs.label")}
           value={variant}
-          options={(["current", "v2", "simplified"] as const).map((value) => ({
+          options={variants.map((value) => ({
             value,
             label: t(`bankV2.tabs.${value}`),
           }))}

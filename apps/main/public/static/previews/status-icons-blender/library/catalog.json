@@ -1,0 +1,173 @@
+{
+  "updated": "2026-10-31",
+  "entries": [
+    {
+      "id": "deposit-empty",
+      "title": "No deposits",
+      "status": "In use",
+      "category": "empty",
+      "usage": [
+        "Portfolio \u2192 Deposits \u00b7 No transfer history",
+        "Portfolio \u2192 Overview \u2192 Deposits \u00b7 No transfer history"
+      ],
+      "export": "exports/deposit-empty.webp",
+      "sha256": "abcb42200653e5454da15e05c1c938732e2a45e37f06b7771a4be6c3559c75e9",
+      "master": "masters/deposit-empty-1024.png",
+      "blender": "blender/deposit-lounger.blend",
+      "scene": "05 - Empty Deposits - Poolside Lounger"
+    },
+    {
+      "id": "tracked-wallets",
+      "title": "Tracked wallets",
+      "status": "In use",
+      "category": "empty",
+      "usage": [
+        "Portfolio \u2192 Overview \u2192 Tracked wallets \u00b7 No saved addresses",
+        "Portfolio \u2192 Tracked wallets \u00b7 Empty state"
+      ],
+      "export": "exports/tracked-wallets.webp",
+      "sha256": "9d4e577f9c588a7e31f1dd70b0bb0d353ab1065f04b29138e27912cdd0589473",
+      "master": "masters/tracked-wallets-1024.png",
+      "blender": "blender/tracked-wallet-glasses.blend",
+      "scene": "Tracked Wallets - Glasses"
+    },
+    {
+      "id": "waiting",
+      "title": "Waiting",
+      "status": "In use",
+      "category": "status",
+      "usage": [
+        "Bank deposit \u00b7 Awaiting transfer or processing",
+        "Bank withdrawal \u00b7 Pending or processing"
+      ],
+      "export": "exports/waiting.webp",
+      "sha256": "7b63359c309d39e6ed620035965f08bbf16948a4f57a5cfb05116843b553c3e4",
+      "master": "masters/waiting-1024.png",
+      "blender": "blender/status-icons.blend",
+      "scene": "01 - Hourglass"
+    },
+    {
+      "id": "review",
+      "title": "Provider review",
+      "status": "In use",
+      "category": "status",
+      "usage": [
+        "Bank deposit \u00b7 Provider setup and Bridge handoff"
+      ],
+      "export": "exports/review.webp",
+      "sha256": "3c5b71cde8aefad8f16ba9c7bbf3503d51590aea2c956eb0fcf56e1cd0124509",
+      "master": "masters/review-1024.png",
+      "blender": "blender/status-icons.blend",
+      "scene": "02 - Review Document"
+    },
+    {
+      "id": "review-clock",
+      "title": "In review",
+      "status": "In use",
+      "category": "status",
+      "usage": [
+        "Bank deposit \u00b7 Verification in review"
+      ],
+      "export": "exports/review-clock.webp",
+      "sha256": "93a16e30062e0a2f8272200c01917050254b6a428d56be10d6b20dda0a6133f0",
+      "master": "masters/review-clock-1024.png",
+      "blender": "blender/status-icons.blend",
+      "scene": "04 - Review Document Clock"
+    },
+    {
+      "id": "bank",
+      "title": "At your bank",
+      "status": "In use",
+      "category": "status",
+      "usage": [
+        "Bank withdrawal \u2192 Tracking \u00b7 At your bank"
+      ],
+      "export": "exports/bank.webp",
+      "sha256": "f878044b8b6b1b75174161f12e552f6bb69955e267c5b8351e77026a5407a11c",
+      "master": "masters/bank-1024.png",
+      "blender": "blender/bank.blend",
+      "scene": "Bank Status - At Your Bank"
+    },
+    {
+      "id": "usd",
+      "title": "USD",
+      "status": "In use",
+      "category": "currency",
+      "usage": [
+        "Bank deposit \u2192 Amount \u00b7 Currency selector",
+        "Bank withdrawal \u2192 Estimated receive \u00b7 Currency selector"
+      ],
+      "export": "exports/usd.svg",
+      "sha256": "39340f8095e8812c15a85bb8ddabe213b654a2f63df9187982e77fb0c051c5e3"
+    },
+    {
+      "id": "eur",
+      "title": "EUR",
+      "status": "In use",
+      "category": "currency",
+      "usage": [
+        "Bank deposit \u2192 Amount \u00b7 Currency selector",
+        "Bank withdrawal \u2192 Estimated receive \u00b7 Currency selector"
+      ],
+      "export": "exports/eur.svg",
+      "sha256": "97b18189803b341836646f0b8d90e577a81410b29c39c02a1291d9cb31f37012"
+    },
+    {
+      "id": "citrus-press",
+      "title": "Citrus press",
+      "status": "Ready to use",
+      "category": "ready",
+      "usage": [
+        "Available for future use \u00b7 not yet assigned to a screen"
+      ],
+      "export": "exports/citrus-press.webp",
+      "master": "masters/citrus-press-1024.png",
+      "blender": "blender/citrus-press.blend",
+      "scene": "07 - Citrus Press - Deeper Collecting Tray",
+      "sha256": "5c77c5098ddf670c4b82e3880a0f1974e4702c0024449ca7c7daa6b56ce72c68"
+    },
+    {
+      "id": "pearl-shell",
+      "title": "Pearl shell",
+      "status": "Used in design",
+      "category": "design",
+      "usage": [
+        "Portfolio \u2192 Dashboard \u00b7 Header illustration (Figma)"
+      ],
+      "export": "exports/pearl-shell.webp",
+      "master": "masters/pearl-shell-1024.png",
+      "blender": "blender/pearl-shell.blend",
+      "scene": "LIGHTING 02 - Warm studio - Larger pearl",
+      "sha256": "5beb22f2f7d2675dc0ad96adb2dd4549d8db01abd1f4d6935fd90bd377703a4b",
+      "designUrl": "https://www.figma.com/design/wIqkDdWO0X27AdfLIAduxR/Wallet-Redesign?node-id=10943-1586"
+    },
+    {
+      "id": "individual",
+      "title": "Individual",
+      "status": "In use",
+      "category": "account",
+      "usage": [
+        "Bank deposit \u2192 Setup \u00b7 Individual account"
+      ],
+      "export": "exports/individual.webp",
+      "master": "masters/individual-1024.png",
+      "blender": "blender/account-types.blend",
+      "scene": "07 - Individual - Beach Chair",
+      "sha256": "9bdbc6e040086d31bbfec4921ac96a7a334b16ca74e5d3fbefa20232ad241fe9"
+    },
+    {
+      "id": "business",
+      "title": "Business",
+      "status": "In use",
+      "category": "account",
+      "usage": [
+        "Bank deposit \u2192 Setup \u00b7 Business account"
+      ],
+      "export": "exports/business.webp",
+      "master": "masters/business-1024.png",
+      "blender": "blender/account-types.blend",
+      "scene": "06 - Business - Beach Kiosk",
+      "sha256": "e2d2c83ae244411c5037984cb79249b8fbf2ec937deb953983132dfa774685b9"
+    }
+  ]
+}

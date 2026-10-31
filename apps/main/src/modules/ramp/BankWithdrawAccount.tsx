@@ -32,6 +32,7 @@ export type BankWithdrawBankDetails = {
 }
 
 type BankWithdrawAccountProps = {
+  figmaV3?: boolean
   currency: WithdrawalCurrency
   source: BankWithdrawBankSource
   details: BankWithdrawBankDetails
@@ -40,6 +41,7 @@ type BankWithdrawAccountProps = {
 }
 
 export const BankWithdrawAccount: FC<BankWithdrawAccountProps> = ({
+  figmaV3 = false,
   currency,
   source,
   details,
@@ -57,7 +59,12 @@ export const BankWithdrawAccount: FC<BankWithdrawAccountProps> = ({
   return (
     <Stack gap={["l", "xl"]}>
       <Stack gap="s">
-        <Text fs="p3" fw={500}>
+        <Text
+          as={figmaV3 ? "h2" : "p"}
+          font={figmaV3 ? "primary" : undefined}
+          fs={figmaV3 ? "h7" : "p3"}
+          fw={500}
+        >
           {t("bankWithdraw.account.choose")}
         </Text>
         <Text fs="p5" color={getToken("text.medium")} lh={1.4}>

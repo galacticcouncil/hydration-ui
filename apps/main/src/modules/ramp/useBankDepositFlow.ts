@@ -29,7 +29,7 @@ export const useBankDepositFlow = () => {
   const address = account?.address ?? ""
   const saved = useBankPreviewStore.getState().setups[address]
   const [owner, setOwner] = useState(address)
-  const [variant, setVariant] = useState<BankFlowVariant>("simplified")
+  const [variant, setVariant] = useState<BankFlowVariant>("v3")
   const [v2Stage, setV2Stage] = useState<BankDepositV2Stage>("amount")
   const [amount, setAmount] = useState(saved?.amount ?? "500")
   const [screen, setScreen] = useState<BankDepositScreen>(
@@ -74,7 +74,7 @@ export const useBankDepositFlow = () => {
       return
     }
     if (
-      variant !== "simplified" ||
+      (variant !== "simplified" && variant !== "v3") ||
       !address ||
       screen === "entry" ||
       screen === "tracking"

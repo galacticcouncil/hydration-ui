@@ -24,6 +24,7 @@ import { RailStatus } from "./deposit.mock"
 
 type BankProviderHandoffProps = {
   compactHandoff?: boolean
+  figmaV3?: boolean
   state: BankProviderHandoffState
   status: RailStatus
   verified: boolean
@@ -45,6 +46,7 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
   status,
   verified,
   compactHandoff = false,
+  figmaV3 = false,
   previewResponse,
   onPreviewResponseChange,
   onPreviewApproval,
@@ -73,9 +75,13 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
             view === "ready"
               ? successStatus
               : view === "unavailable"
-                ? errorStatus
-                : view === "moreInfo"
+                ? figmaV3
                   ? warningStatus
+                  : errorStatus
+                : view === "moreInfo"
+                  ? figmaV3
+                    ? reviewClock3D
+                    : warningStatus
                   : view === "review"
                     ? reviewClock3D
                     : review3D
@@ -91,19 +97,19 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
         <Text fs="p5" align="center" color={getToken("text.medium")}>
           {t(`bankProvider.description.${view}`)}
         </Text>
-        {view !== "intro" && view !== "away" && (
+        {!figmaV3 && view !== "intro" && view !== "away" && (
           <BankDepositStatusChip
             status={compactHandoff && state === "away" ? "in review" : status}
             size="large"
           />
         )}
-        {view === "review" && (
+        {!figmaV3 && view === "review" && (
           <Button variant="tertiary" size="small" onClick={onPreviewApproval}>
             {t("bankProvider.previewApproval")}
           </Button>
         )}
       </Stack>
-      {view !== "ready" && (
+      {!figmaV3 && view !== "ready" && (
         <Text fs="p6" align="center" color={getToken("text.medium")}>
           {t("bankProvider.previewHandoff")}
         </Text>
@@ -114,6 +120,11 @@ export const BankProviderHandoff: FC<BankProviderHandoffProps> = ({
         actionLabelWhenOpen={t("bankV2.details.hide")}
       >
         <Stack gap="m" pt="m">
+          {figmaV3 && view === "review" && (
+            <Button variant="tertiary" size="small" onClick={onPreviewApproval}>
+              {t("bankProvider.previewApproval")}
+            </Button>
+          )}
           <Text fs="p6" color={getToken("text.medium")}>
             {t("bankProvider.previewResponseDescription")}
           </Text>

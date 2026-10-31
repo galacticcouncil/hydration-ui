@@ -33,6 +33,8 @@ import {
   BankWithdrawV2BankDetails,
   BankWithdrawV2BankSource,
 } from "./BankWithdrawV2Account"
+import { BankWithdrawV3 } from "./BankWithdrawV3"
+import { WithdrawalV3Status } from "./BankWithdrawV3Timeline.utils"
 
 type BankWithdrawProps = { onBack: () => void }
 
@@ -40,7 +42,7 @@ const setupSteps = ["amount", "account", "review"] as const
 
 export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
   const { t } = useTranslation(["onramp", "common"])
-  const [variant, setVariant] = useState<BankFlowVariant>("simplified")
+  const [variant, setVariant] = useState<BankFlowVariant>("v3")
   const [bankSource, setBankSource] =
     useState<BankWithdrawV2BankSource>("saved")
   const [manualBanks, setManualBanks] = useState<
@@ -63,6 +65,7 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
   )
   const [amount, setAmount] = useState("100")
   const [currency, setCurrency] = useState<WithdrawalCurrency>("USD")
+  const [v3Status, setV3Status] = useState<WithdrawalV3Status>("redeemed")
   const [status, setStatus] = useState<WithdrawalStatus>("pending")
   const [submittedQuote, setSubmittedQuote] =
     useState<BankWithdrawalQuote | null>(null)
@@ -71,7 +74,9 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
   const quote = getBankWithdrawalQuote(
     amount,
     currency,
-    variant === "simplified" ? BANK_SIMPLIFIED_PREVIEW_FEE : undefined,
+    variant === "simplified" || variant === "v3"
+      ? BANK_SIMPLIFIED_PREVIEW_FEE
+      : undefined,
   )
   const effectiveBank: BankWithdrawV2BankDetails =
     bankSource === "manual"
@@ -131,6 +136,7 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
       setSubmittedQuote(quote)
       setSubmittedBank({ ...effectiveBank })
       setStatus("pending")
+      setV3Status("redeemed")
       setStep("tracking")
     } else {
       setSubmittedQuote(null)
@@ -141,12 +147,21 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
     }
   }
   const BankWithdrawSteps =
-    variant === "simplified" ? BankWithdrawSimplified : BankWithdrawV2
+    variant === "v3"
+      ? BankWithdrawV3
+      : variant === "simplified"
+        ? BankWithdrawSimplified
+        : BankWithdrawV2
   return (
     <BankFlowSwitcher
+      variants={["current", "v2", "simplified", "v3"]}
       variant={variant}
       onVariantChange={setVariant}
-      stepKey={step === "tracking" ? `${step}:${status}` : step}
+      stepKey={
+        step === "tracking"
+          ? `${step}:${variant === "v3" ? v3Status : status}`
+          : step
+      }
     >
       {variant !== "current" ? (
         <BankWithdrawSteps
@@ -158,6 +173,8 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
           submittedBank={submittedBank}
           effectiveBank={effectiveBank}
           status={status}
+          v3Status={v3Status}
+          onV3StatusChange={setV3Status}
           bankSource={bankSource}
           bankDetails={manualBanks[currency]}
           onBankSourceChange={(source) => {
