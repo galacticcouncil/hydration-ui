@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feat/ipfs-deploy
   workflow_dispatch:
 concurrency:
   group: ipfs
@@ -63,6 +64,7 @@ jobs:
           fi
           [ "$pinned" -gt 0 ] && [ "$failed" -eq 0 ]
       - name: Record
+        if: github.ref == 'refs/heads/master'
         env:
           CID: ${{ steps.pack.outputs.cid }}
           GH_TOKEN: ${{ github.token }}
