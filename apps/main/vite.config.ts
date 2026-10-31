@@ -67,6 +67,7 @@ export default defineConfig(({ mode }) => {
   )
 
   return {
+    base: env.VITE_IPFS === "true" ? "./" : "/",
     server: {
       host: "0.0.0.0",
     },
