@@ -14,6 +14,20 @@ export const YieldFarmCreatedDocument = gql`
   }
 }
     `;
+export const PureCreatedEventsDocument = gql`
+    query PureCreatedEvents($purePublicKey: String!) {
+  events(
+    where: {name_eq: "Proxy.PureCreated", args_jsonContains: {pure: $purePublicKey}}
+  ) {
+    block {
+      height
+    }
+    extrinsic {
+      indexInBlock
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -24,6 +38,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     YieldFarmCreated(variables: Types.YieldFarmCreatedQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.YieldFarmCreatedQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.YieldFarmCreatedQuery>({ document: YieldFarmCreatedDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'YieldFarmCreated', 'query', variables);
+    },
+    PureCreatedEvents(variables: Types.PureCreatedEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.PureCreatedEventsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.PureCreatedEventsQuery>({ document: PureCreatedEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'PureCreatedEvents', 'query', variables);
     }
   };
 }

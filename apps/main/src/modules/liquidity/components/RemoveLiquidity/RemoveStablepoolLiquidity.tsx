@@ -14,6 +14,7 @@ import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
+import type { TStablepoolDetails } from "@/api/stableswap"
 import { AssetLogo } from "@/components/AssetLogo"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
@@ -23,10 +24,7 @@ import {
   TradeLimitRow,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
-import {
-  TStablepoolDetails,
-  useStablepoolReserves,
-} from "@/modules/liquidity/Liquidity.utils"
+import { useStablepoolReserves } from "@/modules/liquidity/Liquidity.utils"
 import { useAssetPrice } from "@/states/displayAsset"
 
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
