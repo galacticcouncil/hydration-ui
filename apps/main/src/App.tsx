@@ -9,11 +9,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query"
-import {
-  createHashHistory,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router"
+import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
@@ -21,7 +17,6 @@ import { setupPortfolioPersistence } from "@/api/portfolio"
 import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
-import { ENV } from "@/config/env"
 import i18n from "@/i18n"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
 import { applyResetTutorialsParam } from "@/modules/tutorials/utils/resetTutorials"
@@ -57,8 +52,6 @@ const routerContext: RouterContext = {
 
 const router = createRouter({
   routeTree,
-  // path gateways (/ipfs/<cid>/) have no spa fallback, so routes live in the hash
-  history: ENV.VITE_IPFS ? createHashHistory() : undefined,
   context: routerContext,
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,

@@ -7,12 +7,8 @@ import {
 
 import { WalletProviderType } from "@/config/providers"
 
-const HASH_ROUTING = import.meta.env.VITE_IPFS === "true"
-
-const TARGET_URL = HASH_ROUTING
-  ? `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, "")}`
-  : `${window.location.protocol}//${window.location.hostname}`
-const TARGET_ROUTE_URL = HASH_ROUTING ? `${TARGET_URL}/#` : TARGET_URL
+const TARGET_HOSTNAME = window.location.hostname
+const TARGET_URL = `${window.location.protocol}//${TARGET_HOSTNAME}`
 
 const ENCODED_TARGET_URL = encodeURIComponent(TARGET_URL)
 const ENCODED_SOLANA_TARGET_URL = encodeXcmTargetUrl("solana", "sol")
@@ -24,7 +20,7 @@ export const WALLET_DEEPLINKS: Partial<
   Record<WalletProviderType, DeepLinkConfig>
 > = {
   [WalletProviderType.MetaMask]: {
-    universal: `https://link.metamask.io/dapp/${TARGET_URL.replace(/^https?:\/\//, "")}`,
+    universal: `https://link.metamask.io/dapp/${TARGET_HOSTNAME}`,
   },
   [WalletProviderType.NovaWallet]: {
     universal: `https://app.novawallet.io/open/dapp?url=${ENCODED_TARGET_URL}`,
@@ -58,7 +54,7 @@ export const getWalletDeeplink = (provider: WalletProviderType) => {
 
 function encodeXcmTargetUrl(srcChain: string, asset: string) {
   return encodeURIComponent(
-    `${TARGET_ROUTE_URL}/cross-chain${createQueryString({
+    `${TARGET_URL}/cross-chain${createQueryString({
       srcChain,
       srcAsset: asset,
       destChain: HYDRATION_CHAIN_KEY,

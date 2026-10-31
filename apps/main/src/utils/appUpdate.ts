@@ -44,9 +44,7 @@ export const useAppUpdateStore = create<{ isAvailable: boolean }>(() => ({
  * extensions inject into it, so it is not a faithful copy of the build.
  */
 const fetchIndex = async () => {
-  const res = await fetch(`${import.meta.env.BASE_URL}index.html`, {
-    cache: "no-cache",
-  })
+  const res = await fetch("/index.html", { cache: "no-cache" })
   return res.ok ? getEntryScript(await res.text()) : null
 }
 

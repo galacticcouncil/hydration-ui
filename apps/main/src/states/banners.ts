@@ -16,8 +16,8 @@ export type BannerConfig = PromoteBannerItem & {
 const bannerEntries: BannerConfig[] = [
   {
     id: "bil-vault",
-    backgroundImage: `${import.meta.env.BASE_URL}images/bil.webp`,
-    backgroundImageMobile: `${import.meta.env.BASE_URL}images/bilMobile.webp`,
+    backgroundImage: "/images/bil.webp",
+    backgroundImageMobile: "/images/bilMobile.webp",
     title: "banners.bil.title",
     description: "banners.bil.description",
     textColor: "#000000",
@@ -30,8 +30,8 @@ const bannerEntries: BannerConfig[] = [
   },
   {
     id: "hollarb-24-11-26",
-    backgroundImage: `${import.meta.env.BASE_URL}images/hollarb.webp`,
-    backgroundImageMobile: `${import.meta.env.BASE_URL}images/hollarbMobile.webp`,
+    backgroundImage: "/images/hollarb.webp",
+    backgroundImageMobile: "/images/hollarbMobile.webp",
     title: "banners.hollarb.title",
     textColor: "#FFF",
     ctaColor: "#B3D7FA",
