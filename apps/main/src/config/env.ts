@@ -19,6 +19,7 @@ const schema = z.object({
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
+  VITE_IPFS: coerceToBoolean.optional(),
 })
 
 export const ENV = schema.parse(import.meta.env)
