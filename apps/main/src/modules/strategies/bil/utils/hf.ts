@@ -1,10 +1,7 @@
-import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
-import {
-  formatHealthFactorResult,
-  type HealthFactorResult,
-} from "@galacticcouncil/money-market/utils"
+import { calculateHealthFactorFromBalancesBigUnits } from "@galacticcouncil/money-market/core"
 import Big from "big.js"
 
+import { formatHealthFactorResult, type HealthFactorResult } from "@/api/aave"
 import type { BilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 
 const toBilHealthFactor = (healthFactor: number) =>
@@ -53,7 +50,7 @@ export const getBilRepayHealthFactor = (
   })
 
   const futureHealthFactor =
-    calculatedHealthFactor.isLessThan(0) && !calculatedHealthFactor.eq(-1)
+    calculatedHealthFactor.lt(0) && !calculatedHealthFactor.eq(-1)
       ? "0"
       : calculatedHealthFactor.toString()
 

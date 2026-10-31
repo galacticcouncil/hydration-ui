@@ -1,4 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
   Box,
@@ -19,6 +18,7 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useBorrowHollarForm } from "@/modules/strategies/bil/components/BorrowHollarModal.form"
 import { useBilStrategy } from "@/modules/strategies/bil/context/BilStrategyContext"
 import { useBilMaxBorrowable } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
@@ -132,11 +132,16 @@ export const BorrowHollarModal = ({ open, onClose }: Props) => {
               {healthFactor && (
                 <SummaryRow
                   label={t("common:healthFactor")}
-                  content={<HealthFactorChange {...healthFactor} />}
+                  content={
+                    <HealthFactorChange
+                      current={healthFactor.current}
+                      projected={healthFactor.future}
+                    />
+                  }
                 />
               )}
               <SummaryRow
-                label={t("borrow:borrow.available")}
+                label={t("borrow:summary.availableToBorrow")}
                 content={
                   isMaxBorrowableLoading ? (
                     <Skeleton width="100%" height="1.5em" />

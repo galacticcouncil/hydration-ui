@@ -1,8 +1,9 @@
-import { ProtocolAction } from "@aave/contract-helpers"
-import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
-import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { HOLLAR_ASSET_ID, safeConvertAnyToH160 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  buildRepay,
+  calculateHealthFactorFromBalancesBigUnits,
+} from "@galacticcouncil/money-market/core"
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
+import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -11,16 +12,18 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
+import { formatHealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import {
-  useGigaBorrowPoolContract,
-  useUserGigaBorrowSummary,
-} from "@/api/borrow"
+  fetchFeePerGas,
+  planToTransaction,
+} from "@/modules/money-market/actions/planToTransaction"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import {
-  convertEvmTxRawToPapiTx,
-  userGigaBorrowSummaryQueryKey,
-} from "@/api/borrow/queries"
+  GIGA_MARKET,
+  useGigaBorrowSummary,
+} from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -40,15 +43,18 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
   const { getAssetWithFallback } = useAssets()
 
   const hollarAsset = getAssetWithFallback(HOLLAR_ASSET_ID)
-  const { account } = useAccount()
+  const user = useUserAddress()
   const provider = useRpcProvider()
   const { getTransferableBalance } = useAccountBalances()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { data: gigaBorrowPoolContract } = useGigaBorrowPoolContract()
-  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
-  const { userSummary, hollarReserve } = gigaBorrowSummary ?? {}
+  const { data: gigaBorrowSummary } = useGigaBorrowSummary()
+  const {
+    account: marketAccount,
+    hollarReserve,
+    hollarPosition,
+  } = gigaBorrowSummary ?? {}
 
-  const debtAmount = Big(hollarReserve?.variableBorrows || "0")
+  const debtAmount = Big(hollarPosition?.variableBorrows || "0")
     .mul(MAX_REPPAY_DUST_FACTOR)
     .toString()
   const walletBalance = scaleHuman(
@@ -83,9 +89,7 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
   const maxRepayAmountString = maxRepayAmount.toString()
   const repayAmount = Big.min(amount || "0", maxRepayAmountString)
   const remainingDebt = Big.max(Big(debtAmount).minus(repayAmount), 0)
-  const remainingDebtUsd = remainingDebt.mul(
-    hollarReserve?.reserve.priceInUSD || "0",
-  )
+  const remainingDebtUsd = remainingDebt.mul(hollarReserve?.priceInUsd || "0")
 
   useEffect(() => {
     if (isMaxSelected) {
@@ -93,55 +97,42 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
     }
   }, [isMaxSelected, form, maxRepayAmountString])
   const repayAmountUsd = Big(amount || "0").mul(
-    hollarReserve?.reserve.priceInUSD || "0",
+    hollarReserve?.priceInUsd || "0",
   )
-  const remainingBorrowBalance = Big(userSummary?.totalBorrowsUSD || "0").minus(
-    repayAmountUsd,
-  )
+  const remainingBorrowBalance = Big(
+    marketAccount?.totalBorrowsUsd || "0",
+  ).minus(repayAmountUsd)
   const futureHealthFactorRaw = calculateHealthFactorFromBalancesBigUnits({
     collateralBalanceMarketReferenceCurrency:
-      userSummary?.totalCollateralUSD || "0",
+      marketAccount?.totalCollateralUsd || "0",
     borrowBalanceMarketReferenceCurrency: Big.max(
       remainingBorrowBalance,
       0,
     ).toString(),
     currentLiquidationThreshold:
-      userSummary?.currentLiquidationThreshold || "0",
+      marketAccount?.currentLiquidationThreshold || "0",
   })
 
   const healthFactor = formatHealthFactorResult({
-    currentHF: userSummary?.healthFactor || "-1",
+    currentHF: marketAccount?.healthFactor || "-1",
     futureHF: futureHealthFactorRaw.toString(),
   })
 
   const mutation = useMutation({
     mutationFn: async (amount: string) => {
-      if (!gigaBorrowPoolContract)
-        throw new Error("Giga borrow pool contract not found")
-      if (!account?.address || !hollarReserve?.underlyingAsset) return
+      if (!user || !hollarReserve?.underlyingAsset) return
 
       const amountWei = toBigInt(amount, hollarAsset.decimals)
 
       if (amountWei <= 0n) return
 
-      const evmAddress = safeConvertAnyToH160(account.address)
-      const poolInstance = gigaBorrowPoolContract.getContractInstance(
-        gigaBorrowPoolContract.poolAddress,
-      )
-
-      const txRaw = await poolInstance.populateTransaction.repay(
-        hollarReserve.underlyingAsset,
-        amountWei,
-        2,
-        evmAddress,
-      )
-
-      const evmCall = await convertEvmTxRawToPapiTx(
-        provider,
-        txRaw,
-        evmAddress,
-        ProtocolAction.repay,
-      )
+      const plan = buildRepay({
+        market: GIGA_MARKET,
+        asset: hollarReserve.underlyingAsset,
+        amount: amountWei,
+        onBehalfOf: user,
+      })
+      const feePerGas = await fetchFeePerGas(provider.evm)
 
       const toasts = {
         submitted: t("staking:gigaStaking.repay.toasts.submitted", {
@@ -156,11 +147,13 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
 
       await createTransaction(
         {
-          tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
-            call: evmCall.decodedCall,
+          tx: planToTransaction(plan, {
+            papi: provider.papi,
+            from: user,
+            feePerGas,
           }),
           toasts,
-          invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
+          invalidateQueries: [[...moneyMarketKeys.market(GIGA_MARKET.market)]],
         },
         { onSubmitted: onClose },
       )

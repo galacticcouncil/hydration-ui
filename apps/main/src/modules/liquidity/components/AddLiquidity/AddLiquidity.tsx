@@ -1,5 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
@@ -15,6 +13,7 @@ import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
@@ -26,6 +25,7 @@ import {
   TradeLimit,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useAssets } from "@/providers/assetsProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -218,7 +218,12 @@ export const AddLiquiditySummary = ({
           ? [
               {
                 label: t("common:healthFactor"),
-                content: <HealthFactorChange {...healthFactor} fontSize="p5" />,
+                content: (
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                ),
               },
             ]
           : []),

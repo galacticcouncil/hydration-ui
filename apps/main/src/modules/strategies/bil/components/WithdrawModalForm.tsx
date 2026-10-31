@@ -1,4 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   AssetInput,
   Box,
@@ -23,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { healthFactorAfterWithdrawQuery, maxWithdrawQuery } from "@/api/aave"
 import { AssetLogo } from "@/components/AssetLogo"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import {
   projectRate,
   WithdrawMethodPicker,
@@ -204,7 +204,12 @@ export const WithdrawModalForm = ({
             <Summary withLeadingSeparator separator={<ModalContentDivider />}>
               <SummaryRow
                 label={t("common:healthFactor")}
-                content={<HealthFactorChange {...healthFactor} />}
+                content={
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                }
               />
             </Summary>
           )}

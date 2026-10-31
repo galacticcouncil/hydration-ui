@@ -1,4 +1,3 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Flex,
   SectionHeader,
@@ -7,6 +6,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -1,9 +1,9 @@
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
+import { HealthFactorResult } from "@/api/aave"
 import { aaveSummaryQuery } from "@/api/aave"
 import { TimeFrame } from "@/components/TimeFrame/TimeFrame.utils"
 import {

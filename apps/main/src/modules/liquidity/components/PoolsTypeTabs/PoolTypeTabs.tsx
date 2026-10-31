@@ -33,6 +33,7 @@ export const PoolTypeTabs = () => {
   if (isMobile) {
     return (
       <Select
+        size="medium"
         value={search?.type}
         items={poolTypes}
         onValueChange={(value) =>

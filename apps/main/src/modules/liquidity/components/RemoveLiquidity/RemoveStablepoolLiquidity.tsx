@@ -149,7 +149,7 @@ const RemoveStablepoolLiquidityJSX = ({
               name="split"
               render={({ field: { value, onChange } }) => (
                 <Flex align="center" justify="space-between">
-                  <Text fs="p3">
+                  <Text fs="p4" fw={500}>
                     {t("liquidity.remove.stablepool.modal.proportionally")}
                   </Text>
                   <Toggle
