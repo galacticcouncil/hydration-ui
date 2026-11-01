@@ -37,6 +37,8 @@ export type InfoTooltipProps = {
   asChild?: boolean
   preventDefault?: boolean
   iconColor?: BoxProps["color"]
+  /** The surface, border and shadow of a `Paper`, for rich content. */
+  paper?: boolean
 }
 
 export const Tooltip = ({
@@ -51,6 +53,7 @@ export const Tooltip = ({
   asChild = false,
   preventDefault,
   iconColor,
+  paper,
 }: InfoTooltipProps) => {
   const [open, setOpen] = useState(false)
   const { isMobile } = useBreakpoints()
@@ -144,6 +147,7 @@ export const Tooltip = ({
       <Portal>
         <SContent
           size={size}
+          paper={paper}
           side={side}
           align={align}
           sideOffset={sideOffset}
@@ -171,7 +175,7 @@ export const TooltipIcon: FC<BoxProps> = (props) => (
       color: getToken("icons.onContainer"),
     }}
     component={CircleInfo}
-    size="0.75em"
+    size="0.875em"
     {...props}
   />
 )

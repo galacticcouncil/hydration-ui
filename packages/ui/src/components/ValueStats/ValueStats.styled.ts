@@ -1,3 +1,4 @@
+import { Theme } from "@emotion/react"
 import styled from "@emotion/styled"
 import { mq, ThemeFont } from "@galacticcouncil/ui/theme"
 import { createVariants, css } from "@galacticcouncil/ui/utils"
@@ -66,49 +67,65 @@ export const SValueStatsLabel = styled.div(
   `,
 )
 
-const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
-  small: css`
-    font-size: ${theme.fontSizes.base};
-    line-height: 1;
-
-    ${mq("sm")} {
+// [mobile, from `sm` up] per size
+const valueSizes = (theme: Theme) => ({
+  small: [
+    css`
+      font-size: ${theme.fontSizes.base};
+      line-height: 1;
+    `,
+    css`
       font-size: ${theme.fontSizes.h7};
-    }
-  `,
-  medium: css`
-    font-size: ${theme.fontSizes.h7};
-    line-height: 1;
-
-    ${mq("sm")} {
+    `,
+  ],
+  medium: [
+    css`
+      font-size: ${theme.fontSizes.h7};
+      line-height: 1;
+    `,
+    css`
       font-size: ${theme.fontSizes.h6};
       line-height: ${theme.lineHeights.xl};
-    }
-  `,
-  large: css`
-    font-size: ${theme.fontSizes.h7};
-    line-height: 1;
-
-    ${mq("sm")} {
+    `,
+  ],
+  large: [
+    css`
+      font-size: ${theme.fontSizes.h7};
+      line-height: 1;
+    `,
+    css`
       font-size: ${theme.fontSizes.h5};
       line-height: ${theme.lineHeights["2xl"]};
-    }
-  `,
-}))
+    `,
+  ],
+})
 
 export const SValueStatsValue = styled.div<{
   readonly size?: ValueStatsSize
   readonly font?: ValueStatsFont
-}>(({ theme, size = "large", font = "primary" }) => [
-  css`
-    font-family: ${theme.fontFamilies1[font]};
-    font-weight: 500;
+  /** Keeps the `sm` and up size on mobile too. */
+  readonly fixedSize?: boolean
+}>(({ theme, size = "large", font = "primary", fixedSize = false }) => {
+  const [mobile, desktop] = valueSizes(theme)[size]
+  return [
+    css`
+      font-family: ${theme.fontFamilies1[font]};
+      font-weight: 500;
 
-    color: ${theme.text.high};
+      color: ${theme.text.high};
 
-    white-space: nowrap;
-  `,
-  valueSizeVariants(size),
-])
+      white-space: nowrap;
+    `,
+    mobile,
+    fixedSize
+      ? desktop
+      : css`
+          ${mq("sm")} {
+            ${desktop}
+          }
+        `,
+  ]
+})
 
 export const SValueStatsBottomValue = styled.div<{
   readonly isFloating?: boolean

@@ -1,9 +1,8 @@
-import { Flex } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useState } from "react"
+import { Box } from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
+import { TitleWithSearch } from "@/components/TitleWithSearch"
 import { PoolTypeTabs } from "@/modules/liquidity/components/PoolsTypeTabs"
-import { SearchInput } from "@/modules/liquidity/components/SearchInput"
 
 type PoolsFiltersProps = {
   search: string
@@ -11,25 +10,17 @@ type PoolsFiltersProps = {
 }
 
 export const PoolsFilters = ({ search, onChange }: PoolsFiltersProps) => {
-  const [isFocused, setIsFocused] = useState(false)
-  const { isMobile } = useBreakpoints()
-
-  const isHiddenTabs = isMobile && isFocused
+  const { t } = useTranslation("common")
 
   return (
-    <Flex
-      justify={isHiddenTabs ? "flex-end" : "space-between"}
-      align="center"
-      gap="xl"
-      pt="s"
-    >
-      {!isHiddenTabs && <PoolTypeTabs />}
-      <SearchInput
-        search={search}
-        isFocused={isFocused}
-        onChange={onChange}
-        onFocus={setIsFocused}
+    <Box pt="s">
+      <TitleWithSearch
+        filters={<PoolTypeTabs />}
+        value={search}
+        placeholder={t("search.placeholder.any")}
+        onChange={(e) => onChange(e.target.value)}
+        customSize="medium"
       />
-    </Flex>
+    </Box>
   )
 }

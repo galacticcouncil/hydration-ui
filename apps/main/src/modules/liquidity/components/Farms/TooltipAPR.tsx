@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next"
 import { BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ApyRow } from "@/components/DetailedApy/DetailedApy"
-import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItems"
+import { useApyBreakdownItems } from "@/modules/money-market/apy/useApyBreakdownItems"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const TooltipAPR = ({

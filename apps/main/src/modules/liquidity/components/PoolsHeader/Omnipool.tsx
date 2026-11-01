@@ -46,6 +46,7 @@ export const Omnipool = () => {
           value: totals.totalLiquidity.toString(),
         })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />
@@ -55,6 +56,7 @@ export const Omnipool = () => {
         value={t("common:currency.compact", { value: totals.volume })}
         isLoading={isLoading}
         size="medium"
+        fixedSize
         wrap
       />
       <PoolsHeaderSeparator />
@@ -62,6 +64,7 @@ export const Omnipool = () => {
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency.compact", { value: totals.liquidity })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />
@@ -70,6 +73,7 @@ export const Omnipool = () => {
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency.compact", { value: totals.stablepool })}
         size="medium"
+        fixedSize
         isLoading={isLoading}
         wrap
       />

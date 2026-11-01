@@ -1,11 +1,12 @@
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { HDXSupplyQueryKey, stakingPositionsQuery } from "@/api/staking"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -64,7 +65,7 @@ export const useGigaStakingMigration = () => {
         txs,
         transaction: {
           invalidateQueries: [
-            userGigaBorrowSummaryQueryKey(address),
+            [...moneyMarketKeys.market(GIGA_MARKET.market)],
             stakingPositionsQuery(rpc, address).queryKey,
             HDXSupplyQueryKey,
           ],

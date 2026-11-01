@@ -1,19 +1,18 @@
 import {
-  CollateralState,
-  HealthFactorChange,
-} from "@galacticcouncil/money-market/components"
+  useMarketReserves,
+  useReserveSummaries,
+} from "@galacticcouncil/money-market/react"
+import type { ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
-  ComputedUserReserveData,
-  ExtendedFormattedUser,
-} from "@galacticcouncil/money-market/hooks"
-import {
-  Alert,
   Box,
+  CollapsibleContent,
+  CollapsibleRoot,
   LoadingButton,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Separator,
   Skeleton,
   Stack,
   Summary,
@@ -24,14 +23,13 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData, TErc20AToken } from "@/api/assets"
-import { useUserBorrowSummary } from "@/api/borrow/queries"
 import {
   TAssetWithBalance,
   useAssetSelectModalAssets,
 } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { getApyLabel } from "@/modules/borrow/hooks/useApyBreakdownItems"
 import {
   TSupplyIsolatedLiquidityFormValues,
   useSupplyIsolatedLiquidity,
@@ -41,8 +39,16 @@ import {
   TradeLimit,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
+import { FindingsList } from "@/modules/money-market/actions/FindingsList"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { getApyLabel } from "@/modules/money-market/apy/useApyBreakdownItems"
+import { CollateralState } from "@/modules/money-market/CollateralState"
+import { useUserAddress } from "@/modules/money-market/hooks"
+import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useAssets } from "@/providers/assetsProvider"
 import { formatApyPercent } from "@/utils/formatApyPercent"
+
+const isAsset = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
 
 export const SupplyIsolatedLiquidity = ({
   assetId,
@@ -52,7 +58,8 @@ export const SupplyIsolatedLiquidity = ({
   onSubmitted: () => void
 }) => {
   const { tradable, native, getRelatedAToken, isErc20AToken } = useAssets()
-  const { data: userBorrowData } = useUserBorrowSummary()
+  const { data: reserves } = useMarketReserves()
+  const { data: summaries } = useReserveSummaries()
   const relatedAToken = getRelatedAToken(assetId)
 
   const selectabledAssets = useAssetSelectModalAssets({
@@ -66,16 +73,19 @@ export const SupplyIsolatedLiquidity = ({
 
   const supplyAssetAddress = getAddressFromAssetId(assetId)
 
-  const userReserve = userBorrowData?.userReservesData.find(
-    (reserve) => reserve.underlyingAsset === supplyAssetAddress,
+  const reserve = reserves?.reserves.find((r) =>
+    isAsset(r.underlyingAsset, supplyAssetAddress),
+  )
+  const summary = summaries?.find((s) =>
+    isAsset(s.underlyingAsset, supplyAssetAddress),
   )
 
   if (
     selectabledAssets.isLoading ||
     !initialAsset ||
     !relatedAToken ||
-    !userBorrowData ||
-    !userReserve
+    !reserve ||
+    !summary
   )
     return <SupplyIsolatedLiquiditySkeleton />
 
@@ -89,8 +99,8 @@ export const SupplyIsolatedLiquidity = ({
       selectabledAssets={selectabledAssets.sortedAssets}
       assetId={assetId}
       aToken={aToken}
-      userBorrowData={userBorrowData}
-      userReserve={userReserve}
+      summary={summary}
+      decimals={reserve.decimals}
       onSubmitted={onSubmitted}
     />
   )
@@ -101,31 +111,30 @@ const SupplyIsolatedLiquidityBody = ({
   selectabledAssets,
   assetId,
   aToken,
-  userBorrowData,
-  userReserve,
+  summary,
+  decimals,
   onSubmitted,
 }: {
   initialAsset: TAssetData
   selectabledAssets: TAssetWithBalance[]
   assetId: string
   aToken: TErc20AToken
-  userBorrowData: ExtendedFormattedUser
-  userReserve: ComputedUserReserveData
+  summary: ReserveSummary
+  decimals: number
   onSubmitted: () => void
 }) => {
   const { t } = useTranslation(["common", "liquidity", "borrow", "trade"])
+  const { symbol } = useReserveDisplay(summary)
+  const user = useUserAddress()
   const {
     form,
     maxBalance,
     onSubmit,
-    collateralType,
-    healthFactor,
-    isHealthFactorLoading,
-    isBlockedByBorrowedAssets,
-    isEnablingIsolatedModeWarning,
-    isolationWarning,
-    supplyCapWarning,
-    debtCeilingWarning,
+    findings,
+    isAssessing,
+    currentHealthFactor,
+    projectedHealthFactor,
+    isCollateral,
     isBlockedSupply,
     minReceiveAmountShifted,
     apys,
@@ -134,25 +143,30 @@ const SupplyIsolatedLiquidityBody = ({
     isTradeLoading,
     isAaveSupply,
     swap,
+    hasTradeAmount,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
     aToken,
-    userBorrowData,
-    userReserve,
+    asset: summary.underlyingAsset,
+    decimals,
     onSubmitted,
   })
+
+  // Open once there is a quote to show; stay open while a new amount re-quotes.
+  const isTradeOpen =
+    !isAaveSupply && hasTradeAmount && (!!swap || isTradeLoading)
 
   return (
     <FormProvider {...form}>
       <ModalHeader
         title={t("borrow:supply.withSymbol", {
-          symbol: userReserve.reserve.symbol,
+          symbol,
         })}
         closable
       />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-        <ModalBody>
+        <ModalBody sx={{ pb: 0 }}>
           <Box pb="l">
             <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
               label={t("amount")}
@@ -174,124 +188,104 @@ const SupplyIsolatedLiquidityBody = ({
                 content={formatApyPercent(t, apy.apy)}
               />
             ))}
-            {!isBlockedByBorrowedAssets && (
-              <SummaryRow
-                label={t("minimumReceived")}
-                loading={isTradeLoading}
-                content={t("common:currency", {
-                  value: minReceiveAmountShifted,
-                  symbol: aToken.symbol,
-                })}
-              />
-            )}
-
             <SummaryRow
-              label={t("tradeLimit")}
-              content={<TradeLimit type={TradeLimitType.Trade} />}
+              label={t("borrow:collateral.title")}
+              loading={isAssessing}
+              content={
+                <CollateralState
+                  status={
+                    !isCollateral
+                      ? "disabled"
+                      : summary.isIsolated
+                        ? "isolated"
+                        : "enabled"
+                  }
+                />
+              }
             />
-
-            {(swap || isTradeLoading) && (
-              <SummaryRow
-                label={t("trade:market.summary.estTradeFees")}
-                content={
-                  <TradeFee
-                    swap={swap}
-                    receiveAsset={aToken}
-                    isLoading={isTradeLoading}
-                  />
-                }
-              />
-            )}
-
-            {!isAaveSupply && (
-              <SummaryRow
-                label={t("price")}
-                content={
-                  isPriceLoading ? (
-                    <Skeleton width={50} height="100%" />
-                  ) : (
-                    t("liquidity:liquidity.remove.stablepool.modal.price", {
-                      poolSymbol: form.watch("asset").symbol,
-                      value: spotPriceData?.spotPrice,
-                      symbol: aToken.symbol,
-                    })
-                  )
-                }
-              />
-            )}
-
-            {collateralType && (
-              <SummaryRow
-                label={t("borrow:collateral")}
-                content={<CollateralState collateralType={collateralType} />}
-              />
-            )}
-            {(healthFactor || isHealthFactorLoading) && (
+            {user && (
               <SummaryRow
                 label={t("healthFactor")}
+                loading={isAssessing}
                 content={
-                  healthFactor ? (
-                    <HealthFactorChange
-                      {...healthFactor}
-                      loading={isHealthFactorLoading}
-                      fontSize="p5"
-                    />
-                  ) : (
-                    <Skeleton width={80} height="1em" />
-                  )
+                  <HealthFactorChange
+                    current={currentHealthFactor}
+                    projected={projectedHealthFactor}
+                  />
                 }
               />
-            )}
-            {(isolationWarning ||
-              supplyCapWarning ||
-              debtCeilingWarning ||
-              isBlockedByBorrowedAssets ||
-              isEnablingIsolatedModeWarning) && (
-              <Stack gap="s" py="l">
-                {isolationWarning && (
-                  <Alert
-                    title={t("borrow:alert.enableIsolatedMode.title")}
-                    description={t("borrow:alert.enableIsolatedMode.desc", {
-                      symbol: userReserve.reserve.symbol,
-                    })}
-                  />
-                )}
-                {supplyCapWarning}
-                {debtCeilingWarning}
-                {isBlockedByBorrowedAssets && (
-                  <Alert
-                    variant="warning"
-                    description={t("borrow:alert.borrowIsolated", {
-                      symbol: userReserve.reserve.symbol,
-                    })}
-                  />
-                )}
-                {isEnablingIsolatedModeWarning && (
-                  <Alert
-                    variant="warning"
-                    description={t("borrow:alert.supplyIsolated", {
-                      symbol: userReserve.reserve.symbol,
-                    })}
-                  />
-                )}
-              </Stack>
             )}
           </Summary>
 
-          <ModalContentDivider />
+          <CollapsibleRoot open={isTradeOpen}>
+            <CollapsibleContent>
+              <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+                {!isBlockedSupply && (
+                  <SummaryRow
+                    label={t("minimumReceived")}
+                    loading={isTradeLoading}
+                    content={t("common:currency", {
+                      value: minReceiveAmountShifted,
+                      symbol: aToken.symbol,
+                    })}
+                  />
+                )}
+                <SummaryRow
+                  label={t("price")}
+                  content={
+                    isPriceLoading ? (
+                      <Skeleton width={50} height="100%" />
+                    ) : (
+                      t("liquidity:liquidity.remove.stablepool.modal.price", {
+                        poolSymbol: form.watch("asset").symbol,
+                        value: spotPriceData?.spotPrice,
+                        symbol: aToken.symbol,
+                      })
+                    )
+                  }
+                />
+                <SummaryRow
+                  label={t("tradeLimit")}
+                  content={<TradeLimit type={TradeLimitType.Trade} />}
+                />
+                <SummaryRow
+                  label={t("trade:market.summary.estTradeFees")}
+                  content={
+                    <TradeFee
+                      swap={swap}
+                      receiveAsset={aToken}
+                      isLoading={isTradeLoading || isAssessing}
+                    />
+                  }
+                />
+              </Summary>
+            </CollapsibleContent>
+          </CollapsibleRoot>
+
+          {findings.length > 0 && (
+            <>
+              <ModalContentDivider />
+              <Stack gap="base" py="base">
+                <FindingsList findings={findings} />
+              </Stack>
+            </>
+          )}
         </ModalBody>
-        <ModalFooter sx={{ pt: 0 }}>
-          <LoadingButton
-            type="submit"
-            size="large"
-            width="100%"
-            isLoading={isTradeLoading}
-            disabled={isBlockedSupply || !form.formState.isValid}
-          >
-            {t("borrow:supply.withSymbol", {
-              symbol: userReserve.reserve.symbol,
-            })}
-          </LoadingButton>
+        <Separator />
+        <ModalFooter>
+          <AuthorizedAction size="large" width="100%">
+            <LoadingButton
+              type="submit"
+              size="large"
+              width="100%"
+              isLoading={isTradeLoading || isAssessing}
+              disabled={isBlockedSupply || !form.formState.isValid}
+            >
+              {t("borrow:supply.withSymbol", {
+                symbol,
+              })}
+            </LoadingButton>
+          </AuthorizedAction>
         </ModalFooter>
       </form>
     </FormProvider>

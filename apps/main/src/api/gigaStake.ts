@@ -1,8 +1,8 @@
 import {
   HDX_ERC20_ASSET_ID,
+  QUERY_KEY_BLOCK_PREFIX,
   STHDX_ASSET_ID,
-} from "@galacticcouncil/money-market/ui-config"
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
