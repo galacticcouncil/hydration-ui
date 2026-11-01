@@ -1,0 +1,10 @@
+
+ RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/packages/web3-connect
+
+ ✓ src/utils/ethereum.test.ts (2 tests) 5ms
+ ✓ src/signers/EthereumSigner.test.ts (4 tests) 8ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  12:26:03
+   Duration  710ms (transform 101ms, setup 0ms, collect 373ms, tests 13ms, environment 0ms, prepare 263ms)

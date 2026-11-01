@@ -37,7 +37,21 @@ import { BIL_QUERY_KEY_PREFIX } from "@/modules/strategies/bil/utils/queryKeys"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  type TransactionOptions,
+  useTransactionsStore,
+} from "@/states/transactions"
+
+type VaultWriteOptions = {
+  onSuccess?: () => void
+}
+
+const vaultWriteTxOptions = (
+  options: VaultWriteOptions,
+): TransactionOptions | undefined =>
+  options.onSuccess
+    ? { onSuccess: options.onSuccess, resolveOn: "success" }
+    : undefined
 
 interface BatchEvmCall {
   to: Hex
@@ -72,11 +86,12 @@ function buildCancelResupplyCalls(
   ]
 }
 
-function useVaultEvmCall() {
+function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   const rpc = useRpcProvider()
 
   const { account } = useAccount()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const txOptions = vaultWriteTxOptions(writeOptions)
 
   const evmAddress = safeConvertSS58toH160(account?.address ?? "") as Hex
 
@@ -106,13 +121,16 @@ function useVaultEvmCall() {
         abi: safeStringify(abi),
       }
 
-      return createTransaction({
-        tx: evmCall,
-        toasts,
-        invalidateQueries: invalidateKeys,
-      })
+      return createTransaction(
+        {
+          tx: evmCall,
+          toasts,
+          invalidateQueries: invalidateKeys,
+        },
+        txOptions,
+      )
     },
-    [evmAddress, rpc, createTransaction],
+    [evmAddress, rpc, createTransaction, txOptions],
   )
 
   const buildBatchCalls = useCallback(
@@ -164,9 +182,12 @@ function useVaultEvmCall() {
     ) => {
       const batchTx = await buildBatchTx(calls)
 
-      return createTransaction({ tx: batchTx, toasts, invalidateQueries })
+      return createTransaction(
+        { tx: batchTx, toasts, invalidateQueries },
+        txOptions,
+      )
     },
-    [buildBatchTx, createTransaction],
+    [buildBatchTx, createTransaction, txOptions],
   )
 
   return { evmAddress, submitTx, submitBatch, buildBatchTx, buildBatchCalls }
@@ -252,10 +273,10 @@ export function useDeposit() {
  * pool.withdraw burns the user's aBIL into raw BIL, then vault.requestRedeem
  * queues it. Atomic two-call batch.
  */
-export function useRequestRedeem() {
+export function useRequestRedeem(options: VaultWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
-  const { evmAddress, submitBatch } = useVaultEvmCall()
+  const { evmAddress, submitBatch } = useVaultEvmCall(options)
 
   return useMutation({
     mutationFn: (bilAmount: string) => {
@@ -351,10 +372,10 @@ export function useSupplyRawBil() {
  * wallet" recovery row. `requestRedeem(shares, controller, owner)` — the
  * caller's EVM address fills both controller and owner.
  */
-export function useRequestRedeemRaw() {
+export function useRequestRedeemRaw(options: VaultWriteOptions = {}) {
   const { t } = useTranslation(["strategies", "common"])
   const { bil } = useBilStrategy()
-  const { evmAddress, submitTx } = useVaultEvmCall()
+  const { evmAddress, submitTx } = useVaultEvmCall(options)
 
   return useMutation({
     mutationFn: (bilAmount: string) => {

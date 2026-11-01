@@ -38,7 +38,6 @@ export const PortfolioOverviewPage = () => {
   )
 
   const assetsSorting = useDataTableUrlSorting("/portfolio/", "assetsSort")
-
   const liquiditySorting = useDataTableUrlSorting(
     "/portfolio/",
     "liquiditySort",

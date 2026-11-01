@@ -1,0 +1,73 @@
+yarn run v1.22.22
+warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+$ turbo test
+warning Cannot find a suitable global folder. Tried these: "/usr/local, /home/mrq/.yarn"
+• turbo 2.9.6
+
+   • Packages in scope: @galacticcouncil/eslint-config, @galacticcouncil/indexer, @galacticcouncil/main, @galacticcouncil/money-market, @galacticcouncil/typescript-config, @galacticcouncil/ui, @galacticcouncil/utils, @galacticcouncil/web3-connect
+   • Running test in 8 packages
+   • Remote caching disabled
+
+@galacticcouncil/web3-connect:test: cache bypass, force executing 2f317a2147b210c7
+@galacticcouncil/main:test: cache bypass, force executing f2617087d47b3f91
+@galacticcouncil/main:test: yarn run v1.22.22
+@galacticcouncil/web3-connect:test: yarn run v1.22.22
+@galacticcouncil/main:test: warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+@galacticcouncil/main:test: warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+@galacticcouncil/main:test: $ vitest run
+@galacticcouncil/web3-connect:test: warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+@galacticcouncil/web3-connect:test: warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+@galacticcouncil/main:test: warning Cannot find a suitable global folder. Tried these: "/usr/local, /home/mrq/.yarn"
+@galacticcouncil/web3-connect:test: $ vitest run
+@galacticcouncil/web3-connect:test: warning Cannot find a suitable global folder. Tried these: "/usr/local, /home/mrq/.yarn"
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/packages/web3-connect
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  RUN  v3.2.7 /tmp/propeller-ui-dca-20261004/apps/main
+@galacticcouncil/main:test:
+@galacticcouncil/web3-connect:test:  ✓ src/utils/ethereum.test.ts (2 tests) 7ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/accounting.test.ts (11 tests) 6ms
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts (3 tests) 8ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/deposit.test.ts (15 tests) 19ms
+@galacticcouncil/web3-connect:test:  ✓ src/signers/EthereumSigner.test.ts (4 tests) 8ms
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/utils/amount.test.ts (2 tests) 4ms
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/web3-connect:test:  Test Files  2 passed (2)
+@galacticcouncil/web3-connect:test:       Tests  6 passed (6)
+@galacticcouncil/web3-connect:test:    Start at  13:21:48
+@galacticcouncil/web3-connect:test:    Duration  711ms (transform 218ms, setup 0ms, collect 516ms, tests 15ms, environment 0ms, prepare 291ms)
+@galacticcouncil/web3-connect:test:
+@galacticcouncil/main:test:  ✓ src/modules/strategies/propeller/hooks/useVaultReads.test.ts (4 tests) 6ms
+@galacticcouncil/web3-connect:test: Done in 1.17s.
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts (3 tests) 5ms
+@galacticcouncil/main:test: stderr | src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts
+@galacticcouncil/main:test: bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: stderr | src/modules/trade/swap/lib/quotedPrice.test.ts
+@galacticcouncil/main:test: bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: stderr | src/api/balances/account.utils.test.ts
+@galacticcouncil/main:test: bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: stderr | src/modules/transactions/utils/tx.test.ts
+@galacticcouncil/main:test: bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts (5 tests) 19ms
+@galacticcouncil/main:test:  ✓ src/modules/trade/swap/lib/quotedPrice.test.ts (18 tests) 29ms
+@galacticcouncil/main:test:  ✓ src/api/balances/account.utils.test.ts (5 tests) 3ms
+@galacticcouncil/main:test:  ✓ src/modules/transactions/utils/tx.test.ts (3 tests) 4ms
+@galacticcouncil/main:test:
+@galacticcouncil/main:test:  Test Files  10 passed (10)
+@galacticcouncil/main:test:       Tests  69 passed (69)
+@galacticcouncil/main:test:    Start at  13:21:48
+@galacticcouncil/main:test:    Duration  2.97s (transform 897ms, setup 0ms, collect 11.29s, tests 103ms, environment 2ms, prepare 940ms)
+@galacticcouncil/main:test:
+@galacticcouncil/main:test: Done in 3.41s.
+
+ Tasks:    2 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    3.656s
+
+Done in 3.73s.

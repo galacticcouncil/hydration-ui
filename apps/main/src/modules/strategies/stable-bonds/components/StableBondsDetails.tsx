@@ -1,13 +1,15 @@
 import {
   Box,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   Flex,
-  Paper,
-  ResponsiveScope,
-  SectionHeader,
   Separator,
   SummaryRow,
   Text,
   ValueStats,
+  ValueStatsGroup,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { millisecondsInDay } from "date-fns/constants"
@@ -16,13 +18,6 @@ import { useTranslation } from "react-i18next"
 import { useBondData } from "@/api/bonds"
 import { AssetLogo } from "@/components/AssetLogo"
 import { StableBondsCurrency } from "@/modules/strategies/stable-bonds/components/StableBondsCurrency"
-import {
-  SDetailsContainer,
-  SDetailsSeparator,
-  SRemaining,
-  SRemainingList,
-  SStatsGroup,
-} from "@/modules/strategies/stable-bonds/components/StableBondsDetails.styled"
 import { useStableBondsConfig } from "@/modules/strategies/stable-bonds/context/StableBondsConfigContext"
 import {
   getBondApr,
@@ -46,86 +41,80 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
   const currentApr = isSoldOut
     ? getDefaultBondApr(config.bondId)
     : getBondApr(config.bondId, timeLeft)
+  const showStats = !!currentApr && timeLeft > 0
 
   return (
-    <Paper p="l">
-      <SectionHeader
-        title={t("strategies:details.title")}
-        as="h2"
-        noTopPadding
-      />
-      <Separator mx="-l" mb="l" />
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("strategies:details.title")}</CardTitle>
+      </CardHeader>
 
-      <ResponsiveScope>
-        <SDetailsContainer justify="flex-start">
+      <CardBody>
+        <ValueStatsGroup>
           {!!orders?.length && (
-            <>
-              <SRemaining>
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t("strategies:bonds.details.remainingCapacity")}
-                </Text>
-                <SRemainingList>
+            <ValueStats
+              wrap
+              label={t("strategies:bonds.details.remainingCapacity")}
+              customValue={
+                <Flex gap="xxxl" wrap>
                   {orders.map((order) => (
                     <StableBondsCurrency key={order.id} order={order} />
                   ))}
-                </SRemainingList>
-              </SRemaining>
-              <SDetailsSeparator />
-            </>
+                </Flex>
+              }
+            />
           )}
 
-          {currentApr && timeLeft > 0 && (
-            <SStatsGroup>
-              <ValueStats
-                sx={{ alignSelf: "center" }}
-                wrap
-                label={t("apr")}
-                customValue={
-                  <Text
-                    font="primary"
-                    fs="h6"
-                    fw={600}
-                    color={getToken("accents.success.emphasis")}
-                  >
-                    {t("percent", {
-                      value: currentApr,
-                      maximumFractionDigits: 2,
-                      suffix: isSoldOut ? "+" : undefined,
-                    })}
-                  </Text>
-                }
-              />
-
-              <Separator orientation="vertical" sx={{ alignSelf: "stretch" }} />
-
-              <ValueStats
-                sx={{ alignSelf: "center" }}
-                wrap
-                label={t("strategies:bonds.details.maturityPeriod")}
-                customValue={
-                  <Text
-                    font="primary"
-                    fs="h6"
-                    fw={600}
-                    color={getToken("text.high")}
-                  >
-                    {t("interval.remaining", {
-                      value: timeLeft,
-                      largest: 1,
-                      ...(timeLeft > millisecondsInDay && { unit: "d" }),
-                    })}
-                  </Text>
-                }
-              />
-            </SStatsGroup>
+          {showStats && (
+            <ValueStats
+              sx={{ alignSelf: "center" }}
+              wrap
+              label={t("apr")}
+              customValue={
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("accents.success.emphasis")}
+                >
+                  {t("percent", {
+                    value: currentApr,
+                    maximumFractionDigits: 2,
+                    suffix: isSoldOut ? "+" : undefined,
+                  })}
+                </Text>
+              }
+            />
           )}
-        </SDetailsContainer>
-      </ResponsiveScope>
+
+          {showStats && (
+            <ValueStats
+              sx={{ alignSelf: "center" }}
+              wrap
+              label={t("strategies:bonds.details.maturityPeriod")}
+              customValue={
+                <Text
+                  font="primary"
+                  fs="h6"
+                  fw={600}
+                  color={getToken("text.high")}
+                >
+                  {t("interval.remaining", {
+                    value: timeLeft,
+                    largest: 1,
+                    ...(timeLeft > millisecondsInDay && { unit: "d" }),
+                  })}
+                </Text>
+              }
+            />
+          )}
+        </ValueStatsGroup>
+      </CardBody>
 
       {!!orders?.length && (
         <>
-          <Separator mx="-l" />
-          <Box mb="-s" pt="s" asChild>
+          <Separator />
+          <Box px="l" py="s">
             <SummaryRow
               label={t("strategies:bonds.details.fundingCurrency")}
               content={
@@ -147,6 +136,6 @@ export const StableBondsDetails: React.FC<StableBondsDetailsProps> = ({
           </Box>
         </>
       )}
-    </Paper>
+    </Card>
   )
 }

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "trace-1",
+  "createdAt": "2026-10-14T13:24:08.069Z",
+  "payload": {
+    "actions": [
+      {
+        "name": "type",
+        "summary": "type \"1000\" into textbox \"0\" (1 of 2)",
+        "target": {
+          "role": "textbox",
+          "name": "0",
+          "placeholder": "0",
+          "position": {
+            "index": 0,
+            "of": 2
+          }
+        },
+        "value": "1000"
+      }
+    ],
+    "executor": {
+      "name": "e2e-default-agent",
+      "version": "2"
+    },
+    "recordedFor": {
+      "testId": "tests/swap.e2e.ts::a%20visitor%20gets%20a%20quote%20for%20swapping%20HDX%20to%20DOT",
+      "targetId": "web",
+      "instructionDigest": "f9700771319c14bc872742222fbe054430f8b19d2bfec7dbbfccf7152ff5b3df",
+      "paramsDigest": "071a78c49b5b55fb01f67a43e40116527224efa0aebfc02ee0408303e1746e26",
+      "callIndex": 0,
+      "agent": "default"
+    },
+    "summary": "The sell amount field displays 1 000, confirming the requested amount 1000 is entered. No further action was needed.",
+    "startPath": "/trade/swap/market?tab=myActivity&assetIn=%220%22&assetOut=%225%22&destPlatform=hydration&allPairs=true",
+    "endPath": "/trade/swap/market?tab=myActivity&assetIn=%220%22&assetOut=%225%22&destPlatform=hydration&allPairs=true",
+    "endAnchors": [
+      {
+        "text": "$7.52"
+      },
+      {
+        "text": "$7.50"
+      },
+      {
+        "text": "Single trade"
+      },
+      {
+        "text": "Instant execution"
+      },
+      {
+        "text": "6.5732 DOT"
+      },
+      {
+        "text": "TWAP"
+      },
+      {
+        "text": "≈6.5733 DOT"
+      },
+      {
+        "text": "(+<$0.01)"
+      }
+    ],
+    "goneAnchors": [
+      {
+        "text": "$0.00"
+      },
+      {
+        "text": "Enter an amount"
+      },
+      {
+        "text": "15 783 109"
+      },
+      {
+        "role": "button",
+        "name": "Enter an amount"
+      },
+      {
+        "role": "button",
+        "name": "15 783 109"
+      }
+    ],
+    "endWaitMs": 39012
+  }
+}
