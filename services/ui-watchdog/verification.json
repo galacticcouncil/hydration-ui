@@ -1,0 +1,59 @@
+{
+  "observedAt": "2026-10-02T01:49:57.778Z",
+  "sourceCommit": "0c34c104c2dc6cc3a96bbdde5018fa03045b2978",
+  "node": "25.9.0",
+  "yarn": "1.22.22",
+  "vite": "8.0.10",
+  "buildImage": "node:25.9.0-bookworm@sha256:78839ac448c23517f8eab2e8f7943d9b4f73979eb7f8bed2c73dbf72ff869e7b",
+  "themeSource": "galacticcouncil/hydration-styles@732405c06e9b2d51f60ad7ef9732407cf04e0d6a/tokens.json",
+  "themeSha256": "5fa6da3037c585edf66fe1d19b14d26ad0662bbd64a8c911af354b7ec75826df",
+  "reproducibility": {
+    "outputFiles": 512,
+    "differentFiles": 0,
+    "method": "Two clean production checkouts and dependency installations. Both invoke the declared Vite 8 directly. Second build substitutes the identical pinned theme input and builds offline. App source is unchanged. This is diagnostic evidence, not an attested reference."
+  },
+  "liveComparison": {
+    "publicFilesChecked": 511,
+    "publicBytesChecked": 17312139,
+    "mismatches": 0,
+    "hostingControlFile": {
+      "path": "/_redirects",
+      "httpStatus": 404
+    },
+    "htmlSha256": "4dcae228ed0bca4a3c9b934708d441905b555b64277a01747eb98262ff35aa0e",
+    "changedDuringScan": false
+  },
+  "browser": {
+    "completedAt": "2026-10-02T01:54:11.530Z",
+    "routes": [
+      {
+        "path": "/trade/swap",
+        "rendered": true
+      },
+      {
+        "path": "/liquidity",
+        "rendered": true
+      },
+      {
+        "path": "/borrow",
+        "rendered": true
+      },
+      {
+        "path": "/portfolio",
+        "rendered": true
+      }
+    ],
+    "issues": []
+  },
+  "activation": "Runtime reference trust requires the production GitHub Actions workflow and its verified attestation; this file is not accepted as a reference.",
+  "validation": {
+    "watchdogUnitTests": 18,
+    "browserInjectionTests": 1,
+    "fullRepositoryBuild": "passed (6 workspace builds)",
+    "readOnlyContainerAttestationVerification": "passed against official GitHub CLI release attestation with no runtime credential",
+    "fullRepositoryLint": "passed",
+    "fullRepositoryTests": "passed",
+    "lateBrowserWorkerRecovery": "passed, including controller history persistence",
+    "browserErrorResponse": "passed: generic error without exception details"
+  }
+}
