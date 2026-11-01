@@ -60,6 +60,7 @@ export type TransactionCommon = {
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
   alerts?: TransactionAlert[]
+  successMode?: "best" | "finalized"
   executedAmount?: TExecutedAmount
   activity?: ActivityType
   /** When set, the review modal opens directly in the error state (no tx to sign). */
@@ -72,11 +73,11 @@ interface SingleTransactionInput extends TransactionCommon {
 
 type SingleTransactionInputDynamic = {
   tx: (
-    results: TSuccessResult[],
+    results: TTransactionResult[],
   ) => Promise<SingleTransactionInput> | SingleTransactionInput
 }
 
-type MultiTransactionConfig = (
+export type MultiTransactionConfig = (
   | SingleTransactionInput
   | SingleTransactionInputDynamic
 ) & {
@@ -172,6 +173,7 @@ export type TransactionMeta =
 
 export type TSuccessResult =
   | TxBestBlocksStateResult
+  | TxFinalizedResult
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
@@ -186,8 +188,10 @@ export type TFinalizedResult =
   | NearTxStatus
   | ZecTxStatus
 
+export type TTransactionResult = TSuccessResult | TFinalizedResult
+
 export interface TransactionActions {
-  onSuccess?: (event: TSuccessResult) => void
+  onSuccess?: (event: TTransactionResult) => void
   onSubmitted?: (txHash: string) => void
   onError?: (message: string) => void
   onClose?: () => void
@@ -227,7 +231,10 @@ export const isSingleTransaction = (
 export const isSubstrateTxResult = (
   result: TSuccessResult,
 ): result is TxBestBlocksStateResult => {
-  return "type" in result && result.type === "txBestBlocksState"
+  return (
+    "type" in result &&
+    (result.type === "txBestBlocksState" || result.type === "finalized")
+  )
 }
 
 /**

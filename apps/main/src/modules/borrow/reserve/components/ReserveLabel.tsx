@@ -20,7 +20,7 @@ export type ReserveLabelProps = {
   withName?: boolean
 }
 
-const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
+export const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
   [GDOT_ASSET_ID]: GDOT_ERC20_ID,
   [GETH_ASSET_ID]: GETH_ERC20_ID,
   [GSOL_ASSET_ID]: GSOL_ERC20_ID,
@@ -34,6 +34,7 @@ export const ReserveLabel: React.FC<ReserveLabelProps> = ({
   const assetId = isGho(reserve)
     ? GHO_ASSET_ID
     : getAssetIdFromAddress(reserve.underlyingAsset)
+
   return (
     <AssetLabelFullContainer>
       <AssetLogo
