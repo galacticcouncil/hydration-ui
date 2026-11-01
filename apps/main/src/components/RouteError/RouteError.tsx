@@ -14,7 +14,11 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useCopy } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { ErrorRouteComponent } from "@tanstack/react-router"
+import {
+  ErrorRouteComponent,
+  rootRouteId,
+  useMatch,
+} from "@tanstack/react-router"
 import { CheckIcon, CopyIcon, RefreshCwIcon } from "lucide-react"
 import { Trans, useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
@@ -27,6 +31,10 @@ import { useAssets } from "@/providers/assetsProvider"
 import { stringifyErrorContext } from "@/utils/errors"
 
 export const RouteError: ErrorRouteComponent = ({ error }) => {
+  const isRootError = useMatch({
+    strict: false,
+    select: (match) => match.routeId === rootRouteId,
+  })
   const { t } = useTranslation()
   const { copied, copy } = useCopy(5000)
   const { account } = useAccount()
@@ -49,7 +57,13 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
   })
 
   return (
-    <Flex height={["auto", "50vh"]} justify="center" align="center" p="xl">
+    <Flex
+      height={isRootError ? "auto" : ["auto", "50vh"]}
+      sx={{ minHeight: isRootError ? "100dvh" : undefined }}
+      justify="center"
+      align="center"
+      p="xl"
+    >
       <Stack gap="l" align="center" maxWidth="6xl">
         <Image
           src={Caution3D}
@@ -73,7 +87,7 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
           </Text>
         </Stack>
 
-        <Flex gap="base">
+        <Flex gap="base" wrap justify="center">
           <Button
             variant="tertiary"
             size="medium"

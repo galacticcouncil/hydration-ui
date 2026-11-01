@@ -15,6 +15,7 @@ import {
   SCircle,
   SCompactStepperLayout,
   SExpandedStepperLayout,
+  SStepButton,
   SStepContainer,
   SStepLabel,
   SStepperContainer,
@@ -25,17 +26,25 @@ export type StepperProps = Omit<BoxProps, "width"> & {
   steps: Array<string>
   activeStepIndex: number
   compact?: "auto" | boolean
+  onStepClick?: (index: number) => void
 }
 
 type StepProps = BoxProps & {
   label: string
   state: StepState
   number: number
+  hideLabel?: boolean
 }
 
 const AUTO_COMPACT_STEP_THRESHOLD = 5
 
-const Step: React.FC<StepProps> = ({ label, state, number, ...props }) => (
+const Step: React.FC<StepProps> = ({
+  label,
+  state,
+  number,
+  hideLabel,
+  ...props
+}) => (
   <SStepContainer {...props}>
     <SCircle state={state}>
       {state === StepState.Done ? (
@@ -44,15 +53,17 @@ const Step: React.FC<StepProps> = ({ label, state, number, ...props }) => (
         number
       )}
     </SCircle>
-    <SStepLabel
-      color={
-        state === StepState.Active
-          ? getToken("text.tint.secondary")
-          : getToken("text.medium")
-      }
-    >
-      {label}
-    </SStepLabel>
+    {!hideLabel && (
+      <SStepLabel
+        color={
+          state === StepState.Active
+            ? getToken("text.tint.secondary")
+            : getToken("text.medium")
+        }
+      >
+        {label}
+      </SStepLabel>
+    )}
   </SStepContainer>
 )
 
@@ -60,6 +71,7 @@ export const Stepper: React.FC<StepperProps> = ({
   steps,
   activeStepIndex,
   compact = "auto",
+  onStepClick,
   maxWidth,
   className,
   ...props
@@ -79,6 +91,49 @@ export const Stepper: React.FC<StepperProps> = ({
 
   const currentLabel = steps[currentIndex] ?? ""
 
+  const renderStep = (label: string, index: number, hideLabel = false) => {
+    const state = getStepState(index, activeStepIndex)
+
+    if (onStepClick) {
+      return (
+        <SStepButton
+          aria-label={label}
+          aria-current={index === currentIndex ? "step" : undefined}
+          onClick={() => onStepClick(index)}
+        >
+          <SCircle as="span" state={state}>
+            {state === StepState.Done ? (
+              <Icon component={CheckIcon} size="s" />
+            ) : (
+              index + 1
+            )}
+          </SCircle>
+          {!hideLabel && (
+            <SStepLabel
+              as="span"
+              color={
+                state === StepState.Active
+                  ? getToken("text.tint.secondary")
+                  : getToken("text.medium")
+              }
+            >
+              {label}
+            </SStepLabel>
+          )}
+        </SStepButton>
+      )
+    }
+
+    return (
+      <Step
+        label={label}
+        hideLabel={hideLabel}
+        number={index + 1}
+        state={state}
+      />
+    )
+  }
+
   return (
     <SStepperContainer className={className} {...props}>
       {isCompact ? (
@@ -88,12 +143,14 @@ export const Stepper: React.FC<StepperProps> = ({
           </Text>
           <Flex gap="s">
             {steps.map((label, index) => (
-              <Tooltip key={index} text={label} side="top" asChild>
-                <Step
-                  label={label}
-                  number={index + 1}
-                  state={getStepState(index, activeStepIndex)}
-                />
+              <Tooltip
+                key={index}
+                text={label}
+                side="top"
+                size={onStepClick ? "small" : undefined}
+                asChild
+              >
+                {renderStep(label, index, true)}
               </Tooltip>
             ))}
           </Flex>
@@ -102,11 +159,7 @@ export const Stepper: React.FC<StepperProps> = ({
         <SExpandedStepperLayout maxWidth={maxWidth}>
           {steps.map((label, index) => (
             <Fragment key={index}>
-              <Step
-                label={label}
-                number={index + 1}
-                state={getStepState(index, activeStepIndex)}
-              />
+              {renderStep(label, index)}
               {index < steps.length - 1 && <SStepperLine />}
             </Fragment>
           ))}

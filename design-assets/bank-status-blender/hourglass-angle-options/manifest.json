@@ -1,0 +1,122 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/bank-status-blender/colonnade-options/A-front-back-right.blend",
+  "sourceSha256": "95f9c06792feaeef1afa8250f289f0178ff57148b1d75888a704071eb81f16fa",
+  "geometrySha256": "2c5d9957e2b5f1d041eddff09eb3ba4d05dca652c13c8007f852cd3b4319e406",
+  "hourglassCameraReference": {
+    "cameraLocation": [
+      -3.5999999046325684,
+      -8.0,
+      0.550000011920929
+    ],
+    "cameraQuaternion": [
+      0.6569889187812805,
+      0.7211101651191711,
+      -0.19138577580451965,
+      -0.10833826661109924
+    ],
+    "cameraType": "ORTHO",
+    "orthoScale": 3.450000047683716,
+    "matrixWorld": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "changes": "Camera position, roll, framing and output quality only. Selected A geometry, palette and studio preserved.",
+  "options": [
+    {
+      "label": "A1-hourglass-left",
+      "cameraLocation": [
+        -3.5999999046325684,
+        -8.0,
+        0.44999998807907104
+      ],
+      "cameraQuaternion": [
+        0.6569889187812805,
+        0.7211101651191711,
+        -0.19138577580451965,
+        -0.10833826661109924
+      ],
+      "rollDegrees": 5.5,
+      "geometryPreserved": true,
+      "render": "A1-hourglass-left.png",
+      "blend": "A1-hourglass-left.blend"
+    },
+    {
+      "label": "A2-hourglass-right",
+      "cameraLocation": [
+        3.5999999046325684,
+        -8.0,
+        0.44999998807907104
+      ],
+      "cameraQuaternion": [
+        0.6569889187812805,
+        0.7211101651191711,
+        0.19138577580451965,
+        0.10833825170993805
+      ],
+      "rollDegrees": -5.5,
+      "geometryPreserved": true,
+      "render": "A2-hourglass-right.png",
+      "blend": "A2-hourglass-right.blend"
+    },
+    {
+      "label": "A3-soft-left",
+      "cameraLocation": [
+        -4.800000190734863,
+        -8.0,
+        1.649999976158142
+      ],
+      "cameraQuaternion": [
+        0.697072446346283,
+        0.6643725633621216,
+        -0.2188442498445511,
+        -0.15749968588352203
+      ],
+      "rollDegrees": 5.5,
+      "geometryPreserved": true,
+      "render": "A3-soft-left.png",
+      "blend": "A3-soft-left.blend"
+    },
+    {
+      "label": "A4-soft-right",
+      "cameraLocation": [
+        3.799999952316284,
+        -8.0,
+        2.6500000953674316
+      ],
+      "cameraQuaternion": [
+        0.7258545160293579,
+        0.6480230689048767,
+        0.11372597515583038,
+        0.20066788792610168
+      ],
+      "rollDegrees": 5.5,
+      "geometryPreserved": true,
+      "render": "A4-soft-right.png",
+      "blend": "A4-soft-right.blend"
+    }
+  ],
+  "sourceUnchanged": true
+}

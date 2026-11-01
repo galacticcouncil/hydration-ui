@@ -2,8 +2,10 @@ import { h160 } from "@galacticcouncil/common"
 import { MultiSignature } from "@galacticcouncil/descriptors"
 import { DOT_ASSET_ID } from "@galacticcouncil/utils"
 import {
+  getAccountSigner,
   isPolkadotSigner,
   useAccount,
+  useAccountOverride,
   useWallet,
 } from "@galacticcouncil/web3-connect"
 import { AccountId, compactNumber } from "@polkadot-api/substrate-bindings"
@@ -192,6 +194,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
   const { t } = useTranslation(["common"])
   const { papi } = useRpcProvider()
   const { account } = useAccount()
+  const accountOverride = useAccountOverride()
   const wallet = useWallet()
 
   const { createTransaction } = useTransactionsStore()
@@ -211,9 +214,13 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
         nonce === 0 && providers === 0 && sufficients === 0
 
       const getTx = async (): Promise<AnyPapiTx> => {
-        if (isUnclaimedAccount && isPolkadotSigner(wallet?.signer)) {
+        const signer =
+          accountOverride !== undefined
+            ? wallet && getAccountSigner(wallet, account)
+            : wallet?.signer
+        if (isUnclaimedAccount && isPolkadotSigner(signer)) {
           const message = getEvmAccountClaimMessage(account.address, assetId)
-          const signature = await wallet.signer.signBytes(message)
+          const signature = await signer.signBytes(message)
 
           return papi.tx.EVMAccounts.claim_account({
             account: account.address,
@@ -229,6 +236,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
 
       return createTransaction(
         {
+          signingAccount: accountOverride ? account : undefined,
           ...(isUnclaimedAccount
             ? { isUnsigned: true }
             : { withExtraGas: isErc20(asset) }),

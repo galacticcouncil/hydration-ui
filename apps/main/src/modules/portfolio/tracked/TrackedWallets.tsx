@@ -1,5 +1,5 @@
 import { Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
-import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWallet.webp"
+import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWalletGlasses.webp"
 import {
   Button,
   Flex,

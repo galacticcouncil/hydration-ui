@@ -35,6 +35,12 @@ const TransactionManager = lazy(async () => ({
   ),
 }))
 
+const OnrampModal = lazy(async () => ({
+  default: await import("@/modules/onramp/OnrampModal").then(
+    (m) => m.OnrampModal,
+  ),
+}))
+
 const Web3ConnectModal = lazy(async () => ({
   default: await import("@galacticcouncil/web3-connect").then(
     (m) => m.Web3ConnectModal,
@@ -137,6 +143,11 @@ function Services() {
     <>
       <Suspense fallback={null}>
         <TransactionManager />
+      </Suspense>
+      <Suspense fallback={null}>
+        <OnrampModal />
+      </Suspense>
+      <Suspense fallback={null}>
         <Web3ConnectSession />
         <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
       </Suspense>

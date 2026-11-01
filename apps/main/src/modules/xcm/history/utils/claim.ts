@@ -356,7 +356,11 @@ export function resolveChainFromUrn(
         return isSuiChain(c) && c.id === chainId
       case ChainEcosystem.Polkadot:
       case ChainEcosystem.Kusama:
-        return isAnyParachain(c) && c.parachainId === Number(chainId)
+        return (
+          isAnyParachain(c) &&
+          c.ecosystem === ecosystem &&
+          c.parachainId === Number(chainId)
+        )
       // xc-scan files NEAR under XCSCAN_NEAR_ID and indexes mainnet only;
       // near_testnet shares the wormhole id behind it, so pin mainnet by key.
       case ChainEcosystem.Near:

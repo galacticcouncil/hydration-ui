@@ -12,7 +12,11 @@ import {
   WalletMode,
 } from "@/config/wallet"
 import { getUniqueAccountKey } from "@/utils/wallet"
-import { ExternalWallet, getWallet } from "@/wallets"
+import {
+  getConflictingWalletProviders,
+  getExclusiveWalletProviderTypes,
+} from "@/utils/walletSource"
+import { ExternalWallet, getWallet, getWallets } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {
@@ -50,9 +54,12 @@ export type Account = StoredAccount & {
 }
 
 export type Web3ConnectModalMeta = {
+  closable?: boolean
   title?: string
   description?: string
+  hideAccountFilters?: boolean
   hideExternalWallet?: boolean
+  hideMultisig?: boolean
   initialPage?: Web3ConnectModalPage
   initialProvider?: WalletProviderType
 }
@@ -82,6 +89,9 @@ export type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: Web3ConnectModalMeta) => void
   setAccount: (account: StoredAccount | null) => void
   setAccounts: (accounts: StoredAccount[], type: WalletProviderType) => void
+  connectProvider: (accounts: StoredAccount[], type: WalletProviderType) => void
+  cancelPendingProvider: (type: WalletProviderType) => void
+  normalizeProviders: () => void
   setBalances: (balances: ReadonlyMap<string, number>) => void
   setStatus: (
     provider: WalletProviderType | null,
@@ -141,6 +151,96 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           return {
             ...state,
             accounts: newAccounts,
+          }
+        }),
+      connectProvider: (accounts, type) =>
+        set((state) => {
+          const conflicts = getConflictingWalletProviders(getWallets(), type)
+          const remainingAccounts = state.accounts.filter(
+            (account) =>
+              account.provider !== type &&
+              !conflicts.includes(account.provider),
+          )
+          const activeSignerAddress = state.account?.isMultisig
+            ? state.account.multisigSignerAddress
+            : state.account?.address
+          const replacesActive =
+            !!state.account &&
+            (conflicts.includes(state.account.provider) ||
+              (state.account.provider === type &&
+                !accounts.some(
+                  (account) => account.address === activeSignerAddress,
+                )))
+          return {
+            accounts: uniqueBy(
+              [...remainingAccounts, ...accounts],
+              getUniqueAccountKey,
+            ),
+            providers: [
+              ...state.providers.filter(
+                (provider) =>
+                  provider.type !== type && !conflicts.includes(provider.type),
+              ),
+              { type, status: WalletProviderStatus.Connected },
+            ],
+            account: replacesActive
+              ? (accounts[0] ?? remainingAccounts[0] ?? null)
+              : state.account,
+            restoreStates: omit(state.restoreStates, [...conflicts, type]),
+            recentProvider: type,
+            error: "",
+          }
+        }),
+      cancelPendingProvider: (type) =>
+        set((state) => {
+          if (state.getStatus(type) !== WalletProviderStatus.Pending)
+            return state
+          const accounts = state.accounts.filter(
+            (account) => account.provider !== type,
+          )
+          return {
+            providers: state.providers.filter(
+              (provider) => provider.type !== type,
+            ),
+            accounts,
+            account:
+              state.account?.provider === type
+                ? (accounts[0] ?? null)
+                : state.account,
+            restoreStates: omit(state.restoreStates, [type]),
+          }
+        }),
+      normalizeProviders: () =>
+        set((state) => {
+          const connected = state.providers
+            .filter(
+              (provider) => provider.status === WalletProviderStatus.Connected,
+            )
+            .map((provider) => provider.type)
+          const retained = getExclusiveWalletProviderTypes(
+            getWallets(),
+            connected,
+            [
+              ...(state.account ? [state.account.provider] : []),
+              ...state.recentlyUsedProviders,
+              ...(state.recentProvider ? [state.recentProvider] : []),
+            ],
+          )
+          const removed = connected.filter((type) => !retained.includes(type))
+          if (!removed.length) return state
+          const accounts = state.accounts.filter(
+            (account) => !removed.includes(account.provider),
+          )
+          return {
+            providers: state.providers.filter(
+              (provider) => !removed.includes(provider.type),
+            ),
+            accounts,
+            account:
+              state.account && removed.includes(state.account.provider)
+                ? (accounts[0] ?? null)
+                : state.account,
+            restoreStates: omit(state.restoreStates, removed),
           }
         }),
       setAccount: (account) => {

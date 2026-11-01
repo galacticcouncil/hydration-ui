@@ -56,7 +56,7 @@ export function resolveAssetIcon(key: string) {
 
   const [networkUrn, assetUrn] = key.split("|")
 
-  if (!networkUrn || !assetUrn) {
+  if (!networkUrn || assetUrn === undefined) {
     return
   }
 

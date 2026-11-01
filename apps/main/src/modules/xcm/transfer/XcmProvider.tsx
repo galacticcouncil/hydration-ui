@@ -23,10 +23,17 @@ import {
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
-import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
+import {
+  useXcmForm,
+  UseXcmFormOptions,
+} from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
+import {
+  getAutomaticBridgeProvider,
+  resolveAutomaticBridgeRoute,
+} from "@/modules/xcm/transfer/utils/automaticRoute"
 import {
   isOmniRoute,
   resolveValidBridgeProvider,
@@ -50,15 +57,23 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
   children: React.ReactNode
+  formOptions?: UseXcmFormOptions
+  destinationChainKey?: string
+  automaticBridgeSelection?: boolean
 }
 
-export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
+export const XcmProvider: React.FC<XcmProviderProps> = ({
+  children,
+  formOptions,
+  destinationChainKey,
+  automaticBridgeSelection = false,
+}) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
   const { rpcUrl, rpcUrlList } = useProviderRpcUrlStore()
 
-  const form = useXcmForm(transfer)
+  const form = useXcmForm(transfer, formOptions)
 
   const configService = useCrossChainConfigService()
 
@@ -89,11 +104,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         .filter((asset) => {
           if (!isRouted) return false
           const assetSource = config.asset(asset).source(chain)
-          return assetSource.destinationChains.length > 0
+          return assetSource.destinationChains.some(
+            (destination) =>
+              !destinationChainKey || destination.key === destinationChainKey,
+          )
         })
       return { chain, routes: [], assets, isTagSelect: false }
-    })
-  }, [config, configService])
+    }).filter(({ assets }) => !destinationChainKey || assets.length > 0)
+  }, [config, configService, destinationChainKey])
 
   const destChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     const { routes } = configService
@@ -110,7 +128,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       .filter(
         (a) =>
           a.source.asset.key === srcAsset.key &&
-          destWhitelist.has(a.destination.chain.key),
+          destWhitelist.has(a.destination.chain.key) &&
+          (!destinationChainKey ||
+            a.destination.chain.key === destinationChainKey),
       )
       .map((a) => a.destination.chain)
 
@@ -122,7 +142,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
       return { chain, routes, assets: destinationAssets, isTagSelect }
     })
-  }, [config, srcAsset, srcChain, configService])
+  }, [config, srcAsset, srcChain, configService, destinationChainKey])
 
   const destPair = destChainAssetPairs.find(
     (p) => p.chain.key === destChain?.key,
@@ -144,9 +164,28 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     return forDestAsset.length > 1 ? forDestAsset : []
   }, [destPair, destAsset?.key])
 
+  const automaticRoute = useMemo(
+    () =>
+      automaticBridgeSelection && destPair && destAsset
+        ? resolveAutomaticBridgeRoute(destPair.routes, destAsset)
+        : null,
+    [automaticBridgeSelection, destPair, destAsset],
+  )
+  const effectiveBridgeProvider = automaticBridgeSelection
+    ? getAutomaticBridgeProvider(automaticRoute)
+    : bridgeProvider
   const selectedRoute = useMemo(
-    () => resolveSelectedRoute(destPair, destAsset, bridgeProvider),
-    [destPair, destAsset, bridgeProvider],
+    () =>
+      automaticBridgeSelection
+        ? automaticRoute
+        : resolveSelectedRoute(destPair, destAsset, bridgeProvider),
+    [
+      automaticBridgeSelection,
+      automaticRoute,
+      destPair,
+      destAsset,
+      bridgeProvider,
+    ],
   )
 
   const isOmni = isOmniRoute(selectedRoute)
@@ -160,6 +199,12 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (!destPair || !destAsset) return
+
+    if (automaticBridgeSelection) {
+      if (effectiveBridgeProvider !== bridgeProvider)
+        form.setValue("bridgeProvider", effectiveBridgeProvider)
+      return
+    }
 
     const matchingRoutes = destPair.routes.filter(
       (r) => r.destination.asset.key === destAsset.key,
@@ -176,7 +221,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     if (validProvider !== bridgeProvider) {
       form.setValue("bridgeProvider", validProvider)
     }
-  }, [bridgeProvider, destPair, destAsset, form])
+  }, [
+    automaticBridgeSelection,
+    effectiveBridgeProvider,
+    bridgeProvider,
+    destPair,
+    destAsset,
+    form,
+  ])
 
   useEffect(() => {
     const bestDest = resolveBestDestination(
@@ -238,8 +290,18 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const transferArgs = useMemo(() => {
     if (!isDestSynced) return null
 
-    return getXcmTransferArgs(account, values)
-  }, [account, isDestSynced, values])
+    return getXcmTransferArgs(
+      account,
+      { ...values, bridgeProvider: effectiveBridgeProvider },
+      { automaticBridgeSelection },
+    )
+  }, [
+    account,
+    isDestSynced,
+    values,
+    effectiveBridgeProvider,
+    automaticBridgeSelection,
+  ])
 
   const {
     transfer: xcmTransfer,

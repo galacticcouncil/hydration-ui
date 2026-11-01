@@ -1,0 +1,59 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/status-icons.blend",
+  "sourceSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+  "sourceUnchangedByRender": true,
+  "renders": [
+    {
+      "scene": "03 - Review Inbox",
+      "render": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-1024.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "samples": 128,
+      "engine": "CYCLES",
+      "sha256": "453b73fc40e17e49df3f70b08e4c790e0c6329020d575b5c917f5fce973d6e55",
+      "clockGeometry": [],
+      "preview512": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-512.png"
+    },
+    {
+      "scene": "04 - Review Document Clock",
+      "render": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/clock-review/document-clock-1024.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "samples": 128,
+      "engine": "CYCLES",
+      "sha256": "3077d34aee587770cbdea5ba5af60ee7c69c5f03804d7fc7da34813b38611d36",
+      "clockGeometry": [
+        {
+          "object": "Clock - Rounded lavender casing and bezel",
+          "vertices": 7682,
+          "nonManifoldEdges": 0
+        },
+        {
+          "object": "Clock - Recessed ivory face",
+          "vertices": 2562,
+          "nonManifoldEdges": 0
+        },
+        {
+          "object": "Clock - Rounded blue minute hand",
+          "vertices": 1538,
+          "nonManifoldEdges": 0
+        },
+        {
+          "object": "Clock - Rounded blue hour hand",
+          "vertices": 1538,
+          "nonManifoldEdges": 0
+        },
+        {
+          "object": "Clock - Soft blue center pin",
+          "vertices": 1986,
+          "nonManifoldEdges": 0
+        }
+      ],
+      "preview512": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/clock-review/document-clock-512.png"
+    }
+  ]
+}

@@ -64,6 +64,7 @@ export type TransferPositionFormValues = z.infer<ReturnType<typeof useSchema>>
 
 type Props = {
   readonly assetId?: string
+  readonly defaultAddress?: string
 }
 
 export const useTransferPosition = (props?: Props) => {
@@ -73,7 +74,7 @@ export const useTransferPosition = (props?: Props) => {
   const asset = props?.assetId ? (getAsset(props.assetId) ?? null) : null
 
   const defaultValues: TransferPositionFormValues = {
-    address: "",
+    address: props?.defaultAddress ?? "",
     asset: asset,
     amount: "",
   }

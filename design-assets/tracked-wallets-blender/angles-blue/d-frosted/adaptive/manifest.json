@@ -1,0 +1,22 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/tracked-wallets-blender/angles-blue/d-frosted/d-frosted.blend",
+  "sourceSha256": "502d578b5bbf8be73965f3503b1a97dba34192e9f08808cb2f40c5562c4a7354",
+  "sourceUnchanged": true,
+  "camera": "CAMERA D - Three-quarter right",
+  "glassRoughness": 0.26,
+  "transparentGlassRoughnessThreshold": 0.5,
+  "render": "d-adaptive-1024.png",
+  "blend": "d-adaptive.blend",
+  "previewBackgrounds": {
+    "dark": "#0D1525",
+    "light": "#ffffff"
+  },
+  "lensSampleRGBA": [
+    104,
+    113,
+    124,
+    46
+  ],
+  "transparentPixels": 104136,
+  "renderSha256": "c914186091c24a9079b235193af6b4414f4228f506897f0f60b44d8db89d8adf"
+}

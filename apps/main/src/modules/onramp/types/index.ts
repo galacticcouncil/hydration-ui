@@ -28,12 +28,19 @@ export enum DepositMethod2 {
 export enum OnrampScreen {
   MethodSelect = "MethodSelect",
 
+  DepositOnchainWallet = "DepositOnchainWallet",
+  DepositOnchainAsset = "DepositOnchainAsset",
+  DepositOnchainForm = "DepositOnchainForm",
+  DepositOnchainRecipient = "DepositOnchainRecipient",
   DepositAssetSelect = "DepositAssetSelect",
   DepositAsset = "DepositAsset",
   DepositTransfer = "DepositTransfer",
   DepositBank = "DepositBank",
   DepositSuccess = "DepositSuccess",
 
+  WithdrawOnchainWallet = "WithdrawOnchainWallet",
+  WithdrawOnchainAsset = "WithdrawOnchainAsset",
+  WithdrawOnchainForm = "WithdrawOnchainForm",
   WithdrawAssetSelect = "WithdrawAssetSelect",
   WithdrawAsset = "WithdrawAsset",
   WithdrawTransfer = "WithdrawTransfer",
