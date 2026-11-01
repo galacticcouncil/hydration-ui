@@ -4,6 +4,7 @@ import { useState } from "react"
 import { getToken } from "@/utils"
 
 import { Box } from "../Box"
+import { Chip } from "../Chip"
 import { Logo } from "../Logo"
 import { Stack } from "../Stack"
 import { AssetInput, AssetInputProps } from "./AssetInput"
@@ -116,4 +117,21 @@ export const AllStates: Story = {
       </Stack>
     </Frame>
   ),
+}
+
+export const WithAssetBadge: Story = {
+  render,
+  args: {
+    asset: {
+      symbol: "ETH",
+      icon: (
+        <Logo src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/v2/polkadot/2034/assets/34/icon.svg" />
+      ),
+      badge: (
+        <Chip variant="amber" size="extra-small" rounded>
+          Juicer
+        </Chip>
+      ),
+    },
+  },
 }

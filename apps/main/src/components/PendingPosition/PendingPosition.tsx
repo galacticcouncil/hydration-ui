@@ -21,8 +21,11 @@ import {
 } from "@/components/PendingPosition/PendingPosition.styled"
 
 export type PendingPositionStat = {
-  label: string
+  /** omitted for a two-line stat that mirrors the amount column */
+  label?: string
   value: ReactNode
+  /** small secondary line under the value */
+  bottomLabel?: string
   tooltip?: string
 }
 
@@ -58,10 +61,12 @@ export const PendingPosition: FC<PendingPositionProps> = ({
       <SMobileSeparator />
       <SActionsGroup>
         <SStatusSection>
-          {stats?.map((stat) => (
-            <SStat key={stat.label}>
+          {stats?.map((stat, index) => (
+            <SStat key={stat.label ?? index}>
               <ValueStats
                 label={stat.label}
+                customLabel={stat.label === undefined ? <></> : undefined}
+                bottomLabel={stat.bottomLabel}
                 customValue={
                   <Flex align="center" gap="s">
                     <Text
