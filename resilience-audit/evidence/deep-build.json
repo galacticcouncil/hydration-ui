@@ -1,0 +1,54 @@
+{
+  "scope": "Build inputs are separately recorded; they do not become runtime APIs in a deployed bundle.",
+  "dependencies": [
+    {
+      "id": "build-style-tokens",
+      "label": "Build time Hydration style tokens",
+      "runtimeStatus": "build",
+      "endpoints": ["https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json"],
+      "consumerPackages": ["@galacticcouncil/ui", "style-dictionary"],
+      "versions": {"@galacticcouncil/ui": "0.0.0 (workspace)", "style-dictionary": "4.4.0"},
+      "requiredness": "UI workspace build and theme generation fetch the mutable style-token source before generating local theme JSON. The running deployed UI uses bundled generated tokens.",
+      "failures": {
+        "network": "Rejected fetch prevents a fresh theme build. No application deadline is supplied for fetch or body parsing.",
+        "malformed": "HTTP status is not checked before parsing response text as JSON. Invalid JSON or incompatible token shape fails the build/generation step.",
+        "stale": "Branch URL is mutable and not pinned by yarn.lock. This affects build reproducibility, not the availability of a running bundle.",
+        "recovery": "Build can be rerun after recovery; the script does not select a local cached source on fetch failure."
+      },
+      "existingProtections": ["Generated theme JSON is bundled for runtime; deployed rendering has no live style-token request."],
+      "remediation": ["Pin or vendor the style-token input and make local generation reproducible independently of public GitHub availability."],
+      "confidence": "Source traced; ordinary workspace build succeeded. No build outage was injected.",
+      "evidence": [
+        {"path": "packages/ui/style-dictionary/build.mjs", "line": 37, "note": "fetchTokens downloads style tokens during theme generation."},
+        {"path": "packages/ui/style-dictionary/build.mjs", "line": 51, "note": "run awaits tokens before generating local files."},
+        {"path": "packages/ui/package.json", "line": 13, "note": "UI build runs yarn theme first."}
+      ],
+      "testRefs": []
+    },
+    {
+      "id": "build-asset-colors",
+      "label": "Optional asset color generation inputs",
+      "runtimeStatus": "build",
+      "endpoints": ["https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master/assets-v2.json", "Icon resources resolved from the asset metadata repository"],
+      "consumerPackages": ["@galacticcouncil/ui"],
+      "versions": {"@galacticcouncil/ui": "0.0.0 (workspace)"},
+      "requiredness": "Explicit assets:colors generation command, separate from ordinary theme/build. Runtime consumes checked-in assetColors.json and does not generate colors by requesting icons.",
+      "failures": {
+        "network": "The manual generation command depends on repository metadata and downloaded image inputs. Fetch has no application deadline.",
+        "malformed": "JSON/image processing can reject the generation command or individual logo extraction; runtime colors already in the bundle are unaffected.",
+        "recovery": "Rerun manual generation with working inputs. Runtime does not await this command."
+      },
+      "existingProtections": ["Checked-in generated color map; concurrency cap eight for generation work; fixed color overrides."],
+      "remediation": ["Pin input revisions and bound fetch/body/image work when regenerating colors."],
+      "confidence": "Source traced; no generation outage injected.",
+      "evidence": [
+        {"path": "packages/ui/scripts/generate-asset-colors.mjs", "line": 10, "note": "Public repository metadata input and generation configuration."},
+        {"path": "packages/ui/scripts/generate-asset-colors.mjs", "line": 157, "note": "Generation fetch helper."},
+        {"path": "packages/ui/scripts/generate-asset-colors.mjs", "line": 298, "note": "Writes generated assetColors.json."},
+        {"path": "packages/ui/package.json", "line": 20, "note": "Separate assets:colors command."}
+      ],
+      "testRefs": []
+    }
+  ],
+  "newFindings": []
+}
