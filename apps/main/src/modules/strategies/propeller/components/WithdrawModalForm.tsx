@@ -128,13 +128,15 @@ export const WithdrawModalForm = ({ vault, onSuccess }: Props) => {
   const tooSmall = !redeemsShares && Big(amount || "0").gt(0)
   const canSubmit =
     formState.isValid && redeemsShares && !redeem.isPending && !blockedReason
-  // the typed amount, or the whole position while nothing is typed: either
-  // way it's what this request adds to the queue, in collateral units
+  // what this request adds to the queue, in collateral units; the wait
+  // grows with it, so nothing typed gets no estimate
+  const hasAmount = Big(amount || "0").gt(0)
   const { seconds: claimableIn, reserveShort } = estimate(
-    Number(Big(amount || maxAssets || "0").div(rate)),
+    Number(Big(amount || "0").div(rate)),
   )
   // an amount the form rejects gets no estimate
   const showEta =
+    hasAmount &&
     !blockedReason &&
     claimableIn !== null &&
     !formState.errors.amount &&
