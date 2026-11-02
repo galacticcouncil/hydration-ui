@@ -1,16 +1,16 @@
 import {
   Chip,
   type ChipProps,
-  Flex,
   LoadingButton,
-  Text,
-  ValueStatsLabel,
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { type FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { PendingPosition } from "@/components/PendingPosition"
+import {
+  PendingPosition,
+  type PendingPositionStat,
+} from "@/components/PendingPosition"
 import { ClaimModal } from "@/modules/strategies/propeller/components/ClaimModal"
 import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
 import { type PropellerWithdrawalRow } from "@/modules/strategies/propeller/hooks/usePropellerAccount"
@@ -78,89 +78,53 @@ export const WithdrawalPosition: FC<WithdrawalPositionProps> = ({ row }) => {
     maximumFractionDigits: 4,
   })
   const hasClaimed = row.claimedEth > 0
-  const allClaimableIn = row.reserveShort
-    ? t("withdrawals.eta.reserve")
-    : eta
-      ? t("withdrawals.eta.all", { eta })
-      : undefined
-  // before the first claim what is left is the whole withdrawal: the row
-  // only says when, as while it is queued
-  const showsWhen =
-    (status === "pending" || (status === "settling" && !hasClaimed)) &&
-    (row.reserveShort || eta)
-  const stats = showsWhen
-    ? [
-        {
-          // label above the value at every width: beside the value and
-          // the chip, the label leaves a narrow phone no room
-          value: (
-            <Flex direction="column" align="flex-end">
-              <ValueStatsLabel>{t("withdrawals.eta.label")}</ValueStatsLabel>
-              <Text as="span" whiteSpace="nowrap">
-                {row.reserveShort ? t("withdrawals.eta.reserveShort") : eta}
-              </Text>
-            </Flex>
-          ),
+  const claimedAmount = t("common:currency", {
+    value: row.claimedEth,
+    symbol,
+    maximumFractionDigits: 4,
+  })
+  const etaStat: PendingPositionStat | null =
+    row.reserveShort || eta
+      ? {
+          label:
+            hasClaimed || status === "claimable"
+              ? t("withdrawals.eta.allLabel")
+              : t("withdrawals.eta.label"),
+          value: row.reserveShort ? t("withdrawals.eta.reserveShort") : eta,
           tooltip: row.reserveShort
             ? t("withdrawals.eta.reserveTooltip")
             : undefined,
-        },
-      ]
-    : // a claim button stands where the stat goes, and next to it the stat
-      // overflows the card — show it only while there is no button
-      status === "settling" && left > 0
-      ? [
-          {
-            value: t("withdrawals.left", { amount: leftAmount }),
-            bottomLabel: allClaimableIn,
-          },
-        ]
-      : undefined
-
-  // what already reached the wallet, beside the USD value
-  const claimed = hasClaimed
-    ? t("withdrawals.claimedSoFar", {
-        amount: t("common:currency", {
-          value: row.claimedEth,
-          symbol,
-          maximumFractionDigits: 4,
-        }),
-      })
-    : null
-  // a partly claimable row has its Claim button where the stat goes, so what
-  // is left gets its own line under the USD one
-  const rest =
-    status === "claimable" && row.state === "partial" && allClaimableIn
-      ? hasClaimed
-        ? t("withdrawals.leftAll", { amount: leftAmount, all: allClaimableIn })
-        : allClaimableIn
+        }
       : null
+  const stats: PendingPositionStat[] = [
+    hasClaimed && {
+      label: t("withdrawals.stat.claimed"),
+      value: claimedAmount,
+    },
+    hasClaimed &&
+      left > 0 && { label: t("withdrawals.stat.left"), value: leftAmount },
+    etaStat,
+  ].filter((stat): stat is PendingPositionStat => !!stat)
   // the contract keeps only when the unwind may start; the request came one
   // withdrawal delay earlier (exact while the delay is unchanged). It tells
-  // apart otherwise identical rows, quietly, on the USD line — only where
-  // nothing else does: an in-progress row already says when.
-  const amountMeta =
-    claimed || rest || vaultStats === undefined || stats !== undefined
-      ? // a narrow phone wraps the line between its parts, never inside one
-        [usd, claimed]
-          .filter((part): part is string => !!part)
-          .map((part) => part.replace(/ /g, "\u00a0"))
-          // the dot stays with the part before it
-          .join("\u00a0· ")
-      : t("withdrawals.amountMeta", {
-          usd,
-          requested: new Date(
-            row.eligibleAt - vaultStats.withdrawalDelay * 1000,
-          ),
-        })
+  // apart otherwise identical rows — only where nothing else does.
+  if (stats.length === 0 && vaultStats)
+    stats.push({
+      label: t("withdrawals.stat.date"),
+      value: t("withdrawals.requested", {
+        requested: new Date(row.eligibleAt - vaultStats.withdrawalDelay * 1000),
+      }),
+    })
 
   return (
     <>
       <PendingPosition
         assetId={displayAsset.id}
         value={t("common:currency", { value: row.totalEth, symbol })}
-        displayValue={rest ? [amountMeta, rest] : amountMeta}
+        displayValue={usd}
         stats={stats}
+        // side by side, several stats squeeze the amount: give them a row
+        forceWrap={stats.length > 1}
         status={
           status === "claimable" ? (
             <LoadingButton
