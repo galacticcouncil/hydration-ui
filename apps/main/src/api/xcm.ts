@@ -68,7 +68,8 @@ export const useCrossChainConfig = () => {
       // Wormhole carries basejump with it — basejump routes hop through the
       // wormhole stack — but basejump can also be pulled on its own.
       // Snowbridge V1 routes carry the Snowbridge tag too, so one tag pulls
-      // both versions.
+      // both versions. The inbound switch pulls only Snowbridge routes into
+      // Hydration, so Hydration → Ethereum keeps working.
       const disabledBridgeTags = [
         ...(ENV.VITE_WORMHOLE_DISABLED
           ? [XcmTag.Wormhole, XcmTag.Basejump]
@@ -77,14 +78,21 @@ export const useCrossChainConfig = () => {
         ...(ENV.VITE_SNOWBRIDGE_DISABLED ? [XcmTag.Snowbridge] : []),
       ]
 
-      if (disabledBridgeTags.length) {
+      if (disabledBridgeTags.length || ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED) {
         ctx.config.routes.forEach((chainRoutes) => {
           ctx.config.updateRoutes(
             new ChainRoutes({
               chain: chainRoutes.chain,
               routes: chainRoutes.getRoutes().filter((route) => {
                 const tags = route.tags ?? []
-                return !disabledBridgeTags.some((tag) => tags.includes(tag))
+                const isSnowbridgeInbound =
+                  tags.includes(XcmTag.Snowbridge) &&
+                  route.destination.chain.key === HYDRATION_CHAIN_KEY
+
+                return !(
+                  disabledBridgeTags.some((tag) => tags.includes(tag)) ||
+                  (ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED && isSnowbridgeInbound)
+                )
               }),
             }),
           )

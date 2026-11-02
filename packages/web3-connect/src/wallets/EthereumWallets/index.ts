@@ -46,8 +46,6 @@ const isUserRejection = (err: unknown) =>
 export class EthereumWalletsNear extends BaseNearWallet {
   provider = WalletProviderType.EthereumWalletsNear
   accessor = "ethereum-wallets"
-  // NEAR lists Ethereum wallets in a manifest of their own
-  manifestUrl = "https://evm-on-near.dev/manifest.json"
   popupUrl = "https://evm-on-near.dev/"
   title = "Ethereum Wallets"
   installUrl = "https://evm-on-near.dev"
