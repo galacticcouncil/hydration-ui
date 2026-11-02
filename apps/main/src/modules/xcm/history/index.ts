@@ -1,4 +1,4 @@
-export { useBasejumpScanSubscription } from "./useBasejumpScan"
+export { useScanJourneysSubscription } from "./useScanJourneys"
 export { useXcScanSubscription } from "./useXcScan"
 export { XcScanHistory } from "./XcScanHistory"
 export { xcStore } from "./xcScanStore"

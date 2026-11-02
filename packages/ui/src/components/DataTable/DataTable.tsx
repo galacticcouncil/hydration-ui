@@ -303,7 +303,6 @@ const DataTable = <TData,>({
                             }
                             isPinned={isPinned}
                             data-pinned={isPinned}
-                            isClickable={isRowClickable}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

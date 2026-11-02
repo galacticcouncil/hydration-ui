@@ -2,12 +2,10 @@ import { AssetMetadataFactory } from "@galacticcouncil/utils"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 
 /**
- * Warms the AssetMetadataFactory singleton from the metadata CDN.
- *
- * Deliberately not part of the provider query: a third-party CDN must not sit
- * on the path to first render. Every getter on the singleton returns an empty
- * string (or the default metadata) until this resolves, and the fetches
- * swallow their own failures, so an unreachable CDN costs icons, not a boot.
+ * Warms the AssetMetadataFactory singleton.
+ * The asset registry does not await this, so first paint is not blocked by the CDN.
+ * Icon getters return empty strings until the fetch succeeds. A missing manifest
+ * throws so React Query can retry; nothing suspends on this query.
  */
 export const assetMetadataQuery = () =>
   queryOptions({
@@ -20,6 +18,10 @@ export const assetMetadataQuery = () =>
         metadata.fetchChains(),
         metadata.fetchMetadata(),
       ])
+
+      if (!metadata.isLoaded) {
+        throw new Error("Asset metadata manifests unavailable")
+      }
 
       return metadata
     },

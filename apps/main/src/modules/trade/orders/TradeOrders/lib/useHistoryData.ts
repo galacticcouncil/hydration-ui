@@ -16,8 +16,8 @@ import {
   toOrderStatusFromSchedule,
 } from "@/modules/trade/orders/lib/orderData"
 import { DcaScheduleStatus } from "@/modules/trade/orders/lib/types"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useHistoryData = (
@@ -30,9 +30,9 @@ export const useHistoryData = (
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
   const owner = safeConvertSS58toPublicKey(accountAddress)
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isLoadingError } = useQuery({
     ...dcaSchedulesQuery(neckworkClient, {
       owner,
       statuses: toApiDcaStatuses(statuses),
@@ -97,5 +97,11 @@ export const useHistoryData = (
     [data, getAssetWithFallback],
   )
 
-  return { orders, totalCount, isLoading }
+  return {
+    orders,
+    totalCount,
+    isLoading,
+    // A dead Neckwork disables the query, which is a failed load, not an empty one.
+    isError: isLoadingError || (!neckworkEnabled && !data),
+  }
 }

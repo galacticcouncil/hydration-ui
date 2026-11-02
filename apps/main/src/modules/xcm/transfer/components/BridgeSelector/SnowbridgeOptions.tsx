@@ -44,6 +44,7 @@ export const SnowbridgeOptions: React.FC<SnowbridgeOptionsProps> = ({
       {hasV2 && hasV1 && (
         <ToggleGroup<SnowbridgeVersion>
           type="single"
+          fullWidth
           value={version}
           onValueChange={(value) => value && handleVersionChange(value)}
         >

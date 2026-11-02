@@ -9,6 +9,7 @@ import { FormProvider } from "react-hook-form"
 
 import { useKrakenSpotPrice } from "@/api/external/kraken"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/XcSwap/hooks/useMaxSellAmount"
+import { useSubmitByQuote } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitByQuote"
 import { useXcDestBalance } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcDestBalance"
 import { useXcSwapAssetPairs } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAssetPairs"
 import { useXcSwapClient } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapClient"
@@ -23,7 +24,6 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapQuote"
 import { useXcSwapRequiredWalletMode } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapRequiredWalletMode"
 import { useXcSwapSelection } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSelection"
-import { useXcSwapSubmit } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapSubmit"
 import {
   XcAsset,
   XcChainAssetPair,
@@ -206,7 +206,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
   const { requiredWalletMode, isWalletCompatible } =
     useXcSwapRequiredWalletMode({ form, isCrossChain })
 
-  const { onSubmit, isSubmitting } = useXcSwapSubmit({
+  const { onSubmit, isSubmitting } = useSubmitByQuote({
     form,
     quote: isQuoteRefreshing ? null : quote,
     maxSwapSellBalance,

@@ -1,4 +1,4 @@
-import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
+import { CircleMinus, LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CollapsibleContent,
@@ -16,7 +16,6 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -112,7 +111,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
                 selectable: true,
               }}
             >
-              <Minus />
+              <CircleMinus />
               {t("removeLiquidity")}
             </Link>
           </Button>

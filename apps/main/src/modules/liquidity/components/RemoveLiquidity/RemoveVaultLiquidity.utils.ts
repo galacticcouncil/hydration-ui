@@ -7,12 +7,15 @@ import { useTranslation } from "react-i18next"
 import { encodeFunctionData, Hex, parseAbi } from "viem"
 
 import { estimateGasLimit } from "@/api/borrow"
-import { VaultState } from "@/api/gamma/vaults"
+import {
+  estimateVaultCallGas,
+  VaultState,
+  vaultTxInvalidation,
+} from "@/api/gamma/vaults"
+import { V3PoolBase } from "@/api/pools"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-
-const EVM_CALL_GAS = 700_000
 
 export const HYPERVISOR_WITHDRAW_ABI = parseAbi([
   "function withdraw(uint256 shares, address to, address from, uint256[4] minAmounts) returns (uint256 amount0, uint256 amount1)",
@@ -29,10 +32,12 @@ export const useVaultWithdraw = () => {
 
   return useCallback(
     async ({
+      pool,
       vault,
       shares,
       minAmounts,
     }: {
+      pool: V3PoolBase
       vault: VaultState
       shares: bigint
       minAmounts: [bigint, bigint, bigint, bigint]
@@ -43,11 +48,14 @@ export const useVaultWithdraw = () => {
         args: [shares, evmAddress, evmAddress, minAmounts],
       })
 
-      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-        await estimateGasLimit({
-          evm: rpc.evm,
-          gasLimit: EVM_CALL_GAS.toString(),
-        })
+      const [{ maxFeePerGas, maxPriorityFeePerGas }, gasLimit] =
+        await Promise.all([
+          estimateGasLimit({ evm: rpc.evm }),
+          estimateVaultCallGas(rpc.evm, evmAddress, {
+            to: vault.address,
+            data,
+          }),
+        ])
 
       const evmCall: ExtendedEvmCall = {
         from: evmAddress,
@@ -67,7 +75,7 @@ export const useVaultWithdraw = () => {
           submitted: t("vaults.remove.toast.submitted"),
           success: t("vaults.remove.toast.success"),
         },
-        invalidateQueries: [["vault"], ["vaultShares"], ["pools", "v3"]],
+        invalidateQueries: vaultTxInvalidation(pool),
       })
     },
     [evmAddress, rpc, createTransaction, t],

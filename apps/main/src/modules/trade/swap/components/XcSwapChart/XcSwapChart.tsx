@@ -197,6 +197,7 @@ export const XcSwapChart: React.FC<XcSwapChartProps> = ({
           <CandleChart
             height={height}
             bucket={interval}
+            showVolume={false}
             candles={candles}
             type={chartType}
             resetKey={`${sellAssetId}-${destPlatform}-${interval}-${isInverted}`}

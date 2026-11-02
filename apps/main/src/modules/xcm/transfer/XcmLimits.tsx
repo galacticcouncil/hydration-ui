@@ -4,23 +4,29 @@ import Big from "big.js"
 import { useFormContext } from "react-hook-form"
 
 import {
+  useBasejumpPoolLiquidity,
   useCrossChainDepositLimit,
   useCrossChainGlobalWithdrawLimit,
+  useNttCustody,
   useNttInboundLimit,
   useNttOutboundLimit,
 } from "@/api/xcm"
 import {
+  BasejumpPoolSummaryRow,
   CBreakerInboundLimitSummaryRow,
   CBreakerOutboundLimitSummaryRow,
+  WormholeCustodySummaryRow,
   WormholeLimitSummaryRow,
 } from "@/modules/xcm/transfer/components/LimitSummary"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
+  BASEJUMP_POOL_ALERT_KEYS,
   CBREAKER_INBOUND_LIMIT_ALERT_KEYS,
   CBREAKER_OUTBOUND_LIMIT_ALERT_KEYS,
   hasXcmLimitAlertKey,
   isNttMetered,
+  WORMHOLE_CUSTODY_ALERT_KEYS,
   WORMHOLE_LIMIT_ALERT_KEYS,
   XcmLimitAlertKey,
 } from "@/modules/xcm/transfer/utils/limits"
@@ -67,6 +73,16 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
     isNttRoute ? destAsset : null,
     isNttRoute ? srcChain : null,
   )
+  const { data: custody, isLoading: isLoadingCustody } = useNttCustody(
+    isNttRoute ? destChain : null,
+    isNttRoute ? destAsset : null,
+  )
+
+  const isBasejumpPool = hasXcmLimitAlertKey(alertKey, BASEJUMP_POOL_ALERT_KEYS)
+  const { data: pool, isLoading: isLoadingPool } = useBasejumpPoolLiquidity(
+    isBasejumpPool ? destChain : null,
+    isBasejumpPool ? destAsset : null,
+  )
 
   const isInbound = hasXcmLimitAlertKey(
     alertKey,
@@ -77,6 +93,10 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
     CBREAKER_OUTBOUND_LIMIT_ALERT_KEYS,
   )
   const isWormhole = hasXcmLimitAlertKey(alertKey, WORMHOLE_LIMIT_ALERT_KEYS)
+  const isWormholeCustody = hasXcmLimitAlertKey(
+    alertKey,
+    WORMHOLE_CUSTODY_ALERT_KEYS,
+  )
 
   const headroomAmount =
     globalWithdrawLimit?.headroom !== undefined
@@ -113,7 +133,23 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
     !!srcAsset &&
     !!destAsset
 
-  if (!showDepositRow && !showGlobalWithdrawRow && !showWormholeRow) {
+  const showCustodyRow =
+    isWormholeCustody &&
+    custody !== undefined &&
+    custody !== null &&
+    !!destChain &&
+    !!destAsset
+
+  const showBasejumpPoolRow =
+    isBasejumpPool && !!pool && !!destChain && !!destAsset
+
+  if (
+    !showBasejumpPoolRow &&
+    !showDepositRow &&
+    !showGlobalWithdrawRow &&
+    !showWormholeRow &&
+    !showCustodyRow
+  ) {
     return null
   }
 
@@ -144,6 +180,22 @@ export const XcmLimits = ({ alertKey }: XcmLimitsProps) => {
           srcAsset={srcAsset}
           destAsset={destAsset}
           loading={isLoading || isLoadingOutbound || isLoadingInbound}
+        />
+      )}
+      {showCustodyRow && (
+        <WormholeCustodySummaryRow
+          custody={custody}
+          destChain={destChain}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingCustody}
+        />
+      )}
+      {showBasejumpPoolRow && (
+        <BasejumpPoolSummaryRow
+          pool={pool}
+          destChain={destChain}
+          destAsset={destAsset}
+          loading={isLoading || isLoadingPool}
         />
       )}
     </Summary>

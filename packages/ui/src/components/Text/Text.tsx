@@ -68,3 +68,23 @@ export const Text: FC<TextProps> = ({
     />
   )
 }
+
+export type TextMiddleTruncateProps = Omit<TextProps, "children"> & {
+  children: string
+  tail?: number
+}
+
+export const TextMiddleTruncate: FC<TextMiddleTruncateProps> = ({
+  children,
+  tail = 6,
+  ...props
+}) => (
+  <Text display="flex" minWidth={0} whiteSpace="nowrap" {...props}>
+    <Box as="span" sx={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+      {children.slice(0, -tail)}
+    </Box>
+    <Box as="span" sx={{ flexShrink: 0 }}>
+      {children.slice(-tail)}
+    </Box>
+  </Text>
+)

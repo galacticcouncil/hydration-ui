@@ -13,8 +13,8 @@ import {
   DCA_HISTORY_ORDER_STATUSES,
   OrderData,
 } from "@/modules/trade/orders/lib/orderData"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 /**
  * The Intents half of Order History. Sibling of `useHistoryData`, deliberately
@@ -29,9 +29,9 @@ export const useIntentHistoryData = (
 ) => {
   const { account } = useAccount()
   const owner = safeConvertSS58toPublicKey(account?.address ?? "")
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isLoadingError } = useQuery({
     ...intentsQuery(neckworkClient, {
       owner,
       statuses: toApiIntentStatuses(DCA_HISTORY_ORDER_STATUSES),
@@ -61,5 +61,10 @@ export const useIntentHistoryData = (
     [data, getAssetWithFallback],
   )
 
-  return { orders, totalCount, isLoading }
+  return {
+    orders,
+    totalCount,
+    isLoading,
+    isError: isLoadingError || (!neckworkEnabled && !data),
+  }
 }

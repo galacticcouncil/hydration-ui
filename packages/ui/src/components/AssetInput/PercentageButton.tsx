@@ -3,11 +3,10 @@ import * as Popover from "@radix-ui/react-popover"
 import { Percent } from "lucide-react"
 import { useRef, useState } from "react"
 
-import { Button, MicroButton } from "@/components/Button"
+import { Button } from "@/components/Button"
 import { Drawer, DrawerBody } from "@/components/Drawer"
 import { Flex } from "@/components/Flex"
 import { Grid } from "@/components/Grid"
-import { Icon } from "@/components/Icon"
 import { Paper } from "@/components/Paper"
 import { SContent as SPopoverContent } from "@/components/Popover"
 import { useUiScale } from "@/theme"
@@ -32,14 +31,18 @@ export const PercentageButton = ({ onSelect }: PercentageButtonProps) => {
 
   const uiScale = useUiScale()
 
-  const icon = <Icon component={Percent} size="xs" />
-
   if (isMobileDevice()) {
     return (
       <>
-        <MicroButton aria-label="percentage" onClick={() => setOpen(true)}>
-          {icon}
-        </MicroButton>
+        <Button
+          icon={Percent}
+          size="micro"
+          uppercase
+          variant="muted"
+          outline
+          aria-label="percentage"
+          onClick={() => setOpen(true)}
+        />
         <Drawer
           open={open}
           onOpenChange={setOpen}
@@ -90,7 +93,14 @@ export const PercentageButton = ({ onSelect }: PercentageButtonProps) => {
           setOpen(true)
         }}
       >
-        <MicroButton aria-label="percentage">{icon}</MicroButton>
+        <Button
+          icon={Percent}
+          size="micro"
+          uppercase
+          variant="muted"
+          outline
+          aria-label="percentage"
+        />
       </Popover.Trigger>
       <Popover.Portal>
         <SPopoverContent
@@ -110,9 +120,16 @@ export const PercentageButton = ({ onSelect }: PercentageButtonProps) => {
           <Paper p="base">
             <Flex gap="s">
               {PERCENTAGES.map((percent) => (
-                <MicroButton key={percent} onClick={() => select(percent)}>
+                <Button
+                  size="micro"
+                  uppercase
+                  variant="muted"
+                  outline
+                  key={percent}
+                  onClick={() => select(percent)}
+                >
                   {percent}%
-                </MicroButton>
+                </Button>
               ))}
             </Flex>
           </Paper>

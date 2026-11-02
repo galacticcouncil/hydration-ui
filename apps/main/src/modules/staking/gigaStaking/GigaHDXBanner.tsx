@@ -1,13 +1,6 @@
 import { Close } from "@galacticcouncil/ui/assets/icons"
 import gigaHDXBannerCans from "@galacticcouncil/ui/assets/images/GigaHDXCans.webp"
-import {
-  Box,
-  Button,
-  ButtonIcon,
-  Flex,
-  Icon,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Box, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate } from "@tanstack/react-router"
@@ -126,29 +119,26 @@ export const GigaHDXBanner: FC<GigaHDXBannerProps> = ({
         />
       </Flex>
 
-      <ButtonIcon
+      <Button
+        icon={Close}
+        size="micro"
+        uppercase
+        variant="transparent"
         sx={{
           position: "absolute",
           top: -5,
           right: -5,
-          p: "s",
           zIndex: 1,
           background: getToken("icons.onSurface"),
         }}
-      >
-        <Icon
-          component={Close}
-          size={12}
-          color={getToken("text.high")}
-          onClick={() =>
-            setBannerVisible(
-              type === "stake" ? "giga-stake" : "giga-migration",
-              false,
-              Date.now(),
-            )
-          }
-        />
-      </ButtonIcon>
+        onClick={() =>
+          setBannerVisible(
+            type === "stake" ? "giga-stake" : "giga-migration",
+            false,
+            Date.now(),
+          )
+        }
+      />
     </SGigaHDXBanner>
   )
 }

@@ -101,10 +101,10 @@ export const XcmForm = () => {
   function onConnect() {
     if (!srcChain) return toggle()
     toggle(getWalletModeByChain(srcChain), {
-      title: t("xcm:connect.modal.title", {
+      title: t("connectWallet.modal.title", {
         chain: srcChain.name,
       }),
-      description: t("xcm:connect.modal.description", {
+      description: t("connectWallet.modal.description", {
         chain: srcChain.name,
       }),
     })

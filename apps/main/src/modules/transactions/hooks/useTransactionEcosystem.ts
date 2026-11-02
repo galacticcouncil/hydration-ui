@@ -38,6 +38,10 @@ export const useTransactionEcosystem = (
       return CallType.Evm
     case chain.isSolana():
       return CallType.Solana
+    case chain.isNear():
+      return CallType.Near
+    case chain.isZec():
+      return CallType.Zec
     default:
       return CallType.Substrate
   }

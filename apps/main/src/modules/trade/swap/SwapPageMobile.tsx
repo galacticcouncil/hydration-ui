@@ -2,24 +2,15 @@ import { Flex, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
+import { TradeOrders } from "@/modules/trade/orders/TradeOrders/TradeOrders"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
-import {
-  TRADE_CHART_BY_SOURCE,
-  TRADE_ORDERS_BY_SOURCE,
-  useTradeDataSource,
-  useTradeOrdersDataSource,
-} from "@/modules/trade/swap/tradeDataSource"
+import { SwapChart } from "@/modules/trade/swap/components/SwapChart/SwapChart"
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
 export const TRADE_CHART_MOBILE_HEIGHT = 300
 
 export const SwapPageMobile: FC = () => {
-  const chartSource = useTradeDataSource()
-  const ordersSource = useTradeOrdersDataSource()
-  const TradeChart = TRADE_CHART_BY_SOURCE[chartSource]
-  const TradeOrders = TRADE_ORDERS_BY_SOURCE[ordersSource]
-
   return (
     <Flex direction="column" gap="xxl">
       <Flex direction="column" gap="base" width="100%">
@@ -29,7 +20,7 @@ export const SwapPageMobile: FC = () => {
           <Outlet />
         </SSwapFormContainer>
       </Flex>
-      <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
+      <SwapChart height={TRADE_CHART_MOBILE_HEIGHT} />
       <TradeOrders />
     </Flex>
   )

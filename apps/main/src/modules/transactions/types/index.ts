@@ -1,7 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { tx } from "@galacticcouncil/sdk-next"
+import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { ZecTxStatus } from "@galacticcouncil/web3-connect/src/signers/ZecSigner"
 import { Asset } from "@galacticcouncil/xc-core"
 import { Call } from "@galacticcouncil/xc-sdk"
 import { Enum, InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
@@ -69,6 +71,8 @@ export type TxResult =
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
+  | NearTxStatus
+  | ZecTxStatus
   | void
 
 export type TxSignAndSubmitFn<T = unknown, S = unknown> = (

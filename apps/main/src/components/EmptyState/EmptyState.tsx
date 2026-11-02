@@ -43,6 +43,7 @@ export const EmptyState: FC<Props> = ({
         fs="h7"
         lh={1}
         fw={500}
+        textWrap="balance"
       >
         {header}
       </Text>
@@ -53,7 +54,7 @@ export const EmptyState: FC<Props> = ({
           fs="p5"
           lh={1.3}
           align="center"
-          sx={{ textWrap: "balance" }}
+          textWrap="balance"
         >
           {description.split(". ").map((sentence, index) => (
             <Fragment key={index}>

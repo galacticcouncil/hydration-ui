@@ -8,7 +8,7 @@ import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
 import { BoxProps } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
+import { ButtonTransparent } from "@/components/Button"
 import { Drawer, DrawerBody } from "@/components/Drawer"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -29,6 +29,7 @@ export type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
   size?: TooltipSize
+  delayDuration?: number
   side?: TooltipContentProps["side"]
   align?: TooltipContentProps["align"]
   sideOffset?: TooltipContentProps["sideOffset"]
@@ -42,6 +43,7 @@ export const Tooltip = ({
   text,
   children,
   size = "medium",
+  delayDuration,
   side = "top",
   align = "center",
   sideOffset = 3,
@@ -97,20 +99,13 @@ export const Tooltip = ({
 
     return (
       <>
-        <ButtonIcon
+        <ButtonTransparent
           onClick={openDrawer}
           onPointerDown={openDrawer}
-          sx={{
-            p: 0,
-            height: "auto",
-            width: "auto",
-            justifyContent: "start",
-            color: iconColor,
-            "&:hover": { background: "transparent" },
-          }}
+          sx={{ justifyContent: "start", color: iconColor }}
         >
           {children || <TooltipIcon color={iconColor} />}
-        </ButtonIcon>
+        </ButtonTransparent>
         {drawer}
       </>
     )
@@ -120,7 +115,7 @@ export const Tooltip = ({
 
   return (
     <Root
-      delayDuration={size === "small" ? 700 : 0}
+      delayDuration={delayDuration ?? (size === "small" ? 700 : 0)}
       open={open}
       onOpenChange={setOpen}
     >

@@ -72,7 +72,11 @@ export const Hint = ({
             <Flex align="center" justify="space-between" gap="m">
               <Flex align="center" gap="s">
                 {badge && (
-                  <Chip size="extra-small" variant={badgeVariant}>
+                  <Chip
+                    size="extra-small"
+                    variant={badgeVariant}
+                    sx={{ textTransform: "uppercase" }}
+                  >
                     {badge}
                   </Chip>
                 )}

@@ -1,9 +1,8 @@
 import { neckworkStatusQuery } from "@galacticcouncil/indexer/neckwork"
-import { PingResponse } from "@galacticcouncil/utils"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { PropsWithChildren, useEffect, useState } from "react"
 import { useAsyncFn } from "react-use"
-import { prop } from "remeda"
+import { prop, unique } from "remeda"
 
 import { neckworkClient } from "@/api/neckwork"
 import { rpcStatusQueryOptions } from "@/api/rpc"
@@ -12,12 +11,13 @@ import { ENV } from "@/config/env"
 import { classifyNeckworkProbe, useNeckworkStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { pingWorker } from "@/workers/ping"
+import { BestRpcs } from "@/workers/ping/ping.utils"
 
 import { fetchNeckworkStatus, getBestRpc } from "./DataProviderResolver.utils"
 
 declare global {
   interface Window {
-    __HYDRATION_BEST_RPCS__?: PingResponse[]
+    __HYDRATION_BEST_RPCS__?: BestRpcs
   }
 }
 
@@ -61,9 +61,11 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
     const { autoMode } = useProviderRpcUrlStore.getState()
 
     if (autoMode) {
-      const bestRpcs =
+      const { best: bestRpcs, staleUrls } =
         window.__HYDRATION_BEST_RPCS__ ??
-        (await pingWorker.getBestRpcs(PROVIDER_URLS))
+        (await pingWorker
+          .getBestRpcs(PROVIDER_URLS)
+          .catch((): BestRpcs => ({ best: [], staleUrls: [] })))
 
       delete window.__HYDRATION_BEST_RPCS__
 
@@ -77,9 +79,11 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       }
 
       const bestRpcsUrls = bestRpcs.map(prop("url"))
-      const sortedRpcList = Array.from(
-        new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
-      )
+      const sortedRpcList = unique([
+        ...bestRpcsUrls,
+        ...PROVIDER_URLS.filter((url) => !staleUrls.includes(url)),
+        ...staleUrls,
+      ])
 
       const bestRpcUrl = bestRpc?.url ?? ENV.VITE_PROVIDER_URL
 

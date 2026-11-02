@@ -39,9 +39,12 @@ export const TradeOrders: FC<Props> = (props) => {
   const kind: OrderHistoryKind =
     pickedKind ?? (isIceEnabled ? "intents" : "dca")
 
-  const { orders, isLoading } = useChainOrdersData()
-  const { orders: intentOrders, isLoading: isIntentsLoading } =
-    useIntentOrdersData()
+  const { orders, isLoading, isError } = useChainOrdersData()
+  const {
+    orders: intentOrders,
+    isLoading: isIntentsLoading,
+    isError: isIntentsError,
+  } = useIntentOrdersData()
 
   // Presence subscriptions miss executions, and a fill is a solver's unsigned
   // extrinsic rather than the trader's own tx, so neither the chain queries nor
@@ -84,6 +87,7 @@ export const TradeOrders: FC<Props> = (props) => {
                   paginationProps={paginationProps}
                   orders={openOrders}
                   isLoading={isLoading || isIntentsLoading}
+                  isError={isError || isIntentsError}
                 />
               )
             case "orderHistory":

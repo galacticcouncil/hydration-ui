@@ -16,6 +16,12 @@ export function parseNearAccountName(address: string): string {
   return trimmed.slice(0, -".near".length)
 }
 
+// NEAR account ids are lowercase, so a checksummed EVM address names the
+// same eth-implicit account as its lowercase form
+export function toNearAccountId(address: string): string {
+  return EvmAddr.isValid(address.trim()) ? address.toLowerCase() : address
+}
+
 export { EvmAddr, NearAddr, SolanaAddr, Ss58Addr, SuiAddr, ZecAddr }
 
 export function getAccountExplorerLink(address: string) {

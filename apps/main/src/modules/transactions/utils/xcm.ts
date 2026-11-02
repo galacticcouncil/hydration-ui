@@ -3,9 +3,11 @@ import { HexString } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
   Call,
+  NearCall,
   SolanaCall,
   SubstrateCall,
   SuiCall,
+  ZecCall,
 } from "@galacticcouncil/xc-sdk"
 import { isObjectType } from "remeda"
 import { decodeFunctionData } from "viem"
@@ -46,4 +48,12 @@ export function isSolanaCall(x: AnyTransaction): x is SolanaCall {
 
 export function isSuiCall(x: AnyTransaction): x is SuiCall {
   return isCall(x) && x.type === CallType.Sui
+}
+
+export function isNearCall(x: AnyTransaction): x is NearCall {
+  return isCall(x) && x.type === CallType.Near
+}
+
+export function isZecCall(x: AnyTransaction): x is ZecCall {
+  return isCall(x) && x.type === CallType.Zec
 }

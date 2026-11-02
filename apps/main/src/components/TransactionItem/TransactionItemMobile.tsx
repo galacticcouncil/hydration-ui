@@ -1,9 +1,8 @@
 import { SquareArrowOutUpRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonIcon,
+  Button,
   ExternalLink,
   Flex,
-  Icon,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -95,15 +94,9 @@ export const TransactionItemMobile: FC<Props> = ({
             asChild
             side="top"
           >
-            <ButtonIcon asChild>
-              <ExternalLink href={link}>
-                <Icon
-                  size="s"
-                  component={SquareArrowOutUpRight}
-                  color={getToken("text.high")}
-                />
-              </ExternalLink>
-            </ButtonIcon>
+            <Button icon={SquareArrowOutUpRight} variant="transparent" asChild>
+              <ExternalLink href={link} />
+            </Button>
           </Tooltip>
         </TransactionItemMobileAction>
       )}

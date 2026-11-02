@@ -20,7 +20,12 @@ import { numericallyStrDesc } from "@/utils/sort"
 const ASSET_ITEM_HEIGHT = 50
 const MAX_VISIBLE_ASSET_ITEMS = 8
 
-type AssetListItem = { asset: Asset; route: AssetRoute | null }
+type AssetListItem = {
+  asset: Asset
+  route: AssetRoute | null
+  symbol: string
+  name: string
+}
 
 export type AssetListProps = {
   address: string

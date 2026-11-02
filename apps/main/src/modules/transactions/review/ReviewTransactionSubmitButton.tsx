@@ -39,10 +39,10 @@ export const ReviewTransactionSubmitButton = ({
 
   const isExternalWallet =
     account?.provider === WalletProviderType.ExternalWallet
-  const isIncompatibleOnChain =
-    meta.type === TransactionType.Onchain && !!account?.isIncompatible
+  const isUnusableOnChain =
+    meta.type === TransactionType.Onchain && !account?.canUseOnHydration
 
-  const isSigningBlocked = isExternalWallet || isIncompatibleOnChain
+  const isSigningBlocked = isExternalWallet || isUnusableOnChain
 
   const pjsUrl = usePolkadotJSExtrinsicUrl(
     tx,

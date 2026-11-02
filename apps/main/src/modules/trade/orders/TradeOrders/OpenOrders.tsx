@@ -21,24 +21,26 @@ import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useDcaE
 import { useIntentEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useIntentEnrichment"
 import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
 import { PastExecutionsIntent } from "@/modules/trade/orders/TradeOrders/PastExecutionsIntent"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
+import { useNeckworkEnabled } from "@/states/neckwork"
 
 type Props = {
   readonly paginationProps: PaginationProps
   readonly orders: Array<OrderData>
   readonly isLoading: boolean
+  readonly isError: boolean
 }
 
 export const OpenOrders: FC<Props> = ({
   paginationProps,
   orders,
   isLoading: isOrdersLoading,
+  isError,
 }) => {
   const [detailKey, setDetailKey] = useState<string | null>(null)
   const [terminating, setTerminating] = useState<DcaOrderData | null>(null)
   const removeIntent = useRemoveIntent()
 
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
   // Both halves come from the container, so the asset filter it applies reaches
   // intents too. A merged row would answer yes to both guards, so schedules win
@@ -91,7 +93,7 @@ export const OpenOrders: FC<Props> = ({
           }
           setDetailKey(orderKey(order))
         }}
-        emptyState={<OrdersEmptyState />}
+        emptyState={<OrdersEmptyState isError={isError} />}
       />
       <Modal open={!!detail || !!terminating} onOpenChange={close}>
         {terminating ? (

@@ -21,8 +21,10 @@ import {
 } from "@/modules/transactions/utils/polkadot"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
+  isZecCall,
 } from "@/modules/transactions/utils/xcm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { TransactionMeta } from "@/states/transactions"
@@ -194,7 +196,13 @@ export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
     return getPapiTransactionCallData(tx)
   }
 
-  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {
+  if (
+    isEvmCall(tx) ||
+    isSolanaCall(tx) ||
+    isSuiCall(tx) ||
+    isNearCall(tx) ||
+    isZecCall(tx)
+  ) {
     return tx.data
   }
 

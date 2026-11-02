@@ -20,6 +20,7 @@ import {
   tutorialEntries,
   unmountAnchor,
 } from "@/modules/tutorials/utils/arbitration"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { useTutorialsStore } from "@/states/tutorials"
 
@@ -43,6 +44,8 @@ const TutorialContext = createContext<TutorialContextValue>({
 export const useTutorialContext = () => useContext(TutorialContext)
 
 export const TutorialProvider = ({ children }: { children: ReactNode }) => {
+  const { isReady } = useRpcProvider()
+
   const [anchors, setAnchors] = useState<MountedAnchors>(new Map())
   const [candidate, setCandidate] = useState<TutorialCandidate | null>(null)
   const [openedKey, setOpenedKey] = useState<string | null>(null)
@@ -57,7 +60,8 @@ export const TutorialProvider = ({ children }: { children: ReactNode }) => {
     (state) =>
       state.transactions.length > 0 || state.pendingTransactions.length > 0,
   )
-  const isSuppressed = isOverlayOpen || isTransacting
+
+  const isSuppressed = isOverlayOpen || isTransacting || !isReady
 
   const registerAnchor = useCallback((id: TutorialId, stepIndex: number) => {
     const key = anchorKey(id, stepIndex)

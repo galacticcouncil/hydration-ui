@@ -1,6 +1,6 @@
+import { CircleMinus } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Minus } from "lucide-react"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -44,7 +44,7 @@ export const VaultLiquidityDetailExpanded: FC<Props> = ({
           sx={{ justifySelf: "flex-end" }}
           onClick={onRemoveLiquidity}
         >
-          <Minus />
+          <CircleMinus />
           {t("liquidity:removeLiquidity")}
         </Button>
       </SLiquidityPosition>

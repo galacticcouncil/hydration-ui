@@ -1,4 +1,3 @@
-import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { HDX_SUPPLY_URL } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
@@ -171,46 +170,6 @@ export const pendingVotesQuery = (
       }
     },
     enabled: enabled && isReady,
-  })
-
-const stakeEventBase = z.object({
-  block: z.object({
-    height: z.number(),
-  }),
-})
-
-const stakeEventInitialized = stakeEventBase.extend({
-  name: z.literal("Staking.StakingInitialized"),
-})
-
-const stakeEventAccumulatedRps = stakeEventBase.extend({
-  name: z.literal("Staking.AccumulatedRpsUpdated"),
-  args: z.object({
-    accumulatedRps: z.string(),
-    totalStake: z.string(),
-  }),
-})
-
-export type StakeEventAccumulatedRps = z.infer<typeof stakeEventAccumulatedRps>
-
-export const accumulatedRpsUpdatedEventsQuery = (indexerSdk: IndexerSdk) =>
-  queryOptions({
-    queryKey: ["staking", "events", "accumulatedRps"],
-    queryFn: async () => {
-      const { events } = await indexerSdk.AccumulatedRpsUpdatedEvents()
-
-      return events.map((event) => stakeEventAccumulatedRps.parse(event))
-    },
-  })
-
-export const stakingInitializedEventsQuery = (indexerSdk: IndexerSdk) =>
-  queryOptions({
-    queryKey: ["staking", "events", "initialized"],
-    queryFn: async () => {
-      const { events } = await indexerSdk.StakingInitializedEvents()
-
-      return events.map((event) => stakeEventInitialized.parse(event))
-    },
   })
 
 export const potBalanceQuery = ({ sdk, isReady }: TProviderContext) =>

@@ -6,6 +6,12 @@ export * from "./accounts"
 export * from "@/multix/__generated__/operations"
 export * from "@/multix/__generated__/types"
 
-export const getMultixSdk = (url: string) => getSdk(new GraphQLClient(url))
+export const getMultixSdk = (url: string) =>
+  getSdk(
+    new GraphQLClient(url, {
+      fetch: (input, init) =>
+        fetch(input, { ...init, signal: AbortSignal.timeout(10_000) }),
+    }),
+  )
 
 export type MultixSdk = ReturnType<typeof getSdk>

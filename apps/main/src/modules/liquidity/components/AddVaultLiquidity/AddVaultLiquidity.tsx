@@ -2,6 +2,8 @@ import {
   Alert,
   Box,
   Button,
+  LoadingButton,
+  Separator,
   Stack,
   Summary,
   SummaryRow,
@@ -184,7 +186,7 @@ export const AddVaultLiquidity = ({
               />
             </Summary>
 
-            <Stack gap="base" my="base">
+            <Stack gap="base" mt="base">
               <Text fs="p6" lh={1.4} color={getToken("text.low")}>
                 {t("liquidity:vaults.add.managedNote")}
               </Text>
@@ -223,14 +225,14 @@ export const AddVaultLiquidity = ({
                 />
               )}
             </Stack>
-
-            <ModalContentDivider />
           </ModalBody>
-          <ModalFooter sx={{ pt: 0 }}>
-            <Button
+          <Separator />
+          <ModalFooter>
+            <LoadingButton
               type="submit"
               size="large"
               width="100%"
+              isLoading={isSubmitting}
               disabled={
                 !account || !form.formState.isValid || isSubmitting || !!blocker
               }
@@ -238,7 +240,7 @@ export const AddVaultLiquidity = ({
               {!account
                 ? t("common:connectWallet")
                 : t("liquidity:liquidity.add.modal.submit")}
-            </Button>
+            </LoadingButton>
           </ModalFooter>
         </form>
       </FormProvider>

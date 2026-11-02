@@ -1,15 +1,17 @@
 import { Button, Text } from "@galacticcouncil/ui/components"
-import { css, styled } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 export const SConnectedButton = styled(Button)(
   ({ theme }) => css`
-    background: ${theme.buttons.outlineDark.rest};
-    gap: ${theme.space.s};
+    --button-bg: ${theme.buttons.outlineDark.rest};
+    --button-icon: ${pxToRem(8)};
+    gap: ${theme.space.base};
     padding: ${theme.space.base};
+    padding-left: calc(${theme.space.base} - 0.1rem);
 
     &:not(:disabled):hover,
     &:not(:disabled):active {
-      background: ${theme.buttons.outlineDark.hover};
+      --button-bg: ${theme.buttons.outlineDark.hover};
     }
   `,
 )

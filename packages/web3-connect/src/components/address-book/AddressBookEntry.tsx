@@ -6,6 +6,7 @@ import {
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -75,7 +76,12 @@ export const AddressBookEntry: FC<AddressBookEntryProps> = ({
         )}
       </Flex>
       <Flex align="center" gap="base" pl="m" ml="auto" sx={{ minWidth: 0 }}>
-        <Text fs="p4" fw={500} font="mono" truncate={160} title={address}>
+        <Text
+          fs="p4"
+          color={getToken("text.medium")}
+          truncate={160}
+          title={address}
+        >
           {displayAddress}
         </Text>
         <Tooltip text={t("addressBook.copyAddress")} size="small" asChild>

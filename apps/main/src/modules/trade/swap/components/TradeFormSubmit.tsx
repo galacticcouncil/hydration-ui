@@ -43,8 +43,7 @@ export const TradeFormSubmit: FC<Props> = ({
         width="100%"
         isLoading={isLoading}
         disabled={!isEnabled}
-        variant={isEnabled ? "primary" : "muted"}
-        loadingVariant="muted"
+        disabledVariant="muted"
         loadingMode={isValid ? "inline" : "replace"}
       >
         {label}

@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useReducer, useRef } from "react"
 
+import { spotPriceQuery } from "@/api/spotPrice"
 import {
   emptyQuotedPrice,
   nextQuotedPrice,
@@ -8,25 +10,43 @@ import {
   QuotedPriceView,
   viewQuotedPrice,
 } from "@/modules/trade/swap/lib/quotedPrice"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Pair = readonly [sellAssetId: string, buyAssetId: string]
 
 type Args = {
-  readonly marketPrice: string | null
   readonly pair: Pair
+  readonly executablePrice?: string | null
   readonly onCanonicalChange: (canonical: string, source: PriceSource) => void
 }
 
 export type QuotedPriceBinding = {
   readonly view: QuotedPriceView
   readonly dispatch: (action: QuotedPriceAction) => void
+  readonly isMarketLoading: boolean
 }
 
 export const useQuotedPrice = ({
-  marketPrice,
   pair,
+  executablePrice = null,
   onCanonicalChange,
 }: Args): QuotedPriceBinding => {
+  const rpc = useRpcProvider()
+  const [sellAssetId, buyAssetId] = pair
+
+  // Market anchor — the size-independent spot price. It is the clearest
+  // reference (matches the Market tab) and never jumps when the order size
+  // changes. Everything derived from the anchor (deviation, presets, the
+  // default price, "set to market") uses this.
+  const {
+    data: spot,
+    isPending: isSpotPending,
+    isFetching: isSpotFetching,
+  } = useQuery(spotPriceQuery(rpc, sellAssetId, buyAssetId))
+
+  const marketPrice = spot?.spotPrice ?? null
+  const isMarketLoading = isSpotPending || (isSpotFetching && !marketPrice)
+
   const [state, dispatchEvent] = useReducer(
     nextQuotedPrice,
     false, // sell→buy ("1 SELL = X BUY") across all forms
@@ -34,7 +54,6 @@ export const useQuotedPrice = ({
   )
 
   const seenPair = useRef(pair)
-  const [sellAssetId, buyAssetId] = pair
   useEffect(() => {
     const [prevSell, prevBuy] = seenPair.current
     if (prevSell === sellAssetId && prevBuy === buyAssetId) return
@@ -78,5 +97,9 @@ export const useQuotedPrice = ({
     [marketPrice],
   )
 
-  return { view: viewQuotedPrice(state, marketPrice), dispatch }
+  return {
+    view: viewQuotedPrice(state, marketPrice, executablePrice),
+    dispatch,
+    isMarketLoading,
+  }
 }

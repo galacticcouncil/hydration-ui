@@ -38,7 +38,7 @@ const useRemoveVaultLiquidity = ({
     id: state?.address ?? vault.id,
     symbol: state?.shareSymbol ?? t("common:shares"),
     decimals: SHARE_DECIMALS,
-    iconId: [token0.id, token1.id],
+    iconId: vault.pair.map((token) => token.id),
   } as unknown as TShareToken
 
   const heldShifted = scaleHuman(
@@ -105,6 +105,7 @@ const useRemoveVaultLiquidity = ({
       if (!state) throw new Error("Vault not found")
 
       await withdraw({
+        pool: vault.pool,
         vault: state,
         shares: BigInt(Big(removeShares).toFixed(0)),
         minAmounts,

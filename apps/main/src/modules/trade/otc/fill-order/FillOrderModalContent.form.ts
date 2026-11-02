@@ -7,8 +7,12 @@ import { type infer as Infer, object, refine } from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"
-import { getOtcBuyAmountAfterFee } from "@/modules/trade/otc/fill-order/FillOrder.utils"
-import { getOtcFillOrderTx } from "@/modules/trade/otc/fill-order/FillOrder.utils"
+import {
+  getOtcBuyAmountAfterFee,
+  getOtcFillOrderTx,
+  getOtcMaxPartialFill,
+  isOtcFillAmountValid,
+} from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import {
   useFormMaxBalanceWithFee,
@@ -22,6 +26,7 @@ import {
 
 const useSchema = (
   offer: OtcOfferTabular,
+  feePct: string,
   validateBalance: ValidateFormMaxBalanceWithFee,
 ) => {
   const rpc = useRpcProvider()
@@ -34,6 +39,28 @@ const useSchema = (
       refine(
         (value) => new Big(offer.assetAmountIn).gte(value || "0"),
         i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
+      ),
+      refine(
+        (value) =>
+          !value ||
+          !existentialDepositMultiplier ||
+          isOtcFillAmountValid(
+            offer,
+            value,
+            existentialDepositMultiplier,
+            feePct,
+          ),
+        {
+          error: () =>
+            i18n.t("trade:otc.fillOrder.validation.leftoverTooSmall", {
+              amount: getOtcMaxPartialFill(
+                offer,
+                existentialDepositMultiplier ?? 0,
+                feePct,
+              ).toFixed(),
+              symbol: offer.assetIn.symbol,
+            }),
+        },
       ),
       validateFieldExistentialDeposit(
         offer.assetIn,
@@ -81,7 +108,7 @@ export const useFillOrderForm = (
     getOtcFillOrderTx(papi, otcOffer, "1"),
   )
 
-  const schema = useSchema(otcOffer, validateBalance)
+  const schema = useSchema(otcOffer, feePrice, validateBalance)
 
   const form = useForm<FillOrderFormValues>({
     defaultValues,

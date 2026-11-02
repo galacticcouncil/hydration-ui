@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  ButtonIcon,
   Flex,
   Icon,
   ModalBody,
@@ -86,9 +85,7 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
           </Button>
           <ModalRoot>
             <ModalTrigger asChild>
-              <ButtonIcon size="small" variant="danger" outline>
-                <Icon component={Trash2} size="s" />
-              </ButtonIcon>
+              <Button icon={Trash2} size="small" variant="danger" outline />
             </ModalTrigger>
             <ModalContent>
               <ModalHeader

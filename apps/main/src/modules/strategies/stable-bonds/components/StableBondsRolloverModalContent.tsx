@@ -12,13 +12,13 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 import { millisecondsInDay } from "date-fns/constants"
 import { FC } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useBondData } from "@/api/bonds"
+import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetPrice } from "@/components/AssetPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
@@ -26,7 +26,10 @@ import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction
 import { useStableBondsForm } from "@/modules/strategies/stable-bonds/components/StableBondsDeposit.form"
 import { useStableBondsRollover } from "@/modules/strategies/stable-bonds/hooks/useStableBondsRollover"
 import { useSubmitStableBondsOrder } from "@/modules/strategies/stable-bonds/hooks/useSubmitStableBondsOrder"
-import { getOtcBuyAmountFromSellAmount } from "@/modules/trade/otc/fill-order/FillOrder.utils"
+import {
+  getOtcBuyAmountFromSellAmount,
+  getOtcMaxFillAmount,
+} from "@/modules/trade/otc/fill-order/FillOrder.utils"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -50,6 +53,9 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
   const { data: feePct = "0", isPending: isFeePending } = useQuery(
     otcTradeFeeQuery(rpc),
   )
+  const { data: edMultiplier = 0 } = useQuery(
+    otcExistentialDepositorMultiplierQuery(rpc),
+  )
 
   const { form, getMaxBalance } = useStableBondsForm([order])
   const submit = useSubmitStableBondsOrder({
@@ -61,10 +67,12 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
   const [depositAsset, depositAmount] = watch(["depositAsset", "depositAmount"])
 
   const depositAssetBalance = getMaxBalance(depositAsset)
-  const assetInMax = Big.min(
-    order.assetAmountIn,
+  const assetInMax = getOtcMaxFillAmount(
+    order,
     depositAssetBalance,
-  ).toString()
+    edMultiplier,
+    feePct,
+  )
 
   const receiveAmount = getOtcBuyAmountFromSellAmount(
     order,
@@ -81,9 +89,7 @@ export const StableBondsRolloverModalContent: FC<Props> = ({
       <ModalHeader title={t("strategies:bonds.rollover.modal.title")} />
       <FormProvider {...form}>
         <form
-          onSubmit={handleSubmit((values) =>
-            submit.mutate({ values, order, receiveAmount }),
-          )}
+          onSubmit={handleSubmit((values) => submit.mutate({ values, order }))}
         >
           <ModalBody sx={{ p: 0 }}>
             <Box px="xl">

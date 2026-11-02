@@ -8,18 +8,20 @@ import { sortBy } from "remeda"
 
 import { journeyRedeemedQuery } from "@/modules/xcm/history/hooks/useJourneyRedeemed"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { useXcScan } from "@/modules/xcm/history/useXcScan"
+import { useScanJourneys } from "@/modules/xcm/history/useScanJourneys"
+import { isXcScanAddress, useXcScan } from "@/modules/xcm/history/useXcScan"
 import {
   getClaimableJourneys,
   isJourneyAwaitingMinAge,
 } from "@/modules/xcm/history/utils/claim"
 import { journeyDate } from "@/modules/xcm/history/utils/journey"
+import { withoutScanTwins } from "@/modules/xcm/history/utils/scan"
 import { xcScanHttpClient } from "@/modules/xcm/history/xcScanStore"
 
 const useClaimableBackfill = (address: string) => {
   return useQuery({
     queryKey: ["xcscan", "claimable-backfill", address],
-    enabled: !!address,
+    enabled: isXcScanAddress(address),
     refetchOnWindowFocus: true,
     retry: false,
     staleTime: minutesToMilliseconds(5),
@@ -40,7 +42,17 @@ export const useClaimableTransactions = () => {
   const address = account?.address ?? ""
 
   const { data: xcscanJourneys = [] } = useXcScan(address)
-  const { data: claimableBackfill = [] } = useClaimableBackfill(address)
+  const { data: xcscanBackfill = [] } = useClaimableBackfill(address)
+  const { data: scanJourneys } = useScanJourneys(address)
+
+  // Claims the scan has come with useXcScan's journeys, from the scan
+  const claimableBackfill = useMemo(
+    () =>
+      scanJourneys
+        ? withoutScanTwins(xcscanBackfill, scanJourneys)
+        : xcscanBackfill,
+    [scanJourneys, xcscanBackfill],
+  )
 
   const { pendingCorrelationIds } = usePendingClaimsStore()
 

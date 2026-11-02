@@ -1,12 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import Big from "big.js"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
-import { bestSellQuery } from "@/api/trade"
 import { TradeFormShell } from "@/modules/trade/swap/components/TradeFormShell/TradeFormShell"
 import { TradeFormSubmit } from "@/modules/trade/swap/components/TradeFormSubmit"
 import { marketPriceFromQuote } from "@/modules/trade/swap/lib/quotedPrice"
@@ -28,7 +25,6 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useIsIceEnabled } from "@/states/intents"
 import { maxBalanceError } from "@/utils/validators"
 
@@ -74,15 +70,6 @@ export const Dca: FC = () => {
   ])
   const { warnings, errors } = useDcaValidation(order, duration)
 
-  const rpc = useRpcProvider()
-  const { data: marketSwap } = useQuery(
-    bestSellQuery(rpc, {
-      assetIn: sellAsset?.id ?? "",
-      assetOut: buyAsset?.id ?? "",
-      amountIn: sellAmount && Big(sellAmount).gt(0) ? sellAmount : "1",
-    }),
-  )
-
   const { setValue } = form
 
   useEffect(() => {
@@ -92,8 +79,11 @@ export const Dca: FC = () => {
   }, [isIceEnabled, setValue])
 
   const quotedPrice = useQuotedPrice({
-    marketPrice: marketPriceFromQuote(
-      marketSwap,
+    // What a single trade of the schedule would execute at right now.
+    executablePrice: marketPriceFromQuote(
+      order
+        ? { amountIn: order.tradeAmountIn, amountOut: order.tradeAmountOut }
+        : undefined,
       sellAsset?.decimals,
       buyAsset?.decimals,
     ),

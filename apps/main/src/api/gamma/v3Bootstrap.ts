@@ -5,7 +5,7 @@ import { PublicClient, zeroAddress } from "viem"
 
 import { AssetType, TAssetData, TToken } from "@/api/assets"
 import { HYPERVISOR_ABI, POOL_ABI } from "@/api/gamma/abi"
-import { GammaContracts } from "@/api/gamma/config"
+import { GAMMA_BOOTSTRAP_HYPERVISOR } from "@/api/gamma/config"
 import { PoolToken, PoolType, V3PoolBase } from "@/api/pools"
 import { useAssetRegistryStore } from "@/states/assetRegistry"
 
@@ -50,11 +50,10 @@ const resolveAsset = async (
 export const loadBootstrapV3Pools = async (
   evm: PublicClient,
   sdk: SdkCtx,
-  contracts: GammaContracts,
 ): Promise<V3PoolBase[]> => {
   const poolAddress = await evm.readContract({
     abi: HYPERVISOR_ABI,
-    address: contracts.hypervisor,
+    address: GAMMA_BOOTSTRAP_HYPERVISOR,
     functionName: "pool",
   })
 

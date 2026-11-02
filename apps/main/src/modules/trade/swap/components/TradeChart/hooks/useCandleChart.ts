@@ -196,7 +196,8 @@ export const useCandleChart = (
 
     series.candlestick.applyOptions({ visible: latest.type === "candles" })
     series.baseline.applyOptions({ visible: latest.type === "line" })
-  }, [latest.type])
+    series.volume.applyOptions({ visible: latest.showVolume })
+  }, [latest.type, latest.showVolume])
 
   return {
     containerRef,

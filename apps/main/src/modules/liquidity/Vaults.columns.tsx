@@ -108,8 +108,8 @@ export const useVaultsColumns = () => {
         header: t("liquidity:vaults.column.vault"),
         cell: ({ row: { original } }) => (
           <AssetLabelUniV3
-            iconIds={original.tokens.map((token) => token.id)}
-            symbol={original.tokens.map((token) => token.symbol).join(" / ")}
+            iconIds={original.pair.map((token) => token.id)}
+            symbol={original.pair.map((token) => token.symbol).join(" / ")}
           />
         ),
       }),
@@ -117,7 +117,7 @@ export const useVaultsColumns = () => {
         header: t("liquidity:vaults.column.price"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
         cell: ({ row: { original } }) => {
-          const [token0, token1] = original.tokens
+          const [token0, token1] = original.pair
 
           return (
             <Text whiteSpace="nowrap">
@@ -165,7 +165,9 @@ export const useVaultsColumns = () => {
         header: t("liquidity:totalValueLocked"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
         cell: ({ row: { original } }) =>
-          original.vault ? (
+          original.isVaultLoading || original.isPriceLoading ? (
+            <Skeleton width={60} height="1em" />
+          ) : original.vault ? (
             t("currency", { value: Number(original.vaultTvlDisplay ?? 0) })
           ) : (
             <NoData />
@@ -179,7 +181,9 @@ export const useVaultsColumns = () => {
         header: t("liquidity:vaults.column.apr"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
         cell: ({ row: { original } }) =>
-          original.isVolumeLoading ? (
+          original.isVolumeLoading ||
+          original.isVaultLoading ||
+          original.isPriceLoading ? (
             <Skeleton width={50} height="1em" />
           ) : original.apr !== undefined ? (
             <Tooltip text={t("liquidity:vaults.column.apr.tooltip")}>
@@ -197,19 +201,22 @@ export const useVaultsColumns = () => {
         id: "status",
         header: t("liquidity:vaults.column.status"),
         meta: { sx: { textAlign: isMobile ? "right" : "left" } },
-        cell: ({ row: { original } }) => (
-          <Tooltip
-            text={t(`liquidity:vaults.status.${original.status}.tooltip`)}
-          >
-            <Chip
-              variant={STATUS_VARIANT[original.status]}
-              size="small"
-              rounded
+        cell: ({ row: { original } }) =>
+          original.isVaultLoading ? (
+            <Skeleton width={70} height="1em" />
+          ) : (
+            <Tooltip
+              text={t(`liquidity:vaults.status.${original.status}.tooltip`)}
             >
-              {t(`liquidity:vaults.status.${original.status}`)}
-            </Chip>
-          </Tooltip>
-        ),
+              <Chip
+                variant={STATUS_VARIANT[original.status]}
+                size="small"
+                rounded
+              >
+                {t(`liquidity:vaults.status.${original.status}`)}
+              </Chip>
+            </Tooltip>
+          ),
       }),
       columnHelper.display({
         id: "actions",

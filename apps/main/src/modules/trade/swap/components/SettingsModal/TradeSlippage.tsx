@@ -7,7 +7,7 @@ import {
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
@@ -32,6 +32,17 @@ export const TradeSlippage: FC<Props> = ({
   const { t } = useTranslation()
   const isError = !!error
 
+  const [inputValue, setInputValue] = useState(slippage?.toString() ?? "")
+
+  useEffect(() => {
+    setInputValue((previous) => {
+      const previousValue = previous === "" ? null : Number(previous)
+      return previousValue === slippage
+        ? previous
+        : (slippage?.toString() ?? "")
+    })
+  }, [slippage])
+
   const slippageOptions = Array.from(new Set(options).values()).map(
     (slippage) => ({
       id: String(slippage),
@@ -52,9 +63,12 @@ export const TradeSlippage: FC<Props> = ({
           <ToggleGroup
             type="single"
             value={selectedSlippage}
-            onValueChange={(value) =>
-              value && onSlippageChange(parseFloat(value))
-            }
+            onValueChange={(value) => {
+              if (value) {
+                setInputValue(value)
+                onSlippageChange(parseFloat(value))
+              }
+            }}
           >
             {slippageOptions.map((option) => (
               <ToggleGroupItem key={option.id} value={option.id}>
@@ -65,13 +79,17 @@ export const TradeSlippage: FC<Props> = ({
 
           <NumberInput
             sx={{ width: "3xl" }}
-            value={slippage}
+            value={inputValue}
+            valueIsNumericString
             unit="%"
             placeholder={t("custom")}
             isError={isError}
-            onValueChange={({ floatValue }) =>
-              onSlippageChange(floatValue ?? null)
-            }
+            onValueChange={({ value, floatValue }, { source }) => {
+              if (source === "event") {
+                setInputValue(value)
+                onSlippageChange(floatValue ?? null)
+              }
+            }}
           />
         </Flex>
       </Flex>

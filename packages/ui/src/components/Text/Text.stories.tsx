@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Text } from "./Text"
+import { Text, TextMiddleTruncate } from "./Text"
 
 type Story = StoryObj<typeof Text>
 
@@ -95,4 +95,14 @@ export const Colors: Story = {
     fs: 40,
     fw: 600,
   },
+}
+
+export const MiddleTruncate: Story = {
+  render: () => (
+    <div style={{ resize: "horizontal", overflow: "auto", inlineSize: 220 }}>
+      <TextMiddleTruncate>
+        7L53bUTBbfuj14UpdCNPwmgzzHSsrsTWBHX5pys32mVWM3C1
+      </TextMiddleTruncate>
+    </div>
+  ),
 }

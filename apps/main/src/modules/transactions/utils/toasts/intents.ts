@@ -24,7 +24,7 @@ export const fetchIntentOrder = async (
 
   try {
     res = await fetch(
-      `${intentscan.baseUrl}/api/orders/${encodeURIComponent(sequence)}`,
+      `${intentscan.apiUrl}/api/orders/${encodeURIComponent(sequence)}`,
     )
   } catch {
     return null

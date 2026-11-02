@@ -58,7 +58,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
 }) => {
   const { t } = useTranslation("translations", { i18n })
   return (
-    <Flex gap="base" wrap>
+    <Flex gap="s" wrap>
       <Button
         variant={active === WalletMode.Default ? "secondary" : "muted"}
         outline={active !== WalletMode.Default}

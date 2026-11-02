@@ -18,7 +18,7 @@ const OVERRIDES = {
 }
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
-const outputPath = resolve(scriptDir, "../src/theme/assetColors.json")
+const outputPath = resolve(scriptDir, "../src/theme/assets/assetColors.json")
 
 const args = process.argv.slice(2)
 const requestedAssetIds = args
@@ -64,15 +64,47 @@ const getSaturation = (r, g, b) => {
   return max === 0 ? 0 : (max - min) / max
 }
 
+const isExtremeBrightness = (r, g, b) => {
+  const brightness = (r + g + b) / 3
+
+  return brightness > 245 || brightness < 12
+}
+
 const isBackgroundColor = (hex) => {
   const rgb = hexToRgb(hex)
 
   if (!rgb) return true
 
   const { r, g, b } = rgb
-  const brightness = (r + g + b) / 3
 
-  return brightness > 245 || brightness < 12 || getSaturation(r, g, b) < 0.08
+  return isExtremeBrightness(r, g, b) || getSaturation(r, g, b) < 0.08
+}
+
+const pickGrayTileColor = (colors, weights) => {
+  let bestColor = ""
+  let bestWeight = 0
+  let bestBrightness = Infinity
+
+  for (const color of colors) {
+    const normalized = normalizeHex(color)
+    const rgb = normalized && hexToRgb(normalized)
+
+    if (!rgb || isExtremeBrightness(rgb.r, rgb.g, rgb.b)) continue
+
+    const weight = weights.get(normalized) ?? 1
+    const brightness = (rgb.r + rgb.g + rgb.b) / 3
+
+    if (
+      weight > bestWeight ||
+      (weight === bestWeight && brightness < bestBrightness)
+    ) {
+      bestColor = normalized
+      bestWeight = weight
+      bestBrightness = brightness
+    }
+  }
+
+  return bestColor
 }
 
 const isAccentBadgeColor = (r, g, b) =>
@@ -167,7 +199,12 @@ const getSvgColor = async (iconSrc) => {
   const svg = await (await fetchOk(iconSrc)).text()
   const colorWeights = parseSvgColorWeights(svg)
 
-  return pickBestTileColor(Array.from(colorWeights.keys()), colorWeights)
+  const colors = Array.from(colorWeights.keys())
+
+  return (
+    pickBestTileColor(colors, colorWeights) ||
+    pickGrayTileColor(colors, colorWeights)
+  )
 }
 
 const isBackgroundPixel = (r, g, b, a) => {

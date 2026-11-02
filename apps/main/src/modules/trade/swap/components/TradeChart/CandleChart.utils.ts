@@ -35,6 +35,7 @@ export type OhlcCrosshairData = BaselineChartData & {
  */
 export type CandleChartLatest = {
   readonly type: TradeChartType
+  readonly showVolume: boolean
   readonly candles: ReadonlyArray<PairCandle>
   readonly onCrosshairMove: (data: OhlcCrosshairData | null) => void
   readonly onReachStart: () => void

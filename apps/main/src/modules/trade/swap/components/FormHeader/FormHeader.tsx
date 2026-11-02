@@ -1,4 +1,4 @@
-import { ButtonIcon, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
+import { Button, Flex, Modal } from "@galacticcouncil/ui/components"
 import { Link, useSearch } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 import { useState } from "react"
@@ -60,13 +60,13 @@ export const FormHeader = () => {
       </Flex>
 
       <TutorialAnchor tutorial="trade-intents" step={0} asChild>
-        <ButtonIcon
+        <Button
+          icon={Settings}
+          variant="ghost"
           onClick={() => setOpenSettings(true)}
           aria-label={t("common:settings")}
           mr="-s"
-        >
-          <Icon size="m" component={Settings} />
-        </ButtonIcon>
+        />
       </TutorialAnchor>
 
       <Modal variant="popup" open={openSettings} onOpenChange={setOpenSettings}>

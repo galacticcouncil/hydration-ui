@@ -7,7 +7,8 @@ export const CHART_GUIDE_INSET = 4
 export const CHART_PLOT_INSET = CHART_GUIDE_INSET * 2
 export const BAR_RADIUS = 4
 export const BAR_GAP = 4
-export const MIN_BAR_HEIGHT = 12
+export const MIN_BAR_HEIGHT = 8
+export const SHORT_BAR_RATIO = 0.4
 export const BAND_GAP = 3
 export const BAND_RADIUS = 3
 

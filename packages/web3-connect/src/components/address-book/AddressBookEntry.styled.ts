@@ -9,7 +9,7 @@ export const SAddressBookEntry = styled(Flex)<{
     justify-content: space-between;
     gap: ${theme.space.base};
 
-    padding-inline: ${theme.space.m};
+    padding-inline: ${theme.space.xl};
     padding-block: ${theme.space.m};
 
     ${!disabled &&

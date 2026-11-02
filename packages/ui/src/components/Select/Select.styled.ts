@@ -1,106 +1,51 @@
-import isPropValid from "@emotion/is-prop-valid"
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { Content, Item, Trigger, Viewport } from "@radix-ui/react-select"
 
-import { createVariants } from "@/utils"
+import { Button } from "../Button"
+import { DropdownMenuContent } from "../DropdownMenu"
+import { Icon } from "../Icon"
+import { MenuItemLabel } from "../Menu"
 
-export type SelectSize = "small" | "medium" | "large"
+export const SSelectTrigger = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "fullWidth",
+})<{ fullWidth?: boolean }>(
+  ({ fullWidth }) => css`
+    --button-icon: 0.6em;
+    --button-icon-end: -0.4em;
 
-const sizes = createVariants<SelectSize>((theme) => ({
-  small: css`
-    padding: ${theme.space.s} ${theme.space.m};
-    font-size: ${theme.fontSizes.p6};
-  `,
-  medium: css`
-    padding: ${theme.buttons.paddings.tertiary}
-      ${theme.buttons.paddings.primary};
-    font-size: ${theme.fontSizes.p4};
-  `,
-  large: css`
-    padding: ${theme.space.m} ${theme.space.l};
-    font-size: ${theme.fontSizes.p4};
-  `,
-}))
+    justify-content: space-between;
 
-export const SelectTrigger = styled(Trigger, {
-  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "size",
-})<{ size?: SelectSize }>(({ theme, size = "medium" }) => [
-  css`
-    cursor: pointer;
+    /* the menu opens on press, so the trigger does not scale; !important beats Button's :active rule */
+    scale: 1 !important;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: ${theme.space.s};
-
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
-    border: 1px solid ${theme.buttons.outlineDark.onOutline};
-    background: ${theme.surfaces.themeBasePalette.surfaceHigh};
-
-    transition: all 0.3s ease-in-out;
-
-    &:hover {
-      background: ${theme.buttons.secondary.low.hover};
-      border-color: ${theme.buttons.secondary.low.hover};
-    }
-  `,
-  sizes(size),
-])
-
-export const SContent = styled(Content)(
-  ({ theme }) => css`
-    border-radius: 12px;
-    border: 1px solid ${theme.details.borders};
-    background: ${theme.surfaces.containers.high.primary};
-
-    padding: 10px;
-
-    box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
-
-    z-index: ${theme.zIndices.popover};
+    ${fullWidth &&
+    css`
+      width: 100%;
+    `}
   `,
 )
 
-export const SItem = styled(Item)(
-  ({ theme }) => css`
-    all: unset;
+export const SSelectContent = styled(DropdownMenuContent)`
+  min-width: var(--radix-dropdown-menu-trigger-width);
 
-    font-size: ${theme.fontSizes.p3};
-    line-height: 140%;
+  /* a list taller than the space beside the trigger scrolls instead of leaving the viewport */
+  & [data-radix-scroll-area-viewport] {
+    max-height: calc(
+      var(--radix-dropdown-menu-content-available-height) - 2 *
+        var(--dropdown-menu-content-vertical-padding) - 2px
+    );
+  }
 
-    cursor: pointer;
-    min-width: 100px;
-    color: ${theme.text.medium};
+  /* balances the indicator in front of the label, so the label stays centred in its row */
+  & [role="menuitemcheckbox"] ${MenuItemLabel} {
+    margin-inline-end: calc(var(--menu-item-icon-size) + var(--menu-item-gap));
+  }
+`
 
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1 0 0;
+export const SSelectedIndicator = styled(Icon)`
+  grid-row: 1 / -1;
 
-    padding: ${theme.buttons.paddings.quart} ${theme.buttons.paddings.secondary};
-
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
-
-    transition: all 0.3s ease-in-out;
-
-    &[data-state="checked"] {
-      color: ${theme.text.tint.secondary};
-      background: ${theme.buttons.secondary.low.hover};
-    }
-
-    &[data-highlighted] {
-      color: ${theme.text.high};
-      background: ${theme.buttons.secondary.low.hover};
-    }
-  `,
-)
-
-export const SViewport = styled(Viewport)(
-  ({ theme }) => css`
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.space.s};
-    z-index: ${theme.zIndices.popover};
-  `,
-)
+  &[data-state="unchecked"] {
+    visibility: hidden;
+  }
+`

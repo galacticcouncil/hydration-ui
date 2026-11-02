@@ -18,6 +18,7 @@ export const SolanaIdenticon: React.FC<SolanaIdenticonProps> = ({
     borderRadius="full"
     align="center"
     justify="center"
+    flexShrink={0}
     {...props}
   >
     <Image src={ICON_URL} alt="Solana" width={size} height={size} />

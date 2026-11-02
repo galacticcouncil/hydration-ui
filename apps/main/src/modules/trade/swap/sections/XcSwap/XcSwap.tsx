@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 import { TradeType } from "@/api/trade"
 import { TradeFormShell } from "@/modules/trade/swap/components/TradeFormShell/TradeFormShell"
 import { TradeFormSubmit } from "@/modules/trade/swap/components/TradeFormSubmit"
+import { useNearRecipientValidation } from "@/modules/trade/swap/sections/XcSwap/hooks/useNearRecipientValidation"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isTwapEnabled"
@@ -53,10 +54,14 @@ const XcSwapForm: React.FC = () => {
   const { toggle } = useWeb3ConnectModal()
   const isWalletConnectRequired = !!requiredWalletMode && !isWalletCompatible
 
-  const [destAddress, isSingleTrade] = form.watch([
+  const [destChain, destAddress, isSingleTrade] = form.watch([
+    "destChain",
     "destAddress",
     "isSingleTrade",
   ])
+  const nearAccountStatus = useNearRecipientValidation(destChain, destAddress)
+  const isNearRecipientReady =
+    nearAccountStatus === "notApplicable" || nearAccountStatus === "exists"
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -100,6 +105,7 @@ const XcSwapForm: React.FC = () => {
 
   const isTradeReady =
     form.formState.isValid &&
+    isNearRecipientReady &&
     !hasBlockingAlerts &&
     isXcSwapTradeEnabled(quote, isSingleTrade)
 
@@ -127,7 +133,11 @@ const XcSwapForm: React.FC = () => {
 
   const disabledLabel = (() => {
     if (isCrossChain && !destAddress.trim())
-      return t("trade:xc.swap.cta.enterRecipient")
+      return t("trade:xc.swap.cta.selectRecipient")
+    if (nearAccountStatus === "missing")
+      return t("trade:xc.swap.error.nearAccountNotFound")
+    if (nearAccountStatus === "unavailable")
+      return t("trade:xc.swap.error.nearAccountCheckFailed")
     if (!isFormValid) return undefined
     if (!isHealthFactorCheckSatisfied)
       return t("trade:xc.swap.cta.acceptHealthFactor")
@@ -135,7 +145,11 @@ const XcSwapForm: React.FC = () => {
   })()
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
+    <form
+      onSubmit={form.handleSubmit((values) => {
+        if (isNearRecipientReady) onSubmit(values)
+      })}
+    >
       <TradeFormShell
         fields={<XcSwapFields destChainAssetPairs={destChainAssetPairs} />}
         summary={<XcSwapSummary />}

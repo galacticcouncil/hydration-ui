@@ -81,7 +81,6 @@ const SLICE_TARGET = 30
 const DEFAULT_DOMAIN_PADDING_RATIO = 1
 const ZOOMED_DOMAIN_PADDING_RATIO = 0.1
 const MEANINGFUL_LIQUIDITY_PERCENT = 5n
-/** keeps a tiny vault position visible as a range marker */
 const MIN_BAND_HEIGHT = 0.02
 
 const CHART_LAYOUT = {

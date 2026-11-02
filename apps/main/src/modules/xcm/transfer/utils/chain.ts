@@ -13,13 +13,15 @@ import {
 } from "@galacticcouncil/web3-connect"
 import {
   EVM_PROVIDERS,
+  NEAR_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
+  ZCASH_PROVIDERS,
 } from "@galacticcouncil/web3-connect/src/config/providers"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { chainsMap, routesMap } from "@galacticcouncil/xc-cfg"
 import {
   AnyChain,
   Asset,
@@ -36,9 +38,13 @@ const { H160 } = h160
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
   "ethereum",
+  "robinhood",
   "base",
   "solana",
+  "hyperevm",
   "sui",
+  "near",
+  "zec",
   "assethub",
   "moonbeam",
   "assethub_kusama",
@@ -54,6 +60,15 @@ export const getChainPriority = (key: string) => {
   return idx === -1 ? Number.POSITIVE_INFINITY : idx
 }
 
+// Routed by the sdk, as a source or as a destination
+const isRoutedChain = (key: string) =>
+  routesMap.has(key) ||
+  [...routesMap.values()].some((chainRoutes) =>
+    chainRoutes
+      .getRoutes()
+      .some((route) => route.destination.chain.key === key),
+  )
+
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
   filter((c) => {
@@ -64,10 +79,18 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Polkadot ||
       c.ecosystem === ChainEcosystem.Solana ||
       c.ecosystem === ChainEcosystem.Sui ||
-      c.ecosystem === ChainEcosystem.Ethereum
+      c.ecosystem === ChainEcosystem.Ethereum ||
+      // NEAR and Zcash are listed once the sdk routes them, so they come with
+      // that release
+      ((c.ecosystem === ChainEcosystem.Near ||
+        c.ecosystem === ChainEcosystem.Zcash) &&
+        isRoutedChain(c.key))
     )
   }),
-  sortBy((c) => [getChainPriority(c.key), c.name]),
+  sortBy(
+    (c) => getChainPriority(c.key),
+    (c) => c.name,
+  ),
 )
 
 export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
@@ -88,6 +111,10 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
         return chainsMap.get("solana") || null
       case SUI_PROVIDERS.includes(provider):
         return chainsMap.get("sui") || null
+      case NEAR_PROVIDERS.includes(provider):
+        return chainsMap.get("near") || null
+      case ZCASH_PROVIDERS.includes(provider):
+        return chainsMap.get("zec") || null
       default:
         return chainsMap.get("assethub") || null
     }
@@ -145,6 +172,14 @@ export const getWalletModeByChain = (chain: AnyChain) => {
 
   if (chain.isSui()) {
     return WalletMode.Sui
+  }
+
+  if (chain.isNear()) {
+    return WalletMode.Near
+  }
+
+  if (chain.isZec()) {
+    return WalletMode.Zcash
   }
 
   return WalletMode.Default

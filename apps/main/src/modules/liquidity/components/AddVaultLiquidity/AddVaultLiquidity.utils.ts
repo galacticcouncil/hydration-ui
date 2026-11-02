@@ -21,7 +21,14 @@ import z from "zod/v4"
 import { useAccountBalances } from "@/api/balances/account.hooks"
 import { estimateGasLimit } from "@/api/borrow"
 import { UNIPROXY_ABI } from "@/api/gamma/abi"
-import { VaultState } from "@/api/gamma/vaults"
+import {
+  estimateVaultCallGas,
+  useVaultDepositChecks,
+  VaultDepositChecks,
+  VaultState,
+  vaultTxInvalidation,
+} from "@/api/gamma/vaults"
+import { V3PoolBase } from "@/api/pools"
 import { VaultTable } from "@/modules/liquidity/Vaults.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
@@ -29,8 +36,6 @@ import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required } from "@/utils/validators"
-
-const EVM_CALL_GAS = 700_000
 
 export const useVaultDepositAmount = (
   vault: VaultState | null,
@@ -58,6 +63,7 @@ export const useVaultDepositAmount = (
 }
 
 type DepositArgs = {
+  pool: V3PoolBase
   vault: VaultState
   token0: Hex
   token1: Hex
@@ -75,7 +81,7 @@ export const useVaultDeposit = () => {
   const evmAddress = safeConvertAnyToH160(account?.address ?? "") as Hex
 
   return useCallback(
-    async ({ vault, token0, token1, amount0, amount1 }: DepositArgs) => {
+    async ({ pool, vault, token0, token1, amount0, amount1 }: DepositArgs) => {
       const calls: { to: Hex; data: Hex; abi: Abi }[] = []
 
       // Re-quote, the band drifts while the modal sits open.
@@ -137,23 +143,31 @@ export const useVaultDeposit = () => {
         abi: [...UNIPROXY_ABI],
       })
 
-      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-        await estimateGasLimit({
-          evm: rpc.evm,
-          gasLimit: EVM_CALL_GAS.toString(),
-        })
+      const [{ maxFeePerGas, maxPriorityFeePerGas }, estimated] =
+        await Promise.all([
+          estimateGasLimit({ evm: rpc.evm }),
+          Promise.all(
+            calls.map(async (call) => ({
+              ...call,
+              gasLimit: await estimateVaultCallGas(rpc.evm, evmAddress, call),
+            })),
+          ),
+        ])
 
-      const evmCalls: ExtendedEvmCall[] = calls.map(({ to, data, abi }) => ({
-        from: evmAddress,
-        to,
-        data,
-        type: CallType.Evm,
-        dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit,
-        maxFeePerGas: maxFeePerGas[0],
-        maxPriorityFeePerGas: maxPriorityFeePerGas[0],
-        abi: safeStringify(abi),
-      }))
+      const evmCalls: ExtendedEvmCall[] = estimated.map(
+        ({ to, data, abi, gasLimit }) => ({
+          from: evmAddress,
+          to,
+          data,
+          type: CallType.Evm,
+          dryRun: (() =>
+            Promise.resolve(undefined)) as () => Promise<undefined>,
+          gasLimit,
+          maxFeePerGas: maxFeePerGas[0],
+          maxPriorityFeePerGas: maxPriorityFeePerGas[0],
+          abi: safeStringify(abi),
+        }),
+      )
 
       return createBatchTx({
         txs: evmCalls.map((call) => transformEvmCallToPapiTx(rpc.papi, call)),
@@ -162,7 +176,7 @@ export const useVaultDeposit = () => {
             submitted: t("vaults.add.toast.submitted"),
             success: t("vaults.add.toast.success"),
           },
-          invalidateQueries: [["vault"], ["pools", "v3"]],
+          invalidateQueries: vaultTxInvalidation(pool),
         },
       })
     },
@@ -174,6 +188,42 @@ export type DepositBlockerKey =
   | "vaults.add.blocked.twap"
   | "vaults.add.blocked.cap"
   | "vaults.add.blocked.supplyCap"
+
+type DepositBlocker = { key: DepositBlockerKey; symbol?: string }
+
+const getDepositBlocker = ({
+  checks,
+  totalSupply,
+  raw0,
+  raw1,
+  shares,
+  symbol0,
+  symbol1,
+}: {
+  checks: VaultDepositChecks
+  totalSupply: bigint
+  raw0: bigint
+  raw1: bigint
+  shares: bigint | null
+  symbol0: string
+  symbol1: string
+}): DepositBlocker | undefined => {
+  if (!checks.twapOk) return { key: "vaults.add.blocked.twap" }
+
+  if (raw0 > checks.deposit0Max)
+    return { key: "vaults.add.blocked.cap", symbol: symbol0 }
+  if (raw1 > checks.deposit1Max)
+    return { key: "vaults.add.blocked.cap", symbol: symbol1 }
+
+  if (
+    checks.supplyCap > 0n &&
+    shares !== null &&
+    totalSupply + shares > checks.supplyCap
+  )
+    return { key: "vaults.add.blocked.supplyCap" }
+
+  return undefined
+}
 
 export const orders = ["assetA", "assetB"] as const
 type Order = (typeof orders)[number]
@@ -348,36 +398,40 @@ export const useAddVaultLiquidity = ({
     assetB.decimals,
   ])
 
-  const blocker = useMemo<
-    { key: DepositBlockerKey; symbol?: string } | undefined
-  >(() => {
-    if (!state) return undefined
+  const depositChecks = useVaultDepositChecks(state)
 
-    if (!state.twapOk) return { key: "vaults.add.blocked.twap" }
+  const blockerFor = useCallback(
+    (checks: VaultDepositChecks | null | undefined) =>
+      state && checks
+        ? getDepositBlocker({
+            checks,
+            totalSupply: state.totalSupply,
+            raw0,
+            raw1,
+            shares,
+            symbol0: assetA.symbol,
+            symbol1: assetB.symbol,
+          })
+        : undefined,
+    [state, raw0, raw1, shares, assetA.symbol, assetB.symbol],
+  )
 
-    if (raw0 > state.deposit0Max)
-      return { key: "vaults.add.blocked.cap", symbol: assetA.symbol }
-    if (raw1 > state.deposit1Max)
-      return { key: "vaults.add.blocked.cap", symbol: assetB.symbol }
-
-    if (
-      state.supplyCap > 0n &&
-      shares !== null &&
-      state.totalSupply + shares > state.supplyCap
-    )
-      return { key: "vaults.add.blocked.supplyCap" }
-
-    return undefined
-  }, [state, raw0, raw1, shares, assetA.symbol, assetB.symbol])
+  const blocker = blockerFor(depositChecks.data)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const submit = async () => {
-    if (!state || raw0 === 0n || raw1 === 0n || blocker) return
+    if (!state || raw0 === 0n || raw1 === 0n) return
 
     setIsSubmitting(true)
     try {
+      // TWAP and caps move with every block: decide on a fresh read, not on
+      // what the form showed. A blocked result re-renders the form's warning.
+      const { data: checks } = await depositChecks.refetch()
+      if (!checks || blockerFor(checks)) return
+
       await deposit({
+        pool: vault.pool,
         vault: state,
         token0: state.token0,
         token1: state.token1,

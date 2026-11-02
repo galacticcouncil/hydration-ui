@@ -4,15 +4,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
-// `neckworkClient` is the Hydration Public API (hydration-api.neckwork.net);
-// `neckwork` is the explorer url builder (hydration-explorer.neckwork.net).
 import { neckworkClient } from "@/api/neckwork"
 import {
   MarketSwapStatus,
   RoutedTradeData,
 } from "@/modules/trade/orders/lib/types"
-import { useNeckworkTradeQueriesEnabled } from "@/modules/trade/swap/tradeDataSource"
 import { useAssets } from "@/providers/assetsProvider"
+import { useNeckworkEnabled } from "@/states/neckwork"
 import { scaleHuman } from "@/utils/formatting"
 
 const MARKET_STATUS: MarketSwapStatus = { kind: "market", status: "filled" }
@@ -23,9 +21,9 @@ export const useRoutedTradesData = (
   page: number,
   pageSize: number,
 ) => {
-  const neckworkEnabled = useNeckworkTradeQueriesEnabled()
+  const neckworkEnabled = useNeckworkEnabled()
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isLoadingError } = useQuery({
     ...routedTradesQuery(neckworkClient, {
       account: address,
       assetIds,
@@ -73,5 +71,10 @@ export const useRoutedTradesData = (
     )
   }, [data, getAssetWithFallback])
 
-  return { swaps, totalCount, isLoading }
+  return {
+    swaps,
+    totalCount,
+    isLoading,
+    isError: isLoadingError || (!neckworkEnabled && !data),
+  }
 }

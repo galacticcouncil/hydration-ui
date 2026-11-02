@@ -1,10 +1,9 @@
-import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
+import { CircleMinus, LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Modal, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
-import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { usePrevious } from "react-use"
@@ -77,7 +76,7 @@ export const OmnipoolPositions = ({
                 selectable: true,
               }}
             >
-              <Minus />
+              <CircleMinus />
               {t("removeLiquidity")}
             </Link>
           </Button>

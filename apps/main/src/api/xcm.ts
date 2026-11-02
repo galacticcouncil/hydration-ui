@@ -1,10 +1,14 @@
 import {
   formatSourceChainAddress,
+  getAddressFromAssetId,
   HYDRATION_CHAIN_KEY,
   isEvmParachain,
+  isZecChain,
   QUERY_KEY_BLOCK_PREFIX,
   resolveHydrationAssetId,
+  resolveHydrationDisplayAssetId,
 } from "@galacticcouncil/utils"
+import { readNoirBalance } from "@galacticcouncil/web3-connect/src/utils/zec"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap, clients } from "@galacticcouncil/xc-cfg"
 import {
@@ -26,13 +30,17 @@ import {
 import { minutesToMilliseconds, secondsToMilliseconds } from "date-fns"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { isString } from "remeda"
+import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
 import { resolveRouteBuilderArgs } from "@/modules/xcm/transfer/utils/bridge"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
+import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -50,23 +58,41 @@ export const useCrossChainConfig = () => {
         withPermissiveEvmResolver(hydration)
       }
 
+      // Zcash is utxo with no public balance api, so balances come from the
+      // connected Noir wallet
+      const zcash = ctx.config.chains.get("zec")
+      if (zcash && isZecChain(zcash)) {
+        zcash.registerBalanceReader(readNoirBalance)
+      }
+
       // Wormhole carries basejump with it — basejump routes hop through the
       // wormhole stack — but basejump can also be pulled on its own.
+      // Snowbridge V1 routes carry the Snowbridge tag too, so one tag pulls
+      // both versions. The inbound switch pulls only Snowbridge routes into
+      // Hydration, so Hydration → Ethereum keeps working.
       const disabledBridgeTags = [
         ...(ENV.VITE_WORMHOLE_DISABLED
           ? [XcmTag.Wormhole, XcmTag.Basejump]
           : []),
         ...(ENV.VITE_BASEJUMP_DISABLED ? [XcmTag.Basejump] : []),
+        ...(ENV.VITE_SNOWBRIDGE_DISABLED ? [XcmTag.Snowbridge] : []),
       ]
 
-      if (disabledBridgeTags.length) {
+      if (disabledBridgeTags.length || ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED) {
         ctx.config.routes.forEach((chainRoutes) => {
           ctx.config.updateRoutes(
             new ChainRoutes({
               chain: chainRoutes.chain,
               routes: chainRoutes.getRoutes().filter((route) => {
                 const tags = route.tags ?? []
-                return !disabledBridgeTags.some((tag) => tags.includes(tag))
+                const isSnowbridgeInbound =
+                  tags.includes(XcmTag.Snowbridge) &&
+                  route.destination.chain.key === HYDRATION_CHAIN_KEY
+
+                return !(
+                  disabledBridgeTags.some((tag) => tags.includes(tag)) ||
+                  (ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED && isSnowbridgeInbound)
+                )
               }),
             }),
           )
@@ -103,6 +129,16 @@ export const useHydrationAssetId = () => {
   return useCallback(
     (asset: Asset, sourceChainKey: string): string | null =>
       resolveHydrationAssetId(asset, sourceChainKey, configService),
+    [configService],
+  )
+}
+
+export const useHydrationDisplayAssetId = () => {
+  const configService = useCrossChainConfigService()
+
+  return useCallback(
+    (asset: Asset): string | null =>
+      resolveHydrationDisplayAssetId(asset, configService),
     [configService],
   )
 }
@@ -145,6 +181,60 @@ export const useNttInboundLimit = (
         throw new Error("chain, asset, and from are required")
       }
       return clients.nttClient(chain, asset).getInboundLimit(from)
+    },
+  })
+}
+
+/**
+ * Custody a locking ntt manager can release - `null` for a burning
+ * destination, which mints and is not bound by it.
+ */
+export const useNttCustody = (chain: AnyChain | null, asset: Asset | null) => {
+  const enabled = !!chain && !!asset && Ntt.isKnown(chain, asset)
+
+  return useQuery({
+    queryKey: ["xcm", "ntt", "custody", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    enabled,
+    queryFn: async () => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+      const custody = await clients.nttClient(chain, asset).getCustody()
+      return custody ?? null
+    },
+  })
+}
+
+/**
+ * What the basejump landing on hydration can pay out right now, for the
+ * asset a transfer lands as.
+ */
+export const useBasejumpPoolLiquidity = (
+  chain: AnyChain | null,
+  asset: Asset | null,
+) => {
+  const { evm } = useRpcProvider()
+
+  return useQuery({
+    queryKey: ["xcm", "basejump", "poolLiquidity", chain?.key, asset?.key],
+    staleTime: minutesToMilliseconds(1),
+    refetchInterval: minutesToMilliseconds(1),
+    enabled: !!chain && !!asset && chain.key === HYDRATION_CHAIN_KEY,
+    queryFn: async (): Promise<BasejumpPoolLiquidity> => {
+      if (!chain || !asset) throw new Error("chain and asset are required")
+
+      const decimals = chain.getAssetDecimals(asset)
+      if (decimals === undefined) throw new Error("Unknown asset decimals")
+
+      const available = await evm.readContract({
+        abi: erc20Abi,
+        address: getAddressFromAssetId(
+          chain.getAssetId(asset).toString(),
+        ) as Hex,
+        functionName: "balanceOf",
+        args: [BASEJUMP_LANDING_CONTRACT],
+      })
+
+      return { available, decimals }
     },
   })
 }
@@ -398,14 +488,16 @@ export const xcmTransferQuery = (
 
 export const xcmTransferReportQuery = (
   transfer: Transfer | null,
+  amount: string,
   transferArgs: XcmTransferArgs | null,
 ) =>
   queryOptions({
     enabled: !!transfer && !!transferArgs,
-    queryKey: ["xcm", "report", transferArgs],
+    queryKey: ["xcm", "report", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) return []
-      return transfer.validate()
+      // Amount-bound checks (ntt rate limits, custody) see zero without it.
+      return transfer.validate(undefined, amount || undefined)
     },
   })
 

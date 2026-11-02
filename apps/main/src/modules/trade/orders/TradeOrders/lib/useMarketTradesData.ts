@@ -17,7 +17,7 @@ export const useMarketTradesData = (
   page: number,
   pageSize: number,
 ) => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isLoadingError } = useQuery({
     ...marketTradesQuery(neckworkClient, {
       assetIds,
       limit: pageSize,
@@ -68,5 +68,5 @@ export const useMarketTradesData = (
     )
   }, [data, getAssetWithFallback])
 
-  return { swaps, totalCount, isLoading }
+  return { swaps, totalCount, isLoading, isError: isLoadingError }
 }

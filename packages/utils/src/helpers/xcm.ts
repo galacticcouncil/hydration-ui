@@ -12,6 +12,7 @@ import {
   Parachain,
   SolanaChain,
   SuiChain,
+  ZecChain,
 } from "@galacticcouncil/xc-core"
 
 import { HYDRATION_CHAIN_KEY } from "../constants"
@@ -22,7 +23,15 @@ import {
   safeConvertSS58ToSolanaAddress,
   safeConvertSS58ToSuiAddress,
 } from "../helpers"
-import { EvmAddr, NearAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
+import {
+  EvmAddr,
+  NearAddr,
+  SolanaAddr,
+  Ss58Addr,
+  SuiAddr,
+  toNearAccountId,
+  ZecAddr,
+} from "./address"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
@@ -67,6 +76,10 @@ export function isAddressValidOnChain(address: string, chain: AnyChain) {
       return SolanaAddr.isValid(address)
     case chain.isSui():
       return SuiAddr.isValid(address)
+    case chain.isNear():
+      return NearAddr.isValid(toNearAccountId(address))
+    case chain.isZec():
+      return ZecAddr.isValid(address)
     default:
       return false
   }
@@ -101,6 +114,10 @@ export function isSuiChain(chain: AnyChain): chain is SuiChain {
 
 export function isNearChain(chain: AnyChain): chain is NearChain {
   return chain.getType() === ChainType.NearChain
+}
+
+export function isZecChain(chain: AnyChain): chain is ZecChain {
+  return chain.getType() === ChainType.ZecChain
 }
 
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
@@ -141,7 +158,12 @@ export function formatSourceChainAddress(
   }
 
   if (isNearChain(chain)) {
-    return NearAddr.isValid(address) ? address : ""
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
+  }
+
+  if (isZecChain(chain)) {
+    return ZecAddr.isValid(address) ? address : ""
   }
 
   return safeConvertAddressSS58(address)
@@ -153,6 +175,10 @@ export function formatDestChainAddress(
 ): string {
   if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
     return safeConvertH160toSS58(address)
+  }
+  if (isNearChain(chain)) {
+    const accountId = toNearAccountId(address)
+    return NearAddr.isValid(accountId) ? accountId : ""
   }
   return isAddressValidOnChain(address, chain) ? address : ""
 }
@@ -185,6 +211,17 @@ export function hasRouteToHydration(
     configService.getAssetRoutesOrEmpty(asset, sourceChain, hydrationChain)
       .length > 0
   )
+}
+
+export function resolveHydrationDisplayAssetId(
+  asset: Asset,
+  configService: ConfigService,
+): string | null {
+  const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
+  if (!hydrationChain) return null
+
+  const canonical = configService.assets.get(asset.key) ?? asset
+  return toHydrationRegistryId(hydrationChain, canonical)
 }
 
 export function resolveHydrationAssetId(

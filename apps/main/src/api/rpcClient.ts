@@ -10,7 +10,7 @@ import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
 import { createWsClient } from "polkadot-api/ws"
 import { doNothing } from "remeda"
-import { createPublicClient, custom, PublicClient } from "viem"
+import { PublicClient } from "viem"
 
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
@@ -79,13 +79,6 @@ const getProviderData = async (
   const papi = papiClient.getTypedApi(hydration)
   const papiNext = papiClient.getTypedApi(hydrationNext)
 
-  const evm = createPublicClient({
-    transport: custom({
-      request: ({ method, params }) =>
-        papiClient._request(method, params || []),
-    }),
-  })
-
   // Read the connected chain's identity before anything is built on top of the
   // client. papiClient.getChainSpecData() is memoized per client and never
   // follows switch(), so it cannot be used here.
@@ -93,9 +86,9 @@ const getProviderData = async (
     0,
   ])
 
-  // The asset metadata CDN is warmed separately by assetMetadataQuery - it is
-  // a third party and must not sit on the path to first render.
   const sdk = await createSdkContext(papiClient)
+
+  const evm = sdk.client.evm.getWsProvider()
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
@@ -109,7 +102,7 @@ const getProviderData = async (
     genesisHash,
     evm,
     sdk,
-    rpcUrlList,
+    rpcUrlList: urls,
     featureFlags: {
       hollarBondsEnabled: true,
       bilEnabled: true,

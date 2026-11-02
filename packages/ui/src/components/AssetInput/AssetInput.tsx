@@ -1,7 +1,7 @@
 import { ChevronDown, LockKeyhole, LockKeyholeOpen } from "lucide-react"
 import { ReactNode } from "react"
 
-import { MicroButton } from "@/components/Button"
+import { Button } from "@/components/Button"
 import { Icon } from "@/components/Icon"
 import { LogoSkeleton } from "@/components/Logo"
 import { Skeleton } from "@/components/Skeleton"
@@ -198,12 +198,16 @@ const AssetInputBalanceView = ({
       {isLoading ? <Skeleton width={pxToRem(64)} height="1em" inline /> : value}
     </SBalanceText>
     {onMax && (
-      <MicroButton
+      <Button
+        size="micro"
+        uppercase
+        variant="muted"
+        outline
         onClick={onMax}
         disabled={isLoading || isDisabled || isMaxDisabled}
       >
         max
-      </MicroButton>
+      </Button>
     )}
     {withPercentageButton &&
       onPercentage &&

@@ -5,7 +5,11 @@ import { useMemo } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useNttInboundLimit, useNttOutboundLimit } from "@/api/xcm"
+import {
+  useNttCustody,
+  useNttInboundLimit,
+  useNttOutboundLimit,
+} from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import {
@@ -44,6 +48,12 @@ export const useWormholeNttLimitAlerts = (
     isNttRoute ? destAsset : null,
     isNttRoute ? srcChain : null,
   )
+  // A locking destination releases only what it previously locked; the
+  // source burn goes through regardless, so this fails closed like the sdk.
+  const { data: custody, isError: isCustodyUnreachable } = useNttCustody(
+    isNttRoute ? destChain : null,
+    isNttRoute ? destAsset : null,
+  )
 
   const isEnabled = Big(srcAmount || "0").gt(0)
 
@@ -66,6 +76,8 @@ export const useWormholeNttLimitAlerts = (
     const amount = toBigInt(srcAmount, srcDecimals)
     if (amount <= 0n) return []
 
+    const delivered = big.convertDecimals(amount, srcDecimals, destDecimals)
+
     const alerts: XcmAlert[] = []
 
     if (outbound && isNttMetered(outbound) && amount > outbound.capacity) {
@@ -81,8 +93,33 @@ export const useWormholeNttLimitAlerts = (
       })
     }
 
+    if (isCustodyUnreachable) {
+      alerts.push({
+        key: XcmLimitAlertKey.WormholeCustodyUnreachable,
+        title: t("limit.wormholeCustody"),
+        message: t("limit.alert.wormhole.custodyUnreachable", {
+          destChainName: destChain.name,
+          symbol: destAsset.originSymbol,
+        }),
+        severity: "error",
+      })
+    } else if (custody !== undefined && custody !== null) {
+      if (delivered > custody) {
+        alerts.push({
+          key: XcmLimitAlertKey.WormholeCustodyExceeded,
+          title: t("limit.wormholeCustody"),
+          message: t("limit.alert.wormhole.custodyExceeded", {
+            srcChainName: srcChain.name,
+            destChainName: destChain.name,
+            capacity: toDecimal(custody, destDecimals),
+            symbol: destAsset.originSymbol,
+          }),
+          severity: "error",
+        })
+      }
+    }
+
     if (inbound && isNttMetered(inbound)) {
-      const delivered = big.convertDecimals(amount, srcDecimals, destDecimals)
       if (delivered > inbound.capacity) {
         alerts.push({
           key: XcmLimitAlertKey.WormholeInboundExceeded,
@@ -100,9 +137,11 @@ export const useWormholeNttLimitAlerts = (
 
     return alerts
   }, [
+    custody,
     destAsset,
     destChain,
     inbound,
+    isCustodyUnreachable,
     isEnabled,
     isNttRoute,
     outbound,

@@ -8,6 +8,7 @@ import {
 import {
   isH160Address,
   isSS58Address,
+  parseNearAccountName,
   safeConvertAddressH160,
   safeConvertAddressSS58,
   shortenAccountAddress,
@@ -52,7 +53,11 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       ) : formattedAddress ? (
         <AccountAvatar address={formattedAddress} size={12} />
       ) : null}
-      {formattedAddress ? shortenAccountAddress(formattedAddress) : placeholder}
+      {formattedAddress
+        ? parseNearAccountName(formattedAddress)
+          ? formattedAddress
+          : shortenAccountAddress(formattedAddress)
+        : placeholder}
       {formattedAddress && <Icon size="xs" component={ChevronDown} />}
     </SConnectButton>
   )

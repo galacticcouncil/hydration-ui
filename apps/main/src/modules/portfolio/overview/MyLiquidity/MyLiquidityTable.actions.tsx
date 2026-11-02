@@ -1,4 +1,4 @@
-import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
+import { CircleMinus, Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
   Flex,
   Icon,
+  MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   Modal,
@@ -58,6 +59,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
                   setIsRemoveAllModalOpen(true)
                 }}
               >
+                <MenuItemIcon component={CircleMinus} />
                 <MenuItemLabel>
                   {t("myLiquidity.actions.removeLiquidity")}
                 </MenuItemLabel>

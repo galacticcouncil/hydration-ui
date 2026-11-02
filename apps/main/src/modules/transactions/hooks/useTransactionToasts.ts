@@ -1,4 +1,10 @@
-import { etherscan, intentscan, neckwork } from "@galacticcouncil/utils"
+import {
+  etherscan,
+  intentscan,
+  nearblocks,
+  neckwork,
+  zcashexplorer,
+} from "@galacticcouncil/utils"
 import {
   useAccount,
   useActiveMultisigConfig,
@@ -131,6 +137,15 @@ function getTransactionLink(
 ) {
   if (meta.type === TransactionType.XcSwap && meta.sequence) {
     return intentscan.order(meta.sequence)
+  }
+
+  // Ahead of the approve check, as NEAR prerequisites carry its meta too
+  if (ecosystem === CallType.Near) {
+    return nearblocks.tx(meta.srcChainKey, txHash)
+  }
+
+  if (ecosystem === CallType.Zec) {
+    return zcashexplorer.tx(meta.srcChainKey, txHash)
   }
 
   if (

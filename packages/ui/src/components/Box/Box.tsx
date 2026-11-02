@@ -44,6 +44,9 @@ export type BoxOwnProps = Partial<
     | "alignItems"
     | "gap"
     | "flex"
+    | "flexShrink"
+    | "flexGrow"
+    | "flexBasis"
     | "visibility"
     | "gridColumn"
     | "gridRow"
@@ -107,6 +110,9 @@ export const Box: React.FC<BoxProps> = ({
   alignItems,
   gap,
   flex,
+  flexShrink,
+  flexGrow,
+  flexBasis,
   visibility,
   gridColumn,
   gridRow,
@@ -154,6 +160,9 @@ export const Box: React.FC<BoxProps> = ({
     alignItems,
     gap,
     flex,
+    flexShrink,
+    flexGrow,
+    flexBasis,
     visibility,
     gridColumn,
     gridRow,

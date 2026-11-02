@@ -11,7 +11,6 @@ import {
   HYDRATION_CHAIN_KEY,
   useAfterFirstRender,
 } from "@galacticcouncil/utils"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
@@ -22,7 +21,6 @@ import { CopyMenu } from "@/modules/transactions/review/ReviewTransactionJsonVie
 import { ExpandableSection } from "@/modules/transactions/review/ReviewTransactionJsonView/components/ExpandableSection"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -54,13 +52,11 @@ export const ReviewTransactionJsonContent: React.FC<
   const hasRendered = useAfterFirstRender()
   const txJson = hasRendered ? decodeTx(tx, jsonPath) : undefined
 
-  const [isCallDataRequested, setIsCallDataRequested] = useState(false)
-  const isCallDataEager = !isPapiTransaction(tx)
-  const isCallDataEnabled = isCallDataRequested || isCallDataEager
-
-  const { data: txCallHash = "", isFetching: isCallDataLoading } =
-    useTxCallData(tx, isCallDataEnabled)
-  const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey, isCallDataEnabled)
+  const { data: txCallHash = "", isPending: isCallDataLoading } = useTxCallData(
+    tx,
+    hasRendered,
+  )
+  const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey, hasRendered)
 
   const hasCallData = hasTxCallData(tx)
 
@@ -70,12 +66,7 @@ export const ReviewTransactionJsonContent: React.FC<
 
   return (
     <>
-      <CopyMenu
-        txUrl={txUrl}
-        txCallHash={txCallHash}
-        txJson={txJson}
-        onOpenChange={(open) => open && setIsCallDataRequested(true)}
-      />
+      <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
       <ScrollArea>
         <ExpandableSection
           title={t("transaction.jsonview.decoded")}
@@ -95,10 +86,6 @@ export const ReviewTransactionJsonContent: React.FC<
             <ExpandableSection
               title={t("transaction.jsonview.calldata")}
               maxContentHeight="100%"
-              defaultExpanded={isCallDataEager}
-              onExpandedChange={(expanded) =>
-                expanded && setIsCallDataRequested(true)
-              }
             >
               {isCallDataLoading ? (
                 <Skeleton count={2} sx={{ fontSize: "p6" }} />

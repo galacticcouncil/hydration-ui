@@ -12,8 +12,10 @@ import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
   isEvmCall,
+  isNearCall,
   isSolanaCall,
   isSuiCall,
+  isZecCall,
 } from "@/modules/transactions/utils/xcm"
 
 export const decodeEvmCall = (abi: Abi, data: Hex) => {
@@ -79,8 +81,23 @@ export const decodeTx = (
     return tx.commands
   }
 
+  // The sdk serializes these as json: NEAR's receiver and actions, a Zcash
+  // payment's address and amount, bigints as strings
+  if (isNearCall(tx) || isZecCall(tx)) {
+    try {
+      return safeParse<object>(tx.data)
+    } catch {
+      return {}
+    }
+  }
+
   return {}
 }
 
 export const hasTxCallData = (tx: AnyTransaction): boolean =>
-  isPapiTransaction(tx) || isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)
+  isPapiTransaction(tx) ||
+  isEvmCall(tx) ||
+  isSolanaCall(tx) ||
+  isSuiCall(tx) ||
+  isNearCall(tx) ||
+  isZecCall(tx)

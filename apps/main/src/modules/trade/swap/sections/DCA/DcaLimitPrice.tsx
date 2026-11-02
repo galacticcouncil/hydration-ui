@@ -71,7 +71,7 @@ export const DcaLimitPrice: FC<Props> = ({ quotedPrice }) => {
             quoteSymbol={
               (view.inverted ? sellAsset?.symbol : buyAsset?.symbol) ?? ""
             }
-            marketLabel={t("trade:dca.limit.spot")}
+            executableLabel={t("trade:dca.limit.executableRate")}
           />
         </>
       )}

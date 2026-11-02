@@ -130,33 +130,61 @@
       const controller = new AbortController();
       const signal = controller.signal;
 
-      const results = [];
+      const responded = [];
+      let results = [];
+      let graceId;
 
       const promises = wsUrls.map(async function (url) {
         if (signal.aborted) return;
         const res = await getBlock(url, timeoutMs, signal);
         if (res.ping === Infinity || signal.aborted) return;
 
-        results.push(res);
-        results.sort(function (a, b) {
-          return b.timestamp - a.timestamp;
-        });
+        responded.push(res);
+        const newest = Math.max.apply(
+          null,
+          responded.map(function (r) {
+            return r.timestamp;
+          }),
+        );
+        results = responded
+          .filter(function (r) {
+            return newest - r.timestamp <= 60000;
+          })
+          .sort(function (a, b) {
+            return b.timestamp - a.timestamp;
+          });
 
-        // Wait for up to 5 results, then abort the rest.
+        if (responded.length === 1) {
+          graceId = setTimeout(function () {
+            controller.abort();
+          }, 1000);
+        }
+
+        // Wait for up to 5 fresh results, then abort the rest.
         if (results.length === 5 || results.length === wsUrls.length) {
           controller.abort();
         }
       });
 
       await Promise.all(promises);
+      clearTimeout(graceId);
 
-      return results;
+      return {
+        best: results,
+        staleUrls: responded
+          .filter(function (r) {
+            return results.indexOf(r) === -1;
+          })
+          .map(function (r) {
+            return r.url;
+          }),
+      };
     }
 
     getBestRpcs(urls, 5000)
-      .then(function (results) {
-        if (results.length > 0) {
-          window.__HYDRATION_BEST_RPCS__ = results;
+      .then(function (result) {
+        if (result.best.length > 0) {
+          window.__HYDRATION_BEST_RPCS__ = result;
         }
       })
       .catch(function () {

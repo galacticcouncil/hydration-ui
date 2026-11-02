@@ -1,4 +1,4 @@
-import { Combobox } from "@galacticcouncil/ui/components"
+import { Select } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -38,12 +38,13 @@ export const BorrowHistoryFilter: FC<Props> = ({ onChange }) => {
   }))
 
   return (
-    <Combobox
+    <Select
+      multiple
       items={dropdownItems}
       label={t("borrow:history.filter.title")}
       placeholder={t("all")}
-      selectedItems={activeFilters}
-      onSelectionChange={(filters) => {
+      value={activeFilters}
+      onValueChange={(filters) => {
         setFilter(
           filters.length && filters.length < borrowHistoryFilters.length
             ? filters

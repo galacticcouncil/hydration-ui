@@ -3,6 +3,7 @@ import type { LogoProps } from "@galacticcouncil/ui/components/Logo"
 import { useAssetMetadata } from "@/api/metadata"
 import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
 import { resolveAssetIcon } from "@/modules/xcm/history/utils/assets"
+import { fromXcScanChainId } from "@/modules/xcm/history/utils/journey"
 
 type JourneyAssetLogoProps = LogoProps & {
   assetKey: string
@@ -20,7 +21,7 @@ export function JourneyAssetLogo({
     <ExternalAssetLogo
       id={iconData.assetId}
       ecosystem={iconData.ecosystem}
-      chainId={iconData.chainId}
+      chainId={fromXcScanChainId(iconData)}
       {...props}
     />
   )
