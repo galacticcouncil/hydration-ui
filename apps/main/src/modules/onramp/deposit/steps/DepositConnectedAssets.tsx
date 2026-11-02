@@ -28,6 +28,8 @@ import { useTranslation } from "react-i18next"
 import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
+import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { depositStepAfterAsset } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
 import { useDepositDiscovery } from "@/modules/onramp/deposit/hooks/useDepositDiscovery"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
@@ -56,8 +58,12 @@ export const DepositConnectedAssets = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
-  const data = useDepositDiscovery()
-  const { sourceChainAssetPairs } = useXcmProvider()
+  const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
+  const data = useDepositDiscovery({ account: sourceAccount })
+  const { sourceChainAssetPairs: allSourcePairs } = useXcmProvider()
+  const sourceChainAssetPairs = allSourcePairs.filter(({ chain }) =>
+    canUseDepositAccount(sourceAccount, chain),
+  )
   const { getValues, setValue } = useFormContext<XcmFormValues>()
   const resetAmounts = useResetAmounts()
   const setSourceAccount = useOnrampModal(
@@ -126,6 +132,8 @@ export const DepositConnectedAssets = () => {
     resetAmounts()
     setValue("srcChain", chain)
     setValue("srcAsset", asset)
+    setValue("destAddress", "")
+    setValue("destAccount", null)
   }
   const selectHolding = (row: DepositBalanceRow) => {
     setSourceAccount(row.source.account)
@@ -134,7 +142,7 @@ export const DepositConnectedAssets = () => {
       row.source.assets.find((asset) => asset.key === row.balance.key) ??
         row.balance,
     )
-    paginateTo(OnrampScreen.DepositOnchainForm)
+    paginateTo(depositStepAfterAsset("connected"))
   }
 
   return (

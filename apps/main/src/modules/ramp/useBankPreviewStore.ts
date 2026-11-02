@@ -4,6 +4,8 @@ import { persist } from "zustand/middleware"
 import type { DepositCurrency, RailStatus } from "./deposit.mock"
 
 export type BankSetupDraft = {
+  intent?: "deposit" | "withdraw"
+  session?: { startedAt: number; lastActiveAt: number }
   currency: DepositCurrency
   amount: string
   accountType: string
@@ -11,7 +13,7 @@ export type BankSetupDraft = {
   railStatus: Record<DepositCurrency, RailStatus>
   accounts: DepositCurrency[]
   providerHandoff: "idle" | "away" | "returned"
-  screen: "onboarding" | "account" | "details"
+  screen: "entry" | "onboarding" | "account" | "details"
 }
 
 type BankPreviewStore = {

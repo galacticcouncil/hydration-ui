@@ -16,14 +16,22 @@ import { ChainLogo } from "@/components/ChainLogo"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { SAssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem.styled"
+import { toDecimal } from "@/utils/formatting"
 
 import { DepositAssetNetworkPair } from "./DepositQuickAssetGroups"
+import {
+  quickBalanceKey,
+  QuickDepositBalances,
+} from "./DepositQuickBalances.utils"
 
 type DepositQuickNetworkSelectProps = {
   symbol: string
   items: DepositAssetNetworkPair[]
   onBack: () => void
   onSelect: (source: DepositAssetNetworkPair) => void
+  balances: QuickDepositBalances
+  balanceLoading: boolean
+  balanceFailed: boolean
 }
 
 export const DepositQuickNetworkSelect: FC<DepositQuickNetworkSelectProps> = ({
@@ -31,13 +39,22 @@ export const DepositQuickNetworkSelect: FC<DepositQuickNetworkSelectProps> = ({
   items,
   onBack,
   onSelect,
+  balances,
+  balanceLoading,
+  balanceFailed,
 }) => {
-  const { t } = useTranslation("onramp")
+  const { t } = useTranslation(["onramp", "common"])
   const [search, setSearch] = useState("")
   const query = search.trim().toLowerCase()
-  const visible = items.filter(({ chain }) =>
-    `${chain.name} ${chain.key}`.toLowerCase().includes(query),
-  )
+  const visible = items
+    .filter(({ chain }) =>
+      `${chain.name} ${chain.key}`.toLowerCase().includes(query),
+    )
+    .sort(
+      (a, b) =>
+        Number(balances.has(quickBalanceKey(b.chain.key, b.asset.key))) -
+        Number(balances.has(quickBalanceKey(a.chain.key, a.asset.key))),
+    )
   return (
     <>
       <SOnrampStepHeader
@@ -58,6 +75,12 @@ export const DepositQuickNetworkSelect: FC<DepositQuickNetworkSelectProps> = ({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
+          {balanceLoading && (
+            <Text fs="p6">{t("deposit.flow.assets.scanning")}</Text>
+          )}
+          {balanceFailed && (
+            <Text fs="p6">{t("deposit.flow.assets.partial")}</Text>
+          )}
           <Stack gap={0}>
             {visible.map((source) => (
               <SAssetListItem
@@ -76,7 +99,22 @@ export const DepositQuickNetworkSelect: FC<DepositQuickNetworkSelectProps> = ({
                   />
                   <Text fs="p4">{source.chain.name}</Text>
                 </Flex>
-                <Icon component={ChevronRight} size="m" />
+                <Flex gap="s" align="center">
+                  {(() => {
+                    const amount = balances.get(
+                      quickBalanceKey(source.chain.key, source.asset.key),
+                    )?.amount
+                    return amount ? (
+                      <Text fs="p5">
+                        {t("common:number", {
+                          value: toDecimal(amount.amount, amount.decimals),
+                          symbol,
+                        })}
+                      </Text>
+                    ) : null
+                  })()}
+                  <Icon component={ChevronRight} size="m" />
+                </Flex>
               </SAssetListItem>
             ))}
             {!visible.length && <AssetSelectEmptyState />}

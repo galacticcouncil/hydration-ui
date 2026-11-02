@@ -1,0 +1,171 @@
+{
+  "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+  "pages": [
+    {
+      "id": "432:7274",
+      "name": "🔗 Content links"
+    },
+    {
+      "id": "432:7275",
+      "name": "---"
+    },
+    {
+      "id": "441:84628",
+      "name": "🔩 UI COMPONENTS"
+    },
+    {
+      "id": "440:7484",
+      "name": "Buttons"
+    },
+    {
+      "id": "750:40055",
+      "name": "Charts & bars"
+    },
+    {
+      "id": "793:11168",
+      "name": "Chips "
+    },
+    {
+      "id": "3579:11133",
+      "name": "Headers"
+    },
+    {
+      "id": "34:2",
+      "name": "Icons"
+    },
+    {
+      "id": "440:16093",
+      "name": "Input controls "
+    },
+    {
+      "id": "441:64985",
+      "name": "Asset icons"
+    },
+    {
+      "id": "440:7485",
+      "name": "Lists"
+    },
+    {
+      "id": "0:1",
+      "name": "Logos"
+    },
+    {
+      "id": "442:11574",
+      "name": "Navigation"
+    },
+    {
+      "id": "481:62528",
+      "name": "Notifications"
+    },
+    {
+      "id": "529:42314",
+      "name": "Values"
+    },
+    {
+      "id": "4452:1178",
+      "name": "Misc"
+    },
+    {
+      "id": "440:7487",
+      "name": "---"
+    },
+    {
+      "id": "440:16092",
+      "name": "🛠️ MODULES"
+    },
+    {
+      "id": "8867:13885",
+      "name": "Basejump"
+    },
+    {
+      "id": "441:84755",
+      "name": "Modals & panels"
+    },
+    {
+      "id": "2696:23861",
+      "name": "Settings"
+    },
+    {
+      "id": "2638:31875",
+      "name": "Staking"
+    },
+    {
+      "id": "441:21999",
+      "name": "SWAP & Charts"
+    },
+    {
+      "id": "5899:8068",
+      "name": "Onboarding"
+    },
+    {
+      "id": "6359:780",
+      "name": "Campaigns & more"
+    },
+    {
+      "id": "444:9149",
+      "name": "---"
+    },
+    {
+      "id": "444:30648",
+      "name": "Misc"
+    }
+  ],
+  "collections": [
+    {
+      "id": "VariableCollectionId:288:7999",
+      "name": "Base",
+      "key": "7a5a2dc12668fe0b8d646d6de080dcd98eceb635",
+      "remote": false,
+      "modes": [
+        {
+          "name": "Core",
+          "modeId": "288:12"
+        }
+      ],
+      "defaultModeId": "288:12",
+      "variableCount": 221
+    },
+    {
+      "id": "VariableCollectionId:294:7272",
+      "name": "Themes",
+      "key": "46a66f6786857332ed75a3df495e4e6ad333f664",
+      "remote": false,
+      "modes": [
+        {
+          "name": "Light",
+          "modeId": "294:0"
+        },
+        {
+          "name": "Dark",
+          "modeId": "294:1"
+        }
+      ],
+      "defaultModeId": "294:0",
+      "variableCount": 216
+    },
+    {
+      "id": "VariableCollectionId:1687:29507",
+      "name": "Misc",
+      "key": "eee422aad86b191174cefbb90841a95aa669417a",
+      "remote": false,
+      "modes": [
+        {
+          "name": "Desktop",
+          "modeId": "1687:1"
+        },
+        {
+          "name": "Mobile",
+          "modeId": "1687:2"
+        }
+      ],
+      "defaultModeId": "1687:1",
+      "variableCount": 27
+    }
+  ],
+  "styleCounts": {
+    "text": 55,
+    "paint": 0,
+    "effect": 12,
+    "grid": 0
+  }
+}

@@ -15,6 +15,8 @@ import {
   filterDepositBalancesByProviders,
   getDepositSources,
   getDepositUnavailableReason,
+  getFundedDepositAccounts,
+  getSelectedDepositAccounts,
   groupDepositBalances,
   summarizeDepositBalances,
 } from "@/modules/onramp/deposit/DepositDiscovery.utils"
@@ -40,6 +42,43 @@ const makeAccount = (
   publicKey: "",
   provider,
   canUseOnHydration: true,
+})
+
+describe("wallet-first deposit selection", () => {
+  it("scans only the selected account, even when other wallets are connected", () => {
+    const evm = makeAccount(
+      "0x0000000000000000000000000000000000000001",
+      WalletProviderType.MetaMask,
+    )
+    const anotherEvm = makeAccount(
+      "0x0000000000000000000000000000000000000002",
+      WalletProviderType.MetaMask,
+    )
+    const alias = { ...evm, provider: WalletProviderType.RabbyWallet }
+    const solana = makeAccount(
+      "So11111111111111111111111111111111111111112",
+      WalletProviderType.Phantom,
+    )
+    const accounts = [evm, anotherEvm, alias, solana]
+    expect(getSelectedDepositAccounts(accounts, evm)).toEqual([evm])
+    expect(getSelectedDepositAccounts(accounts, null)).toEqual([])
+    expect(getSelectedDepositAccounts(accounts, undefined)).toEqual(accounts)
+    const pairs = ["ethereum", "base", "solana"].map((key) => ({
+      chain: chainsMap.get(key)!,
+      assets: [],
+      routes: [],
+      isTagSelect: false,
+    }))
+    const sources = getDepositSources(
+      getSelectedDepositAccounts(accounts, evm),
+      pairs,
+    )
+    expect(sources.map((source) => source.chain.key)).toEqual([
+      "ethereum",
+      "base",
+    ])
+    expect(sources.every((source) => source.account === evm)).toBe(true)
+  })
 })
 
 describe("deposit discovery", () => {
@@ -114,6 +153,34 @@ const route = (
     destination: { asset: { key: destinationKey } },
     tags: routeTags,
   }) as AssetRoute
+
+describe("funded deposit source accounts", () => {
+  it("keeps funded aliases and excludes zero, missing, and different assets", () => {
+    const funded = balanceRow("funded", "ethereum", 100n, 2)
+    const alias = {
+      ...funded.source.account,
+      provider: WalletProviderType.RabbyWallet,
+    }
+    funded.source.accounts.push(alias)
+    const empty = balanceRow("empty", "ethereum", 0n, 2)
+    const other = balanceRow(
+      "other",
+      "ethereum",
+      10n,
+      2,
+      undefined,
+      "eth",
+      "ETH",
+    )
+    expect(
+      getFundedDepositAccounts(
+        [funded.source, empty.source, other.source, other.source],
+        [[funded.balance], [empty.balance], [other.balance], undefined],
+        "usdc",
+      ),
+    ).toEqual([funded.source.account, alias])
+  })
+})
 
 describe("grouped deposit discovery", () => {
   it("retains alternative signers without querying or counting the same address twice", () => {

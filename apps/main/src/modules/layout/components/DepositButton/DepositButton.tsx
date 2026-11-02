@@ -26,15 +26,14 @@ export const DepositButton = ({ onClaimClick }: DepositButtonProps) => {
   const pathname = useLocation({ select: (location) => location.pathname })
   const liveClaims = useClaimableDeposits()
   const v3Transfers = useDepositJourneyStore((state) => state.pendingTransfers)
-  const claimCount = liveClaims.length
+  const claimCount = account ? liveClaims.length : 0
   const claimAttention = claimCount > 0 && pathname !== "/portfolio/deposits"
   const pendingDeposits = useOnrampStore(
     useShallow(selectPendingDepositsByAccount(account?.address)),
   )
-  const count =
-    pendingDeposits.length + v3Transfers.filter((item) => !item.error).length
-
-  if (!account) return null
+  const count = account
+    ? pendingDeposits.length + v3Transfers.filter((item) => !item.error).length
+    : 0
 
   return (
     <SDepositButton
@@ -53,7 +52,9 @@ export const DepositButton = ({ onClaimClick }: DepositButtonProps) => {
           onClaimClick(event)
           return
         }
-        const transfer = v3Transfers.filter((item) => !item.error).at(-1)
+        const transfer = account
+          ? v3Transfers.filter((item) => !item.error).at(-1)
+          : undefined
         if (transfer) {
           useOnrampModal
             .getState()

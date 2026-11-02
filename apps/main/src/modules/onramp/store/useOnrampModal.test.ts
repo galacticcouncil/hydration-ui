@@ -65,6 +65,30 @@ beforeEach(() => {
   paginateTo.mockReset()
 })
 
+describe("wallet-first receiving account suggestion", () => {
+  it("captures a connected active Hydration account when the flow starts", () => {
+    wallet.account = recipient
+    wallet.accounts = [recipient]
+    modal().openOnchain("connected")
+    expect(modal().depositSuggestedDestination).toEqual(recipient)
+    wallet.account = null
+    expect(modal().depositSuggestedDestination).toEqual(recipient)
+  })
+
+  it("does not suggest a disconnected, incompatible, or newly connected source account", () => {
+    wallet.account = recipient
+    wallet.getStatus.mockReturnValue("disconnected")
+    modal().openOnchain("connected")
+    expect(modal().depositSuggestedDestination).toBeNull()
+    wallet.getStatus.mockReturnValue("connected")
+    wallet.accounts = [recipient]
+    expect(modal().depositSuggestedDestination).toBeNull()
+    wallet.account = { ...recipient, canUseOnHydration: false }
+    modal().openOnchain("connected")
+    expect(modal().depositSuggestedDestination).toBeNull()
+  })
+})
+
 describe("on-chain deposit design variants", () => {
   it("opens the fifth version from the main deposit modal after visiting an older flow", () => {
     journey().setSubmitted(transfer)

@@ -77,7 +77,7 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
   const back = () => {
     if (flow.providerHandoff === "away") {
       flow.cancelProviderHandoff()
-    } else if (screen === "entry") {
+    } else if (screen === "entry" || flow.intent === "withdraw") {
       onBack()
     } else {
       flow.setScreen("entry")
@@ -126,7 +126,7 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
 
   return (
     <>
-      {!isHistory && !isProviderSummary && (
+      {!isHistory && !isProviderSummary && flow.intent !== "withdraw" && (
         <OnrampModalTopContent>
           <Stepper
             maxWidth="100%"
@@ -142,7 +142,7 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
       )}
       <ModalHeader
         title={
-          isProviderSummary
+          isProviderSummary || flow.intent === "withdraw"
             ? t("bankV3.setup.title")
             : screen === "details" && !waiting
               ? t("bankV3.deposit.details", { currency })
@@ -186,7 +186,7 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
                   disabled={!railAvailable}
                   onClick={() => {
                     flow.setV2Stage("amount")
-                    flow.setScreen("details")
+                    flow.goToAccount()
                   }}
                 >
                   {t("bankV2.deposit.existingDetails")}
@@ -219,10 +219,18 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
                     />
                   )}
                   <Text as="h2" font="primary" fs="h7" fw={500} align="center">
-                    {t(`bankV2.deposit.setupTitle.${setupIndex}`)}
+                    {t(
+                      flow.intent === "withdraw" && setupIndex !== 0
+                        ? `bankShared.withdraw.setupTitle.${setupIndex}`
+                        : `bankV2.deposit.setupTitle.${setupIndex}`,
+                    )}
                   </Text>
                   <Text fs="p5" align="center" color={getToken("text.medium")}>
-                    {t(`bankV2.deposit.setupDescription.${setupIndex}`)}
+                    {t(
+                      flow.intent === "withdraw" && setupIndex === 1
+                        ? "bankShared.withdraw.accountDescription"
+                        : `bankV2.deposit.setupDescription.${setupIndex}`,
+                    )}
                   </Text>
                 </Stack>
                 {onboardingStep === 1 && (
@@ -260,7 +268,7 @@ export const BankDepositV3: FC<BankDepositV3Props> = ({
                           flex={1}
                           align="flex-start"
                         >
-                          <Text fs="p4" fw={500}>
+                          <Text fs="p2" fw={500}>
                             {t(
                               type === "Individual"
                                 ? "bankV2.deposit.individual"

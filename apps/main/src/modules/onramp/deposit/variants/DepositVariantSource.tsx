@@ -11,6 +11,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import {
   Account,
   useWeb3Connect,
+  WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
@@ -22,6 +23,7 @@ import { neckworkClient } from "@/api/neckwork"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
+import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { SDepositSourceAccount } from "@/modules/onramp/deposit/preview/steps/DepositHydrationTransfer.styled"
 import { DepositPreviewForm } from "@/modules/onramp/deposit/preview/steps/DepositPreviewForm"
@@ -29,7 +31,6 @@ import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDeposi
 import { DepositGuidedDestination } from "@/modules/onramp/deposit/variants/DepositGuidedDestination"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRecentProviderAccountsStore } from "@/states/recentProviderAccounts"
 
@@ -64,8 +65,18 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
       assets.some((asset) => asset.key === intent.assetKey),
   )
   const asset = pair?.assets.find((asset) => asset.key === intent?.assetKey)
-  const eligible = (account: Account) =>
-    !!pair && canUseDepositAccount(account, pair.chain)
+  const funded = useFundedDepositAccounts(accounts, pair?.chain, asset)
+  const eligible = useCallback(
+    (account: Account) =>
+      !!pair &&
+      canUseDepositAccount(account, pair.chain) &&
+      funded.accounts.some(
+        (candidate) =>
+          candidate.provider === account.provider &&
+          candidate.address === account.address,
+      ),
+    [pair, funded.accounts],
+  )
   const compatible = accounts.filter(eligible)
   const back = () => {
     if (connecting && compatible.length) setConnecting(false)
@@ -74,7 +85,7 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
   }
   const select = useCallback(
     (account: Account) => {
-      if (!pair || !asset || !canUseDepositAccount(account, pair.chain)) return
+      if (!pair || !asset || !eligible(account)) return
       const journey = useDepositJourneyStore.getState()
       if (
         inlineDestination &&
@@ -109,7 +120,7 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
       )
       setConnecting(false)
     },
-    [pair, asset, setAccount, reset, getValues, inlineDestination],
+    [pair, asset, setAccount, reset, getValues, inlineDestination, eligible],
   )
   const selectedSource =
     selection &&
@@ -132,18 +143,12 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
     if (inlineDestination && !connecting && !hasSelection && preferred)
       select(preferred)
   }, [inlineDestination, connecting, hasSelection, preferred, select])
-  if (
-    pair &&
-    asset &&
-    (connecting ||
-      !compatible.length ||
-      (inlineDestination && !hasSelection && !preferred))
-  )
+  if (pair && asset && connecting)
     return (
       <Web3ConnectPage
         neckwork={neckworkClient}
         papi={papi}
-        mode={getWalletModeByChain(pair.chain)}
+        mode={WalletMode.Default}
         accountFilter={eligible}
         meta={{
           title: t("deposit.variants.connectTitle", {
@@ -203,6 +208,18 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
               chain: pair.chain.name,
             })}
           </Text>
+          {funded.isLoading && (
+            <Text fs="p5">{t("deposit.flow.assets.scanning")}</Text>
+          )}
+          {funded.failed && (
+            <Alert
+              variant="warning"
+              description={t("deposit.flow.assets.partial")}
+            />
+          )}
+          {!funded.isLoading && !funded.failed && !compatible.length && (
+            <Text fs="p5">{t("deposit.flow.assets.empty")}</Text>
+          )}
           <Stack gap="m" justify="flex-start">
             {compatible.map((account) => (
               <AccountTile

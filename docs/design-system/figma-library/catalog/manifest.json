@@ -1,0 +1,1110 @@
+{
+  "schemaVersion": 1,
+  "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+  "name": "Hydration Design Library",
+  "exportDate": "2026-10-26",
+  "assembledDate": "2026-10-26",
+  "generator": "scripts/assemble_catalog.py",
+  "counts": {
+    "pages": 27,
+    "componentSets": 194,
+    "standaloneComponents": 1636,
+    "families": 1830,
+    "variants": 1017,
+    "definitions": 2847,
+    "collections": 3,
+    "variables": 464,
+    "styles": {
+      "text": 55,
+      "paint": 0,
+      "effect": 12,
+      "grid": 0
+    },
+    "dependencyEdges": 815
+  },
+  "pages": [
+    {
+      "id": "432:7274",
+      "name": "🔗 Content links",
+      "counts": {
+        "sets": 2,
+        "standalone": 6,
+        "variants": 10,
+        "total": 18
+      }
+    },
+    {
+      "id": "432:7275",
+      "name": "---",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "441:84628",
+      "name": "🔩 UI COMPONENTS",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "440:7484",
+      "name": "Buttons",
+      "counts": {
+        "sets": 14,
+        "standalone": 1,
+        "variants": 131,
+        "total": 146
+      }
+    },
+    {
+      "id": "750:40055",
+      "name": "Charts & bars",
+      "counts": {
+        "sets": 4,
+        "standalone": 2,
+        "variants": 9,
+        "total": 15
+      }
+    },
+    {
+      "id": "793:11168",
+      "name": "Chips ",
+      "counts": {
+        "sets": 4,
+        "standalone": 0,
+        "variants": 27,
+        "total": 31
+      }
+    },
+    {
+      "id": "3579:11133",
+      "name": "Headers",
+      "counts": {
+        "sets": 4,
+        "standalone": 1,
+        "variants": 13,
+        "total": 18
+      }
+    },
+    {
+      "id": "34:2",
+      "name": "Icons",
+      "counts": {
+        "sets": 13,
+        "standalone": 1563,
+        "variants": 151,
+        "total": 1727
+      }
+    },
+    {
+      "id": "440:16093",
+      "name": "Input controls ",
+      "counts": {
+        "sets": 21,
+        "standalone": 3,
+        "variants": 95,
+        "total": 119
+      }
+    },
+    {
+      "id": "441:64985",
+      "name": "Asset icons",
+      "counts": {
+        "sets": 9,
+        "standalone": 3,
+        "variants": 44,
+        "total": 56
+      }
+    },
+    {
+      "id": "440:7485",
+      "name": "Lists",
+      "counts": {
+        "sets": 3,
+        "standalone": 0,
+        "variants": 9,
+        "total": 12
+      }
+    },
+    {
+      "id": "0:1",
+      "name": "Logos",
+      "counts": {
+        "sets": 8,
+        "standalone": 9,
+        "variants": 55,
+        "total": 72
+      }
+    },
+    {
+      "id": "442:11574",
+      "name": "Navigation",
+      "counts": {
+        "sets": 36,
+        "standalone": 16,
+        "variants": 132,
+        "total": 184
+      }
+    },
+    {
+      "id": "481:62528",
+      "name": "Notifications",
+      "counts": {
+        "sets": 5,
+        "standalone": 2,
+        "variants": 39,
+        "total": 46
+      }
+    },
+    {
+      "id": "529:42314",
+      "name": "Values",
+      "counts": {
+        "sets": 6,
+        "standalone": 1,
+        "variants": 30,
+        "total": 37
+      }
+    },
+    {
+      "id": "4452:1178",
+      "name": "Misc",
+      "counts": {
+        "sets": 3,
+        "standalone": 3,
+        "variants": 14,
+        "total": 20
+      }
+    },
+    {
+      "id": "440:7487",
+      "name": "---",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "440:16092",
+      "name": "🛠️ MODULES",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "8867:13885",
+      "name": "Basejump",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "441:84755",
+      "name": "Modals & panels",
+      "counts": {
+        "sets": 20,
+        "standalone": 3,
+        "variants": 82,
+        "total": 105
+      }
+    },
+    {
+      "id": "2696:23861",
+      "name": "Settings",
+      "counts": {
+        "sets": 3,
+        "standalone": 2,
+        "variants": 18,
+        "total": 23
+      }
+    },
+    {
+      "id": "2638:31875",
+      "name": "Staking",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "441:21999",
+      "name": "SWAP & Charts",
+      "counts": {
+        "sets": 30,
+        "standalone": 8,
+        "variants": 119,
+        "total": 157
+      }
+    },
+    {
+      "id": "5899:8068",
+      "name": "Onboarding",
+      "counts": {
+        "sets": 4,
+        "standalone": 0,
+        "variants": 14,
+        "total": 18
+      }
+    },
+    {
+      "id": "6359:780",
+      "name": "Campaigns & more",
+      "counts": {
+        "sets": 2,
+        "standalone": 2,
+        "variants": 14,
+        "total": 18
+      }
+    },
+    {
+      "id": "444:9149",
+      "name": "---",
+      "counts": {
+        "sets": 0,
+        "standalone": 0,
+        "variants": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "444:30648",
+      "name": "Misc",
+      "counts": {
+        "sets": 3,
+        "standalone": 11,
+        "variants": 11,
+        "total": 25
+      }
+    }
+  ],
+  "rawManifest": "raw/manifest.json",
+  "rawManifestSha256": "cf623ae518aafb78a1a9a086d6508fe20f8127e477f633e6f10e289d2b264bf7",
+  "rawProvenance": [
+    {
+      "label": "432-7274",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/432-7274/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "3cf5e2b0c206a66ec21bb49d96c3935b37a6623c88ede69134dba204205340ba"
+        },
+        {
+          "path": "raw/chunks/432-7274/44000.json",
+          "offset": 44000,
+          "length": 35548,
+          "sha256": "74743e4fee1157f068604c7a05ce6de7c61a2906ae9034186cd7dcb8514f848e"
+        }
+      ],
+      "encodedLength": 79548,
+      "jsonLength": 271408,
+      "decodedBytes": 271464,
+      "decodedSha256": "fd510091d18bac7ccb398260320b3a0b03fa39b338d4c38e8fe19bf3592877e4"
+    },
+    {
+      "label": "432-7275",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/432-7275/0.json",
+          "offset": 0,
+          "length": 368,
+          "sha256": "abb838576596222c8ca8aaf80373954b28a39d7caf4993d67f292b7f578fe769"
+        }
+      ],
+      "encodedLength": 368,
+      "jsonLength": 189,
+      "decodedBytes": 189,
+      "decodedSha256": "88d18c9e4f0cf8b300a927731bddf2457d42d0ae29d2adecb04e4df56847ebd3"
+    },
+    {
+      "label": "441-84628",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/441-84628/0.json",
+          "offset": 0,
+          "length": 408,
+          "sha256": "811dbe6cca5b468bf0966aa9c3490a6c36678824b0c2c572feee7cc87287fc6c"
+        }
+      ],
+      "encodedLength": 408,
+      "jsonLength": 203,
+      "decodedBytes": 205,
+      "decodedSha256": "4b94b00c69681197f4cf03c3703f94a67cc188eb7aba2c9891973178ae88a35d"
+    },
+    {
+      "label": "440-7484",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/440-7484/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "388d79ed2ba10f800b88a1206333915e4fd19b2508cd6ae6ca1f8732dee89448"
+        },
+        {
+          "path": "raw/chunks/440-7484/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "3067aeb31dc38973513732642cc466928697c1f4787d01f2b8ea19bfac23686a"
+        },
+        {
+          "path": "raw/chunks/440-7484/88000.json",
+          "offset": 88000,
+          "length": 44000,
+          "sha256": "b02738584941946f116beccc6735da43c549bb9365d45bdb8c453bc5ba0010b7"
+        },
+        {
+          "path": "raw/chunks/440-7484/132000.json",
+          "offset": 132000,
+          "length": 44000,
+          "sha256": "cc284013ee00fb0980b8cdb375c5ae79b3471135824a94d2a7d3212243b816fc"
+        },
+        {
+          "path": "raw/chunks/440-7484/176000.json",
+          "offset": 176000,
+          "length": 43196,
+          "sha256": "0214f71a9305f393f7d892e53a59cc8305c3eaf740ac289e679f6f5e707f3203"
+        }
+      ],
+      "encodedLength": 219196,
+      "jsonLength": 497360,
+      "decodedBytes": 497438,
+      "decodedSha256": "333f0f20bfd0174dda92ab7b3da1ed9a16db8c06199c840d62b51c91617269e8"
+    },
+    {
+      "label": "750-40055",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/750-40055/0.json",
+          "offset": 0,
+          "length": 36456,
+          "sha256": "ece0daf4be2274e1fb4aad48a99fc08a3ae4122857538a1ba3e80142ea09b979"
+        }
+      ],
+      "encodedLength": 36456,
+      "jsonLength": 76325,
+      "decodedBytes": 76341,
+      "decodedSha256": "b50e1a95d1be5c61c3fed8026408f1e7ff887b0d14e2c3e67ef55ecf9515f688"
+    },
+    {
+      "label": "793-11168",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/793-11168/0.json",
+          "offset": 0,
+          "length": 30948,
+          "sha256": "1041b4523742f015c36ef8c90f0cafe5646d66df61bf6d6515bb466c0a9ebf8b"
+        }
+      ],
+      "encodedLength": 30948,
+      "jsonLength": 66339,
+      "decodedBytes": 66339,
+      "decodedSha256": "3396a8489598f7052d773cfd340627b5361f3937665cef5fb0d8e557ee427a01"
+    },
+    {
+      "label": "3579-11133",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/3579-11133/0.json",
+          "offset": 0,
+          "length": 36552,
+          "sha256": "1abe8b9e9af61fb612d80b34e876023ced0cfbcbac52bdae224d13afcccc2c57"
+        }
+      ],
+      "encodedLength": 36552,
+      "jsonLength": 69095,
+      "decodedBytes": 69099,
+      "decodedSha256": "b639f5f3a8095d78d8ecda653d224301787663c08cc961e3593be312c235d6cb"
+    },
+    {
+      "label": "34-2",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/34-2/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "d9b0345337458e4cbdd5d76afcdf100e6487f95623aa42e0ca15d38b890bea5f"
+        },
+        {
+          "path": "raw/chunks/34-2/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "44e3414d693f57bbf92cb9ed902f7ce40774f3fd5cb709fb7433894e322d163d"
+        },
+        {
+          "path": "raw/chunks/34-2/88000.json",
+          "offset": 88000,
+          "length": 44000,
+          "sha256": "4d79bd1ea62d97c267f7db4e8c0cc9df85cd9b9a944e815944482f34cc6096f1"
+        },
+        {
+          "path": "raw/chunks/34-2/132000.json",
+          "offset": 132000,
+          "length": 44000,
+          "sha256": "f23bc638d16bd19ce3110686dc7f91dd56c9c5ef009fbc7899e4be409bae1d22"
+        },
+        {
+          "path": "raw/chunks/34-2/176000.json",
+          "offset": 176000,
+          "length": 44000,
+          "sha256": "c6f03262919055ebda05703bb09d949f33e93bfd905a085fde01e31911726e6a"
+        },
+        {
+          "path": "raw/chunks/34-2/220000.json",
+          "offset": 220000,
+          "length": 44000,
+          "sha256": "f5b3fd7350b24cfad9f654af34c97372a73b2b45ccda7c46db21d9170f174d3d"
+        },
+        {
+          "path": "raw/chunks/34-2/264000.json",
+          "offset": 264000,
+          "length": 44000,
+          "sha256": "5ec32667ca76eb4a388f597d05d78f4e2c9f17257bc546ef5996c78704742ff4"
+        },
+        {
+          "path": "raw/chunks/34-2/308000.json",
+          "offset": 308000,
+          "length": 44000,
+          "sha256": "829046eba2c7025082eb735071b3ebc116ff0a549ed6cc29467d959995a48986"
+        },
+        {
+          "path": "raw/chunks/34-2/352000.json",
+          "offset": 352000,
+          "length": 44000,
+          "sha256": "c466d57b80b1977232a326d422e32b2026b97dc4e780669c0e22951ad1216522"
+        },
+        {
+          "path": "raw/chunks/34-2/396000.json",
+          "offset": 396000,
+          "length": 44000,
+          "sha256": "b3bfe88794cd20f0f54c534d5771aa9c438392c87af4c88aa383f4b09eb3d4a4"
+        },
+        {
+          "path": "raw/chunks/34-2/440000.json",
+          "offset": 440000,
+          "length": 44000,
+          "sha256": "184fd2c3bfa8e91386d4a2d4960458c97dcb0e6649ebce41aaa655638cbc28c6"
+        },
+        {
+          "path": "raw/chunks/34-2/484000.json",
+          "offset": 484000,
+          "length": 44000,
+          "sha256": "c31e6a8b5747e0e2425a99e568f62f779e9d4c48b6b819affb15ae98d531e012"
+        },
+        {
+          "path": "raw/chunks/34-2/528000.json",
+          "offset": 528000,
+          "length": 44000,
+          "sha256": "d5dcbfacda7b1302be483220fad86fe09248424cfe2d6a6230fbf1ca9576c044"
+        },
+        {
+          "path": "raw/chunks/34-2/572000.json",
+          "offset": 572000,
+          "length": 30504,
+          "sha256": "caddcc5cc8442cae273e7720be18325c128eb0ba20365771d13f992081c022ca"
+        }
+      ],
+      "encodedLength": 602504,
+      "jsonLength": 3299598,
+      "decodedBytes": 3299638,
+      "decodedSha256": "8af263f6e62041c26d34adf9129e538cc5e8664a736011f2ec5b1426b380f58b"
+    },
+    {
+      "label": "440-16093",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/440-16093/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "3858fb208b7ece0dfa6896eb78239fbc14276e30dd019eb3b4a757cbb01c1bab"
+        },
+        {
+          "path": "raw/chunks/440-16093/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "5192adc684eb8a048bbe6d30ad83f625136c6d494ed24ca4e30510dfed6c386b"
+        },
+        {
+          "path": "raw/chunks/440-16093/88000.json",
+          "offset": 88000,
+          "length": 14460,
+          "sha256": "c12e6a74f5eb8bafec871c51e6630cf8e8be8e12d545ced20d05770d7f00dbcf"
+        }
+      ],
+      "encodedLength": 102460,
+      "jsonLength": 297842,
+      "decodedBytes": 297890,
+      "decodedSha256": "62384f1873cbae834d5d59390c1fd940e13cb2bbb7b2761731fcb653fc500522"
+    },
+    {
+      "label": "441-64985",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/441-64985/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "700748785e80a3553da9dcc0fe5eb740cdf12b9e257e1b51fd2ce9fe59d318c3"
+        },
+        {
+          "path": "raw/chunks/441-64985/44000.json",
+          "offset": 44000,
+          "length": 27432,
+          "sha256": "60a83f79fa5e59269f3cc9057a5303c14b1e016c895e564f90f3291f4ac9fba0"
+        }
+      ],
+      "encodedLength": 71432,
+      "jsonLength": 175537,
+      "decodedBytes": 175537,
+      "decodedSha256": "bc1e3ad8f48d667ba09aaed9a7944df01120227971fea9beebf6d2353c97cb6e"
+    },
+    {
+      "label": "440-7485",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/440-7485/0.json",
+          "offset": 0,
+          "length": 21664,
+          "sha256": "5a6630d52bc7c43822778aac37e680db502861e8bc6f3b744e046899e6dbff02"
+        }
+      ],
+      "encodedLength": 21664,
+      "jsonLength": 34735,
+      "decodedBytes": 34735,
+      "decodedSha256": "3a0a8eaf856f76662d4cf70bf76a4f6a689f2326638082a3b19f542fd9cd917d"
+    },
+    {
+      "label": "0-1",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/0-1/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "3ee2a5ecbef096733c537056426819895e594bdc67072beeaf9573ee61261c67"
+        },
+        {
+          "path": "raw/chunks/0-1/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "ee16c1c69bf8f62350fc5587f750119314d83b55548b35de4f982d3e3d689984"
+        },
+        {
+          "path": "raw/chunks/0-1/88000.json",
+          "offset": 88000,
+          "length": 188,
+          "sha256": "3bb72c7db2139ecb6fa46e099345c63f8c12ee81a7e6f43cf0ae3b5bced7975f"
+        }
+      ],
+      "encodedLength": 88188,
+      "jsonLength": 236929,
+      "decodedBytes": 236931,
+      "decodedSha256": "006f7539a12d632d5bf9c84de75ccb351d9bc142b6146f4e296464d5b33071b4"
+    },
+    {
+      "label": "442-11574",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/442-11574/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "4be0bc3f67b40d64b407708651b465a057a639e91b89c0ca40f21b985c0b5f5c"
+        },
+        {
+          "path": "raw/chunks/442-11574/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "08019bab99ead9ab04c11c4142bdec45a23c2c72e3c8e49450d74a2e187c188e"
+        },
+        {
+          "path": "raw/chunks/442-11574/88000.json",
+          "offset": 88000,
+          "length": 44000,
+          "sha256": "9c9ed1ecb3c9262af70d4817746fe5c17c0282d6d4e0427e13f6668e881244d2"
+        },
+        {
+          "path": "raw/chunks/442-11574/132000.json",
+          "offset": 132000,
+          "length": 44000,
+          "sha256": "557cda218a316ca473777a2cb57efc341d86fe2551646aa4495c916d1feb71b2"
+        },
+        {
+          "path": "raw/chunks/442-11574/176000.json",
+          "offset": 176000,
+          "length": 44000,
+          "sha256": "f18f0d6dd60b9701df4e307cabde441cf6537f5352478125187062741f0d6a3c"
+        },
+        {
+          "path": "raw/chunks/442-11574/220000.json",
+          "offset": 220000,
+          "length": 44000,
+          "sha256": "0e1185821c27122352fd66a52d64376573536e35eee43e46706b0d855eb91201"
+        },
+        {
+          "path": "raw/chunks/442-11574/264000.json",
+          "offset": 264000,
+          "length": 44000,
+          "sha256": "fe74a1b34aa1164d8445bef14a11c6054a922f7eeeec83250e431351b074d179"
+        },
+        {
+          "path": "raw/chunks/442-11574/308000.json",
+          "offset": 308000,
+          "length": 44000,
+          "sha256": "e58ea66f16c9a8a8d5551b23eeffd6e749e8138c137977650b8caad5f32fef5d"
+        },
+        {
+          "path": "raw/chunks/442-11574/352000.json",
+          "offset": 352000,
+          "length": 44000,
+          "sha256": "be8ba07c35865ed2677e24276f4b97171b1af9c67f8d137bda001274ff39c89a"
+        },
+        {
+          "path": "raw/chunks/442-11574/396000.json",
+          "offset": 396000,
+          "length": 44000,
+          "sha256": "ed11b8394f00e175092fbc9707d8aafeb19512bbc06c16d3cea326562e06e159"
+        },
+        {
+          "path": "raw/chunks/442-11574/440000.json",
+          "offset": 440000,
+          "length": 44000,
+          "sha256": "2a4d49b27d7829afa885d58a7668a89ba6a6f543a1ac6fdb9627077c1a136e8e"
+        },
+        {
+          "path": "raw/chunks/442-11574/484000.json",
+          "offset": 484000,
+          "length": 44000,
+          "sha256": "84219ea93d5aa19c4e528939fc2e248ed3612dbe32e8c032ca2f56a6fe6871e9"
+        },
+        {
+          "path": "raw/chunks/442-11574/528000.json",
+          "offset": 528000,
+          "length": 44000,
+          "sha256": "3b1503c0bcf79380a498e01f39089bf901b17407dd97b3f7eb21d1a26a4ba098"
+        },
+        {
+          "path": "raw/chunks/442-11574/572000.json",
+          "offset": 572000,
+          "length": 44000,
+          "sha256": "3f57a26a8a7e8ab1db5108b8311d6ca6b2b40e08d2ff35d70f45d53720de121a"
+        },
+        {
+          "path": "raw/chunks/442-11574/616000.json",
+          "offset": 616000,
+          "length": 44000,
+          "sha256": "b665bbc028a5bd3ed54e372899479761dfcc3af893b3a1fd4025950c7e2cad71"
+        },
+        {
+          "path": "raw/chunks/442-11574/660000.json",
+          "offset": 660000,
+          "length": 44000,
+          "sha256": "00dc221756eb9e8c33b403ababd610a443e6f6d47fd49d367bf81500e563f3e3"
+        },
+        {
+          "path": "raw/chunks/442-11574/704000.json",
+          "offset": 704000,
+          "length": 44000,
+          "sha256": "d0b03312139c2d8fff52c7fd618eaf2f49945575a8b3e45ac8d09286dacf29a1"
+        },
+        {
+          "path": "raw/chunks/442-11574/748000.json",
+          "offset": 748000,
+          "length": 44000,
+          "sha256": "7712672b5a6ad378844ea755f55b7794cd04c4721e50198369d6023938730af3"
+        },
+        {
+          "path": "raw/chunks/442-11574/792000.json",
+          "offset": 792000,
+          "length": 6848,
+          "sha256": "390c69fc4409003e37481f2073703aafbd6b99fa45053a8072e816b8c84b5f87"
+        }
+      ],
+      "encodedLength": 798848,
+      "jsonLength": 1793414,
+      "decodedBytes": 1793440,
+      "decodedSha256": "9e33b614d759f206260b6d7a03c723226c0ca579f18ccf9f0c61cd8679f3cfa6"
+    },
+    {
+      "label": "481-62528",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/481-62528/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "367b7a3fd9f9df12bf64fa52216de2e791e851176a036ab4663d33f431584a92"
+        },
+        {
+          "path": "raw/chunks/481-62528/44000.json",
+          "offset": 44000,
+          "length": 11304,
+          "sha256": "57edd49d912821136405108200bee58276098bae475ade2c7c5b79a1fa6c43d4"
+        }
+      ],
+      "encodedLength": 55304,
+      "jsonLength": 124005,
+      "decodedBytes": 124009,
+      "decodedSha256": "8c78cd15adc475d29f1e9a717a200da963567c3f9ae0c28d4dcebc4e59ec310f"
+    },
+    {
+      "label": "529-42314",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/529-42314/0.json",
+          "offset": 0,
+          "length": 42456,
+          "sha256": "503c9994414d5c4b00e01f434c46ccb920720cec5489161108933214b365afb4"
+        }
+      ],
+      "encodedLength": 42456,
+      "jsonLength": 93821,
+      "decodedBytes": 93825,
+      "decodedSha256": "87e2bd8e2377fe7b89232c1520048052526a3b1d6d5d6ad6188168264c8e592b"
+    },
+    {
+      "label": "4452-1178",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/4452-1178/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "04db7c780feee90c6c06361d9c9f13687bc9d37ed121a2db006feaf5e9727736"
+        },
+        {
+          "path": "raw/chunks/4452-1178/44000.json",
+          "offset": 44000,
+          "length": 2296,
+          "sha256": "64c6fa9e2cb24081b66e1afbe8af6d6a4669ebad3d0ae648e85dd2e06fe83736"
+        }
+      ],
+      "encodedLength": 46296,
+      "jsonLength": 94512,
+      "decodedBytes": 94512,
+      "decodedSha256": "ed9f4b03b8de2b887b52b96ba4c9d71e06761e5b998d4e85c9662ab98dc8b027"
+    },
+    {
+      "label": "440-7487",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/440-7487/0.json",
+          "offset": 0,
+          "length": 368,
+          "sha256": "8d920ff4aed5da191b7272738e91615e9fc21565ac96e30feff894beceefbe37"
+        }
+      ],
+      "encodedLength": 368,
+      "jsonLength": 189,
+      "decodedBytes": 189,
+      "decodedSha256": "921b64c35f416dc9599731789c652f1fd1221f4e4b80c53788edea99213d72de"
+    },
+    {
+      "label": "440-16092",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/440-16092/0.json",
+          "offset": 0,
+          "length": 404,
+          "sha256": "b762b4a557cef7c89f895aa9543cad406b90d6c8b71d85671f146413982819e3"
+        }
+      ],
+      "encodedLength": 404,
+      "jsonLength": 198,
+      "decodedBytes": 202,
+      "decodedSha256": "8ed345fd1a11d26e070a0b3eadfec948bd4a6777e60abb86f6ede4738bfd6d29"
+    },
+    {
+      "label": "8867-13885",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/8867-13885/0.json",
+          "offset": 0,
+          "length": 2300,
+          "sha256": "8459a36491597a54914b42927f7cee64f887c6c8b41ea119681b423080ef4fab"
+        }
+      ],
+      "encodedLength": 2300,
+      "jsonLength": 1783,
+      "decodedBytes": 1784,
+      "decodedSha256": "50660f2b69eb55b99aaabd4aed27edeaec3f160998ae6500ea34d1368b6e2be3"
+    },
+    {
+      "label": "441-84755",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/441-84755/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "21a1c6c71d7fdbebee91d8b982c1524671b7a43adaee000bed138f1842682aef"
+        },
+        {
+          "path": "raw/chunks/441-84755/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "2371d8a83503aaac7eb6511be09e45aba55997479f3c7c452522d4c75cce0a8a"
+        },
+        {
+          "path": "raw/chunks/441-84755/88000.json",
+          "offset": 88000,
+          "length": 44000,
+          "sha256": "79ab01f191ebe6bd1a911132f0dfb0ecb5fe4f72ae245d82028931f89bbc987c"
+        },
+        {
+          "path": "raw/chunks/441-84755/132000.json",
+          "offset": 132000,
+          "length": 37912,
+          "sha256": "fa4f2ca7d380c3924be0107f18a9bdc320d1b3d68198b9fb70981bbea0f29d83"
+        }
+      ],
+      "encodedLength": 169912,
+      "jsonLength": 569977,
+      "decodedBytes": 570021,
+      "decodedSha256": "1dbe5f90d9c908b8a989778b429d581162b3be056b6e321fceafa7835b40a8e5"
+    },
+    {
+      "label": "2696-23861",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/2696-23861/0.json",
+          "offset": 0,
+          "length": 39676,
+          "sha256": "b5110333d26b1e7a8814c411b90bbfce47e10120cb6a928a1b39b3d988d4cdf3"
+        }
+      ],
+      "encodedLength": 39676,
+      "jsonLength": 79276,
+      "decodedBytes": 79288,
+      "decodedSha256": "8537994545141c5cdc3915a2a08121843d1071468d33f2c90abcf4c3f447a777"
+    },
+    {
+      "label": "2638-31875",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/2638-31875/0.json",
+          "offset": 0,
+          "length": 2312,
+          "sha256": "7252e14e84ff2d922d420eca80aaac9c650ac7de853d0b916d252ffe25cab1e2"
+        }
+      ],
+      "encodedLength": 2312,
+      "jsonLength": 1781,
+      "decodedBytes": 1781,
+      "decodedSha256": "d64729c08cc6a25e2eeefeb0a1533ea98120a73e6799d7edef1f66b571f4e40b"
+    },
+    {
+      "label": "441-21999",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/441-21999/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "bda806ea4f067b90a47c759343e4b03cd57de5e981db90d8a67d8848dbc78c15"
+        },
+        {
+          "path": "raw/chunks/441-21999/44000.json",
+          "offset": 44000,
+          "length": 44000,
+          "sha256": "97492bb4b6104743a1e5a40e99e620d188488599d4b1b39704a7017c591662f2"
+        },
+        {
+          "path": "raw/chunks/441-21999/88000.json",
+          "offset": 88000,
+          "length": 44000,
+          "sha256": "d58dc2f50af5cb1a146a1fd8fcc740e783d387aecbbe2b1aa16cf5f56b018c60"
+        },
+        {
+          "path": "raw/chunks/441-21999/132000.json",
+          "offset": 132000,
+          "length": 44000,
+          "sha256": "8f732613d997ccdd24bef35fb485ea1afcd63a5bce30513e62620cfd3e4062fd"
+        },
+        {
+          "path": "raw/chunks/441-21999/176000.json",
+          "offset": 176000,
+          "length": 44000,
+          "sha256": "2380b6633397dc89031214526fd3dc1f5639e1818c23191718ecb7ff5be83650"
+        },
+        {
+          "path": "raw/chunks/441-21999/220000.json",
+          "offset": 220000,
+          "length": 44000,
+          "sha256": "79e0005cb3ceb7a07d4851623fe2ff5b7d2a0d6aea108c4d5e1b81b25e4f5631"
+        },
+        {
+          "path": "raw/chunks/441-21999/264000.json",
+          "offset": 264000,
+          "length": 44000,
+          "sha256": "b08a84d81af5d8d64421c9ad5d86c75e7accc231761ff92e0b1c6452ad3557dc"
+        },
+        {
+          "path": "raw/chunks/441-21999/308000.json",
+          "offset": 308000,
+          "length": 44000,
+          "sha256": "10b0a5c08aa52dd55c09642cbce8025d85b225ff5c959c17f4d66add211e9df3"
+        },
+        {
+          "path": "raw/chunks/441-21999/352000.json",
+          "offset": 352000,
+          "length": 44000,
+          "sha256": "73a0f558e4a2de686a35aa1ab734047541c481f74f16a8c38c9af95a6df5de55"
+        },
+        {
+          "path": "raw/chunks/441-21999/396000.json",
+          "offset": 396000,
+          "length": 24396,
+          "sha256": "25b80285b5919e5ed49089ef257a907aba4239f0b739576b9768df83caf535be"
+        }
+      ],
+      "encodedLength": 420396,
+      "jsonLength": 1443865,
+      "decodedBytes": 1443941,
+      "decodedSha256": "4582a06e2f2e8495872bcf567e9b9fa1773566e96b9eff95b7760bbda63ac666"
+    },
+    {
+      "label": "5899-8068",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/5899-8068/0.json",
+          "offset": 0,
+          "length": 35152,
+          "sha256": "1976b93b578dbb2704fb208af23635648a57edc18aabf20430a4bdf1ad413407"
+        }
+      ],
+      "encodedLength": 35152,
+      "jsonLength": 65061,
+      "decodedBytes": 65061,
+      "decodedSha256": "e7b6e74b2ead4d1b55346402653f2bf43e77550698ad70d30ecd18f180b2e694"
+    },
+    {
+      "label": "6359-780",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/6359-780/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "c178bafa43f1d854ccce74eaabbb09e734d33e69c739f9328593ca0ea9800e0e"
+        },
+        {
+          "path": "raw/chunks/6359-780/44000.json",
+          "offset": 44000,
+          "length": 1276,
+          "sha256": "eb3bf7a9b0ddf5c295568f939399b233d39e4d22113a8a2a7042d59a46980494"
+        }
+      ],
+      "encodedLength": 45276,
+      "jsonLength": 92710,
+      "decodedBytes": 92710,
+      "decodedSha256": "08b73e633a289ecd15b6b5a179a104b5af86d724710fba2be60f845b85667eb3"
+    },
+    {
+      "label": "444-9149",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/444-9149/0.json",
+          "offset": 0,
+          "length": 364,
+          "sha256": "f500422c3434a4af8918975e2bececed15d255fad3094da507dcd969fea94fa1"
+        }
+      ],
+      "encodedLength": 364,
+      "jsonLength": 189,
+      "decodedBytes": 189,
+      "decodedSha256": "4bf424d326db581234bb73bc7a60275179a51567ec77801198c373a1e2105380"
+    },
+    {
+      "label": "444-30648",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/444-30648/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "1d9bb5a01045c10b216dad1e73ad4ecc4784c5b77d4e28b7b4ff7979a7b81464"
+        },
+        {
+          "path": "raw/chunks/444-30648/44000.json",
+          "offset": 44000,
+          "length": 672,
+          "sha256": "5abe1d463dfb1608fc7b7af4879669b41a2527c3682be05a01e346d0111ce133"
+        }
+      ],
+      "encodedLength": 44672,
+      "jsonLength": 98025,
+      "decodedBytes": 98033,
+      "decodedSha256": "625304f6145fcaf8244ca7121259e95d5acab653105512e93dbbaec9f46f3ac7"
+    },
+    {
+      "label": "foundations",
+      "codec": "lzw16be-utf8-v1",
+      "chunks": [
+        {
+          "path": "raw/chunks/foundations/0.json",
+          "offset": 0,
+          "length": 44000,
+          "sha256": "1bbe44f8e1a2a7bb622203d6ca5d58d21861a0d24b314eaa5c0fee7f7050d832"
+        },
+        {
+          "path": "raw/chunks/foundations/44000.json",
+          "offset": 44000,
+          "length": 42348,
+          "sha256": "ded0b6ad85e20e29dc13c76493e5095a1bcdcb01d7ea0ec3f54010ea7d78d7b9"
+        }
+      ],
+      "encodedLength": 86348,
+      "jsonLength": 230828,
+      "decodedBytes": 230828,
+      "decodedSha256": "1fe90ec959a9fbeeb7c87367d25ac45fd51aeed8b39b467e442a97830d831958"
+    }
+  ],
+  "confidence": {
+    "inventory": "live-export",
+    "import": "not-tested",
+    "behavior": "not-tested"
+  },
+  "coverage": {
+    "allDeclaredPages": true,
+    "definitionCountReconciled": true,
+    "layers": "Family representative only; owned layers are filtered; nested instances are not recursively expanded.",
+    "variants": "Actual exported variants only; no Cartesian products inferred.",
+    "publication": "Not verified. A key or local definition does not prove published import availability.",
+    "navigation": "Page roots and ancestor containers are navigation, not extra component definitions."
+  }
+}

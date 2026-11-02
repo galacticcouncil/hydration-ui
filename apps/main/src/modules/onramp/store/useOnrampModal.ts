@@ -51,6 +51,7 @@ type OnrampModalState = {
   openDepositChoice: () => void
   walletFirstFlow: DepositWalletFirstFlow
   depositSourceAccount: Account | null
+  depositSuggestedDestination: Account | null
   setDepositSourceAccount: (account: Account) => void
   walletFirstAsset: DepositAssetIntent | null
   setWalletFirstAsset: (selection: DepositAssetIntent | null) => void
@@ -104,6 +105,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   },
   walletFirstFlow: "current",
   depositSourceAccount: null,
+  depositSuggestedDestination: null,
   setDepositSourceAccount: (depositSourceAccount) =>
     set({ depositSourceAccount }),
   walletFirstAsset: null,
@@ -183,18 +185,6 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
         (flow === "connected" || flow === "simple"),
     })
     const journey = useDepositJourneyStore.getState()
-    if (flow === "current" || flow === "connected") {
-      journey.leave()
-      useOnrampStore.getState().paginateTo(OnrampScreen.DepositOnchainWallet)
-      set({
-        modal: "depositOnchain",
-        walletFirstFlow: flow,
-        depositSourceAccount: null,
-        walletFirstAsset: options?.assetIntent ?? null,
-      })
-      return
-    }
-
     const wallets = useWeb3Connect.getState()
     const activeAccount = wallets.account ? toAccount(wallets.account) : null
     const suggested =
@@ -206,6 +196,19 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       isAddressValidOnHydration(activeAccount.rawAddress)
         ? activeAccount
         : null
+    if (flow === "current" || flow === "connected") {
+      journey.leave()
+      useOnrampStore.getState().paginateTo(OnrampScreen.DepositOnchainWallet)
+      set({
+        modal: "depositOnchain",
+        walletFirstFlow: flow,
+        depositSourceAccount: null,
+        depositSuggestedDestination: suggested,
+        walletFirstAsset: options?.assetIntent ?? null,
+      })
+      return
+    }
+
     if (
       journey.destinationAccount &&
       (wallets.getStatus(journey.destinationAccount.provider) !==

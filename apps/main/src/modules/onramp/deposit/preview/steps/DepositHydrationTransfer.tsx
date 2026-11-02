@@ -7,6 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import {
   Account,
   useWeb3Connect,
@@ -14,6 +15,7 @@ import {
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,6 +23,7 @@ import { neckworkClient } from "@/api/neckwork"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { isHydrationDepositSource } from "@/modules/onramp/deposit/DepositLocalSource.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
+import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { getPreferredDepositSourceAccount } from "@/modules/onramp/deposit/variants/DepositVariantSource.utils"
@@ -57,10 +60,19 @@ export const DepositHydrationTransfer: FC<DepositHydrationTransferProps> = ({
   const [source, setSource] = useState<Account | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [choosingSource, setChoosingSource] = useState(false)
+  const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+  const hdx = hydration?.assetsData.get("hdx")?.asset
+  const funded = useFundedDepositAccounts(accounts, hydration, hdx)
   // A suggested destination must not prevent reusing the active source account.
   const eligible = useCallback(
-    (account: Account) => isHydrationDepositSource(account, confirmedReceiver),
-    [confirmedReceiver],
+    (account: Account) =>
+      isHydrationDepositSource(account, confirmedReceiver) &&
+      funded.accounts.some(
+        (item) =>
+          item.provider === account.provider &&
+          item.address === account.address,
+      ),
+    [confirmedReceiver, funded.accounts],
   )
   const sources = accounts.filter(eligible)
   const select = useCallback(
@@ -97,12 +109,12 @@ export const DepositHydrationTransfer: FC<DepositHydrationTransferProps> = ({
     setSource(null)
   }
 
-  if (connecting || (!choosingSource && !sourceCurrent && !preferred))
+  if (connecting)
     return (
       <Web3ConnectPage
         neckwork={neckworkClient}
         papi={papi}
-        mode={WalletMode.SubstrateEVM}
+        mode={WalletMode.Default}
         accountFilter={eligible}
         meta={{
           title: t("deposit.local.sourceTitle"),
@@ -199,7 +211,15 @@ export const DepositHydrationTransfer: FC<DepositHydrationTransferProps> = ({
               onClick={() => select(account)}
             />
           ))}
-          {!sources.length && (
+          {funded.isLoading && (
+            <Text fs="p5">{t("deposit.flow.assets.scanning")}</Text>
+          )}
+          {funded.failed && (
+            <Text fs="p5" color={getToken("accents.danger.emphasis")}>
+              {t("deposit.flow.assets.partial")}
+            </Text>
+          )}
+          {!sources.length && !funded.isLoading && !funded.failed && (
             <Text fs="p4" color={getToken("text.medium")}>
               {t("deposit.local.noSources")}
             </Text>

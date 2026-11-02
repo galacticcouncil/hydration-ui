@@ -7,6 +7,10 @@ import {
   getBankProviderHandoffAction,
 } from "./BankProviderHandoff.utils"
 import {
+  getBankSetupEntryScreen,
+  isBankSetupSessionValid,
+} from "./BankSetupSession.utils"
+import {
   DepositCurrency,
   DepositStatus,
   exampleDeposits,
@@ -24,16 +28,31 @@ export type BankDepositScreen =
 export type BankDepositV2Stage = "amount" | "review" | "waiting"
 export const BANK_DEPOSIT_PREVIEW_WALLET = "0x1234…89ab"
 
-export const useBankDepositFlow = () => {
+export const useBankDepositFlow = (
+  intent: "deposit" | "withdraw" = "deposit",
+) => {
   const { account } = useAccount()
   const address = account?.address ?? ""
   const saved = useBankPreviewStore.getState().setups[address]
   const [owner, setOwner] = useState(address)
+  const [session, setSession] = useState(saved?.session)
+  const [now, setNow] = useState(Date.now)
+  const sessionValid = isBankSetupSessionValid(session, now)
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
   const [variant, setVariant] = useState<BankFlowVariant>("v3")
   const [v2Stage, setV2Stage] = useState<BankDepositV2Stage>("amount")
-  const [amount, setAmount] = useState(saved?.amount ?? "500")
+  const [amount, setAmount] = useState(
+    saved?.intent === intent
+      ? saved.amount
+      : intent === "withdraw"
+        ? "100"
+        : "500",
+  )
   const [screen, setScreen] = useState<BankDepositScreen>(
-    saved?.screen ?? "entry",
+    getBankSetupEntryScreen(intent, saved),
   )
   const [currency, setCurrency] = useState<DepositCurrency>(
     saved?.currency ?? "USD",
@@ -62,25 +81,33 @@ export const useBankDepositFlow = () => {
     if (owner !== address) {
       const draft = useBankPreviewStore.getState().setups[address]
       setOwner(address)
-      setAmount(draft?.amount ?? "500")
+      setSession(draft?.session)
+      setAmount(
+        draft?.intent === intent
+          ? draft.amount
+          : intent === "withdraw"
+            ? "100"
+            : "500",
+      )
       setCurrency(draft?.currency ?? "USD")
       setAccountType(draft?.accountType ?? "Individual")
       setOnboardingStep(draft?.onboardingStep ?? 0)
       setRailStatus(draft?.railStatus ?? { USD: "available", EUR: "in review" })
       setAccounts(draft?.accounts ?? [])
       setProviderHandoff(draft?.providerHandoff ?? "idle")
-      setScreen(draft?.screen ?? "entry")
+      setScreen(getBankSetupEntryScreen(intent, draft))
       setV2Stage("amount")
       return
     }
     if (
       (variant !== "simplified" && variant !== "v3") ||
       !address ||
-      screen === "entry" ||
       screen === "tracking"
     )
       return
     useBankPreviewStore.getState().saveSetup(address, {
+      intent,
+      session,
       amount,
       currency,
       accountType,
@@ -92,6 +119,8 @@ export const useBankDepositFlow = () => {
     })
   }, [
     owner,
+    intent,
+    session,
     address,
     variant,
     screen,
@@ -129,8 +158,34 @@ export const useBankDepositFlow = () => {
     setCurrency(nextCurrency)
   }, [])
 
-  const goToAccount = () =>
-    setScreen(accounts.includes(currency) ? "details" : "account")
+  const ensureReady = () => {
+    const time = Date.now()
+    setNow(time)
+    // Read the latest preview provider result at each gate, not a permanent approval flag.
+    const latest =
+      useBankPreviewStore.getState().setups[address]?.railStatus ?? railStatus
+    setRailStatus(latest)
+    if (
+      !isBankSetupSessionValid(session, time) ||
+      onboardingStep < 5 ||
+      latest[currency] !== "available"
+    ) {
+      setScreen("onboarding")
+      return false
+    }
+    setSession((current) => current && { ...current, lastActiveAt: time })
+    return true
+  }
+  const goToAccount = () => {
+    if (!ensureReady()) return
+    setScreen(
+      intent === "withdraw"
+        ? "entry"
+        : accounts.includes(currency)
+          ? "details"
+          : "account",
+    )
+  }
   const railAvailable = railStatus[currency] === "available"
   const railClosed =
     railStatus[currency] === "rejected" ||
@@ -140,8 +195,9 @@ export const useBankDepositFlow = () => {
     status: railStatus[currency],
     verified: onboardingStep >= 5,
   })
-  const onboardingAction =
-    onboardingStep < 3
+  const onboardingAction = !sessionValid
+    ? "signIn"
+    : onboardingStep < 3
       ? ((["signIn", "continue", "bind"] as const)[onboardingStep] ?? "signIn")
       : providerAction
   const applyProviderResponse = (response: RailStatus) => {
@@ -159,6 +215,14 @@ export const useBankDepositFlow = () => {
     applyProviderResponse("available")
   }
   const continueOnboarding = () => {
+    const time = Date.now()
+    setNow(time)
+    if (!isBankSetupSessionValid(session, time)) {
+      setSession({ startedAt: time, lastActiveAt: time })
+      setOnboardingStep((current) => Math.max(current, 1))
+      return
+    }
+    setSession({ ...session!, lastActiveAt: time })
     if (onboardingStep < 3) {
       setOnboardingStep((current) => current + 1)
       return
@@ -188,13 +252,15 @@ export const useBankDepositFlow = () => {
   }
 
   return {
+    intent,
+    ensureReady,
     screen,
     setScreen: changeScreen,
     currency,
     setCurrency: changeCurrency,
     accountType,
     setAccountType,
-    onboardingStep,
+    onboardingStep: sessionValid ? onboardingStep : 0,
     setOnboardingStep,
     railStatus,
     setRailStatus,

@@ -4,6 +4,9 @@ import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { depositStepAfterSource } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
+import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
+import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositConnectedAssets } from "@/modules/onramp/deposit/steps/DepositConnectedAssets"
 import { DepositOnchainAsset } from "@/modules/onramp/deposit/steps/DepositOnchainAsset"
 import { DepositOnchainForm } from "@/modules/onramp/deposit/steps/DepositOnchainForm"
@@ -11,7 +14,6 @@ import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const DepositOnchainSteps = () => {
@@ -27,28 +29,31 @@ export const DepositOnchainSteps = () => {
     (state) => state.setDepositSourceAccount,
   )
   const { getValues, setValue } = useFormContext<XcmFormValues>()
+  const accounts = useDepositAccounts({ signersOnly: true })
+  const sourceChain = getValues("srcChain")
+  const sourceAsset = getValues("srcAsset")
+  const funded = useFundedDepositAccounts(accounts, sourceChain, sourceAsset)
 
   if (page === OnrampScreen.DepositOnchainWallet) {
-    const sourceChain = getValues("srcChain")
-    const sourceAsset = getValues("srcAsset")
     const resumingAsset =
       walletFirstFlow === "connected" && sourceChain && sourceAsset
     return (
       <Web3ConnectPage
         layout="split"
         keepSplitOpen={walletFirstFlow === "connected"}
-        walletListVariant={
-          walletFirstFlow === "connected" ? "connectedFirst" : "default"
-        }
         onContentWidthChange={setWalletContentWidth}
         neckwork={neckworkClient}
         papi={papi}
-        mode={
-          resumingAsset ? getWalletModeByChain(sourceChain) : WalletMode.Default
-        }
+        mode={WalletMode.Default}
         accountFilter={
           resumingAsset
-            ? (account) => canUseDepositAccount(account, sourceChain)
+            ? (account) =>
+                canUseDepositAccount(account, sourceChain) &&
+                funded.accounts.some(
+                  (candidate) =>
+                    candidate.provider === account.provider &&
+                    candidate.address === account.address,
+                )
             : undefined
         }
         meta={{
@@ -62,7 +67,11 @@ export const DepositOnchainSteps = () => {
         }}
         onBack={() => {
           if (resumingAsset) {
-            paginateTo(OnrampScreen.DepositOnchainAsset)
+            paginateTo(
+              getValues("destAddress")
+                ? OnrampScreen.DepositOnchainForm
+                : OnrampScreen.DepositOnchainAsset,
+            )
             return
           }
           paginateTo(OnrampScreen.MethodSelect)
@@ -70,10 +79,20 @@ export const DepositOnchainSteps = () => {
         }}
         onAccountSelect={(account) => {
           setSourceAccount(account)
-          if (resumingAsset && canUseDepositAccount(account, sourceChain)) {
+          if (
+            resumingAsset &&
+            canUseDepositAccount(account, sourceChain) &&
+            funded.accounts.some(
+              (candidate) =>
+                candidate.provider === account.provider &&
+                candidate.address === account.address,
+            )
+          ) {
             setValue("srcAmount", "")
             setValue("destAmount", "")
-            paginateTo(OnrampScreen.DepositOnchainForm)
+            paginateTo(
+              depositStepAfterSource(walletFirstFlow, getValues("destAddress")),
+            )
             return
           }
           useOnrampModal.getState().setWalletFirstAsset(null)

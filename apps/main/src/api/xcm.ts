@@ -33,6 +33,8 @@ import { isString } from "remeda"
 import { erc20Abi, Hex } from "viem"
 
 import { ENV } from "@/config/env"
+import { getDemoCrossChainBalances } from "@/modules/onramp/demo/demoBalances"
+import { isDemoAddress } from "@/modules/onramp/demo/demoWallet.config"
 import { withPermissiveEvmResolver } from "@/modules/xcm/transfer/utils/chain"
 import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -270,6 +272,7 @@ export const useCrossChainBalancesFetch = (
     queryFn: async () => {
       const chain = chainsMap.get(chainKey)
       if (!chain) return []
+      if (isDemoAddress(address)) return getDemoCrossChainBalances(chainKey)
       return wallet.getBalances(formatSourceChainAddress(address, chain), chain)
     },
   })
@@ -329,6 +332,18 @@ export const useCrossChainBalanceSubscription = (
 
     if (!wallet || !formattedAddress || !chain || !assetsRef.current.length) {
       setIsLoading(false)
+      return
+    }
+
+    if (isDemoAddress(address)) {
+      const balances = getDemoCrossChainBalances(chainKey)
+      queryClient.setQueryData(
+        queryKey,
+        new Map(balances.map((balance) => [balance.key, balance])),
+      )
+      onSuccessRef.current?.(balances)
+      setIsLoading(false)
+      setIsError(false)
       return
     }
 
@@ -433,6 +448,21 @@ export const xcmTransferQuery = (
 
       const transfer = await buildXcmTransfer(wallet, transferArgs)
 
+      if (isDemoAddress(transferArgs.srcAddress)) {
+        const sample = getDemoCrossChainBalances(transferArgs.srcChain).find(
+          (balance) => balance.key === transferArgs.srcAsset,
+        )
+        if (sample) {
+          transfer.source.balance = sample
+          transfer.source.max = sample.copyWith({
+            amount:
+              sample.amount -
+              (sample.isSame(transfer.source.fee)
+                ? transfer.source.fee.amount
+                : 0n),
+          })
+        }
+      }
       const { balance, fee, max } = transfer.source
       if (balance.isSame(fee) && max.amount > 0n) {
         try {

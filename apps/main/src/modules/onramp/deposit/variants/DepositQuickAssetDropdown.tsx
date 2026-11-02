@@ -46,6 +46,11 @@ import {
   DepositQuickAssetGroup,
   groupDepositAssetOptions,
 } from "./DepositQuickAssetGroups"
+import {
+  getQuickGroupBalance,
+  QuickDepositBalances,
+  splitQuickAssetGroups,
+} from "./DepositQuickBalances.utils"
 
 type AssetNetworkPair = DepositAssetNetworkPair
 type DepositQuickAssetDropdownProps = {
@@ -57,6 +62,10 @@ type DepositQuickAssetDropdownProps = {
   onOpenChange: (open: boolean) => void
   onSelect: (selection: AssetNetworkPair) => void
   onChooseNetwork: (sources: AssetNetworkPair[]) => void
+  balances: QuickDepositBalances
+  balanceLoading: boolean
+  balanceFailed: boolean
+  hasSource: boolean
 }
 
 export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
@@ -68,6 +77,10 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
   onOpenChange: setOpen,
   onSelect,
   onChooseNetwork,
+  balances,
+  balanceLoading,
+  balanceFailed,
+  hasSource,
 }) => {
   const { t } = useTranslation(["common", "onramp"])
   const [chainKey, setChainKey] = useState("all")
@@ -111,6 +124,35 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
       ),
     [items, getDisplayAssetId, getAsset, visibleChainKey, search],
   )
+  const { funded, other } = splitQuickAssetGroups(groups, balances)
+  const entries = funded.length
+    ? [
+        {
+          kind: "header" as const,
+          key: "funded-header",
+          label: t("onramp:deposit.quick.yourBalances"),
+        },
+        ...funded.map((group) => ({
+          kind: "asset" as const,
+          key: group.key,
+          group,
+        })),
+        ...(other.length
+          ? [
+              {
+                kind: "header" as const,
+                key: "other-header",
+                label: t("onramp:deposit.quick.otherAssets"),
+              },
+            ]
+          : []),
+        ...other.map((group) => ({
+          kind: "asset" as const,
+          key: group.key,
+          group,
+        })),
+      ]
+    : groups.map((group) => ({ kind: "asset" as const, key: group.key, group }))
   const selectAsset = (group: DepositQuickAssetGroup) => {
     if (group.sources.length > 1) onChooseNetwork(group.sources)
     else onSelect(group.sources[0]!)
@@ -120,7 +162,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
   const changeOpen = (next: boolean) => {
     if (next && !open) {
       setSearch("")
-      setChainKey(selection?.chain.key ?? "all")
+      setChainKey(hasSource ? "all" : (selection?.chain.key ?? "all"))
     }
     setOpen(next)
   }
@@ -216,7 +258,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
           aria-label={t("onramp:deposit.quick.selectAssetNetwork")}
         >
           <Paper
-            aria-busy={isLoading}
+            aria-busy={isLoading || (hasSource && balanceLoading)}
             borderRadius="l"
             p="base"
             display="flex"
@@ -283,21 +325,34 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
                 setSearch(event.target.value)
               }}
             />
+            {hasSource && balanceLoading && (
+              <Text fs="p6">{t("onramp:deposit.flow.assets.scanning")}</Text>
+            )}
+            {hasSource && balanceFailed && (
+              <Text fs="p6">{t("onramp:deposit.flow.assets.partial")}</Text>
+            )}
             {isLoading ? (
               <DepositAssetListSkeleton count={5} showBalance={false} />
-            ) : groups.length ? (
+            ) : entries.length ? (
               <VirtualizedList
-                items={groups}
+                items={entries}
                 itemSize={50}
-                getItemKey={(index) => groups[index]!.key}
+                getItemKey={(index) => entries[index]!.key}
                 sx={{ flex: 1, minHeight: 0 }}
-                renderItem={(group) => (
-                  <DepositQuickAssetGroupRow
-                    group={group}
-                    selection={selection}
-                    onSelect={() => selectAsset(group)}
-                  />
-                )}
+                renderItem={(entry) =>
+                  entry.kind === "header" ? (
+                    <Flex align="center" px="l" height="100%">
+                      <Text fs="p5">{entry.label}</Text>
+                    </Flex>
+                  ) : (
+                    <DepositQuickAssetGroupRow
+                      group={entry.group}
+                      balance={getQuickGroupBalance(entry.group, balances)}
+                      selection={selection}
+                      onSelect={() => selectAsset(entry.group)}
+                    />
+                  )
+                }
               />
             ) : (
               <AssetSelectEmptyState />

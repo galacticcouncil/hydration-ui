@@ -1,0 +1,37 @@
+{
+  "sourceBlend": "status-icons.blend",
+  "exports": [
+    {
+      "icon": "review",
+      "render": "document-1024.png",
+      "appAsset": "packages/ui/src/assets/images/Review3D.webp",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 22868,
+      "sha256": "081ecdcbe503d5b13dc43336102ae7b85b2641cacc24a28a1d86e73106e5f5d2",
+      "sharedComponent": "BankProviderHandoff",
+      "flowVersions": [
+        "Current flow",
+        "Version 2"
+      ]
+    },
+    {
+      "icon": "waiting",
+      "render": "hourglass-1024.png",
+      "appAsset": "packages/ui/src/assets/images/Waiting3D.webp",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 37780,
+      "sha256": "7b63359c309d39e6ed620035965f08bbf16948a4f57a5cfb05116843b553c3e4",
+      "sharedComponent": "BankTransferStatusIllustration",
+      "flowVersions": [
+        "Current flow",
+        "Version 2"
+      ]
+    }
+  ]
+}

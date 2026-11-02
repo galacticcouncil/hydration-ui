@@ -7,6 +7,8 @@ import { Wallet } from "@galacticcouncil/xc-sdk"
 import { queryOptions } from "@tanstack/react-query"
 
 import { createDepositRequestLimiter } from "@/api/deposit.utils"
+import { getDemoCrossChainBalances } from "@/modules/onramp/demo/demoBalances"
+import { isDemoAddress } from "@/modules/onramp/demo/demoWallet.config"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 const runSnapshot = createDepositRequestLimiter(4)
@@ -28,10 +30,12 @@ export const depositBalancesQuery = (
     queryFn: ({ signal }) =>
       runSnapshot(async () => {
         signal.throwIfAborted()
-        const balances = await wallet.getBalances(
-          formatSourceChainAddress(address, chain),
-          chain,
-        )
+        const balances = isDemoAddress(address)
+          ? getDemoCrossChainBalances(chain.key)
+          : await wallet.getBalances(
+              formatSourceChainAddress(address, chain),
+              chain,
+            )
         signal.throwIfAborted()
         return balances
       }),

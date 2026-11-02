@@ -77,7 +77,9 @@ export const OnrampModal = () => {
   const isSplitDepositConnection =
     modal === "depositOnchainPreview" && walletContentWidth !== null
   const contentWidth =
-    modal === "depositOnchain" && page === OnrampScreen.DepositOnchainRecipient
+    modal === "depositOnchain" &&
+    (page === OnrampScreen.DepositOnchainRecipient ||
+      page === OnrampScreen.DepositOnchainDestination)
       ? 650
       : (isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)) ||
           (modal === "depositOnchainPreview" && depositFlow !== "preview")

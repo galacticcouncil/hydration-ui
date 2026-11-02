@@ -12,6 +12,7 @@ import {
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BankDepositV3 } from "./BankDepositV3"
 import { BankFlowPreviewNotice } from "./BankFlowPreviewNotice"
 import { BankFlowSwitcher, BankFlowVariant } from "./BankFlowSwitcher"
 import {
@@ -35,6 +36,7 @@ import {
 } from "./BankWithdrawV2Account"
 import { BankWithdrawV3 } from "./BankWithdrawV3"
 import { WithdrawalV3Status } from "./BankWithdrawV3Timeline.utils"
+import { useBankDepositFlow } from "./useBankDepositFlow"
 
 type BankWithdrawProps = { onBack: () => void }
 
@@ -63,8 +65,8 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
   const [completedSteps, setCompletedSteps] = useState<Set<WithdrawalStep>>(
     () => new Set(),
   )
-  const [amount, setAmount] = useState("100")
-  const [currency, setCurrency] = useState<WithdrawalCurrency>("USD")
+  const setup = useBankDepositFlow("withdraw")
+  const { amount, setAmount, currency, setCurrency } = setup
   const [v3Status, setV3Status] = useState<WithdrawalV3Status>("redeemed")
   const [status, setStatus] = useState<WithdrawalStatus>("pending")
   const [submittedQuote, setSubmittedQuote] =
@@ -125,6 +127,7 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
       )
   }
   const continueFlow = () => {
+    if (variant === "v3" && step !== "tracking" && !setup.ensureReady()) return
     if (!quote || ((step === "account" || step === "review") && !isBankValid))
       return
     if (step !== "tracking") {
@@ -152,6 +155,18 @@ export const BankWithdraw: FC<BankWithdrawProps> = ({ onBack }) => {
       : variant === "simplified"
         ? BankWithdrawSimplified
         : BankWithdrawV2
+  if (variant === "v3" && setup.screen === "onboarding") {
+    return (
+      <BankFlowSwitcher
+        variant={variant}
+        onVariantChange={setVariant}
+        variants={["current", "v2", "simplified", "v3"]}
+        stepKey={`setup:${setup.onboardingStep}:${setup.providerHandoff}`}
+      >
+        <BankDepositV3 flow={setup} onBack={onBack} onHistory={onBack} />
+      </BankFlowSwitcher>
+    )
+  }
   return (
     <BankFlowSwitcher
       variants={["current", "v2", "simplified", "v3"]}

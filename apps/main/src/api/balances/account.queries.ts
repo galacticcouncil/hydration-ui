@@ -14,6 +14,8 @@ import {
   BalanceRecord,
   EMPTY_BALANCES,
 } from "@/api/balances/types"
+import { getDemoHydrationBalances } from "@/modules/onramp/demo/demoBalances"
+import { isDemoAddress } from "@/modules/onramp/demo/demoWallet.config"
 import { useAssets } from "@/providers/assetsProvider"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { toAsyncIterable } from "@/utils/rxjs"
@@ -55,20 +57,23 @@ export const accountBalancesQuery = (
       filter?.followedTokenIds,
       filter?.erc20AssetIds,
     ],
-    queryFn: streamedQuery<AssetBalance[], BalanceRecord>({
-      streamFn: ({ signal }) =>
-        toAsyncIterable(
-          watchFilteredAccountBalances(sdk, address, filter!),
-          signal,
-        ),
-      reducer: mergeBalances,
-      initialValue: EMPTY_BALANCES,
-    }),
+    queryFn: isDemoAddress(address)
+      ? async () => getDemoHydrationBalances()
+      : streamedQuery<AssetBalance[], BalanceRecord>({
+          streamFn: ({ signal }) =>
+            toAsyncIterable(
+              watchFilteredAccountBalances(sdk, address, filter!),
+              signal,
+            ),
+          reducer: mergeBalances,
+          initialValue: EMPTY_BALANCES,
+        }),
     enabled:
-      isReady &&
-      !!address &&
-      !!filter?.followedTokenIds.length &&
-      !!filter?.erc20AssetIds.length,
+      isDemoAddress(address) ||
+      (isReady &&
+        !!address &&
+        !!filter?.followedTokenIds.length &&
+        !!filter?.erc20AssetIds.length),
     staleTime: Infinity,
     gcTime: 0,
     refetchOnWindowFocus: false,
@@ -83,8 +88,11 @@ export const maxWithdrawAllQuery = (
 ) =>
   queryOptions({
     queryKey: [...MAX_WITHDRAW_ALL_QUERY_KEY, address],
-    queryFn: () => sdk.api.aave.getMaxWithdrawAll(address),
-    enabled: isReady && !!address,
+    queryFn: () =>
+      isDemoAddress(address)
+        ? Promise.resolve({})
+        : sdk.api.aave.getMaxWithdrawAll(address),
+    enabled: isDemoAddress(address) || (isReady && !!address),
     staleTime: Infinity,
     refetchOnWindowFocus: true,
   })

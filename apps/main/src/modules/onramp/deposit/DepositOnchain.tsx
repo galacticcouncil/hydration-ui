@@ -14,6 +14,7 @@ export const DepositOnchain = () => {
   const { account } = useAccount()
   const defaults = getXcmFormDefaults(account)
   const selection = useOnrampModal((state) => state.walletFirstAsset)
+  const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
   const sourceChain = selection ? chainsMap.get(selection.chainKey) : null
   const sourceAsset = selection
@@ -28,6 +29,9 @@ export const DepositOnchain = () => {
           syncWithQueryParams: false,
           defaultValues: {
             ...defaults,
+            ...(walletFirstFlow === "connected"
+              ? { destAddress: "", destAccount: null }
+              : {}),
             srcChain: sourceAsset ? (sourceChain ?? null) : null,
             srcAsset: sourceAsset ?? null,
             destAsset: null,

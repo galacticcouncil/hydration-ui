@@ -20,6 +20,7 @@ import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { DepositOnchainDestination } from "@/modules/onramp/deposit/steps/DepositOnchainDestination"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
@@ -52,6 +53,7 @@ export const DepositOnchainForm = () => {
   const paginateTo = useOnrampStore((state) => state.paginateTo)
   const page = useOnrampStore((state) => state.page)
   const setModal = useOnrampModal((state) => state.setModal)
+  const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const selectRecipient = () => paginateTo(OnrampScreen.DepositOnchainRecipient)
   const queryClient = useQueryClient()
   const resetAmounts = useResetAmounts()
@@ -82,17 +84,34 @@ export const DepositOnchainForm = () => {
       if (account) removeOptimisticJourney(queryClient, account.address, txHash)
     },
   })
-  const back = () => paginateTo(OnrampScreen.DepositOnchainAsset)
+  const selectAsset = () => paginateTo(OnrampScreen.DepositOnchainAsset)
+  const back = () =>
+    paginateTo(
+      walletFirstFlow === "connected"
+        ? OnrampScreen.DepositOnchainDestination
+        : OnrampScreen.DepositOnchainAsset,
+    )
 
+  const chooseDestination = (
+    address: string,
+    recipient?: typeof destAccount,
+  ) => {
+    setValue("destAddress", address, { shouldValidate: true })
+    setValue("destAccount", recipient ?? null)
+    paginateTo(OnrampScreen.DepositOnchainForm)
+  }
+  if (page === OnrampScreen.DepositOnchainDestination)
+    return (
+      <DepositOnchainDestination
+        onBack={selectAsset}
+        onSelect={chooseDestination}
+      />
+    )
   if (page === OnrampScreen.DepositOnchainRecipient)
     return (
       <RecipientSelectPage
         onBack={() => paginateTo(OnrampScreen.DepositOnchainForm)}
-        onSelectAddress={(address, recipient) => {
-          setValue("destAddress", address, { shouldValidate: true })
-          setValue("destAccount", recipient ?? null)
-          paginateTo(OnrampScreen.DepositOnchainForm)
-        }}
+        onSelectAddress={chooseDestination}
       />
     )
 
@@ -125,7 +144,7 @@ export const DepositOnchainForm = () => {
           selection={
             srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
           }
-          onAssetClick={back}
+          onAssetClick={selectAsset}
           amountProps={{
             fieldName: "srcAmount",
             balance: balances?.get(srcAsset?.key ?? ""),

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
+import { ENABLE_DISCONNECTED_BANK_PREVIEW } from "@/modules/ramp/bankPreview.config"
 
 type Modal = "send"
 
@@ -21,7 +22,30 @@ export const PortfolioOverviewSubpageLayoutActions = () => {
   const setOnrampModal = useOnrampModal((state) => state.setModal)
   const openWithdraw = useOnrampModal((state) => state.openWithdraw)
 
-  if (!account) return null
+  if (!account) {
+    return (
+      <Flex gap="m">
+        {ENABLE_DISCONNECTED_BANK_PREVIEW && (
+          <Button
+            variant="emphasis"
+            outline
+            onClick={() => setOnrampModal("bankWithdraw")}
+          >
+            <Minus />
+            {t("withdraw")}
+          </Button>
+        )}
+        <Button
+          variant="emphasis"
+          outline
+          onClick={() => setOnrampModal("deposit")}
+        >
+          <Plus />
+          {t("deposit")}
+        </Button>
+      </Flex>
+    )
+  }
 
   return (
     <Flex gap="m">

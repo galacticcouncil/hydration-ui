@@ -1,0 +1,29 @@
+{
+  "sourceStudio": "design-assets/status-icons-blender/status-icons.blend",
+  "sourceStudioSha256": "325b25c7ab5dad1a27e9695db5d009cefad82cbf3042e8399e977ef0c3abc46a",
+  "sourceUnchanged": true,
+  "blend": "bank-status.blend",
+  "render": "bank-status-1024.png",
+  "scene": "Bank Status - At Your Bank",
+  "palette": [
+    "PALETTE - Native Royal Blue",
+    "PALETTE - Native Orchid Violet",
+    "PALETTE - Pale Ivory Mint"
+  ],
+  "resolution": 1024,
+  "samples": 128,
+  "usage": "Bank withdrawal tracking: At your bank",
+  "appExport": "packages/ui/src/assets/images/Bank3D.webp",
+  "renderSha256": "145abc801f5249c8657fa5dc07ccec09065d5ce43454108e333ce9a2f4351d1e",
+  "blendSha256": "77fd568d5d16f2af5872aec74dcd28a3c86e74deb9a6182e75636c5554a606b9",
+  "appAssetSha256": "cca50a9ed0a09a540969c81aa56cd8ba38e80216af949bc4a46158b4fd11e4c6",
+  "appAssetBytes": 28244,
+  "appAssetSize": [
+    512,
+    512
+  ],
+  "appAssetMode": "RGBA",
+  "reopenedSourceRenderVerified": true,
+  "reopenedRenderPixelsMatch": true,
+  "nativeComparison": "native-comparison.png"
+}

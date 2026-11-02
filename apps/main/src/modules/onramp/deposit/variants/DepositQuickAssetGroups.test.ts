@@ -1,10 +1,16 @@
-import type { AnyChain, Asset } from "@galacticcouncil/xc-core"
+import type { AnyChain, Asset, AssetAmount } from "@galacticcouncil/xc-core"
 import { describe, expect, it } from "vitest"
 
 import {
   groupDepositAssetOptions,
   NamedDepositAssetPair,
 } from "./DepositQuickAssetGroups"
+import {
+  getQuickGroupBalance,
+  quickBalanceKey,
+  QuickDepositBalances,
+  splitQuickAssetGroups,
+} from "./DepositQuickBalances.utils"
 
 const pair = (
   assetKey: string,
@@ -75,5 +81,51 @@ describe("quick deposit asset grouping", () => {
     ])
     expect(groups.map(({ key }) => key)).toEqual(["aave", "dot"])
     expect(groups[1]?.sources).toHaveLength(3)
+  })
+})
+
+describe("quick deposit balances", () => {
+  it("moves funded assets first, sums only the selected networks, and keeps the rest", () => {
+    const groups = groupDepositAssetOptions([
+      pair("aave", "AAVE", "ethereum", "Ethereum"),
+      pair("usdc", "USDC", "ethereum", "Ethereum"),
+      pair("usdc", "USDC", "base", "Base"),
+      pair("usdt", "USDT", "ethereum", "Ethereum"),
+    ])
+    const balances: QuickDepositBalances = new Map([
+      [
+        quickBalanceKey("ethereum", "usdc"),
+        {
+          amount: { amount: 1250000n, decimals: 6 } as AssetAmount,
+          depositable: true,
+        },
+      ],
+      [
+        quickBalanceKey("base", "usdc"),
+        {
+          amount: { amount: 250n, decimals: 2 } as AssetAmount,
+          depositable: true,
+        },
+      ],
+      [
+        quickBalanceKey("solana", "usdc"),
+        {
+          amount: { amount: 999n, decimals: 0 } as AssetAmount,
+          depositable: true,
+        },
+      ],
+    ])
+    const { funded, other } = splitQuickAssetGroups(groups, balances)
+    expect(funded.map((group) => group.key)).toEqual(["usdc"])
+    expect(other.map((group) => group.key)).toEqual(["aave", "usdt"])
+    expect(getQuickGroupBalance(funded[0]!, balances)).toBe("3.75")
+    const baseOnly = groupDepositAssetOptions(
+      [
+        pair("usdc", "USDC", "ethereum", "Ethereum"),
+        pair("usdc", "USDC", "base", "Base"),
+      ],
+      "base",
+    )
+    expect(getQuickGroupBalance(baseOnly[0]!, balances)).toBe("2.5")
   })
 })

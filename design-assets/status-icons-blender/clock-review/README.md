@@ -18,4 +18,4 @@ Outputs are transparent 1024px PNGs at 128 Cycles samples:
 - `../inbox-review/review-inbox-1024.png`
 - `document-clock-1024.png`
 
-These remain artwork previews; existing runtime icon exports are preserved for review.
+The selected document-and-clock render is exported as `packages/ui/src/assets/images/ReviewClock3D.webp` and used for the bank provider's **In review** state in both deposit-flow versions. The icon catalog and source library include its WebP, transparent master PNG, and this saved Blender scene. The original magnifier remains the setup/handoff icon; the inbox remains an artwork study.

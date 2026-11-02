@@ -1,4 +1,5 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import type { Account } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { useQueries } from "@tanstack/react-query"
@@ -14,6 +15,7 @@ import {
 import {
   filterDepositBalancesByProviders,
   getDepositSources,
+  getSelectedDepositAccounts,
   groupDepositBalances,
 } from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
@@ -22,19 +24,27 @@ import { XCM_CHAINS } from "@/modules/xcm/transfer/utils/chain"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
 
-type DepositDiscoveryOptions = { provider?: WalletProviderType | null }
+type DepositDiscoveryOptions = {
+  provider?: WalletProviderType | null
+  account?: Account | null
+}
 
 export const useDepositDiscovery = ({
   provider,
+  account,
 }: DepositDiscoveryOptions = {}) => {
   const accounts = useDepositAccounts({ signersOnly: true })
+  const selectedAccounts = useMemo(
+    () => getSelectedDepositAccounts(accounts, account),
+    [accounts, account],
+  )
   const wallet = useCrossChainWallet()
   const config = useCrossChainConfigService()
   const { sourceChainAssetPairs } = useXcmProvider()
   const sources = useMemo(
     () =>
       getDepositSources(
-        accounts,
+        selectedAccounts,
         XCM_CHAINS.filter((chain) => chain.key !== HYDRATION_CHAIN_KEY).map(
           (chain) => ({
             chain,
@@ -48,7 +58,7 @@ export const useDepositDiscovery = ({
           }),
         ),
       ),
-    [accounts, config, sourceChainAssetPairs],
+    [selectedAccounts, config, sourceChainAssetPairs],
   )
   const results = useQueries({
     queries: sources.map((source) =>

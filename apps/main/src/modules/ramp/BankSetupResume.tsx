@@ -26,10 +26,15 @@ export const BankSetupResume: FC<BankSetupResumeProps> = ({
     (state) => state.setups[account?.address ?? ""],
   )
   const setModal = useOnrampModal((state) => state.setModal)
-  if (!draft) return null
-  const ready = draft.accounts.includes(draft.currency)
+  if (!draft || draft.screen === "entry") return null
+  const withdrawal = draft.intent === "withdraw"
+  const ready = !withdrawal && draft.accounts.includes(draft.currency)
   const title = t(
-    ready ? "bankSimplified.resume.readyTitle" : "bankSimplified.resume.title",
+    ready
+      ? "bankSimplified.resume.readyTitle"
+      : withdrawal
+        ? "bankShared.resume.withdraw"
+        : "bankSimplified.resume.title",
     { currency: draft.currency },
   )
   const description = t(
@@ -41,7 +46,7 @@ export const BankSetupResume: FC<BankSetupResumeProps> = ({
     <Button
       size="small"
       variant="secondary"
-      onClick={() => setModal("bankDeposit")}
+      onClick={() => setModal(withdrawal ? "bankWithdraw" : "bankDeposit")}
     >
       {t(
         ready

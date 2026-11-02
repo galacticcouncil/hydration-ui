@@ -21,13 +21,14 @@ import {
   AccountWalletAvatar,
   PROVIDERS_BY_WALLET_MODE,
   useWeb3Connect,
+  WalletMode,
   WalletProviderStatus,
   WalletRestoreState,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -39,6 +40,7 @@ import {
   isDepositReceivingAccount,
 } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
+import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { DepositPreviewForm } from "@/modules/onramp/deposit/preview/steps/DepositPreviewForm"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
@@ -57,7 +59,9 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { DepositAssetNetworkPair } from "./DepositQuickAssetGroups"
+import { quickBalanceKey } from "./DepositQuickBalances.utils"
 import { DepositQuickNetworkSelect } from "./DepositQuickNetworkSelect"
+import { useQuickDepositBalances } from "./useQuickDepositBalances"
 
 export const DepositQuickStart = () => {
   const { t } = useTranslation("onramp")
@@ -90,8 +94,12 @@ export const DepositQuickStart = () => {
   >(null)
   // XCM supplies routes into Hydration independently of the receiving wallet.
   // Check source-wallet compatibility only after choosing a chain and asset.
-  const pairs = withHydrationDepositSource(sourceChainAssetPairs).filter(
-    ({ assets }) => assets.length > 0,
+  const pairs = useMemo(
+    () =>
+      withHydrationDepositSource(sourceChainAssetPairs).filter(
+        ({ assets }) => assets.length > 0,
+      ),
+    [sourceChainAssetPairs],
   )
   const selectedPair = pairs.find(({ chain }) => chain.key === chainKey)
   const walletsLoading = useWeb3Connect((state) => {
@@ -119,11 +127,30 @@ export const DepositQuickStart = () => {
     )
     return () => setWalletContentWidth(null)
   }, [directEntry, isSourcePickerOpen, selectingAsset, setWalletContentWidth])
-  const eligible = (account: Account) =>
-    !!selectedPair &&
-    !!selectedAsset &&
-    canUseDepositAccount(account, selectedPair.chain) &&
-    (!directEntry || !isDepositReceivingAccount(account, receivingAddress))
+  const funded = useFundedDepositAccounts(
+    accounts,
+    selectedPair?.chain,
+    selectedAsset,
+  )
+  const eligible = useCallback(
+    (account: Account) =>
+      funded.accounts.some(
+        (candidate) =>
+          candidate.provider === account.provider &&
+          candidate.address === account.address,
+      ) &&
+      !!selectedPair &&
+      !!selectedAsset &&
+      canUseDepositAccount(account, selectedPair.chain) &&
+      (!directEntry || !isDepositReceivingAccount(account, receivingAddress)),
+    [
+      funded.accounts,
+      selectedPair,
+      selectedAsset,
+      directEntry,
+      receivingAddress,
+    ],
+  )
   const compatible = accounts.filter(eligible)
   const sameRoute =
     selection?.chainKey === chainKey && selection?.assetKey === assetKey
@@ -131,12 +158,18 @@ export const DepositQuickStart = () => {
     (account) => `${account.provider}:${account.address}` === sourceKey,
   )
 
+  const quickBalances = useQuickDepositBalances(
+    selectedSource,
+    pairs,
+    assetMenuOpen || selectingAsset || !!networkSources,
+  )
+
   const selectSource = useCallback(
     (account: Account) => {
       if (
         !selectedPair ||
         !selectedAsset ||
-        !canUseDepositAccount(account, selectedPair.chain) ||
+        !eligible(account) ||
         (directEntry && isDepositReceivingAccount(account, receivingAddress))
       )
         return
@@ -199,6 +232,7 @@ export const DepositQuickStart = () => {
       directEntry,
       receivingAddress,
       setAccount,
+      eligible,
     ],
   )
 
@@ -225,7 +259,16 @@ export const DepositQuickStart = () => {
     if (asset.key === assetKey && chain.key === chainKey) return
     setAssetKey(asset.key)
     setChainKey(chain.key)
-    setSourceKey("")
+    const canKeepSource =
+      selectedSource &&
+      canUseDepositAccount(selectedSource, chain) &&
+      quickBalances.balances.get(quickBalanceKey(chain.key, asset.key))
+        ?.depositable
+    setSourceKey(
+      canKeepSource
+        ? `${selectedSource.provider}:${selectedSource.address}`
+        : "",
+    )
     reset({
       ...getValues(),
       srcChain: null,
@@ -248,6 +291,9 @@ export const DepositQuickStart = () => {
     return (
       <DepositQuickNetworkSelect
         symbol={networkSources[0]!.asset.originSymbol}
+        balances={quickBalances.balances}
+        balanceLoading={quickBalances.loading}
+        balanceFailed={quickBalances.failed}
         items={networkSources.filter(({ chain, asset }) =>
           pairs.some(
             (pair) =>
@@ -269,6 +315,10 @@ export const DepositQuickStart = () => {
         isLoading={catalogLoading}
         selectedAsset={selectedAsset}
         selectedChain={selectedPair?.chain}
+        balances={quickBalances.balances}
+        balanceLoading={quickBalances.loading}
+        balanceFailed={quickBalances.failed}
+        hasSource={!!selectedSource}
         onBack={() => setSelectingAsset(false)}
         items={pairs.flatMap(({ chain, assets }) =>
           assets.map((asset) => ({ asset, chain })),
@@ -282,10 +332,9 @@ export const DepositQuickStart = () => {
       <Web3ConnectPage
         layout={directEntry ? "split" : "page"}
         keepSplitOpen={directEntry}
-        walletListVariant={directEntry ? "connectedFirst" : "default"}
         neckwork={neckworkClient}
         papi={papi}
-        mode={getWalletModeByChain(selectedPair.chain)}
+        mode={WalletMode.Default}
         accountFilter={eligible}
         meta={{
           title: t("deposit.variants.connectTitle", {
@@ -343,7 +392,9 @@ export const DepositQuickStart = () => {
               "--button-icon": pxToRem(18),
               "--button-icon-end": "0px",
             }}
-            isLoading={walletsLoading && compatible.length === 0}
+            isLoading={
+              (walletsLoading || funded.isLoading) && compatible.length === 0
+            }
             fullWidth
             openOnHover={directEntry}
             size="medium"
@@ -400,6 +451,19 @@ export const DepositQuickStart = () => {
             {t("deposit.quick.connectWallet")}
           </Button>
         )}
+        {selectedAsset &&
+          !funded.isLoading &&
+          !funded.failed &&
+          !compatible.length && (
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("deposit.flow.assets.empty")}
+            </Text>
+          )}
+        {funded.failed && (
+          <Text fs="p5" color={getToken("accents.danger.emphasis")}>
+            {t("deposit.flow.assets.partial")}
+          </Text>
+        )}
       </Stack>
     </Stack>
   )
@@ -421,6 +485,10 @@ export const DepositQuickStart = () => {
                   open={assetMenuOpen}
                   onOpenChange={setAssetMenuOpen}
                   onChooseNetwork={setNetworkSources}
+                  balances={quickBalances.balances}
+                  balanceLoading={quickBalances.loading}
+                  balanceFailed={quickBalances.failed}
+                  hasSource={!!selectedSource}
                   isLoading={catalogLoading}
                   items={pairs.flatMap(({ chain, assets }) =>
                     assets.map((asset) => ({ asset, chain })),
@@ -474,6 +542,10 @@ export const DepositQuickStart = () => {
                       open={assetMenuOpen}
                       onOpenChange={setAssetMenuOpen}
                       onChooseNetwork={setNetworkSources}
+                      balances={quickBalances.balances}
+                      balanceLoading={quickBalances.loading}
+                      balanceFailed={quickBalances.failed}
+                      hasSource={!!selectedSource}
                       isLoading={catalogLoading}
                       items={pairs.flatMap(({ chain, assets }) =>
                         assets.map((asset) => ({ asset, chain })),

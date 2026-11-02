@@ -35,6 +35,20 @@ export type DepositAssetGroup = {
   claimPossible: boolean
 }
 
+/** Limit wallet-first discovery to the exact account the user selected. */
+export const getSelectedDepositAccounts = (
+  accounts: Account[],
+  selected: Account | null | undefined,
+): Account[] =>
+  selected === undefined
+    ? accounts
+    : accounts.filter(
+        (account) =>
+          !!selected &&
+          account.provider === selected.provider &&
+          account.address === selected.address,
+      )
+
 export const getDepositSources = (
   accounts: Account[],
   pairs: ChainAssetPair[],
@@ -111,6 +125,19 @@ export const getDepositUnavailableReason = (
     ? "tooSmall"
     : undefined
 }
+
+/** Return signers only for a selected asset with a usable source balance. */
+export const getFundedDepositAccounts = (
+  sources: DepositSource[],
+  balances: (readonly AssetAmount[] | undefined)[],
+  assetKey: string | undefined,
+): Account[] =>
+  sources.flatMap((source, index) => {
+    const balance = balances[index]?.find((item) => item.key === assetKey)
+    if (!balance || balance.amount <= 0n) return []
+    const row = { key: `${source.key}:${balance.key}`, source, balance }
+    return getDepositUnavailableReason(row) ? [] : source.accounts
+  })
 
 export const groupDepositBalances = (rows: DepositBalanceRow[]) => {
   const supported: DepositBalanceRow[] = []

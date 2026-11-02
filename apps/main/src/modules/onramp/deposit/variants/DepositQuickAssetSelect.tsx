@@ -2,11 +2,13 @@ import { Layers, Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   Button,
+  Flex,
   Grid,
   Icon,
   Input,
   ModalBody,
   Stack,
+  Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -23,6 +25,11 @@ import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelec
 import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { useAssets } from "@/providers/assetsProvider"
 
+import {
+  quickBalanceKey,
+  QuickDepositBalances,
+} from "./DepositQuickBalances.utils"
+
 type AssetNetworkPair = { asset: Asset; chain: AnyChain }
 type DepositQuickAssetSelectProps = {
   items: AssetNetworkPair[]
@@ -31,6 +38,10 @@ type DepositQuickAssetSelectProps = {
   selectedChain?: AnyChain
   onBack: () => void
   onSelect: (selection: AssetNetworkPair) => void
+  balances: QuickDepositBalances
+  balanceLoading: boolean
+  balanceFailed: boolean
+  hasSource: boolean
 }
 
 export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
@@ -40,13 +51,19 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
   selectedChain,
   onSelect,
   onBack,
+  balances,
+  balanceLoading,
+  balanceFailed,
+  hasSource,
 }) => {
   const { t } = useTranslation(["common", "onramp", "xcm"])
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
   const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
-  const [chainKey, setChainKey] = useState(selectedChain?.key ?? null)
+  const [chainKey, setChainKey] = useState(
+    hasSource ? null : (selectedChain?.key ?? null),
+  )
   const getDisplayAssetId = useHydrationDisplayAssetId()
   const { getAsset } = useAssets()
   const chains = useMemo(() => {
@@ -89,6 +106,45 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
         .includes(assetQuery),
   )
 
+  const fundedAssets = visibleAssets.filter(({ chain, asset }) =>
+    balances.has(quickBalanceKey(chain.key, asset.key)),
+  )
+  const otherAssets = visibleAssets.filter(
+    ({ chain, asset }) => !balances.has(quickBalanceKey(chain.key, asset.key)),
+  )
+  const entries = fundedAssets.length
+    ? [
+        {
+          kind: "header" as const,
+          key: "funded-header",
+          label: t("onramp:deposit.quick.yourBalances"),
+        },
+        ...fundedAssets.map((item) => ({
+          kind: "asset" as const,
+          key: item.key,
+          item,
+        })),
+        ...(otherAssets.length
+          ? [
+              {
+                kind: "header" as const,
+                key: "other-header",
+                label: t("onramp:deposit.quick.otherAssets"),
+              },
+            ]
+          : []),
+        ...otherAssets.map((item) => ({
+          kind: "asset" as const,
+          key: item.key,
+          item,
+        })),
+      ]
+    : visibleAssets.map((item) => ({
+        kind: "asset" as const,
+        key: item.key,
+        item,
+      }))
+
   return (
     <>
       <SOnrampStepHeader
@@ -105,7 +161,7 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
       >
         <Grid
           data-onramp-step="deposit-quick-assets"
-          aria-busy={isLoading}
+          aria-busy={isLoading || (hasSource && balanceLoading)}
           columnTemplate={`${pxToRem(isMobile ? 52 : 164)} minmax(0, 1fr)`}
           gap={isMobile ? "base" : "l"}
           p={isMobile ? "base" : "m"}
@@ -171,30 +227,51 @@ export const DepositQuickAssetSelect: FC<DepositQuickAssetSelectProps> = ({
               value={assetSearch}
               onChange={(event) => setAssetSearch(event.target.value)}
             />
+            {hasSource && balanceLoading && (
+              <Text fs="p6">{t("onramp:deposit.flow.assets.scanning")}</Text>
+            )}
+            {hasSource && balanceFailed && (
+              <Text fs="p6">{t("onramp:deposit.flow.assets.partial")}</Text>
+            )}
             {isLoading ? (
               <DepositAssetListSkeleton count={5} showBalance={false} />
-            ) : visibleAssets.length ? (
+            ) : entries.length ? (
               <VirtualizedList
-                items={visibleAssets}
+                items={entries}
                 itemSize={50}
-                getItemKey={(index) => visibleAssets[index]!.key}
+                getItemKey={(index) => entries[index]!.key}
                 sx={{ flex: 1, minHeight: 0 }}
-                renderItem={({ asset, chain, name }) => (
-                  <AssetListItem
-                    asset={asset}
-                    chain={chain}
-                    symbol={asset.originSymbol}
-                    name={chainKey ? name : chain.name}
-                    route={null}
-                    isLoading={false}
-                    isSelected={
-                      selectedAsset?.key === asset.key &&
-                      selectedChain?.key === chain.key
-                    }
-                    trailingElement={null}
-                    onClick={() => onSelect({ asset, chain })}
-                  />
-                )}
+                renderItem={(entry) =>
+                  entry.kind === "header" ? (
+                    <Flex align="center" px="l" height="100%">
+                      <Text fs="p5">{entry.label}</Text>
+                    </Flex>
+                  ) : (
+                    (() => {
+                      const { asset, chain, name } = entry.item
+                      const balance = balances.get(
+                        quickBalanceKey(chain.key, asset.key),
+                      )?.amount
+                      return (
+                        <AssetListItem
+                          asset={asset}
+                          chain={chain}
+                          symbol={asset.originSymbol}
+                          name={chainKey ? name : chain.name}
+                          route={null}
+                          isLoading={false}
+                          isSelected={
+                            selectedAsset?.key === asset.key &&
+                            selectedChain?.key === chain.key
+                          }
+                          balance={balance}
+                          trailingElement={balance ? undefined : null}
+                          onClick={() => onSelect({ asset, chain })}
+                        />
+                      )
+                    })()
+                  )
+                }
               />
             ) : (
               <AssetSelectEmptyState />

@@ -13,6 +13,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { DemoWalletBanner } from "@/modules/onramp/demo/DemoWalletBanner"
 import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
@@ -96,6 +97,7 @@ function RootComponent() {
           <TutorialProvider>
             <MultisigProvider>
               <AssetRegistryGate>
+                <DemoWalletBanner />
                 <MainLayout />
                 <Services />
                 <Footer />
