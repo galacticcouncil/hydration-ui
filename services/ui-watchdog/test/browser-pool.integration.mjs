@@ -8,6 +8,9 @@ test(
   "repeated checks reuse Chromium and leave no zombies under tini",
   { timeout: 60000 },
   async (t) => {
+    // /proc is namespace-wide. In CI's container PID 1 doesn't reap, so
+    // earlier Chrome launches leave zombies and crashpads; count only this test's.
+    const before = await processCounts()
     let launches = 0
     const pool = new BrowserPool(async () => {
       launches++
@@ -30,7 +33,10 @@ test(
       }
       assert.equal(launches, 1)
       const counts = await processCounts()
-      assert.ok(counts.chrome < 10, JSON.stringify(counts))
+      assert.ok(
+        counts.chrome - before.chrome < 10,
+        JSON.stringify({ before, counts }),
+      )
     } finally {
       await pool.close()
     }
