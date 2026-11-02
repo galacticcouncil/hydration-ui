@@ -1,4 +1,4 @@
-// Bypass #1 "switching the page between checks" (Discord, Jakub). At 54527f90e
+// Bypass #1 "switching the page between checks". At 54527f90e
 // scan.mjs:200 returns `unverified` on probe.racing || audit.racing before any
 // integrity issue is looked at, and observers.mjs:24-29 drops racing observers
 // from the cross-observer comparison, so every observer (and the aggregate)
