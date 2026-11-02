@@ -13,7 +13,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import Big from "big.js"
-import waitFor from "p-wait-for"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -27,9 +26,8 @@ import {
 
 import { useAccountBalances } from "@/api/balances"
 import { getDryRunError } from "@/api/dryRun"
-import { evmAccountBindingQuery, useErc20Allowance } from "@/api/evm"
+import { evmAccountBindingQuery } from "@/api/evm"
 import { bestSellWithTxQuery } from "@/api/trade"
-import { PendingApproval } from "@/components/PendingApproval"
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
   type PropellerVaultConfig,
@@ -47,11 +45,9 @@ import { parseExactAmount } from "@/modules/strategies/propeller/utils/amount"
 import { composeVaultBatch } from "@/modules/strategies/propeller/utils/batch"
 import {
   buildDepositBuy,
-  CHAIN_WAIT,
   encodeApproval,
   encodeDeposit,
   prepareApproval,
-  prepareFundedDeposit,
   readSellLimit,
 } from "@/modules/strategies/propeller/utils/deposit"
 import {
@@ -249,17 +245,6 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   }
 }
 
-/** Polls until a submitted step's effect is visible on chain. */
-const waitForChain = async (
-  isVisible: () => Promise<boolean>,
-  message: string,
-) => {
-  await waitFor(isVisible, {
-    interval: CHAIN_WAIT.interval,
-    timeout: { milliseconds: CHAIN_WAIT.timeout, message },
-  })
-}
-
 export type DepositVariables = {
   /** in units of the asset paid with */
   amount: string
@@ -284,7 +269,6 @@ export function useDeposit(
   const { evm } = rpc
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const getErc20Allowance = useErc20Allowance()
   const { evmAddress, buildBatch, createTransaction, txOptionsForVault } =
     useVaultEvmCall(options)
   const { vaultAddress, assetId } = vault
@@ -302,95 +286,62 @@ export function useDeposit(
     amount,
   })
 
-  // Built only once the approval is visible on chain, so the simulation
-  // and gas estimate run against the real allowance.
-  const buildDeposit = async (amount: bigint) => {
-    const value = formatAmount(formatUnits(amount, decimals))
-    return {
-      tx: await buildBatch([
-        await prepareFundedDeposit(evm, depositInput(amount)),
-      ]),
-      title: t("deposit"),
-      description: t("propeller:deposit.description.direct", { amount: value }),
-      toasts: {
-        submitted: t("propeller:deposit.toast.submitted", { amount: value }),
-        success: t("propeller:deposit.toast.success", { amount: value }),
-        error: t("propeller:deposit.toast.error", { amount: value }),
-      },
-      executedAmount: { amount: formatUnits(amount, decimals), assetId },
-    }
-  }
-
-  const approvalStep = async (approval: BatchEvmCall, amount: bigint) => ({
-    tx: await buildBatch([approval]),
-    stepTitle: t("propeller:deposit.step.approve"),
-    toasts: {
-      submitted: t("propeller:deposit.approve.toast.submitted", { symbol }),
-      success: t("propeller:deposit.approve.toast.success", { symbol }),
-    },
-    pendingComponent: PendingApproval,
-    beforeNext: () =>
-      waitForChain(
-        async () =>
-          (await getErc20Allowance(assetAddress, evmAddress, vaultAddress)) >=
-          amount,
-        t("propeller:deposit.approve.timeout"),
-      ),
-  })
-
-  const depositStep = (amount: bigint) => ({
-    tx: () => buildDeposit(amount),
-    stepTitle: t("deposit"),
-    pendingComponent: PendingApproval,
-  })
-
   return useMutation({
     mutationFn: async ({ amount, trade }: DepositVariables) => {
-      if (!trade) {
-        const assetBig = parseExactAmount(amount, decimals)
-        const approval = await prepareApproval(evm, depositInput(assetBig))
-        if (!approval) {
-          return createTransaction(
-            await buildDeposit(assetBig),
-            txOptionsForVault(vaultAddress),
-          )
-        }
-
-        return createTransaction(
-          {
-            tx: [await approvalStep(approval, assetBig), depositStep(assetBig)],
-          },
-          txOptionsForVault(vaultAddress),
-        )
-      }
-
-      const { exact, depositAmount, maxAmountIn, leftover } = trade
-      const payAsset = getAssetWithFallback(trade.assetIn)
-      const formatPay = (value: bigint) =>
-        formatAmount(formatUnits(value, payAsset.decimals), payAsset.symbol)
-      const deposited = formatAmount(formatUnits(depositAmount, decimals))
+      const depositAmount = trade
+        ? trade.depositAmount
+        : parseExactAmount(amount, decimals)
       // also asserts the vault is ready, unpaused and still has room
       const approval = await prepareApproval(evm, depositInput(depositAmount))
+      // one transaction: [swap], [approve], deposit; any failure reverts all
       const tx = await buildBatch(
         [
           ...(approval ? [approval] : []),
           encodeDeposit(depositInput(depositAmount)),
         ],
-        { leading: [trade.tx.decodedCall], atomic: true },
+        { leading: trade ? [trade.tx.decodedCall] : [], atomic: true },
       )
-      // the deposit cannot be simulated before the swap, so dry-run the batch
-      // best, not papi's finalized default: a just-received pay asset must count
+      // the deposit is unsimulated (the approval or swap lands in the same
+      // batch), so dry-run the batch at best: a just-received asset must count
       const dryRunError = await getDryRunError(
         rpc,
         account?.address ?? "",
         tx,
-        {
-          at: "best",
-        },
+        { at: "best" },
       )
       if (dryRunError)
         throw new Error(`Deposit dry run failed: ${dryRunError.name}`)
 
+      const deposited = formatAmount(formatUnits(depositAmount, decimals))
+      const toasts = {
+        submitted: t("propeller:deposit.toast.submitted", {
+          amount: deposited,
+        }),
+        success: t("propeller:deposit.toast.success", { amount: deposited }),
+        error: t("propeller:deposit.toast.error", { amount: deposited }),
+      }
+
+      if (!trade)
+        return createTransaction(
+          {
+            tx,
+            title: t("deposit"),
+            description: t("propeller:deposit.description.direct", {
+              amount: deposited,
+            }),
+            toasts,
+            executedAmount: {
+              amount: formatUnits(depositAmount, decimals),
+              assetId,
+            },
+          },
+          txOptionsForVault(vaultAddress),
+        )
+
+      const { exact, maxAmountIn, leftover } = trade
+      const payAsset = getAssetWithFallback(trade.assetIn)
+      const formatPay = (value: bigint) =>
+        formatAmount(formatUnits(value, payAsset.decimals), payAsset.symbol)
       return createTransaction(
         {
           tx,
@@ -406,15 +357,7 @@ export function useDeposit(
                 maxAmountIn: formatPay(maxAmountIn),
                 leftover: formatPay(leftover ?? 0n),
               }),
-          toasts: {
-            submitted: t("propeller:deposit.toast.submitted", {
-              amount: deposited,
-            }),
-            success: t("propeller:deposit.toast.success", {
-              amount: deposited,
-            }),
-            error: t("propeller:deposit.toast.error", { amount: deposited }),
-          },
+          toasts,
           // the review checks what's left of the fee asset after this
           executedAmount: {
             amount: formatUnits(maxAmountIn, payAsset.decimals),

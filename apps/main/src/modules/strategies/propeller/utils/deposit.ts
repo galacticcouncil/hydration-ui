@@ -1,5 +1,4 @@
 import { type Trade, TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
-import { minutesToMilliseconds } from "date-fns"
 import { isBigInt, isNumber, isPlainObject, isString } from "remeda"
 import {
   encodeFunctionData,
@@ -12,7 +11,6 @@ import {
 
 import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
 import {
-  DEPOSIT_MIN_GAS,
   DEPOSIT_SWAP_BUFFER_BPS,
   EVM_CALL_GAS,
 } from "@/modules/strategies/propeller/constants"
@@ -23,7 +21,6 @@ import {
 import { type AnyPapiTx } from "@/modules/transactions/types"
 import { type Papi } from "@/providers/rpcProvider"
 
-const MAX_NATIVE_TX_GAS = 1n << 24n
 type DepositInput = { vault: Hex; asset: Hex; owner: Hex; amount: bigint }
 
 /** Deposits are collateral-only; keeper trade budgets do not gate admission. */
@@ -104,9 +101,6 @@ export const assertDepositCapacity = (
     )
 }
 
-/** how long to wait for a node to catch up with a landed transaction */
-export const CHAIN_WAIT = { interval: 1000, timeout: minutesToMilliseconds(3) }
-
 const depositRequest = ({ vault, owner, amount }: DepositInput) =>
   ({
     account: owner,
@@ -115,36 +109,6 @@ const depositRequest = ({ vault, owner, amount }: DepositInput) =>
     functionName: "deposit",
     args: [amount, owner],
   }) as const
-
-/** Simulate the direct collateral-only deposit after approval has completed. */
-export const prepareFundedDeposit = async (
-  client: PublicClient,
-  input: DepositInput,
-) => {
-  const { vault, asset, owner, amount } = input
-  if (owner === zeroAddress)
-    throw new Error("Connect an account before depositing")
-  assertDepositCapacity(await readDepositCapacity(client, vault, asset), amount)
-  const request = depositRequest(input)
-  const { result: shares } = await client.simulateContract(request)
-  if (shares <= 0n)
-    throw new Error("The deposit would receive no funded shares")
-  const [estimate, block] = await Promise.all([
-    client.estimateContractGas(request),
-    client.getBlock({ blockTag: "latest" }),
-  ])
-  const estimated = (estimate * 120n + 99n) / 100n
-  const gas = estimated > DEPOSIT_MIN_GAS ? estimated : DEPOSIT_MIN_GAS
-  if (gas > MAX_NATIVE_TX_GAS || gas > block.gasLimit)
-    throw new Error("This deposit exceeds the transaction gas limit")
-  return {
-    to: vault,
-    data: encodeFunctionData(request),
-    abi: VAULT_ABI,
-    gas,
-    shares,
-  }
-}
 
 /** unsimulated: earlier calls in the same batch fund it */
 export const encodeDeposit = (input: DepositInput) => ({
@@ -165,8 +129,8 @@ export const encodeApproval = ({ vault, asset, amount }: DepositInput) => ({
 })
 
 /**
- * Approval is the only preparatory wallet transaction; keepers deploy later.
- * Returns the approve call, or null when the allowance already covers the amount.
+ * Checks the vault takes the amount, then returns the approve call to batch
+ * before the deposit, or null when the allowance already covers it.
  */
 export const prepareApproval = async (
   client: PublicClient,

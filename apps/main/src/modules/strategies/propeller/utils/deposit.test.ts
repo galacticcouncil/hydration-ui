@@ -18,7 +18,6 @@ import {
   encodeDeposit,
   isSwapDepositReady,
   prepareApproval,
-  prepareFundedDeposit,
   readBuyLimit,
   readDepositCapacity,
   readSellLimit,
@@ -54,12 +53,13 @@ const mockClient = (overrides: Record<string, unknown> = {}) => {
   const calls = {
     readContract,
     getBlockNumber: vi.fn(async () => 100n),
-    getBlock: vi.fn(async () => ({ gasLimit: 30_000_000n })),
-    simulateContract: vi.fn(async () => ({ result: 2n * unit })),
-    estimateContractGas: vi.fn(async () => 1_000_000n),
   }
   return { ...calls, client: calls as unknown as PublicClient }
 }
+const readsAllowance = (mock: ReturnType<typeof mockClient>) =>
+  mock.readContract.mock.calls.some(
+    ([request]) => request.functionName === "allowance",
+  )
 
 describe("Collateral-only deposit capacity", () => {
   it("uses exact vault headroom at a single block without trade-budget or price reads", async () => {
@@ -84,11 +84,11 @@ describe("Collateral-only deposit capacity", () => {
 
   it("rejects old synchronous deployments before preparing any transaction", async () => {
     const mock = mockClient({ deferredDeployment: false })
-    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
+    await expect(prepareApproval(mock.client, args)).rejects.toThrow(
       "deferred deployment",
     )
     expect(mock.readContract).toHaveBeenCalledOnce()
-    expect(mock.simulateContract).not.toHaveBeenCalled()
+    expect(readsAllowance(mock)).toBe(false)
   })
 
   it("does not infer support when the capability probe reverts or the RPC fails", async () => {
@@ -96,10 +96,10 @@ describe("Collateral-only deposit capacity", () => {
     mock.readContract.mockRejectedValue(
       new Error("Missing selector or RPC unavailable"),
     )
-    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
+    await expect(prepareApproval(mock.client, args)).rejects.toThrow(
       "Missing selector",
     )
-    expect(mock.simulateContract).not.toHaveBeenCalled()
+    expect(readsAllowance(mock)).toBe(false)
   })
 
   it("blocks bootstrap, missing ledger, deficit stop and pause states", async () => {
@@ -112,10 +112,10 @@ describe("Collateral-only deposit capacity", () => {
       { deleverTarget: 1n },
     ]) {
       const mock = mockClient(overrides)
-      await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
+      await expect(prepareApproval(mock.client, args)).rejects.toThrow(
         "availability changed",
       )
-      expect(mock.simulateContract).not.toHaveBeenCalled()
+      expect(readsAllowance(mock)).toBe(false)
     }
   })
 
@@ -126,10 +126,10 @@ describe("Collateral-only deposit capacity", () => {
         throw new Error("Unknown selector deficitStop()")
       return request.functionName === "deferredDeployment" ? true : 0n
     })
-    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
+    await expect(prepareApproval(mock.client, args)).rejects.toThrow(
       "deficitStop",
     )
-    expect(mock.simulateContract).not.toHaveBeenCalled()
+    expect(readsAllowance(mock)).toBe(false)
   })
 
   it("rejects mismatched collateral", async () => {
@@ -168,7 +168,7 @@ describe("Collateral-only deposit capacity", () => {
 })
 
 describe("Deposit approval", () => {
-  it("returns an approval to the vault for the exact amount without simulating the deposit", async () => {
+  it("returns an approval to the vault for the exact amount", async () => {
     const mock = mockClient()
     const call = await prepareApproval(mock.client, args)
     expect(call?.to).toBe(asset)
@@ -178,7 +178,6 @@ describe("Deposit approval", () => {
       functionName: "approve",
       args: [vault, args.amount],
     })
-    expect(mock.simulateContract).not.toHaveBeenCalled()
   })
 
   it("skips an already sufficient approval", async () => {
@@ -211,73 +210,6 @@ describe("Deposit approval", () => {
     await expect(
       prepareApproval(mock.client, { ...args, amount: maxUint128 + 1n }),
     ).rejects.toThrow("allowance limit")
-  })
-})
-
-describe("Funded deposit transaction", () => {
-  it("encodes a direct deposit and simulates minted shares without a swap envelope", async () => {
-    const mock = mockClient()
-    const tx = await prepareFundedDeposit(mock.client, args)
-    expect(tx.to).toBe(vault)
-    expect(tx.gas).toBe(DEPOSIT_MIN_GAS)
-    expect(tx.shares).toBe(2n * unit)
-    expect(decodeFunctionData({ abi: VAULT_ABI, data: tx.data })).toEqual({
-      functionName: "deposit",
-      args: [2n * unit, owner],
-    })
-    expect(mock.simulateContract).toHaveBeenCalledWith(
-      expect.objectContaining({
-        account: owner,
-        address: vault,
-        functionName: "deposit",
-        args: [2n * unit, owner],
-      }),
-    )
-    expect(tx).not.toHaveProperty("deadline")
-    expect(tx).not.toHaveProperty("quotedBlock")
-  })
-
-  it("requires successful simulation and nonzero funded shares", async () => {
-    const failed = mockClient()
-    failed.simulateContract.mockRejectedValue(
-      new Error("Allowance not confirmed"),
-    )
-    await expect(prepareFundedDeposit(failed.client, args)).rejects.toThrow(
-      "Allowance",
-    )
-    expect(failed.estimateContractGas).not.toHaveBeenCalled()
-    const empty = mockClient()
-    empty.simulateContract.mockResolvedValue({ result: 0n })
-    await expect(prepareFundedDeposit(empty.client, args)).rejects.toThrow(
-      "no funded shares",
-    )
-  })
-
-  it("rejects unavailable capacity before simulation and checks current state again", async () => {
-    const mock = mockClient({ tvlCap: 4n * unit })
-    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
-      "availability changed",
-    )
-    expect(mock.simulateContract).not.toHaveBeenCalled()
-  })
-
-  it("adds 20% to the estimate and never goes below the deposit gas floor", async () => {
-    const mock = mockClient()
-    mock.estimateContractGas.mockResolvedValue(1_550_000n)
-    expect((await prepareFundedDeposit(mock.client, args)).gas).toBe(1_860_000n)
-    mock.estimateContractGas.mockResolvedValue(500_000n)
-    expect((await prepareFundedDeposit(mock.client, args)).gas).toBe(1_700_000n)
-  })
-
-  it("rejects excess gas and a missing owner", async () => {
-    const mock = mockClient()
-    mock.estimateContractGas.mockResolvedValue(16_000_000n)
-    await expect(prepareFundedDeposit(mock.client, args)).rejects.toThrow(
-      "gas limit",
-    )
-    await expect(
-      prepareFundedDeposit(mock.client, { ...args, owner: zeroAddress }),
-    ).rejects.toThrow("Connect")
   })
 })
 

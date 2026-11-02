@@ -141,10 +141,6 @@
     "Paying with another asset buys the collateral in the same transaction, just under your amount. The rest stays in your wallet.",
     "If approval is needed, it comes before the deposit, as its own step or in the same transaction."
   ],
-  "deposit.step.approve": "Approve",
-  "deposit.approve.toast.submitted": "Approving {{ symbol }} for this vault...",
-  "deposit.approve.toast.success": "{{ symbol }} approved",
-  "deposit.approve.timeout": "The approval hasn't been confirmed on-chain yet. Please try again.",
   "deposit.toast.submitted": "Depositing {{ amount }}...",
   "deposit.toast.success": "{{ amount }} deposited; strategy deployment follows gradually",
   "deposit.failed": "The deposit could not complete. Check your balance and the current vault status, then retry. If the approval step went through, it stays valid for your next attempt.",
