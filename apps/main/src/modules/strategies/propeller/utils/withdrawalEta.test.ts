@@ -206,9 +206,13 @@ describe("formatEta", () => {
 })
 
 describe("typicalSliceSeconds", () => {
-  it("follows the keeper's usual cadence, not the odd slow gap", () => {
-    // 0.lark 2026-10-29: steady 60 s sales with a few missed turns between
-    expect(typicalSliceSeconds([60, 114, 66, 234, 60, 60, 96, 60], 60)).toBe(63)
+  it("counts the slow gaps a withdrawal waits through", () => {
+    // 4.lark 2026-11-02, request #18: 24 slices in 33.8 min
+    const gaps = [
+      168, 54, 12, 228, 60, 72, 48, 12, 108, 192, 102, 66, 72, 60, 42, 66, 132,
+      108, 60, 186, 66, 102, 12,
+    ]
+    expect(typicalSliceSeconds(gaps, 60)).toBeCloseTo(2028 / 23)
   })
 
   it("never runs faster than the pacing interval", () => {

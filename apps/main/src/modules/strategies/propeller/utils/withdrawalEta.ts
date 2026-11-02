@@ -48,19 +48,18 @@ const SETTLE_SECONDS = 30
 const KEEPER_SLACK_SECONDS = 5
 
 /**
- * The keeper's usual seconds per exit slice: the median of the gaps between
- * its sales. A missed turn or a quiet stretch between withdrawals stretches a
- * few gaps (114, 234 s against a steady 60 s on 0.lark) and drags an average
- * along; the median stays on the cadence the keeper runs most of the time.
- * Never below the pacing interval; the interval plus a turn without gaps.
+ * The keeper's seconds per exit slice: the mean of the gaps between its sales
+ * (a quiet stretch between withdrawals is already left out). A withdrawal
+ * waits the sum of its gaps, and the slow ones are part of the rhythm: on
+ * 4.lark 2026-11-02 a 0.2 tBTC exit took 24 slices at 60-66 s most of the
+ * time, yet 34 min, one 2-4 min gap every few slices; the median (66 s)
+ * promised 27 min, the mean (88 s) 37. Never below the pacing interval; the
+ * interval plus a turn without gaps.
  */
 export const typicalSliceSeconds = (gaps: number[], interval: number) => {
   if (gaps.length === 0) return interval + KEEPER_SLACK_SECONDS
-  const sorted = [...gaps].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  const median =
-    sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
-  return Math.max(median, interval)
+  const mean = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length
+  return Math.max(mean, interval)
 }
 
 /**
