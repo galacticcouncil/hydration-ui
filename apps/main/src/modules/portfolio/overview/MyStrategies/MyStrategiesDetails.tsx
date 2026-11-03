@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Fragment } from "react"
+import { FC, Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SAssetDetailMobileSeparator } from "@/modules/portfolio/overview/MyAssets/AssetDetailNativeMobileModal.styled"
@@ -18,14 +18,16 @@ import {
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 
-export const MyStrategiesDetails = ({
-  position,
-  showMainMetrics = false,
-  mobile = false,
-}: {
+type MyStrategiesDetailsProps = {
   position: StrategyPosition
   showMainMetrics?: boolean
   mobile?: boolean
+}
+
+export const MyStrategiesDetails: FC<MyStrategiesDetailsProps> = ({
+  position,
+  showMainMetrics = false,
+  mobile = false,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const rows = [
@@ -114,7 +116,7 @@ export const MyStrategiesDetails = ({
           labelIcon={Hourglass}
           label={
             <Flex align="center" gap="xs">
-              <Text fs="p4" lh="s" color={getToken("text.low")}>
+              <Text fs="p4" lh={1.3} color={getToken("text.low")}>
                 {t(
                   position.isPendingWithdrawalEstimate
                     ? "myStrategies.details.withdrawalEstimate"

@@ -12,7 +12,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Link } from "@tanstack/react-router"
-import { ReactNode, useState } from "react"
+import { FC, ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EmptyState, SearchEmptyState } from "@/components/EmptyState"
@@ -87,7 +87,7 @@ const EnabledBilPositions = ({
 
 // Reuse the gated reads for the combined Assets experiment, without changing
 // wallet balance accounting or mounting unsupported strategy contracts.
-export const MyStrategiesPositions = ({ children }: DataProps) => {
+export const MyStrategiesPositions: FC<DataProps> = ({ children }) => {
   const { featureFlags, isReady } = useRpcProvider()
   const renderPositions = (juicer: PositionsResult) => (
     <EnabledBilPositions enabled={isReady && featureFlags.bilEnabled}>
@@ -101,18 +101,18 @@ export const MyStrategiesPositions = ({ children }: DataProps) => {
     </EnabledBilPositions>
   )
 
-  return isReady && featureFlags.propellerEnabled ? (
+  return isReady && featureFlags.juicerEnabled ? (
     <JuicerPositions>{renderPositions}</JuicerPositions>
   ) : (
     renderPositions(EMPTY_POSITIONS)
   )
 }
 
-export const MyStrategies = ({
+export const MyStrategies: FC<StrategiesProps> = ({
   bondsPaginationProps,
   bondsSortingProps,
   ...props
-}: StrategiesProps) => {
+}) => {
   const { t } = useTranslation("wallet")
   const { featureFlags, isReady } = useRpcProvider()
   const { data: bonds, isLoading: isBondsLoading } = useMyBondsTableData()
@@ -133,7 +133,7 @@ export const MyStrategies = ({
 
   return (
     <>
-      {isReady && featureFlags.propellerEnabled ? (
+      {isReady && featureFlags.juicerEnabled ? (
         <JuicerPositions>{renderPositions}</JuicerPositions>
       ) : (
         renderPositions(EMPTY_POSITIONS)

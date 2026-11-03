@@ -21,7 +21,7 @@ import {
 import { StrategyAssetMobileModal } from "@/modules/portfolio/overview/MyAssets/StrategyAssetMobileModal"
 import { MyStrategiesDetails } from "@/modules/portfolio/overview/MyStrategies/MyStrategiesDetails"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
-import { ShareTransferModal } from "@/modules/strategies/propeller/components/ShareTransferModal"
+import { ShareTransferModal } from "@/modules/strategies/juicer/components/ShareTransferModal"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {

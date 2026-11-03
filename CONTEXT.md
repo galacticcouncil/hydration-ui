@@ -5,15 +5,15 @@ The Hydration web app: trading, liquidity, lending and yield strategies on the H
 ## Strategies
 
 **Strategy**:
-A packaged yield product shown as one card on the Strategies page with its own detail page (Propeller, BIL, Hollar Bonds).
+A packaged yield product shown as one card on the Strategies page with its own detail page (Juicer, BIL, Hollar Bonds).
 
-**Propeller**:
-The leveraged-staking strategy, shown as Juicer in the UI. One strategy spanning several Vaults that share a single leveraged loop (the SubLoop).
-_Avoid_: Propeller ETH, Propeller tBTC (as strategy names)
+**Juicer**:
+The leveraged-staking strategy. One strategy spanning several Vaults that share a single leveraged loop (the SubLoop).
+_Avoid_: Propeller (the old working title, kept only in contract names such as PropellerMainDebt); Juicer ETH, Juicer tBTC as strategy names (those are Vaults)
 
 **Vault**:
-One Propeller deposit venue per collateral asset, with its own share token, cap, pause state, exchange rate and withdrawal queue. Labelled in the UI by its share token (jETH, Juicer ETH) and described as backed by its collateral asset (GIGAETH).
-_Avoid_: Propeller asset, sub-strategy
+One Juicer deposit venue per collateral asset, with its own share token, cap, pause state, exchange rate and withdrawal queue. Labelled in the UI by its share token (jETH, Juicer ETH) and described as backed by its collateral asset (GIGAETH).
+_Avoid_: Juicer asset, sub-strategy
 
 **Share token**:
 The token a Vault mints on deposit (jETH, jBTC). Its balance includes funded earnings, so there is nothing to claim.

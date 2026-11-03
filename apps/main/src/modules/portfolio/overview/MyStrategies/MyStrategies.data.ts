@@ -8,17 +8,17 @@ import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
-import { useVaultDisplayAsset } from "@/modules/strategies/propeller/hooks/useCollateralEquivalent"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import { useVaultDisplayAsset } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
 import {
-  type PropellerWithdrawalRow,
-  usePropellerAccount,
-} from "@/modules/strategies/propeller/hooks/usePropellerAccount"
+  type JuicerWithdrawalRow,
+  useJuicerAccount,
+} from "@/modules/strategies/juicer/hooks/useJuicerAccount"
 import {
-  usePropellerVaults,
+  useJuicerVaults,
   vaultDepositState,
-} from "@/modules/strategies/propeller/hooks/usePropellerVaults"
-import { getWithdrawalStateLabel } from "@/modules/strategies/propeller/utils/withdrawalState"
+} from "@/modules/strategies/juicer/hooks/useJuicerVaults"
+import { getWithdrawalStateLabel } from "@/modules/strategies/juicer/utils/withdrawalState"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type StrategyPosition = {
@@ -54,7 +54,7 @@ export type StrategyPosition = {
 }
 
 export const getJuicerRemainingCollateral = (
-  row: PropellerWithdrawalRow,
+  row: JuicerWithdrawalRow,
 ): string => {
   if (row.state === "claimed") return "0"
   // estEth on an open request already excludes earlier partial claims and
@@ -66,10 +66,10 @@ export const useMyJuicerPositions = () => {
   const evmAddress = useEvmAddress() as Hex | undefined
   const { isReady } = useRpcProvider()
   const getDisplayAsset = useVaultDisplayAsset()
-  const account = usePropellerAccount(evmAddress)
-  const markets = usePropellerVaults()
+  const account = useJuicerAccount(evmAddress)
+  const markets = useJuicerVaults()
 
-  const data = PROPELLER_VAULTS.flatMap<StrategyPosition>((vault) => {
+  const data = JUICER_VAULTS.flatMap<StrategyPosition>((vault) => {
     const position = account.positions.find(
       (position) => position.vault.vaultAddress === vault.vaultAddress,
     )
@@ -85,7 +85,7 @@ export const useMyJuicerPositions = () => {
     )
     if (!position && withdrawals.length === 0) return []
 
-    // position amounts arrive from usePropellerAccount in the vault's current
+    // position amounts arrive from useJuicerAccount in the vault's current
     // display asset; shares never surface
     const asset = getDisplayAsset(vault)
     const amount = Big(position?.assetValue ?? 0).toString()

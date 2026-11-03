@@ -8,7 +8,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
-import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
+import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 

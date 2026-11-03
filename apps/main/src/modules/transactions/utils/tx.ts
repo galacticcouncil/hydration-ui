@@ -177,7 +177,7 @@ export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
       isObjectType(leadingCall.value) &&
       leadingCall.value.type === "bind_evm_address"
     ) {
-      // Propeller can already prepare binding with the approval transaction.
+      // Juicer can already prepare binding with the approval transaction.
       return tx
     }
     return papi.tx.Utility.batch_all({

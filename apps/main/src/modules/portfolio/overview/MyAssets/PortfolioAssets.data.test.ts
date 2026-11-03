@@ -3,19 +3,19 @@ import { describe, expect, it, vi } from "vitest"
 import { AssetType } from "@/api/assets"
 import { MyAsset } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.columns"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
 
 import { mergePortfolioAssets } from "./PortfolioAssets.data"
 
 vi.mock("@/api/assets", () => ({ AssetType: { BOND: "Bond", ERC20: "Erc20" } }))
 // a GETH vault beside a plain one, whatever the live deployment lists
 vi.mock(
-  "@/modules/strategies/propeller/config/vaults",
+  "@/modules/strategies/juicer/config/vaults",
   async (importOriginal) => ({
     ...(await importOriginal<
-      typeof import("@/modules/strategies/propeller/config/vaults")
+      typeof import("@/modules/strategies/juicer/config/vaults")
     >()),
-    PROPELLER_VAULTS: [
+    JUICER_VAULTS: [
       {
         assetId: "4200",
         vaultAddress: "0x0000000000000000000000000000000000000e01",
@@ -182,8 +182,8 @@ describe("combined portfolio assets", () => {
   })
 
   it("represents upstream Juicer share holdings once and preserves unread holdings", () => {
-    const vault = PROPELLER_VAULTS[0]!
-    const otherVault = PROPELLER_VAULTS[1]!
+    const vault = JUICER_VAULTS[0]!
+    const otherVault = JUICER_VAULTS[1]!
     const wallet = [
       asset(vault.assetId, "ETH"),
       asset(vault.shareAssetId, "jETH"),

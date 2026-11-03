@@ -15,7 +15,7 @@ import { PublicClient } from "viem"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { getSortedRpcUrlList } from "@/api/rpcConfig"
 import { ENV } from "@/config/env"
-import { SUBLOOP_ADDRESS } from "@/modules/strategies/propeller/constants"
+import { SUBLOOP_ADDRESS } from "@/modules/strategies/juicer/config/constants"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import { clearIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 
@@ -26,7 +26,7 @@ export type TFeatureFlags = {
   hollarBondsEnabled: boolean
   bilEnabled: boolean
   isIceEnabled: boolean
-  propellerEnabled: boolean
+  juicerEnabled: boolean
 }
 
 export type WsPolkadotClient = ReturnType<typeof createWsClient>
@@ -92,7 +92,7 @@ const getProviderData = async (
 
   const evm = sdk.client.evm.getWsProvider()
 
-  const propellerEnabled = await evm
+  const juicerEnabled = await evm
     .getCode({ address: SUBLOOP_ADDRESS })
     .then((code) => !!code && code !== "0x")
     .catch(() => false)
@@ -114,7 +114,7 @@ const getProviderData = async (
       hollarBondsEnabled: true,
       bilEnabled: true,
       isIceEnabled: true,
-      propellerEnabled,
+      juicerEnabled,
     },
     dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }

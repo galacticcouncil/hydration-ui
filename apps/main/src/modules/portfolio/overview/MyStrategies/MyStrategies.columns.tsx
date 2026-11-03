@@ -16,7 +16,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { BIL_ASSET_ID, BIL_ERC20_ID } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
@@ -27,8 +27,8 @@ import {
   StrategyPosition,
   useMyJuicerPositions,
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { JuicerStrategyLogo } from "@/modules/strategies/propeller/components/JuicerStrategyLogo"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -61,7 +61,7 @@ const STRATEGY_SHARE_ASSETS: Record<
 > = {
   [BIL_ASSET_ID]: { assetId: BIL_ERC20_ID, strategy: "bil" },
   ...Object.fromEntries(
-    PROPELLER_VAULTS.map((vault) => [
+    JUICER_VAULTS.map((vault) => [
       vault.shareAssetId,
       { assetId: vault.assetId, strategy: "juicer" },
     ]),
@@ -72,7 +72,11 @@ export const isStrategyShareAsset = (assetId: string) =>
   assetId in STRATEGY_SHARE_ASSETS
 
 /** Label of a strategy share token held in the wallet (jETH → ETH, uBIL → BIL). */
-export const StrategyShareAssetLabel = ({ assetId }: { assetId: string }) => {
+type StrategyShareAssetLabelProps = { assetId: string }
+
+export const StrategyShareAssetLabel: FC<StrategyShareAssetLabelProps> = ({
+  assetId,
+}) => {
   const { getAssetWithFallback } = useAssets()
   const share = STRATEGY_SHARE_ASSETS[assetId]
   if (!share) return null
@@ -87,10 +91,12 @@ export const StrategyShareAssetLabel = ({ assetId }: { assetId: string }) => {
   )
 }
 
-export const StrategyPositionLabel = ({
-  position,
-}: {
+type StrategyPositionLabelProps = {
   position: StrategyLabelPosition
+}
+
+export const StrategyPositionLabel: FC<StrategyPositionLabelProps> = ({
+  position,
 }) => {
   const { t } = useTranslation("wallet")
 
@@ -120,12 +126,14 @@ export const StrategyPositionLabel = ({
   )
 }
 
-export const StrategyPositionValue = ({
-  position,
-  withLabel = false,
-}: {
+type StrategyPositionValueProps = {
   position: StrategyPosition
   withLabel?: boolean
+}
+
+export const StrategyPositionValue: FC<StrategyPositionValueProps> = ({
+  position,
+  withLabel = false,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const hasActiveShares =
@@ -160,16 +168,18 @@ export const StrategyPositionValue = ({
   )
 }
 
-export const StrategyPositionRate = ({
-  position,
-  withLabel = false,
-  compact = false,
-  horizontalLabel = false,
-}: {
+type StrategyPositionRateProps = {
   position: StrategyPosition
   withLabel?: boolean
   compact?: boolean
   horizontalLabel?: boolean
+}
+
+export const StrategyPositionRate: FC<StrategyPositionRateProps> = ({
+  position,
+  withLabel = false,
+  compact = false,
+  horizontalLabel = false,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const value =
@@ -198,16 +208,18 @@ export const StrategyPositionRate = ({
   )
 }
 
-export const StrategyPositionEarnings = ({
-  position,
-  withLabel = false,
-  compact = false,
-  horizontalLabel = false,
-}: {
+type StrategyPositionEarningsProps = {
   position: StrategyPosition
   withLabel?: boolean
   compact?: boolean
   horizontalLabel?: boolean
+}
+
+export const StrategyPositionEarnings: FC<StrategyPositionEarningsProps> = ({
+  position,
+  withLabel = false,
+  compact = false,
+  horizontalLabel = false,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const value =
@@ -237,12 +249,14 @@ export const StrategyPositionEarnings = ({
   )
 }
 
-export const StrategyManageAction = ({
-  position,
-  mobile = false,
-}: {
+type StrategyManageActionProps = {
   position: StrategyPosition
   mobile?: boolean
+}
+
+export const StrategyManageAction: FC<StrategyManageActionProps> = ({
+  position,
+  mobile = false,
 }) => {
   const { t } = useTranslation("common")
   const link =
@@ -263,12 +277,14 @@ export const StrategyManageAction = ({
   )
 }
 
-export const StrategyPositionCta = ({
-  position,
-  mobile = false,
-}: {
+type StrategyPositionCtaProps = {
   position: StrategyPosition
   mobile?: boolean
+}
+
+export const StrategyPositionCta: FC<StrategyPositionCtaProps> = ({
+  position,
+  mobile = false,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const size = mobile ? "large" : undefined
@@ -293,7 +309,7 @@ export const StrategyPositionCta = ({
         assetId={position.assetId}
         // the position's assetId is its display asset (ETH), not the
         // collateral, so name the vault rather than look it up by asset
-        vault={PROPELLER_VAULTS.find(
+        vault={JUICER_VAULTS.find(
           (v) => position.id === `juicer:${v.vaultAddress}`,
         )}
         mobile={mobile}
@@ -306,7 +322,7 @@ export const StrategyPositionCta = ({
 }
 
 const JuicerShareAssetCta = ({ assetId }: { assetId: string }) => {
-  const vault = PROPELLER_VAULTS.find((v) => v.shareAssetId === assetId)
+  const vault = JUICER_VAULTS.find((v) => v.shareAssetId === assetId)
   const position = useMyJuicerPositions().data.find(
     (position) => position.id === `juicer:${vault?.vaultAddress}`,
   )
@@ -318,24 +334,30 @@ const JuicerShareAssetCta = ({ assetId }: { assetId: string }) => {
 }
 
 /** Deposit CTA for a Juicer share token held in the wallet. */
-export const StrategyShareAssetCta = ({ assetId }: { assetId: string }) => {
+type StrategyShareAssetCtaProps = { assetId: string }
+
+export const StrategyShareAssetCta: FC<StrategyShareAssetCtaProps> = ({
+  assetId,
+}) => {
   const { featureFlags, isReady } = useRpcProvider()
   const isJuicer = STRATEGY_SHARE_ASSETS[assetId]?.strategy === "juicer"
 
   // Mount the vault reads only where Juicer is enabled.
-  return isJuicer && isReady && featureFlags.propellerEnabled ? (
+  return isJuicer && isReady && featureFlags.juicerEnabled ? (
     <JuicerShareAssetCta assetId={assetId} />
   ) : null
 }
 
-export const StrategyPositionActions = ({
-  position,
-  mobile = false,
-  onTransfer,
-}: {
+type StrategyPositionActionsProps = {
   position: StrategyPosition
   mobile?: boolean
   onTransfer?: (position: StrategyPosition) => void
+}
+
+export const StrategyPositionActions: FC<StrategyPositionActionsProps> = ({
+  position,
+  mobile = false,
+  onTransfer,
 }) => {
   const { t } = useTranslation("common")
   const canSend = position.shareAmount !== "0"

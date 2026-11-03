@@ -7,7 +7,7 @@ import {
   myAssetsSorter,
 } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.utils"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
 
 export const mergePortfolioAssets = (
   assets: MyAsset[],
@@ -20,7 +20,7 @@ export const mergePortfolioAssets = (
       if (position.strategy === "juicer") {
         // match by position id: assetId is the DISPLAY asset (ETH or GETH,
         // denomination-dependent), never a reliable vault key
-        const vault = PROPELLER_VAULTS.find(
+        const vault = JUICER_VAULTS.find(
           (vault) => position.id === `juicer:${vault.vaultAddress}`,
         )
         return vault ? [vault.shareAssetId] : []

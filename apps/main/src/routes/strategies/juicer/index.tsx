@@ -3,7 +3,7 @@ import * as z from "zod/v4"
 
 import { getPageMeta } from "@/config/navigation"
 import { StrategyPageSkeleton } from "@/modules/strategies/components/StrategyPageSkeleton"
-import { PropellerVaultPage } from "@/modules/strategies/propeller/PropellerVaultPage"
+import { JuicerVaultPage } from "@/modules/strategies/juicer/JuicerVaultPage"
 
 const searchSchema = z.object({
   asset: z.string().optional(),
@@ -12,7 +12,7 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute("/strategies/juicer/")({
-  component: PropellerVaultPage,
+  component: JuicerVaultPage,
   pendingComponent: StrategyPageSkeleton,
   validateSearch: searchSchema,
   staticData: { crumb: true },

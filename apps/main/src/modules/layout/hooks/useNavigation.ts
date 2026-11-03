@@ -17,7 +17,7 @@ export const useNavigation = (): NavigationItem[] => {
                 return featureFlags.bilEnabled
               }
               if (child.key === "strategiesJuicer") {
-                return featureFlags.propellerEnabled
+                return featureFlags.juicerEnabled
               }
               if (child.key === "strategiesHollarBonds") {
                 return featureFlags.hollarBondsEnabled
@@ -32,7 +32,7 @@ export const useNavigation = (): NavigationItem[] => {
     [
       featureFlags.bilEnabled,
       featureFlags.hollarBondsEnabled,
-      featureFlags.propellerEnabled,
+      featureFlags.juicerEnabled,
     ],
   )
 }

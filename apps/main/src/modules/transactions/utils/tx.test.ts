@@ -56,7 +56,7 @@ describe("Native EVM binding composition", () => {
     expect(batchAll).toHaveBeenCalledWith({ calls: [binding, call, call] })
   })
 
-  it("does not bind a fresh Propeller wallet twice when its approval already includes binding", () => {
+  it("does not bind a fresh Juicer wallet twice when its approval already includes binding", () => {
     const { papi, batchAll } = setup()
     const preparedApproval = batch([binding, call])
     expect(prependEvmBindingTx(papi, preparedApproval)).toBe(preparedApproval)

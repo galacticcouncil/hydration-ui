@@ -42,7 +42,7 @@ import {
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
-import { ShareTransferModal } from "@/modules/strategies/propeller/components/ShareTransferModal"
+import { ShareTransferModal } from "@/modules/strategies/juicer/components/ShareTransferModal"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"

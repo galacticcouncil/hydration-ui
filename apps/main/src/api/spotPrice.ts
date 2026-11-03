@@ -26,9 +26,9 @@ import {
   useBorrowIncentivesContract,
   useBorrowPoolDataContract,
 } from "@/api/borrow"
-import { VAULT_ABI } from "@/modules/strategies/propeller/config/abi"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
-import { sharePrice } from "@/modules/strategies/propeller/utils/accounting"
+import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import { sharePrice } from "@/modules/strategies/juicer/utils/accounting"
 import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -147,8 +147,8 @@ const getDisplayPrice = async (
   assetId: string,
   stableCoinId: string,
 ) => {
-  const vault = featureFlags.propellerEnabled
-    ? PROPELLER_VAULTS.find((vault) => vault.shareAssetId === assetId)
+  const vault = featureFlags.juicerEnabled
+    ? JUICER_VAULTS.find((vault) => vault.shareAssetId === assetId)
     : undefined
   const price = await getSpotPrice(
     sdk.api.router,

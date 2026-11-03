@@ -8,12 +8,12 @@ import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import { PROPELLER_VAULTS } from "@/modules/strategies/propeller/config/vaults"
+import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
 import {
-  type PropellerWithdrawalRow,
-  usePropellerAccount,
-} from "@/modules/strategies/propeller/hooks/usePropellerAccount"
-import { usePropellerVaults } from "@/modules/strategies/propeller/hooks/usePropellerVaults"
+  type JuicerWithdrawalRow,
+  useJuicerAccount,
+} from "@/modules/strategies/juicer/hooks/useJuicerAccount"
+import { useJuicerVaults } from "@/modules/strategies/juicer/hooks/useJuicerVaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -26,12 +26,12 @@ import {
 vi.mock("@galacticcouncil/web3-connect", () => ({ useEvmAddress: vi.fn() }))
 // a GETH vault beside a plain one, whatever the live deployment lists
 vi.mock(
-  "@/modules/strategies/propeller/config/vaults",
+  "@/modules/strategies/juicer/config/vaults",
   async (importOriginal) => ({
     ...(await importOriginal<
-      typeof import("@/modules/strategies/propeller/config/vaults")
+      typeof import("@/modules/strategies/juicer/config/vaults")
     >()),
-    PROPELLER_VAULTS: [
+    JUICER_VAULTS: [
       {
         assetId: "4200",
         vaultAddress: "0x0000000000000000000000000000000000000e01",
@@ -63,21 +63,21 @@ vi.mock("@/modules/strategies/bil/hooks/useVaultReads", () => ({
   useUserBalances: vi.fn(),
   useVaultStats: vi.fn(),
 }))
-vi.mock("@/modules/strategies/propeller/hooks/usePropellerAccount", () => ({
-  usePropellerAccount: vi.fn(),
+vi.mock("@/modules/strategies/juicer/hooks/useJuicerAccount", () => ({
+  useJuicerAccount: vi.fn(),
 }))
 vi.mock(
-  "@/modules/strategies/propeller/hooks/usePropellerVaults",
+  "@/modules/strategies/juicer/hooks/useJuicerVaults",
   async (importOriginal) => ({
     ...(await importOriginal<
-      typeof import("@/modules/strategies/propeller/hooks/usePropellerVaults")
+      typeof import("@/modules/strategies/juicer/hooks/useJuicerVaults")
     >()),
-    usePropellerVaults: vi.fn(),
+    useJuicerVaults: vi.fn(),
   }),
 )
-// The real usePropellerVaults module is kept for vaultDepositState.
+// The real useJuicerVaults module is kept for vaultDepositState.
 // The denomination store is a real zustand hook; stub it for plain-function calls.
-vi.mock("@/modules/strategies/propeller/hooks/useCollateralEquivalent", () => ({
+vi.mock("@/modules/strategies/juicer/hooks/useCollateralEquivalent", () => ({
   useBaseRates: () => ({ getRate: () => "1", isLoading: false }),
   useVaultDisplayAsset:
     () => (vault: { assetId: string; baseAssetId?: string }) => ({
@@ -86,15 +86,15 @@ vi.mock("@/modules/strategies/propeller/hooks/useCollateralEquivalent", () => ({
     }),
 }))
 vi.mock("@/api/borrow", () => ({}))
-vi.mock("@/modules/strategies/propeller/hooks/useVaultReads", () => ({}))
+vi.mock("@/modules/strategies/juicer/hooks/useVaultReads", () => ({}))
 vi.mock("@/states/displayAsset", () => ({}))
 vi.mock("@/providers/assetsProvider", () => ({ useAssets: vi.fn() }))
 vi.mock("@/providers/rpcProvider", () => ({ useRpcProvider: vi.fn() }))
 
-const vault = PROPELLER_VAULTS[0]!
+const vault = JUICER_VAULTS[0]!
 const withdrawal = (
-  overrides: Partial<PropellerWithdrawalRow> = {},
-): PropellerWithdrawalRow => ({
+  overrides: Partial<JuicerWithdrawalRow> = {},
+): JuicerWithdrawalRow => ({
   id: `${vault.vaultAddress}:1`,
   requestId: 1,
   vault,
@@ -136,14 +136,14 @@ beforeEach(() => {
             : "tBTC",
     }),
   } as ReturnType<typeof useAssets>)
-  vi.mocked(usePropellerAccount).mockReturnValue({
+  vi.mocked(useJuicerAccount).mockReturnValue({
     positions: [],
     withdrawals: [],
     isLoading: false,
     isError: false,
   })
-  vi.mocked(usePropellerVaults).mockReturnValue({
-    vaults: PROPELLER_VAULTS.map((vault) => ({
+  vi.mocked(useJuicerVaults).mockReturnValue({
+    vaults: JUICER_VAULTS.map((vault) => ({
       vault,
       deployedFraction: null,
       accrualPaused: false,
@@ -152,7 +152,7 @@ beforeEach(() => {
       price: 2500,
     })),
     isLoading: false,
-  } as ReturnType<typeof usePropellerVaults>)
+  } as ReturnType<typeof useJuicerVaults>)
   vi.mocked(useBilStrategy).mockReturnValue({
     bil: { id: "55", symbol: "BIL" },
     bilReserve: { id: "550", symbol: "DCL" },
@@ -177,12 +177,12 @@ beforeEach(() => {
   } as ReturnType<typeof useBilPoolPosition>)
 })
 
-const remaining = (overrides: Partial<PropellerWithdrawalRow>) =>
+const remaining = (overrides: Partial<JuicerWithdrawalRow>) =>
   getJuicerRemainingCollateral({
     state: "pending",
     estEth: 1,
     ...overrides,
-  } as PropellerWithdrawalRow)
+  } as JuicerWithdrawalRow)
 
 describe("Juicer portfolio withdrawal entitlement", () => {
   it("keeps the full estimated entitlement during cooldown", () => {
@@ -252,7 +252,7 @@ describe("Juicer portfolio withdrawal entitlement", () => {
 
 describe("Portfolio strategy position projection", () => {
   it("tags active Juicer collateral and keeps pending yield outside its live value", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [
         {
           vault,
@@ -311,9 +311,9 @@ describe("Portfolio strategy position projection", () => {
     const useAction = ({
       collateralBalance = 1,
       stats = openStats,
-      withdrawals = [] as PropellerWithdrawalRow[],
+      withdrawals = [] as JuicerWithdrawalRow[],
     } = {}) => {
-      vi.mocked(usePropellerAccount).mockReturnValue({
+      vi.mocked(useJuicerAccount).mockReturnValue({
         positions: [
           {
             vault,
@@ -333,8 +333,8 @@ describe("Portfolio strategy position projection", () => {
         isLoading: false,
         isError: false,
       })
-      vi.mocked(usePropellerVaults).mockReturnValue({
-        vaults: PROPELLER_VAULTS.map((vault) => ({
+      vi.mocked(useJuicerVaults).mockReturnValue({
+        vaults: JUICER_VAULTS.map((vault) => ({
           vault,
           deployedFraction: null,
           accrualPaused: false,
@@ -343,7 +343,7 @@ describe("Portfolio strategy position projection", () => {
           stats,
         })),
         isLoading: false,
-      } as ReturnType<typeof usePropellerVaults>)
+      } as ReturnType<typeof useJuicerVaults>)
       return useMyJuicerPositions().data[0]?.action
     }
 
@@ -372,7 +372,7 @@ describe("Portfolio strategy position projection", () => {
   })
 
   it("includes a withdrawal-only vault without presenting the entitlement as active collateral", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [],
       withdrawals: [
         withdrawal({ state: "cooldown", estEth: 1.25, isEstimate: true }),
@@ -395,7 +395,7 @@ describe("Portfolio strategy position projection", () => {
   })
 
   it("keeps pending yield visible once the whole balance is in a withdrawal", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [
         {
           vault,
@@ -426,7 +426,7 @@ describe("Portfolio strategy position projection", () => {
   })
 
   it("excludes fully claimed withdrawals with no remaining recovery", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [],
       withdrawals: [withdrawal({ state: "claimed", settledSoFar: 1 })],
       isLoading: false,
@@ -437,7 +437,7 @@ describe("Portfolio strategy position projection", () => {
   })
 
   it("keeps HOLLAR recovery visible after collateral was fully claimed", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [],
       withdrawals: [
         withdrawal({
@@ -464,7 +464,7 @@ describe("Portfolio strategy position projection", () => {
   })
 
   it("leaves value unknown while Juicer market pricing loads", () => {
-    vi.mocked(usePropellerAccount).mockReturnValue({
+    vi.mocked(useJuicerAccount).mockReturnValue({
       positions: [
         {
           vault,
@@ -484,7 +484,7 @@ describe("Portfolio strategy position projection", () => {
       isLoading: false,
       isError: false,
     })
-    vi.mocked(usePropellerVaults).mockReturnValue({
+    vi.mocked(useJuicerVaults).mockReturnValue({
       vaults: [],
       subLoop: undefined,
       upToApy: null,
