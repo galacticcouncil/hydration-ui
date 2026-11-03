@@ -180,7 +180,6 @@
   "vaults.add.feeTier": "Pool fee",
   "vaults.add.managedNote": "Deposits go into an automatically managed vault. Manual price-range positions are not supported.",
   "vaults.add.sharesSummary": "{{ value, number }} ({{ share, percent }})",
-  "vaults.add.tradeLimit.tooltip": "Protects against vault ratio drift. If the paired amount moves past this limit before you sign, the deposit amounts will be recalculated.",
   "vaults.add.toast.submitted": "Depositing into the vault",
   "vaults.add.toast.success": "Deposited into the vault",
   "vaults.add.wrap.cta": "Get {{ symbol }}",

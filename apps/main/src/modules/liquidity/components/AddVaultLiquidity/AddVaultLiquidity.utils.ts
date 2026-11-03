@@ -37,7 +37,6 @@ import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required } from "@/utils/validators"
 
@@ -257,7 +256,7 @@ export type AddVaultLiquidityVault = Pick<
   "pool" | "tokens" | "feeTier"
 >
 
-/** Shown when the vault ratio moved past the user's tolerance at submit. */
+/** Shown when the vault no longer accepted the shown amount at submit. */
 export type AmountChangedNotice = { symbol: string; from: string; to: string }
 
 export const useAddVaultLiquidity = ({
@@ -270,7 +269,6 @@ export const useAddVaultLiquidity = ({
   const { evm } = useRpcProvider()
   const { getTransferableBalance } = useAccountBalances()
   const deposit = useVaultDeposit()
-  const tolerance = useTradeSettings((s) => s.liquidity.slippage)
   const [assetA, assetB] = vault.tokens
   const { data: snapshot } = useVaultDepositSnapshot(vault.pool)
   const state = snapshot?.vault ?? null
@@ -405,36 +403,28 @@ export const useAddVaultLiquidity = ({
   const depositChecks = useVaultDepositChecks(state)
 
   const blockerFor = useCallback(
-    (
-      checks: VaultDepositChecks | null | undefined,
-      amount0: bigint,
-      amount1: bigint,
-    ) =>
+    (checks: VaultDepositChecks | null | undefined) =>
       state && checks
         ? getDepositBlocker({
             checks,
             totalSupply: state.totalSupply,
-            raw0: amount0,
-            raw1: amount1,
+            raw0,
+            raw1,
             shares,
             symbol0: assetA.symbol,
             symbol1: assetB.symbol,
           })
         : undefined,
-    [state, shares, assetA.symbol, assetB.symbol],
+    [state, raw0, raw1, shares, assetA.symbol, assetB.symbol],
   )
 
-  // Set by a submit that stopped on what it read; cleared when the user edits.
+  const blocker = blockerFor(depositChecks.data)
+
+  // Set by a submit that stopped on a moved ratio; cleared when the user edits.
   const [amountChanged, setAmountChanged] =
     useState<AmountChangedNotice | null>(null)
-  const [submitBlocker, setSubmitBlocker] = useState<DepositBlocker>()
 
-  const blocker = blockerFor(depositChecks.data, raw0, raw1) ?? submitBlocker
-
-  const clearSubmitNotice = useCallback(() => {
-    setAmountChanged(null)
-    setSubmitBlocker(undefined)
-  }, [])
+  const clearSubmitNotice = useCallback(() => setAmountChanged(null), [])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -462,40 +452,30 @@ export const useAddVaultLiquidity = ({
         }),
       ])
 
-      const paired = checkPairedAmount(shown, band, tolerance)
-      const pairedHuman = scaleHuman(paired.amount, pairedAsset.decimals)
-      const overBalance = paired.amount > getTransferableBalance(pairedAsset.id)
-
-      // Moved past tolerance, or past the balance: show the fresh amount
-      // instead of signing it. Validation then names the balance problem.
-      if (!paired.ok || overBalance) {
+      // Vault moved off the shown amount: show the fresh one instead of
+      // signing it. Validation then names any balance problem.
+      const paired = checkPairedAmount(shown, band)
+      if (!paired.ok) {
+        const pairedHuman = scaleHuman(paired.amount, pairedAsset.decimals)
         form.setValue(pairedField, pairedHuman, { shouldValidate: true })
-        if (!paired.ok)
-          setAmountChanged({
-            symbol: pairedAsset.symbol,
-            from: scaleHuman(shown, pairedAsset.decimals),
-            to: pairedHuman,
-          })
+        setAmountChanged({
+          symbol: pairedAsset.symbol,
+          from: scaleHuman(shown, pairedAsset.decimals),
+          to: pairedHuman,
+        })
         return
       }
 
-      const amount0 = typed0 ? raw0 : paired.amount
-      const amount1 = typed0 ? paired.amount : raw1
-
-      if (!checks) return
-      const blocked = blockerFor(checks, amount0, amount1)
-      if (blocked) {
-        setSubmitBlocker(blocked)
-        return
-      }
+      // A blocked result re-renders the form's warning from the refetch.
+      if (!checks || blockerFor(checks)) return
 
       await deposit({
         pool: vault.pool,
         vault: state,
         token0: state.token0,
         token1: state.token1,
-        amount0,
-        amount1,
+        amount0: raw0,
+        amount1: raw1,
       })
       onSubmitted()
     } finally {

@@ -30,10 +30,6 @@ import {
   useAddVaultLiquidity,
 } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity.utils"
 import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
-import {
-  TradeLimit,
-  TradeLimitType,
-} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { feeTierPercent } from "@/modules/liquidity/Vaults.utils"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -189,12 +185,6 @@ export const AddVaultLiquidity = ({
                   value: price,
                   symbolB: assetB.symbol,
                 })}
-              />
-
-              <SummaryRow
-                label={t("common:tradeLimit")}
-                tooltip={t("liquidity:vaults.add.tradeLimit.tooltip")}
-                content={<TradeLimit type={TradeLimitType.Liquidity} />}
               />
 
               <SummaryRow
