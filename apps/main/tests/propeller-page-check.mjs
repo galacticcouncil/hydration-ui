@@ -8,7 +8,7 @@ const origin = process.env.UI_URL || "http://127.0.0.1:4178"
 const expectedVaults = PROPELLER_VAULTS.map(({ vaultAddress }) =>
   vaultAddress.toLowerCase(),
 )
-const LARK_RPC_HOST = "node4.lark.hydration.cloud"
+const LARK_RPC_HOST = "node0.lark.hydration.cloud"
 const { default: playwright } = await import(
   process.env.PLAYWRIGHT_MODULE || "playwright"
 )

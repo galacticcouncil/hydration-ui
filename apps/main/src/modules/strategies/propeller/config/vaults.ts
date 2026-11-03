@@ -1,3 +1,9 @@
+import {
+  ETH_ASSET_ID,
+  GETH_ASSET_ID,
+  GETH_ERC20_ID,
+  WSTETH_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { type Hex } from "viem"
 
 export interface PropellerVaultConfig {
@@ -23,11 +29,15 @@ export interface PropellerVaultConfig {
 
 export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
   {
-    assetId: "1000765",
-    vaultAddress: "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
-    shareAssetId: "5552",
-    shareSymbol: "jBTC",
-    shareName: "Juicer BTC",
+    assetId: GETH_ASSET_ID,
+    vaultAddress: "0xa64e418978482d5de91717cf6c77e1f40105f2ab",
+    shareAssetId: "5551",
+    shareSymbol: "jETH",
+    shareName: "Juicer ETH",
+    baseAssetId: ETH_ASSET_ID,
+    payAssetIds: [GETH_ERC20_ID, ETH_ASSET_ID, WSTETH_ASSET_ID],
+    payoutAssetIds: [ETH_ASSET_ID, GETH_ERC20_ID, WSTETH_ASSET_ID],
+    collateralDisplayId: GETH_ERC20_ID,
   },
 ]
 

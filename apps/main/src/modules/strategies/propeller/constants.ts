@@ -1,14 +1,14 @@
 import { type Hex } from "viem"
 
-// Juicer vaults, Lark 4 testnet (reset 2026-10-30). On redeploy, update SUBLOOP_ADDRESS,
+// Juicer vaults, Lark 0 testnet (2026-11-03). On redeploy, update SUBLOOP_ADDRESS,
 // VAULT_DEPLOY_BLOCK, and vaultAddress in vaults.ts.
 // POOL_ADDRESS, HOLLAR_ADDRESS, and PRIME_ADDRESS are mainnet-mirrored on lark.
 
-export const SUBLOOP_ADDRESS: Hex = "0xe0983cedd797b38090e6dcde54af88aa6eb22edc"
+export const SUBLOOP_ADDRESS: Hex = "0x40cca3da6cead6dada9e9ffc4c06e9039791876a"
 
-// The jBTC vault proxy, the only vault in the Lark 4 deployment on 2026-10-30.
+// The jETH vault proxy, the only vault in the Lark 0 deployment on 2026-11-03.
 // Too low wastes time; too high truncates history.
-export const VAULT_DEPLOY_BLOCK = 2411n
+export const VAULT_DEPLOY_BLOCK = 244n
 
 export const EVM_CALL_GAS = 2_000_000n
 // a deposit uses ~1.55M gas
