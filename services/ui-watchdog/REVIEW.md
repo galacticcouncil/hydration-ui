@@ -254,3 +254,234 @@ Also worth adding:
 - A Discord 404 → escalation, and a bounded outbox.
 
 The reference fix (6 files, +202/−23, unreviewed and meant as a guide) is in the description of the PR that added this file.
+
+---
+
+# Round 2: follow-up at `e290228908abbbe471e64772602ab0e8b7f7f3b6`
+
+Checked 2026-10-05. Same labels as above. The existing suite passes at this head: `npm test` 72/72, `npm run test:browser` 12/12. CI is green, including the PR run of the reference workflow (two builds, `cmp` equal).
+
+## TL;DR
+
+- **Round 1 is fixed** apart from the items below: attest pin, racing (§1), release paging (§2, with one gap), scanner tells (§3, with one gap), noise and silent failures (§4), README scope (§5). The regression tests from round 1 were made stricter, not weaker.
+- **Blocker for prod:** `/favicon/favicon.ico` is in the build inventory, and Playwright never surfaces responses for URLs ending in `/favicon.ico`. The Chrome transport waits for that response in every full audit, times out, and reports `fetch-failed`, so observers become `degraded` after three audits and the watchdog can never reach `verified`. (§8)
+- **Every release still pages:** a check that spans the Netlify switch while the new reference is building is a critical with a mention, from a single observer. The team keeps this alert on purpose. (§9)
+- **Chunk cloak, second form:** the audit preloads JS with `sec-fetch-mode: no-cors` and no `Origin`; every real chunk load is `cors` with `Origin`. A server keyed on that shows the audit clean bytes. (§10)
+- **The retroactive check is thrown away on exactly those releases:** if a critical is already open when the reference lands, the mismatches it finds are deleted without any event. That is the only check that tells an injection timed to a release apart from the §9 alarm. (§16)
+- **Two `Set-Cookie` headers turn a critical into a quiet error:** the tampered file is recorded as `fetch-failed`, so instead of an immediate critical the result is an error post without a mention after ~45 min. (§17)
+- **The audit is still recognisable:** header order, a `/favicon.ico` request no browser makes, and `referer: /` on every file. (§18)
+- **A wrong exit stays "retrying" forever:** an exit-IP or Tor mismatch is hidden behind the fallback oracle and never posted. (§19)
+- **Also open:** sticky evidence overflow (§11), a revert reads as flapping (§12), the pending window starts at the branch move (§13), no `nosniff` on prod (§14), smaller items (§15, §20).
+- **Tests:** 15 regression tests in `test/`. 12 fail at this head by design and pass once the recommended fixes for §8, §10 and §16–§19 are in; 3 are guards that pass today (§21).
+
+Each section ends with a recommended fix. Before launch: §8, §10, §16 and §17. Soon after: §18 and §19, then §11–§14 and §20. Each recommendation for §8, §10 and §16–§19 was implemented once as a check: with all of them in place, `npm test` passes 79/79 and `npm run test:browser` 20/20.
+
+§16–§20 come from a second pass over the same head with the §8/§10 fix in place: three reviewers with different angles (attacker, operator, release engineer), each finding checked by a skeptical verifier. The attacker pass stopped early, so `browser.mjs`, the Discord payload paths and HTTP caching had the least attention.
+
+## What Discord sees per release today (Reproduced)
+
+Simulated with the real coordinator logic (`assess`, `combineObservers`, `shouldNotify`, `Store`, `deliver`) on a 5 s clock:
+
+| When | Event | Severity | Posted | Mention |
+|---|---|---|---|---|
+| merge + ≤36 s | `production_changed` | info | yes | no |
+| switch … reference landing | `deployment_pending`, `reference_pending`, `content_changed`, `unverified` | warning | **no** (stored only) | — |
+| landing + 1–3 min | `deployment_verified` | info | yes | no |
+
+So a clean release is two posts. The gate is `logEvent` ([main.mjs:45-56](services/ui-watchdog/src/main.mjs#L45-L56)): only critical/error, the four listed kinds, or a recovery are queued; warnings never leave the database.
+
+With a straddle (§9) the release becomes four posts: the two above, plus a critical with the configured mention at switch + ~5 s, plus a recovery `verification_passed` later. While that false incident is open, a genuine tamper on any other observer posts nothing: `shouldNotify` ([policy.mjs:86-94](services/ui-watchdog/src/policy.mjs#L86-L94)) returns false until the aggregate has been `verified` for 60 s, and the daily heartbeat is suppressed as well.
+
+## 8. Blocker: `favicon.ico` cannot be fetched through Chrome (Reproduced)
+
+- The inventory contains `/favicon/favicon.ico` (`apps/main/build/favicon/favicon.ico`).
+- `chromeTransport` fetches every non-document file with `page.waitForResponse` ([chrome.mjs:226-228](services/ui-watchdog/src/chrome.mjs#L226-L228)). Playwright filters page events for URLs ending in `/favicon.ico`, so the wait never resolves.
+- Result at this head, from the new test: `fetch-failed /favicon/favicon.ico: page.waitForResponse: Timeout 5000ms exceeded while waiting for event "response"`. `fetch-failed` is a non-integrity kind, so the observer is `unverified`, then `degraded` after `FAILURE_THRESHOLD` consecutive audits, which is an error post with no mention, and `verified` is never reached.
+- It does not show on play today because play has no reference; without one, the audit only fetches what `index.html` references, and `htmlResources` ignores `rel=icon`.
+- It came with the Chromium transport (`a7954dd2f`); at `54527f90e` the audit used plain HTTPS and hashed this file like any other.
+- **Recommended fix:** for URLs ending in `/favicon.ico`, read the response from the page's own CDP session (`Network.responseReceived`, then `Network.getResponseBody` on `loadingFinished`) instead of `page.waitForResponse`, and return the same `{ status, allHeaders, body }` shape. Renaming the file would also work, but any later `favicon.ico` would bring the error back without anyone noticing.
+
+## 9. The release straddle still pages (Reproduced)
+
+**What happens.** A check fetches `/` and gets release A, then its entry-chunk fetches land after Netlify switched to B. A's content-hashed chunk paths no longer exist, so the `/* /index.html 200` rewrite answers them with B's `index.html` (200, `text/html`). `observe()` compares that body with A's reference entry and pushes `hash-mismatch` with `trustedDocument: false`, because B is not attested yet ([scan.mjs:195-210](services/ui-watchdog/src/scan.mjs#L195-L210)). `assess()` excuses only `untrustedHtml` issues inside the pending window ([scan.mjs:319-321](services/ui-watchdog/src/scan.mjs#L319-L321)), so the observer is `integrity_alert`, `combineObservers` makes the group critical from that one observer ([observers.mjs:72-78](services/ui-watchdog/src/observers.mjs#L72-L78)), and Discord gets the mention. `production` moved 12 times in September–October, so this is a false page most weeks.
+
+**Why round 1 missed it.** The guard test added then (`bypass1-racing.test.mjs:85`) attested B before sampling, which turns the same bytes into `trustedDocument: true`.
+
+**Duration.** A straddled quick probe clears at the next probe (~30 s) with no post. A straddled audit stays critical until the reference lands, up to 15 min, because the later `content_changed` is throttled by the audit's own `assets_changed` and nothing re-runs the audit. `reconcileEvidence` never flips `trustedDocument` on an existing issue, so landing alone does not clear it either.
+
+**Possible fix** (implemented and tested once, but not needed now; see the decision below):
+- An asset response that has a reference entry, mismatches it, and is `text/html` is the SPA rewrite answering a vanished path. It is recorded as a document sample (`{ path, sha256, matchedSha, fallback: true }`), never as that path's bytes in `observed`, so it cannot create observer disagreement or retrospective findings.
+- Classified once every document of the check is known: if the hash is a trusted root or a document this check navigated to, it becomes `missing-asset` (non-integrity: `unverified`, `degraded` after three). Otherwise it stays `hash-mismatch` + `untrustedHtml`: excused only inside the pending window, retained under `/index.html`, checked against the attested `index.html` when it lands, critical otherwise. Fallbacks never vouch for each other.
+- Changed JS/CSS/WASM bytes never enter that branch. The round-1 tests "alternating attested documents cannot mask a tampered asset" and "a release race between two attested builds stays non-critical" pass unchanged.
+- `browser.mjs` applies the same rule to same-origin responses (Chromium reports a `text/html` script response with status 200, then refuses to run it). `resolvePending` and `reconcileEvidence` treat the attested document at any path as the fallback. Fallback samples are excluded from the A→B→A sequence.
+- `trustedDocument` / `trustedSwitch` are removed as subsumed. One consequence to judge: an attested document at a chunk path outside any release window is now `unverified` → `degraded` (error) rather than critical. Those bytes are not executable by this app (module scripts), so I think that is the right severity for a broken deploy.
+- Residuals: a straddle in the few seconds before the reference run is discovered (`referenceStatus` `pending`, not `building`) is still critical, by the existing "a branch push alone never permits unknown content" rule; in the browser probe the fallback is labelled `untrustedHtml` rather than `missing-asset` when B is still unknown (same outcome); stored results from before the upgrade that carry `trustedDocument` are not stripped, for one audit cycle.
+
+**Decision (2026-10-05):** the team keeps this alert on releases, so this fix is not needed now. With that choice §16 has to be fixed, because the straddle alert is what silences the retroactive check.
+
+## 10. Bypass #2, chunk cloak: the audit's JS requests do not look like the app's (Reproduced)
+
+- `chromeTransport` injects `<link rel=preload as=script>` ([chrome.mjs:229-236](services/ui-watchdog/src/chrome.mjs#L229-L236)). Chromium sends that with `sec-fetch-mode: no-cors` and no `Origin`.
+- Every real chunk load (`<script type=module crossorigin>`, `<link rel=modulepreload crossorigin>`, `import()`) and the rendered probe send `sec-fetch-mode: cors` with `Origin`.
+- A server that serves tampered bytes only to `cors` script loads: the audit reported no issue and `unverified`, while a real page's `import("/wallet.js")` returned the drainer. Chunks that are imported only on user action (for example `@aave/contract-helpers` in `ApprovedAmountService`) are never loaded by the rendered probe, so the audit was the only check covering them.
+- **Also latent:** the transport hashes `response.body()`, which Playwright re-encodes from Chromium's text decoding. Without a charset the bootstrap page's default encoding applied, so non-ASCII JS/CSS hashed wrong. Not live, because Netlify sends `charset=UTF-8` on HTML/JS/CSS; it would break on any host that drops the charset.
+- **Recommended fix:** request each file type the way the Vite build does.
+  - Scripts via `<link rel=modulepreload crossorigin>`: fetched and compiled, never evaluated, with headers identical to `import()`.
+  - Stylesheets and fonts via CORS preloads (`crossorigin`), images via plain preloads, WASM and other data via `fetch()`.
+  - `--lang=en-US` instead of the `acceptLanguage` override, which re-appended `;q=0.9`.
+  - Declare `<meta charset="utf-8">` on the bootstrap page, and read `favicon.ico` through CDP (§8).
+  - Worker scripts are still requested as module scripts, so a cloak keyed on `sec-fetch-dest: worker` stays uncovered; say so in the README.
+- The two tests appended to `test/browser.integration.mjs` check this: a cloak keyed on `sec-fetch-mode: cors` must be caught, every file type must carry the same headers as on a real page, and non-ASCII text and `favicon.ico` must hash exactly.
+
+## 11. Evidence overflow is permanent and then mutes everything (Reproduced)
+
+- `retainPending` caps `pending_evidence` at 20,000 rows and sets `evidenceOverflow` ([store.mjs:94-102](services/ui-watchdog/src/store.mjs#L94-L102)). Nothing clears it, and rows for a commit whose reference never lands (a failed run nobody re-runs, or no `GITHUB_TOKEN`) are never deleted.
+- One release is ~500 files × observers, so about 8 such releases trip it. Then `snapshot()` adds `evidence-overflow` to every observer, which is an integrity kind, so a clean, fresh, verified release assesses `integrity_alert` on every observer, forever.
+- After that single critical, `shouldNotify` suppresses every later message (see "What Discord sees per release today") and the external heartbeat, which does not look at the state ([main.mjs:322-337](services/ui-watchdog/src/main.mjs#L322-L337)), stays green.
+- On prod a person merges `production`, so the reference run always triggers; the leak needs failed runs. On play without a token it leaks on every release.
+- Fix: delete pending rows for a commit once its reference lands or its run is final; clear the flag when the table is below the cap; let the external heartbeat stop on any `integrity_alert` or `watchdog_error`.
+
+## 12. A revert is critical (Reproduced with synthetic hashes)
+
+`record()` keeps the last two document hashes in `sequence` indefinitely ([observers.mjs:239-256](services/ui-watchdog/src/observers.mjs#L239-L256)). A revert on `production` rebuilds identical bytes (the build embeds no commit or time), so A→B→A is `flapping` and critical. The README says rollbacks authorized by the production branch are fine. Fix: drop the sequence when the flapped-to hash is the current production reference.
+
+## 13. The pending window starts at the branch move (Traced)
+
+`releaseWindow` counts `REFERENCE_PENDING_SECONDS` (1200) from `source.firstSeen`, which is the branch move ([policy.mjs:186-192](services/ui-watchdog/src/policy.mjs#L186-L192)). Netlify switches ~3 min later and the reference needs 6–20 min after that, so a slow run ends the window while `referenceStatus` is still `building`; the still-unknown HTML then becomes critical with no straddle at all. Count from the run's start, or from the first unknown observation.
+
+## 14. Prod sends no `nosniff` and no CSP (Live)
+
+Chromium 153 refuses `text/html` for module scripts, `modulepreload` and `import()`, but executes a classic `<script src>` whose response is `text/html` unless `X-Content-Type-Options: nosniff` is set. The app's own scripts are modules, so §9's fallback bytes cannot run; the header still closes the polyglot route for anything that is not. Add `X-Content-Type-Options: nosniff` to `_headers` and pin it in `response-policy.json`.
+
+## 15. Minor
+
+- `REMINDER_SECONDS` is documented and parsed but unused.
+- `HEARTBEAT_URL` is optional in `deploy/stack.yml`; without it nothing watches the watchdog.
+- Chromium runs without its sandbox by default (documented).
+- `resolvePending` does not skip external URLs; if `EXTERNAL_SCRIPT_HASHES` is ever set, approved scripts become retrospective criticals.
+- Remaining tells: the watchdog always presents as Linux "Chromium", never "Google Chrome", and never arrives by a cross-site navigation.
+
+## 16. The retroactive check is discarded while an incident is open (Reproduced)
+
+**What the check is for.** While a release's reference is building, unknown HTML is tolerated and every unknown hash is kept in `pending_evidence`. When the attested reference lands, `resolvePending` compares them against it. A mismatch means visitors were served something that was never built (round 1 §2).
+
+**What goes wrong.**
+- The findings are parked in kv `retrospectiveIssues` ([main.mjs:171-174](services/ui-watchdog/src/main.mjs#L171-L174), [store.mjs:104-128](services/ui-watchdog/src/store.mjs#L104-L128)) and make the next tick `integrity_alert` ([observers.mjs:450-472](services/ui-watchdog/src/observers.mjs#L450-L472)).
+- If an incident is already open, `shouldNotify` returns false ([policy.mjs:86-94](services/ui-watchdog/src/policy.mjs#L86-L94)), so nothing is logged, and [main.mjs:281-282](services/ui-watchdog/src/main.mjs#L281-L282) clears `retrospectiveIssues` in the same tick.
+- `resolvePending` has already deleted the `pending_evidence` rows ([store.mjs:120](services/ui-watchdog/src/store.mjs#L120)), so the evidence is gone for good: no event, nothing in `/api/events`.
+
+**When it happens.** The stored notice stays `integrity_alert` until the aggregate has been `verified` for 60 s. A release whose straddle alarm fired (§9) cannot verify before its reference lands, and the landing is exactly when this check runs. So on every such release, whatever the check finds is discarded. An injection timed to a release (the repo is public and `production` pushes are visible) produces a critical that looks like the accepted straddle alarm, and the one check that would tell the two apart is thrown away.
+
+**Reproduced** with `test/round2-retrospective.integration.mjs`, a black-box run of `src/main.mjs` against a fake GitHub and a fake observer that reads the SQLite event log:
+- with no incident open, the mismatch is posted (control, passes today);
+- with the straddle critical open: "Events after B landed: none".
+
+**Recommended fix** (`main.mjs`, about 15 lines): where `resolvePending` is called ([main.mjs:171-174](services/ui-watchdog/src/main.mjs#L171-L174)), keep its return value and, when it has findings, log a `retrospective_mismatch` critical right there through `logEvent`, outside `shouldNotify`, with the observers, paths and a plain summary. Leave the incident logic as it is. Two details to decide:
+- With no incident open, a real mismatch then pages twice (this event plus the incident it opens). Skip one if that is too loud.
+- After a backfill across several references, link every source commit, not only the first.
+
+## 17. Two `Set-Cookie` headers turn a critical into a quiet error (Reproduced)
+
+The Chromium transport builds `new Headers(await response.allHeaders())` ([chrome.mjs:260](services/ui-watchdog/src/chrome.mjs#L260)). Playwright joins repeated `set-cookie` values with `\n`, Node's `Headers` rejects that value, and the file is recorded as `fetch-failed` instead of being hashed.
+
+Same tampered chunk, with the §8/§10 fix in place:
+
+| Served | Audit records | Result |
+|---|---|---|
+| tampered | `hash-mismatch` | `integrity_alert`: critical with a mention |
+| tampered, plus two `Set-Cookie` headers | `fetch-failed` | `unverified`, then `degraded` after 3 audits (~45 min): an error post, no mention |
+
+- Browsers accept repeated `Set-Cookie`, so visitors get the tampered file. Anyone who can change the served bytes can add the header (`_headers`, an edge function, a hijacker's own server).
+- It matters most for chunks only the audit covers, such as on-demand wallet code. If `/` itself carries two cookies, every HTTP check is `down`, and only the rendered probe, which does not build `Headers`, still sees the page.
+- It came with the Chromium transport (`a7954dd2f`), like §8.
+
+**Recommended fix:** build the headers from `response.headersArray()`, so repeated headers stay separate:
+
+```js
+const headers = new Headers()
+for (const { name, value } of await response.headersArray())
+  headers.append(name, value)
+```
+
+The CDP read of `favicon.ico` (§8) should expose the same `headersArray()` shape, splitting CDP's `\n`-joined values.
+
+## 18. The audit is still recognisable (Reproduced)
+
+With the §10 fix, the audit's header values match a real page's for every file type: a full audit of the production build compared 509 files with 0 mismatches. Four tells remain; none comes from that fix.
+
+- **Header order.** `continueChrome` passes an explicit header list to `Fetch.continueRequest` ([chrome.mjs:75-82](services/ui-watchdog/src/chrome.mjs#L75-L82)), so every audit and rendered-probe request is reordered: the audit sends `host, connection, accept, upgrade-insecure-requests, user-agent, sec-ch-ua, …` where Chrome sends `host, connection, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform, upgrade-insecure-requests, user-agent, accept, …`. Under CDP interception Chromium adds no `pragma` or `cache-control`, so the rewrite does nothing else. Raw order is visible to a hijacker's own server; a Netlify Edge Function sees sorted headers.
+- **`/favicon.ico`.** The transport's blank page has no icon link, so the audit's first request is `/favicon.ico` ([chrome.mjs:188-195](services/ui-watchdog/src/chrome.mjs#L188-L195)). A browser on the real `index.html` never requests that path, because the page declares `/favicon/favicon.ico`.
+- **Referer.** Every file is preloaded from the blank page at `/`, so every request carries `referer: <origin>/`. Visitors send that only for files named by the page they landed on; lazily loaded chunks carry the current route (`/trade/swap/market?…`). A cloak "tamper unless the referer is `/`" hides on-demand chunks from the audit, the only check that covers them.
+- **Locale on Linux.** The `--lang=en-US` from the §10 fix was only verified on macOS; the image sets no `LANG`.
+
+**Recommended fix** (`chrome.mjs`, plus small changes in `scan.mjs`, `policy.mjs`, `browser.mjs`):
+- Continue intercepted requests without a header override (`route.continue()` with no `headers`). Nothing else depends on the deletion.
+- Put `<link rel="icon" href="data:,">` on every locally fulfilled blank page.
+- Keep a small pool of blank pages, one per referer path, fulfilled locally like the current one. `observe()` passes the wanted referer with each request: `/` for files named by the root HTML, and for every other file a random real app route (the candidates `sampledRoutes` already uses). Don't set the Referer through `Fetch.continueRequest` headers, because that brings the order tell back, and don't use `history.replaceState` on one shared page, because audit requests run concurrently.
+- Set `LANGUAGE=en_US:en` and `LANG=en_US.UTF-8` in the Chromium environment.
+- The §10 test in `test/browser.integration.mjs` already expects this Referer split.
+
+**Limits of this fix.**
+- A cloak keyed on one specific route is caught only on audits that draw it (up to four routes per audit).
+- In browsers, chunks imported by other chunks carry the importing chunk's URL as the Referer; the audit does not reproduce that.
+- The 32 MB guard closes a pooled page without evicting it, so later files that draw that route become `fetch-failed`. That is narrower than before, when it blinded the whole audit.
+- Worker scripts (`dest: worker`) and the web manifest (`dest: manifest`) are still requested differently, as the README says.
+
+## 19. A wrong exit stays "retrying" forever (Reproduced)
+
+- `checkEgress` asks check.torproject.org, then ipify, and catches every error ([network.mjs:11-39](services/ui-watchdog/src/network.mjs#L11-L39)). So the definitive answers of `validateEgress` ([network.mjs:117-122](services/ui-watchdog/src/network.mjs#L117-L122)) are swallowed:
+  - an `EXPECTED_EXIT_IP` mismatch falls through to ipify, and the stored error becomes "Invalid fallback egress address";
+  - a `tor` observer whose exit is not Tor (`IsTor: false`) falls through to ipify and *succeeds* with `tor: null`.
+- `snapshot()` maps any egress problem to `unverified`, "Network egress validation is unavailable; retrying", with no counter ([observers.mjs:496-515](services/ui-watchdog/src/observers.mjs#L496-L515)). A misrouted or wrongly pinned observer is excluded from `verified` forever and nothing is posted: observer diversity is lost and nobody is told. No tamper slips through, because that observer never says `verified`.
+- **Recommended fix:**
+  - In `validateEgress`, mark the two definitive answers (wrong `IsTor` for the configured path, exit other than `EXPECTED_EXIT_IP`) with `error.mismatch = true`, and have `checkEgress` rethrow such errors instead of asking the fallback.
+  - Copy the flag into the stored egress record (`egress.mismatch`) in the worker's and the browser probe's egress `catch`.
+  - In `snapshot()`, count consecutive mismatching records per observer (reset on a clean one) and report the observer `degraded`, an error post, at `FAILURE_THRESHOLD`.
+  - An oracle outage stays `unverified`, as round 1 §4.2 asked.
+
+## 20. Smaller items (Traced unless noted)
+
+- **An expired `GITHUB_TOKEN` goes quiet (Reproduced).** `head()` gets a 401 and the source task only records `sourceError` ([main.mjs:80](services/ui-watchdog/src/main.mjs#L80)). After 180 s every observer is `unverified` ("Cannot confirm the current production branch"), a warning that is never posted, and the external heartbeat keeps pinging, because it only checks that a token is set ([main.mjs:322-337](services/ui-watchdog/src/main.mjs#L322-L337)). The next release then pages as tampering (round 1 §2). Fix: post GitHub 401/403 as `credentials_missing`, escalate a stale source after ~10 min, and include `sourceFresh` in the heartbeat condition. Until then, use a token without an expiry or put the expiry in a calendar.
+- **The public `/healthz` shows when monitoring is disarmed.** It is answered before authentication ([server.mjs:53-55](services/ui-watchdog/src/server.mjs#L53-L55)) and Traefik routes it publicly ([stack.yml:131](services/ui-watchdog/deploy/stack.yml#L131)). It returns 503 exactly when credentials were lost or the loop stalled. The container healthcheck uses 127.0.0.1, so exclude the path: ``Host(`ui-watchdog.play.hydration.cloud`) && !Path(`/healthz`)``.
+- **Observers use Swarm's default 10 s stop grace** (`x-observer`, [stack.yml:19](services/ui-watchdog/deploy/stack.yml#L19)), so every deploy kills running audits and the coordinator records failures. Add `stop_grace_period: 2m`.
+- **Observer `/healthz` restarts observers during outages a restart cannot fix** ([worker.mjs:50-55](services/ui-watchdog/src/worker.mjs#L50-L55)). Three failures plus 5 minutes without a success return 503, so a dead Tor exit or an unreachable target restarts the observer every 5–7 minutes and aborts its audits, while the Tor gateway's own healthcheck only checks bootstrap. Make `/healthz` report process liveness only.
+- **A worker answering 429 is never counted** ([observers.mjs:353-356](services/ui-watchdog/src/observers.mjs#L353-L356), and the same for audit and browser). A stuck job leaves the observer silently `unverified`; slow jobs still escalate through the call timeout. Give each worker job a deadline that kills its browser, and keep `REQUEST_TIMEOUT_MS` low enough that a quick probe fits in the 240 s call timeout.
+- **Changing `PRODUCTION_BRANCH` or `GITHUB_REPOSITORY` with the existing volume** makes every tick throw in `validateManifest` ([main.mjs:179-181](services/ui-watchdog/src/main.mjs#L179-L181)): a `watchdog_error` restart loop, with nothing posted. Skip non-matching references with a log line, and post loop errors (rate-limited).
+- **The image job publishes from every branch push** ([ui-watchdog.yml:40](.github/workflows/ui-watchdog.yml#L40)), and the README's deploy section documents only a manual Docker Hub build, without `gh attestation verify`. Gate the job on master, and document the verification (`--source-ref refs/heads/master`) and the GHCR pull credentials.
+- **The reference build's install container can write `.git`** ([ui-watchdog-reference.yml:35-37](.github/workflows/ui-watchdog-reference.yml#L35-L37)), and the host then runs `git status` and `git ls-files` ([:48-49](.github/workflows/ui-watchdog-reference.yml#L48-L49)). A dependency's install script can set `core.fsmonitor` and run code on the runner (reproduced: the hook runs on `git status`). The build job only has `contents: read`, so this is defence in depth: mount `.git` read-only and run the inventory with `git -c core.fsmonitor= -c core.hooksPath=/dev/null`.
+- **`check-action-pins.py` accepts commits from forks** ([check-action-pins.py:17-19](services/ui-watchdog/scripts/check-action-pins.py#L17-L19)) and ignores the `# vX` comment. Require `commits/<tag from the comment>` to resolve to the pinned SHA.
+- **`build-reference.sh` pins Node as a literal** (`v25.9.0`, [build-reference.sh:4](services/ui-watchdog/scripts/build-reference.sh#L4)). Compare it with `.nvmrc`, so a Node bump without a recipe update fails as `reference_failed` instead of drifting silently.
+- **`refs` is never pruned** and is parsed on every 5 s tick: about 87 ms per tick after a year. Cache the parsed references.
+
+## 21. Regression tests (round 2)
+
+| File | Run by | Covers |
+|---|---|---|
+| `test/browser.integration.mjs` (2 tests appended) | `npm run test:browser` | §8, §10 |
+| `test/round2-retrospective.integration.mjs`, `test/fixtures/fake-github*.mjs` | `npm run test:browser` | §16, as a black-box run of `src/main.mjs` against a fake GitHub and a fake observer |
+| `test/round2-transport.integration.mjs`, `test/fixtures/round2-origin.mjs` | `npm run test:browser` | §17, §18 |
+| `test/round2-egress.test.mjs` | `npm test` | §19 |
+
+The retrospective test needs no browser, but it binds ports and takes about 70 s, so it runs with `test:browser`.
+
+| Test | Expected after fix |
+|---|---|
+| Each file type requested like the app; `cors`-only chunk cloak | same headers as a real page, Referer split as in §18; cloak detected |
+| Non-ASCII text and `favicon.ico` hashed exactly | hashed, no issues |
+| Retrospective mismatch while an incident is open | a critical event after the reference lands (the scenario without an open incident passes today) |
+| Tampered chunk with two `Set-Cookie` headers | `hash-mismatch`, `integrity_alert` |
+| Clean files and `favicon.ico` with repeated `Set-Cookie` and `Cache-Status` | hashed, no issues |
+| Audit and rendered-probe header order | the same order as a plain Chromium page |
+| `/favicon.ico` when the app declares its icon elsewhere | never requested |
+| Lazy chunk cloaked on `referer: /`; entry files | cloak detected; entry files still sent with `/` |
+| Exit other than `EXPECTED_EXIT_IP` | rejected as that mismatch, fallback not asked |
+| `tor` observer on a non-Tor exit | rejected, not a `tor: null` success |
+| Egress mismatch on 3 and on 5 consecutive records (threshold 3 and 5) | `degraded`, an error post |
+| Guards: an oracle outage falls back to ipify; a clean record resets the count; an outage stays `unverified` | unchanged (pass today) |
+
+At this head, `npm test` gives 75/79 and `npm run test:browser` 12/20, and every failure is one of the assertions above. With the recommended fixes for §8, §10 and §16–§19 implemented (checked once with a reference implementation), they pass 79/79 and 20/20, and every new file passed three runs in a row.
+
+Also worth adding:
+- An expired `GITHUB_TOKEN` posts an error within ~10 min (§20).
+- An observer whose worker keeps answering 429 eventually goes `down` (§20).
+- Retrospective findings that span several references link every source commit (§16).
