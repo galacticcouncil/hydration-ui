@@ -75,7 +75,7 @@ export const AboutCard: FC = () => {
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t(`juicer:explainer.${stage}.description`)}
                   </Text>
-                  <Text fs="p5" color={getToken("text.medium")}>
+                  <Text fs="p6" color={getToken("text.low")}>
                     {t(`juicer:${NOTES[stage]}`)}
                   </Text>
                 </SJuicerExplainerPanel>
@@ -83,7 +83,7 @@ export const AboutCard: FC = () => {
             ))}
           </SJuicerExplainerFlow>
           <Separator />
-          <Text fs="p5" color={getToken("text.medium")}>
+          <Text fs="p6" color={getToken("text.low")}>
             {t("juicer:explainer.risk")}
           </Text>
           <Collapsible
