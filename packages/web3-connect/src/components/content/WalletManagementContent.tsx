@@ -1342,7 +1342,14 @@ export const WalletManagementContent = () => {
                           />
                         )
                       ) : (
-                        <WalletAccountsEmptyState source={emptyStateWallet} />
+                        <WalletAccountsEmptyState
+                          source={emptyStateWallet}
+                          filteredEmpty={
+                            accountSearch
+                              ? undefined
+                              : meta?.filteredAccountsEmpty
+                          }
+                        />
                       )}
                     </SScrollAreaContent>
                   </ScrollArea>

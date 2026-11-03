@@ -6,6 +6,8 @@ import {
   DepositFlow,
   useOnrampModal,
 } from "@/modules/onramp/store/useOnrampModal"
+import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
+import { OnrampScreen } from "@/modules/onramp/types"
 
 type DepositFlowLayoutProps = {
   flow: DepositFlow
@@ -21,6 +23,7 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
   const entryFlow = useOnrampModal((state) => state.depositEntryFlow)
   const entryChoice = useOnrampModal((state) => state.depositEntryChoice)
   const modal = useOnrampModal((state) => state.modal)
+  const page = useOnrampStore((state) => state.page)
   const selectedFlow =
     modal === "deposit" ? entryFlow : entryChoice ? "choice" : flow
   return (
@@ -28,7 +31,9 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
       value={selectedFlow}
       showSwitcher={false}
       desktopMinHeight={
-        modal !== "deposit" && (flow === "current" || flow === "connected")
+        modal !== "deposit" &&
+        page !== OnrampScreen.DepositOnchainForm &&
+        (flow === "current" || flow === "connected")
           ? 550
           : undefined
       }

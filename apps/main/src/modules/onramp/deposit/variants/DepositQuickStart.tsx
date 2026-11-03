@@ -346,6 +346,25 @@ export const DepositQuickStart = () => {
           }),
           closable: true,
           hideAccountFilters: true,
+          filteredAccountsEmpty: {
+            title: t(
+              funded.isLoading || walletsLoading
+                ? "deposit.quick.sourceLoading"
+                : "deposit.quick.sourceEmptyTitle",
+            ),
+            description: t(
+              funded.failed
+                ? "deposit.flow.assets.partial"
+                : directEntry
+                  ? "deposit.quick.sourceEmptyDifferent"
+                  : "deposit.quick.sourceEmpty",
+              {
+                symbol: selectedAsset.originSymbol,
+                chain: selectedPair.chain.name,
+              },
+            ),
+            loading: funded.isLoading || walletsLoading,
+          },
           hideExternalWallet: true,
           hideMultisig: true,
         }}
@@ -455,9 +474,20 @@ export const DepositQuickStart = () => {
           !funded.isLoading &&
           !funded.failed &&
           !compatible.length && (
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("deposit.flow.assets.empty")}
-            </Text>
+            <Flex gap="s" align="center">
+              <Icon component={Wallet} size="m" />
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t(
+                  directEntry
+                    ? "deposit.quick.sourceEmptyDifferent"
+                    : "deposit.quick.sourceEmpty",
+                  {
+                    symbol: selectedAsset.originSymbol,
+                    chain: selectedPair?.chain.name ?? "",
+                  },
+                )}
+              </Text>
+            </Flex>
           )}
         {funded.failed && (
           <Text fs="p5" color={getToken("accents.danger.emphasis")}>

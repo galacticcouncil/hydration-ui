@@ -58,6 +58,11 @@ export type Web3ConnectModalMeta = {
   title?: string
   description?: string
   hideAccountFilters?: boolean
+  filteredAccountsEmpty?: {
+    title: string
+    description: string
+    loading?: boolean
+  }
   hideExternalWallet?: boolean
   hideMultisig?: boolean
   initialPage?: Web3ConnectModalPage
