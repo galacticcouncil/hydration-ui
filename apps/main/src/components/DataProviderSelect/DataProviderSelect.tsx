@@ -37,6 +37,8 @@ export const DataProviderSelect = () => {
           size="small"
           outline
           blur
+          data-testid="rpc-status"
+          aria-busy={!data}
           onClick={() => setModalOpen(true)}
         >
           {data ? (

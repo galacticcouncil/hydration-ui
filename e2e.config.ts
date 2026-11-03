@@ -46,6 +46,7 @@ export default {
   tests: "tests/**/*.e2e.ts",
   trace: "retain-on-failure",
   timeout: 180_000,
+  assertionTimeout: 30_000,
   ...(process.env.OPENROUTER_API_KEY && {
     agents: {
       default: {

@@ -1,17 +1,23 @@
 import type { App, Locator, Screen } from "e2e"
 import { expect, test } from "e2e"
 
-// The seeded account header proves only the app shell loaded. Page data has
-// separate readiness checks in readiness.ts.
+// The seeded account header proves only the app shell loaded (it renders from
+// localStorage). The RPC status button stays aria-busy until the first block
+// arrives. Page data has separate readiness checks in readiness.ts.
 export const ACCOUNT = "135yiujiLFfogvTwbfr3yoqGK7zAu3f5SD5y1q8PMokYeSuc"
 
-export const PAGE_LOAD_TIMEOUT = 30_000
+export const PAGE_LOAD_TIMEOUT = 60_000
 
 export const openPage = async (app: App, screen: Screen, path: string) => {
   await app.open(path)
   await expect(
     screen.getByRole("button", /External Account 135yiu…kYeSuc$/),
   ).toBeVisible({ timeout: PAGE_LOAD_TIMEOUT })
+  await expect(screen.getByTestId("rpc-status")).toHaveAttribute(
+    "aria-busy",
+    "false",
+    { timeout: PAGE_LOAD_TIMEOUT },
+  )
 }
 
 // Mainnet asset ids; the router JSON-encodes search ids ("0" -> %220%22).
