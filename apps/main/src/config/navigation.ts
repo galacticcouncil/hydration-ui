@@ -157,12 +157,12 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.strategies,
     icon: CoinsIcon,
     children: [
-      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
       {
         key: "strategiesJuicer",
         to: LINKS.strategiesJuicer,
         icon: GoalIcon,
       },
+      { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
       {
         key: "strategiesHollarBonds",
         to: LINKS.strategiesHollarBonds,
