@@ -1,4 +1,5 @@
 import type { E2EConfig } from "e2e"
+import { github } from "@e2e-dev/github"
 import { web } from "@e2e-dev/web"
 import { openrouter } from "@openrouter/ai-sdk-provider"
 import { existsSync, readFileSync } from "node:fs"
@@ -45,6 +46,8 @@ const appUrl = process.env.E2E_APP_URL
 export default {
   tests: "tests/**/*.e2e.ts",
   trace: "retain-on-failure",
+  // Posts the PR comment and job summary on GitHub Actions; a no-op locally.
+  reporters: ["list", github()],
   timeout: 180_000,
   assertionTimeout: 30_000,
   ...(process.env.OPENROUTER_API_KEY && {
@@ -52,6 +55,8 @@ export default {
       default: {
         model: openrouter(process.env.E2E_MODEL ?? E2E_MODEL_DEFAULT),
         system: 'You are a thorough QA agent. Verify every outcome.',
+        context:
+          "Hydration is a DeFi app on Polkadot. The connected account is watch-only: submitting a form opens a review dialog with an \"Open in Polkadot.js.org\" link instead of a signature prompt. That dialog ends every flow: stop once it opens, never close it or try to sign. \"Trade limit\" is slippage. GIGAHDX is staked HDX. Omnipool is the main liquidity pool; Borrow is the lending market.",
       },
     },
   }),

@@ -1,4 +1,4 @@
-name: E2E
+name: e2e
 on:
   pull_request:
     branches: [master]
@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
   pull-requests: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   e2e:
     name: E2E
@@ -22,23 +25,28 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: npx e2e-web install chromium --with-deps
-      - run: yarn test:e2e --reporter list,markdown --retries 0
+      - name: Run e2e
+        run: |
+          [ -n "$OPENROUTER_API_KEY" ] || set -- --exclude-tag agentic
+          yarn test:e2e --retries 0 "$@" || yarn test:e2e --last-failed --retries 0 "$@"
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER }}
-      - if: failure()
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: .e2e/results
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload report
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: e2e-report
           path: |
-            .e2e/artifacts/
             .e2e/report.json
-            .e2e/failures/
             .e2e/logs/
+          if-no-files-found: ignore
           retention-days: 14
-      - if: always() && github.event_name == 'pull_request' && hashFiles('.e2e/summary.md') != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          { head -c 60000 .e2e/summary.md; echo; echo; echo "[Run and artifacts]($RUN_URL)"; } > comment.md
-          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md --edit-last --create-if-none
