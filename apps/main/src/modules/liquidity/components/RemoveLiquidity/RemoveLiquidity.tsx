@@ -188,7 +188,7 @@ export const RemoveLiquidityForm = ({
             <ReceiveAssets assets={receiveAssets} positions={deposits} />
 
             {receiveNote && (
-              <Text fs="p6" color={getToken("text.low")}>
+              <Text fs="p6" mb="m" color={getToken("text.low")}>
                 {receiveNote}
               </Text>
             )}
