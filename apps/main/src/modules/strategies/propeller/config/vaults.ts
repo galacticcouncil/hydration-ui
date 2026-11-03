@@ -6,6 +6,8 @@ import {
 } from "@galacticcouncil/utils"
 import { type Hex } from "viem"
 
+import { IS_LARK_4 } from "@/modules/strategies/propeller/constants"
+
 export interface PropellerVaultConfig {
   assetId: string
   vaultAddress: Hex
@@ -27,7 +29,17 @@ export interface PropellerVaultConfig {
   collateralDisplayId?: string
 }
 
-export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
+const LARK_4_VAULTS: PropellerVaultConfig[] = [
+  {
+    assetId: "1000765",
+    vaultAddress: "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
+    shareAssetId: "5552",
+    shareSymbol: "jBTC",
+    shareName: "Juicer BTC",
+  },
+]
+
+const LARK_0_VAULTS: PropellerVaultConfig[] = [
   {
     assetId: GETH_ASSET_ID,
     vaultAddress: "0xa64e418978482d5de91717cf6c77e1f40105f2ab",
@@ -40,6 +52,8 @@ export const PROPELLER_VAULTS: PropellerVaultConfig[] = [
     collateralDisplayId: GETH_ERC20_ID,
   },
 ]
+
+export const PROPELLER_VAULTS = IS_LARK_4 ? LARK_4_VAULTS : LARK_0_VAULTS
 
 export const PROPELLER_RISK_PROFILE = "low"
 
