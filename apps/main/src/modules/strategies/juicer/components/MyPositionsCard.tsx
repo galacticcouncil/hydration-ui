@@ -1,9 +1,11 @@
 import {
+  AssetLabel,
   Button,
   Card,
   CardBody,
   CardHeader,
   CardTitle,
+  Chip,
   Flex,
   PositionCard,
   Stack,
@@ -18,6 +20,7 @@ import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
 import { type JuicerVaultConfig } from "@/modules/strategies/juicer/config/vaults"
 import { useVaultDisplayAsset } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
 import { type JuicerPosition } from "@/modules/strategies/juicer/hooks/useJuicerAccount"
@@ -87,7 +90,17 @@ export const MyPositionsCard: FC<MyPositionsCardProps> = ({
                   logo={
                     <AssetLogo id={displayAsset.id} size="medium" hideChain />
                   }
-                  symbol={symbol}
+                  symbol={
+                    <AssetLabel
+                      symbol={symbol}
+                      badge={
+                        <Chip variant="amber" size="extra-small" rounded>
+                          <JuicerStrategyLogo size="extra-small" />
+                          Juicer
+                        </Chip>
+                      }
+                    />
+                  }
                   stats={
                     <>
                       <ValueStats
