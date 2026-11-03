@@ -52,6 +52,7 @@ import {
   isOneToOneDeposit,
   isSwapDeposit,
   type PropellerDepositOption,
+  visibleDepositOptions,
 } from "@/modules/strategies/propeller/utils/depositOptions"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -99,11 +100,15 @@ export const DepositForm = ({
   const baseRate = getRate(vault) ?? "1"
   const toDisplay = (value: string | number) =>
     Big(value).times(baseRate).toString()
-  const options = lockVault
-    ? DEPOSIT_OPTIONS.filter(
-        (o) => o.vault.vaultAddress === initialDeposit.vault.vaultAddress,
-      )
-    : DEPOSIT_OPTIONS
+  const options = visibleDepositOptions(
+    lockVault
+      ? DEPOSIT_OPTIONS.filter(
+          (o) => o.vault.vaultAddress === initialDeposit.vault.vaultAddress,
+        )
+      : DEPOSIT_OPTIONS,
+    getTransferableBalance,
+    selected,
+  )
   const assets = options.map((o) => getAsset(o.assetId)).filter(isTruthy)
 
   const {

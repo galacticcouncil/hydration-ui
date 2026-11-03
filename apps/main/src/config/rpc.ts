@@ -20,7 +20,7 @@ export const createProvider = (
 
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Lark 0 (jETH)", "wss://node0.lark.hydration.cloud"),
-  createProvider("Lark 4 (jtBTC)", "wss://node4.lark.hydration.cloud"),
+  createProvider("Lark 4 (jBTC)", "wss://node4.lark.hydration.cloud"),
   // createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   // createProvider("Dotters", "wss://hydration.dotters.network"),
   // createProvider("LATAM", "wss://hydration.rpc.stkd.io"),

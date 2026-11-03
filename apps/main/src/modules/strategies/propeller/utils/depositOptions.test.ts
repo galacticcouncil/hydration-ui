@@ -4,9 +4,9 @@ import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config
 
 import {
   getDepositOptions,
-  getVaultDepositOption,
   isOneToOneDeposit,
   isSwapDeposit,
+  visibleDepositOptions,
 } from "./depositOptions"
 
 const jeth: PropellerVaultConfig = {
@@ -47,39 +47,27 @@ describe("Deposit options", () => {
     expect(isOneToOneDeposit({ vault: withGeth, assetId: "4200" })).toBe(false)
   })
 
-  it("starts on the base asset; the collateral only when it is all the wallet holds", () => {
-    const balances = (values: Record<string, bigint>) => (id: string) =>
-      values[id] ?? 0n
-    expect(getVaultDepositOption(jeth, balances({ "34": 1n })).assetId).toBe(
-      "34",
-    )
-    expect(
-      getVaultDepositOption(jeth, balances({ "34": 1n, "4200": 1n })).assetId,
-    ).toBe("34")
-    expect(getVaultDepositOption(jeth, balances({ "4200": 1n })).assetId).toBe(
-      "4200",
-    )
-    expect(getVaultDepositOption(jeth, balances({})).assetId).toBe("34")
-    expect(getVaultDepositOption(jbtc, balances({ "34": 1n })).assetId).toBe(
-      "1000765",
-    )
-  })
-
-  it("keeps the listed pay assets behind the base asset and starts on the first one held", () => {
+  it("keeps the listed pay assets behind the base asset", () => {
     const giga = { ...jeth, payAssetIds: ["420", "34"] }
-    const balances = (values: Record<string, bigint>) => (id: string) =>
-      values[id] ?? 0n
     expect(getDepositOptions([giga]).map((o) => o.assetId)).toEqual([
       "34",
       "420",
       "4200",
     ])
-    expect(
-      getVaultDepositOption(giga, balances({ "34": 1n, "420": 1n })).assetId,
-    ).toBe("34")
-    expect(getVaultDepositOption(giga, balances({ "420": 1n })).assetId).toBe(
-      "420",
-    )
-    expect(getVaultDepositOption(giga, balances({})).assetId).toBe("34")
+  })
+
+  it("hides the pool-share collateral at zero balance, unless it is the only or selected option", () => {
+    const giga = { ...jeth, payAssetIds: ["420", "34", "27"] }
+    const options = getDepositOptions([giga, jbtc])
+    const ids = (
+      balances: Record<string, bigint>,
+      keep?: (typeof options)[number],
+    ) =>
+      visibleDepositOptions(options, (id) => balances[id] ?? 0n, keep).map(
+        (o) => o.assetId,
+      )
+    expect(ids({})).toEqual(["34", "420", "27", "1000765"])
+    expect(ids({ "4200": 1n })).toEqual(["34", "420", "27", "4200", "1000765"])
+    expect(ids({}, { vault: giga, assetId: "4200" })).toContain("4200")
   })
 })

@@ -6,10 +6,14 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { useAccountBalances } from "@/api/balances"
+import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { DepositForm } from "@/modules/strategies/propeller/components/DepositForm"
 import { type PropellerVaultConfig } from "@/modules/strategies/propeller/config/vaults"
-import { getVaultDepositOption } from "@/modules/strategies/propeller/utils/depositOptions"
+import {
+  DEPOSIT_OPTIONS,
+  useDepositBalancesUsd,
+} from "@/modules/strategies/propeller/hooks/useDepositBalancesUsd"
+import { selectDefaultDeposit } from "@/modules/strategies/propeller/utils/defaultVault"
 
 type Props = {
   vault: PropellerVaultConfig | null
@@ -18,7 +22,18 @@ type Props = {
 
 export const DepositModal = ({ vault, onClose }: Props) => {
   const { t } = useTranslation("propeller")
-  const { getTransferableBalance } = useAccountBalances()
+  const { symbols, balancesUsd, isLoading } = useDepositBalancesUsd()
+
+  // the form keeps its own selection after mounting
+  const initialDeposit =
+    vault && !isLoading
+      ? selectDefaultDeposit(
+          DEPOSIT_OPTIONS.filter(
+            (o) => o.vault.vaultAddress === vault.vaultAddress,
+          ),
+          { symbols, balancesUsd },
+        )
+      : null
 
   return (
     <Modal variant="popup" open={!!vault} onOpenChange={onClose}>
@@ -28,15 +43,16 @@ export const DepositModal = ({ vault, onClose }: Props) => {
       <ModalBody scrollable={false} noPadding>
         {vault && (
           <Box px="xl" position="relative">
-            <DepositForm
-              key={vault.vaultAddress}
-              initialDeposit={getVaultDepositOption(
-                vault,
-                getTransferableBalance,
-              )}
-              lockVault
-              onSuccess={onClose}
-            />
+            {initialDeposit ? (
+              <DepositForm
+                key={vault.vaultAddress}
+                initialDeposit={initialDeposit}
+                lockVault
+                onSuccess={onClose}
+              />
+            ) : (
+              <AppSkeleton />
+            )}
           </Box>
         )}
       </ModalBody>

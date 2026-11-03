@@ -325,9 +325,8 @@ export function useDeposit(
         return createTransaction(
           {
             tx,
-            title: t("deposit"),
-            description: t("propeller:deposit.description.direct", {
-              amount: deposited,
+            title: t("propeller:deposit.review.title", {
+              name: vault.shareName,
             }),
             toasts,
             executedAmount: {
@@ -338,25 +337,12 @@ export function useDeposit(
           txOptionsForVault(vaultAddress),
         )
 
-      const { exact, maxAmountIn, leftover } = trade
+      const { maxAmountIn } = trade
       const payAsset = getAssetWithFallback(trade.assetIn)
-      const formatPay = (value: bigint) =>
-        formatAmount(formatUnits(value, payAsset.decimals), payAsset.symbol)
       return createTransaction(
         {
           tx,
-          title: t("deposit"),
-          description: exact
-            ? t("propeller:deposit.swap.description.exact", {
-                amountIn: formatAmount(amount, payAsset.symbol),
-                amount: deposited,
-                symbol,
-              })
-            : t("propeller:deposit.swap.description", {
-                amount: deposited,
-                maxAmountIn: formatPay(maxAmountIn),
-                leftover: formatPay(leftover ?? 0n),
-              }),
+          title: t("propeller:deposit.review.title", { name: vault.shareName }),
           toasts,
           // the review checks what's left of the fee asset after this
           executedAmount: {

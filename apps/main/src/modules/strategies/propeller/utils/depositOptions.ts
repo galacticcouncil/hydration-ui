@@ -36,14 +36,20 @@ export const isSwapDeposit = ({ vault, assetId }: PropellerDepositOption) =>
 export const isOneToOneDeposit = ({ vault, assetId }: PropellerDepositOption) =>
   assetId !== vault.assetId && assetId === vault.collateralDisplayId
 
-/** the first asset the wallet holds, base asset first; the base asset if none */
-export const getVaultDepositOption = (
-  vault: PropellerVaultConfig,
+/**
+ * Drops the raw pool-share collateral (2-Pool-GETH) the wallet does not hold,
+ * when the vault has other pay assets; every other asset shows even at zero.
+ * `keep` stays listed regardless, so the picker never loses its selection.
+ */
+export const visibleDepositOptions = (
+  options: ReadonlyArray<PropellerDepositOption>,
   getBalance: (assetId: string) => bigint,
-): PropellerDepositOption => ({
-  vault,
-  assetId:
-    payAssets(vault).find((assetId) => getBalance(assetId) > 0n) ??
-    payAssets(vault)[0] ??
-    vault.assetId,
-})
+  keep?: PropellerDepositOption,
+): PropellerDepositOption[] =>
+  options.filter(
+    (o) =>
+      o.assetId !== o.vault.assetId ||
+      getBalance(o.assetId) > 0n ||
+      (o.vault === keep?.vault && o.assetId === keep.assetId) ||
+      !options.some((other) => other.vault === o.vault && other !== o),
+  )
