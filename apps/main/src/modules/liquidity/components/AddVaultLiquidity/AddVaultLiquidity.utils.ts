@@ -1,5 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { safeConvertAnyToH160, safeStringify } from "@galacticcouncil/utils"
+import {
+  QUERY_KEY_BLOCK_PREFIX,
+  safeConvertAnyToH160,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -8,22 +12,21 @@ import Big from "big.js"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import {
-  Abi,
-  encodeFunctionData,
-  erc20Abi,
-  Hex,
-  maxUint128,
-  maxUint256,
-} from "viem"
+import { Abi, encodeFunctionData, erc20Abi, Hex, maxUint128 } from "viem"
 import z from "zod/v4"
 
 import { useAccountBalances } from "@/api/balances/account.hooks"
 import { estimateGasLimit } from "@/api/borrow"
 import { UNIPROXY_ABI } from "@/api/gamma/abi"
 import {
+  bandMid,
+  checkPairedAmount,
+  readDepositBand,
+} from "@/api/gamma/deposit"
+import {
   estimateVaultCallGas,
   useVaultDepositChecks,
+  useVaultDepositSnapshot,
   VaultDepositChecks,
   VaultState,
   vaultTxInvalidation,
@@ -34,6 +37,7 @@ import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required } from "@/utils/validators"
 
@@ -45,19 +49,25 @@ export const useVaultDepositAmount = (
   const { evm } = useRpcProvider()
 
   return useQuery({
-    queryKey: ["vaultDepositAmount", vault?.address, token, amount?.toString()],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "vaultDepositAmount",
+      vault?.address,
+      token,
+      amount?.toString(),
+    ],
     enabled: !!vault && !!token && !!amount && amount > 0n,
     queryFn: async () => {
       if (!vault || !token || !amount) return null
 
-      const [start, end] = await evm.readContract({
-        abi: UNIPROXY_ABI,
-        address: vault.uniProxy,
-        functionName: "getDepositAmount",
-        args: [vault.address, token, amount],
+      const band = await readDepositBand(evm, {
+        uniProxy: vault.uniProxy,
+        vault: vault.address,
+        token,
+        amount,
       })
 
-      return { start, end, mid: (start + end) / 2n }
+      return { ...band, mid: bandMid(band) }
     },
   })
 }
@@ -71,7 +81,8 @@ type DepositArgs = {
   amount1: bigint
 }
 
-// Approve hypervisor, deposit through UniProxy (ClearingV2 guards).
+// Approve hypervisor, deposit through UniProxy (ClearingV2 guards). Signs the
+// amounts it is given: the form decides them against a fresh band.
 export const useVaultDeposit = () => {
   const { t } = useTranslation("liquidity")
   const rpc = useRpcProvider()
@@ -84,23 +95,9 @@ export const useVaultDeposit = () => {
     async ({ pool, vault, token0, token1, amount0, amount1 }: DepositArgs) => {
       const calls: { to: Hex; data: Hex; abi: Abi }[] = []
 
-      // Re-quote, the band drifts while the modal sits open.
-      const [start, end] = await rpc.evm.readContract({
-        abi: UNIPROXY_ABI,
-        address: vault.uniProxy,
-        functionName: "getDepositAmount",
-        args: [vault.address, token0, amount0],
-      })
-
-      // Empty vault accepts any ratio.
-      const amount1Safe =
-        end === maxUint256 || (amount1 >= start && amount1 <= end)
-          ? amount1
-          : (start + end) / 2n
-
       const approvals: [Hex, bigint][] = [
         [token0, amount0],
-        [token1, amount1Safe],
+        [token1, amount1],
       ]
 
       for (const [token, amount] of approvals) {
@@ -132,13 +129,7 @@ export const useVaultDeposit = () => {
         data: encodeFunctionData({
           abi: UNIPROXY_ABI,
           functionName: "deposit",
-          args: [
-            amount0,
-            amount1Safe,
-            evmAddress,
-            vault.address,
-            [0n, 0n, 0n, 0n],
-          ],
+          args: [amount0, amount1, evmAddress, vault.address, [0n, 0n, 0n, 0n]],
         }),
         abi: [...UNIPROXY_ABI],
       })
@@ -260,17 +251,30 @@ const useAddVaultLiquidityZod = (balances: {
     })
 }
 
+/** Identity only: the form reads the vault's state itself, every block. */
+export type AddVaultLiquidityVault = Pick<
+  VaultTable,
+  "pool" | "tokens" | "feeTier"
+>
+
+/** Shown when the vault ratio moved past the user's tolerance at submit. */
+export type AmountChangedNotice = { symbol: string; from: string; to: string }
+
 export const useAddVaultLiquidity = ({
   vault,
   onSubmitted,
 }: {
-  vault: VaultTable
+  vault: AddVaultLiquidityVault
   onSubmitted: () => void
 }) => {
+  const { evm } = useRpcProvider()
   const { getTransferableBalance } = useAccountBalances()
   const deposit = useVaultDeposit()
+  const tolerance = useTradeSettings((s) => s.liquidity.slippage)
   const [assetA, assetB] = vault.tokens
-  const state = vault.vault
+  const { data: snapshot } = useVaultDepositSnapshot(vault.pool)
+  const state = snapshot?.vault ?? null
+  const sqrtPriceX96 = snapshot?.pool.sqrtPriceX96 ?? vault.pool.sqrtPriceX96
 
   const getMaxBalance = useCallback(
     (asset: TAsset) =>
@@ -328,7 +332,7 @@ export const useAddVaultLiquidity = ({
     if (!state || raw0 === 0n) return null
 
     const PRECISION = 10n ** 18n
-    const sqrt = vault.pool.sqrtPriceX96
+    const sqrt = sqrtPriceX96
     const price = (sqrt * sqrt * PRECISION) >> 192n
 
     const deposited = raw1 + (raw0 * price) / PRECISION
@@ -338,7 +342,7 @@ export const useAddVaultLiquidity = ({
     if (held === 0n) return deposited
 
     return (deposited * state.totalSupply) / held
-  }, [state, raw0, raw1, vault.pool.sqrtPriceX96])
+  }, [state, raw0, raw1, sqrtPriceX96])
 
   const shareOfVault =
     shares && state
@@ -351,12 +355,12 @@ export const useAddVaultLiquidity = ({
   // Pool spot price, what 1 assetA is actually worth in assetB.
   const spotPrice = useMemo(
     () =>
-      Big(vault.pool.sqrtPriceX96.toString())
+      Big(sqrtPriceX96.toString())
         .pow(2)
         .div(Big(2).pow(192))
         .times(Big(10).pow(assetA.decimals - assetB.decimals))
         .toString(),
-    [assetA.decimals, assetB.decimals, vault.pool.sqrtPriceX96],
+    [assetA.decimals, assetB.decimals, sqrtPriceX96],
   )
 
   // Ratio the vault's current reserves must be topped up in, diverges from
@@ -401,22 +405,36 @@ export const useAddVaultLiquidity = ({
   const depositChecks = useVaultDepositChecks(state)
 
   const blockerFor = useCallback(
-    (checks: VaultDepositChecks | null | undefined) =>
+    (
+      checks: VaultDepositChecks | null | undefined,
+      amount0: bigint,
+      amount1: bigint,
+    ) =>
       state && checks
         ? getDepositBlocker({
             checks,
             totalSupply: state.totalSupply,
-            raw0,
-            raw1,
+            raw0: amount0,
+            raw1: amount1,
             shares,
             symbol0: assetA.symbol,
             symbol1: assetB.symbol,
           })
         : undefined,
-    [state, raw0, raw1, shares, assetA.symbol, assetB.symbol],
+    [state, shares, assetA.symbol, assetB.symbol],
   )
 
-  const blocker = blockerFor(depositChecks.data)
+  // Set by a submit that stopped on what it read; cleared when the user edits.
+  const [amountChanged, setAmountChanged] =
+    useState<AmountChangedNotice | null>(null)
+  const [submitBlocker, setSubmitBlocker] = useState<DepositBlocker>()
+
+  const blocker = blockerFor(depositChecks.data, raw0, raw1) ?? submitBlocker
+
+  const clearSubmitNotice = useCallback(() => {
+    setAmountChanged(null)
+    setSubmitBlocker(undefined)
+  }, [])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -424,19 +442,60 @@ export const useAddVaultLiquidity = ({
     if (!state || raw0 === 0n || raw1 === 0n) return
 
     setIsSubmitting(true)
+    clearSubmitNotice()
     try {
-      // TWAP and caps move with every block: decide on a fresh read, not on
-      // what the form showed. A blocked result re-renders the form's warning.
-      const { data: checks } = await depositChecks.refetch()
-      if (!checks || blockerFor(checks)) return
+      // The side the user typed stays; the other is re-quoted against the
+      // band at this block, since the form's may be a block behind.
+      const typed0 = lastUpdated === "assetA"
+      const pairedAsset = typed0 ? assetB : assetA
+      const pairedField = typed0 ? "amountB" : "amountA"
+      const shown = typed0 ? raw1 : raw0
+
+      // TWAP and caps move with every block too: decide on fresh reads.
+      const [{ data: checks }, band] = await Promise.all([
+        depositChecks.refetch(),
+        readDepositBand(evm, {
+          uniProxy: state.uniProxy,
+          vault: state.address,
+          token: typed0 ? state.token0 : state.token1,
+          amount: typed0 ? raw0 : raw1,
+        }),
+      ])
+
+      const paired = checkPairedAmount(shown, band, tolerance)
+      const pairedHuman = scaleHuman(paired.amount, pairedAsset.decimals)
+      const overBalance = paired.amount > getTransferableBalance(pairedAsset.id)
+
+      // Moved past tolerance, or past the balance: show the fresh amount
+      // instead of signing it. Validation then names the balance problem.
+      if (!paired.ok || overBalance) {
+        form.setValue(pairedField, pairedHuman, { shouldValidate: true })
+        if (!paired.ok)
+          setAmountChanged({
+            symbol: pairedAsset.symbol,
+            from: scaleHuman(shown, pairedAsset.decimals),
+            to: pairedHuman,
+          })
+        return
+      }
+
+      const amount0 = typed0 ? raw0 : paired.amount
+      const amount1 = typed0 ? paired.amount : raw1
+
+      if (!checks) return
+      const blocked = blockerFor(checks, amount0, amount1)
+      if (blocked) {
+        setSubmitBlocker(blocked)
+        return
+      }
 
       await deposit({
         pool: vault.pool,
         vault: state,
         token0: state.token0,
         token1: state.token1,
-        amount0: raw0,
-        amount1: raw1,
+        amount0,
+        amount1,
       })
       onSubmitted()
     } finally {
@@ -457,6 +516,8 @@ export const useAddVaultLiquidity = ({
     shares,
     shareOfVault,
     blocker,
+    amountChanged,
+    clearSubmitNotice,
     submit,
     isSubmitting,
   }
