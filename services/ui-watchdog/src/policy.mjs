@@ -1,8 +1,8 @@
 import { sha256 } from "./util.mjs"
 import { randomBytes, randomInt } from "node:crypto"
 
-export function sampledRoutes(reference, configured = []) {
-  const candidates = [
+export function routeCandidates(reference, configured = []) {
+  return [
     ...new Set([
       ...(reference?.routes || []),
       ...configured,
@@ -15,6 +15,10 @@ export function sampledRoutes(reference, configured = []) {
       "/xcm",
     ]),
   ].filter((p) => !p.includes("$") && p !== "/")
+}
+
+export function sampledRoutes(reference, configured = []) {
+  const candidates = routeCandidates(reference, configured)
   return [
     candidates[randomInt(candidates.length)],
     `/${randomBytes(6).toString("hex")}`,

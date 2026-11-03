@@ -128,7 +128,11 @@ export async function probeBrowser(
           }
         })
       } catch (e) {
-        out.egress = { error: safeError(e), checkedAt: timestamp() }
+        out.egress = {
+          error: safeError(e),
+          ...(e.mismatch ? { mismatch: true } : {}),
+          checkedAt: timestamp(),
+        }
       }
       await egressPage.close()
       egressPage = null

@@ -33,6 +33,7 @@ export async function checkEgress(c, transport) {
         membershipUnverified: true,
       }
     } catch (e) {
+      if (e.mismatch) throw e
       lastError = e
     }
   }
@@ -106,6 +107,11 @@ export function publicNetworkPolicy({ remoteDns = false } = {}) {
   }
 }
 
+// a definitive answer from the oracle; asking the fallback would hide it.
+function mismatch(message) {
+  return Object.assign(new Error(message), { mismatch: true })
+}
+
 export function validateEgress(c, value) {
   if (
     !value ||
@@ -115,11 +121,9 @@ export function validateEgress(c, value) {
   )
     throw new Error("Invalid egress check response")
   if ((c.egressKind === "tor") !== value.IsTor)
-    throw new Error(
-      "Observed egress does not match the configured network path",
-    )
+    throw mismatch("Observed egress does not match the configured network path")
   if (c.expectedExitIp && c.expectedExitIp !== value.IP)
-    throw new Error("Observed egress does not match EXPECTED_EXIT_IP")
+    throw mismatch("Observed egress does not match EXPECTED_EXIT_IP")
   return {
     ip: value.IP,
     tor: value.IsTor,

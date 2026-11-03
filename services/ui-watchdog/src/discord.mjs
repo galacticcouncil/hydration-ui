@@ -47,7 +47,13 @@ export function payload(event, c) {
             ? [
                 {
                   name: "Source",
-                  value: `[${event.data.sha.slice(0, 12)}](https://github.com/${c.repo}/commit/${event.data.sha})`,
+                  value: (event.data.shas || [event.data.sha])
+                    .map(
+                      (sha) =>
+                        `[${sha.slice(0, 12)}](https://github.com/${c.repo}/commit/${sha})`,
+                    )
+                    .join("\n")
+                    .slice(0, 1024),
                 },
               ]
             : []),

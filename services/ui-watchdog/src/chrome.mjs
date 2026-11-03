@@ -72,13 +72,9 @@ export async function chromeRoutes(context, handler) {
   for (const page of context.pages()) await intercept(page, handler)
 }
 
+// passing headers back, even unchanged, reorders them on the wire.
 export async function continueChrome(route) {
-  // Playwright interception disables caching and otherwise adds these tells.
-  // Preserve Chromium's generated navigation/client-hint headers and TLS.
-  const headers = await route.request().allHeaders()
-  delete headers.pragma
-  delete headers["cache-control"]
-  await route.continue({ headers })
+  await route.continue()
 }
 
 export async function launchChrome(c, executablePath) {
@@ -91,12 +87,15 @@ export async function launchChrome(c, executablePath) {
       ...process.env,
       XDG_CONFIG_HOME: "/tmp/chrome-config",
       XDG_CACHE_HOME: "/tmp/chrome-cache",
+      LANG: "en_US.UTF-8",
+      LANGUAGE: "en_US:en",
     },
     chromiumSandbox: Boolean(c.chromiumSandbox),
     proxy: browserProxy(c),
     ignoreDefaultArgs: ["--enable-automation"],
     args: [
       "--disable-dev-shm-usage",
+      "--lang=en-US",
       "--disable-blink-features=AutomationControlled",
       "--disable-quic",
       "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
@@ -124,7 +123,6 @@ export async function chromePage(context, c) {
     userAgent:
       c.userAgent ||
       `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`,
-    acceptLanguage: "en-US,en;q=0.9",
     platform: "Linux x86_64",
     userAgentMetadata: {
       brands,
@@ -175,8 +173,123 @@ export async function deadline(
   }
 }
 
+const blankPage =
+  '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body></body></html>'
+
+// how the vite build requests each file type; scripts are compiled, never run.
+const requestAs = (path) =>
+  /\.m?js$/.test(path)
+    ? "script"
+    : /\.css$/.test(path)
+      ? "style"
+      : /\.(?:woff2?|ttf|otf)$/.test(path)
+        ? "font"
+        : /\.(?:png|jpe?g|webp|svg|ico|avif|gif)$/.test(path)
+          ? "image"
+          : "fetch"
+
+const requestFrom = (page, url) =>
+  page.evaluate(
+    ({ url, as }) => {
+      if (as === "fetch") {
+        fetch(url)
+          .then((r) => r.arrayBuffer())
+          .catch(() => {})
+        return
+      }
+      const link = document.createElement("link")
+      if (as === "script") link.rel = "modulepreload"
+      else {
+        link.rel = "preload"
+        link.as = as
+      }
+      if (as !== "image") link.crossOrigin = ""
+      link.href = url
+      document.head.appendChild(link)
+    },
+    { url: url.href, as: requestAs(url.pathname) },
+  )
+
+async function readResponse(response, { timeoutMs, maxBytes }) {
+  if (!response) throw new Error("Missing browser response")
+  const headers = headersOf(await response.headersArray())
+  if (Number(headers.get("content-length")) > maxBytes)
+    throw new Error("Response exceeds size limit")
+  const bytes = await deadline(response.body(), timeoutMs)
+  if (bytes.length > maxBytes) throw new Error("Response exceeds size limit")
+  return { status: response.status(), headers, bytes }
+}
+
+function headersOf(entries) {
+  const headers = new Headers()
+  for (const { name, value } of entries)
+    try {
+      headers.append(name, value)
+    } catch {
+      // a header node rejects must not keep the body from being hashed
+    }
+  return headers
+}
+
+// playwright drops page events for urls ending in /favicon.ico; read it over cdp.
+function cdpResponse(page, href, { timeoutMs, maxBytes }) {
+  const session = sessions.get(page)
+  let id, response
+  const listeners = {}
+  const done = new Promise((resolve, reject) => {
+    listeners["Network.requestWillBeSent"] = (e) => {
+      if (!id && e.request.url === href) id = e.requestId
+    }
+    listeners["Network.responseReceived"] = (e) => {
+      if (e.requestId === id) response = e.response
+    }
+    listeners["Network.loadingFinished"] = (e) => {
+      if (e.requestId !== id) return
+      if (!response) return reject(new Error("Missing browser response"))
+      if (e.encodedDataLength > maxBytes)
+        return reject(new Error("Response exceeds size limit"))
+      session
+        .send("Network.getResponseBody", { requestId: id })
+        .then(({ body, base64Encoded }) => {
+          const bytes = Buffer.from(body, base64Encoded ? "base64" : "utf8")
+          if (bytes.length > maxBytes)
+            throw new Error("Response exceeds size limit")
+          resolve({
+            status: response.status,
+            headers: headersOf(
+              Object.entries(response.headers).flatMap(([name, value]) =>
+                String(value)
+                  .split("\n")
+                  .map((v) => ({ name, value: v })),
+              ),
+            ),
+            bytes,
+          })
+        })
+        .catch(reject)
+    }
+    listeners["Network.loadingFailed"] = (e) => {
+      if (e.requestId === id) reject(new Error(e.errorText))
+    }
+  })
+  for (const [event, fn] of Object.entries(listeners)) session.on(event, fn)
+  const guarded = deadline(
+    done,
+    timeoutMs,
+    "Browser response deadline exceeded",
+  )
+  guarded.catch(() => {})
+  return {
+    done: guarded,
+    off: () => {
+      for (const [event, fn] of Object.entries(listeners))
+        session.off(event, fn)
+    },
+  }
+}
+
 // Hash the decoded bytes Chrome receives. Preloads never execute the fetched JS.
-// The same-origin blank page exists only in this browser; it is not a server URL.
+// Blank pages exist only in this browser; they are not server URLs.
 export async function chromeTransport(
   c,
   { allowNetwork, executablePath } = {},
@@ -184,89 +297,90 @@ export async function chromeTransport(
   const browser = await launchChrome(c, executablePath)
   try {
     const context = await browser.newContext({ serviceWorkers: "block" })
-    const assets = await chromePage(context, c)
-    let bootstrap = true
+    const blanks = new WeakSet(),
+      pages = new Map()
     await chromeRoutes(context, async (route) => {
-      const r = route.request()
-      if (bootstrap && r.frame().page() === assets && r.isNavigationRequest())
+      const r = route.request(),
+        blank = blanks.has(r.frame().page())
+      if (blank && r.isNavigationRequest())
         return route.fulfill({
           status: 200,
           contentType: "text/html",
-          body: "<!doctype html><html><head></head><body></body></html>",
+          body: blankPage,
         })
       if (allowNetwork && !(await allowNetwork(r.url()))) return route.abort()
       // Suppress parser-induced requests on document-only samples.
-      if (r.frame().page() !== assets && !r.isNavigationRequest())
-        return route.abort()
+      if (!blank && !r.isNavigationRequest()) return route.abort()
       return continueChrome(route)
     })
-    await (
-      await context.newCDPSession(assets)
-    ).send("Network.setCacheDisabled", { cacheDisabled: false })
-    await assets.goto(c.target)
-    bootstrap = false
+    // one blank page per referer path, so requests carry that route's referer.
+    const blankAt = (path) => {
+      const url = new URL(path, c.target)
+      if (url.origin !== new URL(c.target).origin)
+        throw new Error("Referer must be on the target origin")
+      const key = url.pathname + url.search
+      if (!pages.has(key)) {
+        const pending = (async () => {
+          const page = await chromePage(context, c)
+          blanks.add(page)
+          page.once("close", () => {
+            if (pages.get(key) === pending) pages.delete(key)
+          })
+          await page.goto(url.href)
+          return page
+        })()
+        pages.set(key, pending)
+        pending.catch(() => pages.delete(key))
+      }
+      return pages.get(key)
+    }
+    await blankAt("/")
     const transport = async (
       raw,
-      { timeoutMs = c.timeoutMs || 20000, maxBytes = 32 * 1024 * 1024 } = {},
+      {
+        timeoutMs = c.timeoutMs || 20000,
+        maxBytes = 32 * 1024 * 1024,
+        referer = "/",
+      } = {},
     ) => {
       const url = new URL(raw)
-      const script = /\.m?js$/.test(url.pathname),
-        style = /\.css$/.test(url.pathname)
-      const preload =
-        /\.[a-z0-9]+$/i.test(url.pathname) && !/\.html?$/.test(url.pathname)
-      const page = preload ? assets : await chromePage(context, c)
-      try {
-        if (!preload) {
-          const session = await context.newCDPSession(page)
-          await session.send("Emulation.setScriptExecutionDisabled", {
-            value: true,
-          })
+      const limits = { timeoutMs, maxBytes }
+      if (
+        /\.[a-z0-9]+$/i.test(url.pathname) &&
+        !/\.html?$/.test(url.pathname)
+      ) {
+        const page = await blankAt(referer)
+        if (/\/favicon\.ico$/.test(url.pathname)) {
+          const reading = cdpResponse(page, url.href, limits)
+          try {
+            await requestFrom(page, url)
+            return await reading.done
+          } finally {
+            reading.off()
+          }
         }
-        let response
-        if (preload) {
-          const waiting = page.waitForResponse((r) => r.url() === url.href, {
-            timeout: timeoutMs,
-          })
-          await page.evaluate(
-            ({ url, as }) => {
-              const link = document.createElement("link")
-              link.rel = "preload"
-              link.as = as
-              link.href = url
-              if (["font", "fetch"].includes(as)) link.crossOrigin = "anonymous"
-              document.head.appendChild(link)
-            },
-            {
-              url: url.href,
-              as: script
-                ? "script"
-                : style
-                  ? "style"
-                  : /\.woff2?$/.test(url.pathname)
-                    ? "font"
-                    : /\.(?:png|jpe?g|webp|svg|ico|avif|gif)$/.test(
-                          url.pathname,
-                        )
-                      ? "image"
-                      : "fetch",
-            },
-          )
-          response = await waiting
-        } else
-          response = await page.goto(url.href, {
+        const waiting = page.waitForResponse((r) => r.url() === url.href, {
+          timeout: timeoutMs,
+        })
+        waiting.catch(() => {})
+        await requestFrom(page, url)
+        return await readResponse(await waiting, limits)
+      }
+      const page = await chromePage(context, c)
+      try {
+        const session = await context.newCDPSession(page)
+        await session.send("Emulation.setScriptExecutionDisabled", {
+          value: true,
+        })
+        return await readResponse(
+          await page.goto(url.href, {
             waitUntil: "commit",
             timeout: timeoutMs,
-          })
-        if (!response) throw new Error("Missing browser response")
-        const headers = new Headers(await response.allHeaders())
-        if (Number(headers.get("content-length")) > maxBytes)
-          throw new Error("Response exceeds size limit")
-        const bytes = await deadline(response.body(), timeoutMs)
-        if (bytes.length > maxBytes)
-          throw new Error("Response exceeds size limit")
-        return { status: response.status(), headers, bytes }
+          }),
+          limits,
+        )
       } finally {
-        if (!preload) await page.close()
+        await page.close()
       }
     }
     return { request: transport, close: () => browser.close() }

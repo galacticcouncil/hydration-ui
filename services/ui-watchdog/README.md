@@ -29,9 +29,13 @@ boundary. An attestation establishes provenance, not freedom from malicious
 source or dependencies.
 
 Every expected public file is hashed from **Chromium's decoded response body**.
-A blank same-origin page preloads JS with `sec-fetch-dest: script` without executing
-it; documents use separate pages. Chromium supplies TLS, HTTP/2, compression and
-request headers. Both probes and rendered checks use full Chromium with complete
+Blank same-origin pages request each file the way the app does: JS as
+`modulepreload` (compiled, never executed), CSS and fonts as CORS preloads, images
+as plain preloads, other data with `fetch()`. Files the root HTML names are
+requested from `/`, the rest from a sampled app route; documents use separate
+pages. Worker scripts and the web manifest are requested as module script and
+data, so a cloak keyed on `sec-fetch-dest: worker` or `manifest` is not covered.
+Chromium supplies TLS, HTTP/2, compression and request headers in its own order. Both probes and rendered checks use full Chromium with complete
 client-hint metadata, without the HeadlessChrome brand. This removes tested
 fingerprints, not every possible fingerprint.
 
@@ -104,7 +108,7 @@ and identical redeployments can remain invisible. No automatic rollback occurs.
 | `stale_deployment` | A trusted old release remains after the rollout window |
 | `integrity_alert` | Byte/header/resource mismatch, persistent racing, flapping or evidence overflow |
 | `unverified` | Freshness, egress or transient check failure prevents verification |
-| `degraded` / `down` | Three consecutive check failures |
+| `degraded` / `down` | Three consecutive check failures or egress mismatches |
 | `alerting_inactive` | Content checks pass but initial Discord delivery is not configured |
 | `credentials_missing` | A previously armed credential disappeared on redeploy |
 | `watchdog_error` | Internal/storage failure; never a passing check |
@@ -113,7 +117,8 @@ The hosting pipeline is unchanged. During an actual reference run, unknown sampl
 are retained for retrospective checking, for at most `REFERENCE_PENDING_SECONDS`
 (default 1200) from first seeing that production commit. All recorded unknown hashes
 and asset hashes are checked when its attested reference arrives; discrepancies
-become a critical incident even if the live app has since recovered. Expiry is
+become a critical incident even if the live app has since recovered, and are
+posted as `retrospective_mismatch` even while another incident is open. Expiry is
 critical. Missing/failed runs have their own error state. A known asset mismatch
 or executable/header-policy violation never receives this grace. Pending metadata
 is capped at 20,000 samples; overflow alerts instead of silently discarding evidence.

@@ -44,6 +44,7 @@ export function serveObserver(
           network = {
             kind: c.egressKind,
             error: safeError(e),
+            ...(e.mismatch ? { mismatch: true } : {}),
             checkedAt: timestamp(),
           }
         }

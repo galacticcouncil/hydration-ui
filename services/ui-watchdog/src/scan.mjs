@@ -3,8 +3,10 @@ import {
   headerIssues,
   integrityKinds,
   releaseWindow,
+  routeCandidates,
   sampledRoutes,
 } from "./policy.mjs"
+import { randomInt } from "node:crypto"
 import { parse } from "parse5"
 import { mapLimit, request, safeError, sha256, timestamp } from "./util.mjs"
 
@@ -45,9 +47,10 @@ export function htmlResources(html, origin) {
   }
 }
 
-async function siteFile(c, file) {
+async function siteFile(c, file, referer) {
   const r = await (c.siteRequest || request)(new URL(file, c.target), {
     timeoutMs: c.timeoutMs,
+    referer,
     headers: {
       "user-agent":
         c.userAgent ||
@@ -159,6 +162,13 @@ export async function observe(
       ? (sample || Object.keys(ref.files)).filter((p) => p !== "/index.html")
       : resources.all.slice(0, 1000)
     : resources.quick.slice(0, 32)
+  // files the root html names load from /, the rest from an app route.
+  const named = new Set(resources.all),
+    candidates = routeCandidates(ref, c.routes)
+  const referers = Array.from(
+    { length: Math.min(4, candidates.length) },
+    () => candidates.splice(randomInt(candidates.length), 1)[0],
+  )
   const deadline = Date.now() + 120000
   if (resources.quick.length > 32 && !ref)
     result.issues.push({
@@ -177,7 +187,13 @@ export async function observe(
       return
     }
     try {
-      const actual = await siteFile(c, file)
+      const actual = await siteFile(
+        c,
+        file,
+        named.has(file) || !referers.length
+          ? "/"
+          : referers[randomInt(referers.length)],
+      )
       result.observed[file] = {
         sha256: actual.sha256,
         size: actual.size,

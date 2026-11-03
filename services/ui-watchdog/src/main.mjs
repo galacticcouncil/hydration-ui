@@ -169,7 +169,19 @@ if (["browser", "observer"].includes(c.role)) {
           if (source?.sha === expected) referenceStatus = result
           else due.set("references", 0)
           if (result.added) {
-            store.resolvePending(store.references())
+            const found = store.resolvePending(store.references())
+            // logged directly: an open incident would otherwise swallow it.
+            if (found.length) {
+              const shas = [...new Set(found.map((f) => f.referenceSha))]
+              logEvent("retrospective_mismatch", "critical", {
+                sha: shas[0],
+                shas,
+                observer: [...new Set(found.map((f) => f.observer))].join(", "),
+                paths: [...new Set(found.map((f) => f.path))],
+                findings: found,
+                summary: `Content served before ${shas.map((s) => s.slice(0, 12)).join(", ")} was attested does not match its build`,
+              })
+            }
             group.invalidate()
           }
         },

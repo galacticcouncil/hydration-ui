@@ -446,6 +446,17 @@ export class ObserverGroup {
       )
     }
   }
+  // each record counts once; a clean one resets, an oracle outage does not
+  egressMismatches(s, networks) {
+    const m = (s.egressMismatch ||= { count: 0, seen: [] })
+    networks.forEach((n, i) => {
+      if (!n?.checkedAt || m.seen[i] === n.checkedAt) return
+      m.seen[i] = n.checkedAt
+      if (n.mismatch) m.count++
+      else if (!n.error) m.count = 0
+    })
+    return m.count
+  }
   snapshot(source, sourceFresh, now = Date.now()) {
     const retrospective = this.store.get("retrospectiveIssues", []) || []
 
@@ -512,6 +523,13 @@ export class ObserverGroup {
           a = {
             state: "unverified",
             reasons: ["Network egress validation is unavailable; retrying"],
+          }
+        if (
+          this.egressMismatches(s, networks) >= (this.c.failureThreshold || 3)
+        )
+          a = {
+            state: "degraded",
+            reasons: ["Network egress does not match the configured path"],
           }
       }
       return {
