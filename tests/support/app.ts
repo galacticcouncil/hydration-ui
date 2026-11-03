@@ -5,7 +5,7 @@ import { expect, test } from "e2e"
 // separate readiness checks in readiness.ts.
 export const ACCOUNT = "135yiujiLFfogvTwbfr3yoqGK7zAu3f5SD5y1q8PMokYeSuc"
 
-export const PAGE_LOAD_TIMEOUT = 60_000
+export const PAGE_LOAD_TIMEOUT = 30_000
 
 export const openPage = async (app: App, screen: Screen, path: string) => {
   await app.open(path)

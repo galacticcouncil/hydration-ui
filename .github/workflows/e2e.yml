@@ -20,8 +20,9 @@ jobs:
           cache: yarn
           node-version-file: ".nvmrc"
       - run: yarn install --frozen-lockfile
+      - run: yarn build
       - run: npx e2e-web install chromium --with-deps
-      - run: yarn test:e2e --reporter list,markdown
+      - run: yarn test:e2e --reporter list,markdown --retries 0
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER }}
       - if: failure()

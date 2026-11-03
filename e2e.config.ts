@@ -63,13 +63,19 @@ export default {
       app: appUrl
         ? { url: appUrl }
         : {
-            // Mainnet dev server (dev:production) on a free port.
+            // Mainnet app on a free port. CI serves the prebuilt bundle (the
+            // workflow runs `yarn build` first): a cold dev server is too slow.
             url: "http://127.0.0.1:0",
             command: {
               executable: "yarn",
-              args: ["dev:production", "--port", "{port}", "--strictPort"],
+              args: [
+                process.env.CI ? "preview" : "dev:production",
+                "--port",
+                "{port}",
+                "--strictPort",
+              ],
               cwd: "apps/main",
-              startupTimeout: 120_000,
+              startupTimeout: 30_000,
               log: ".e2e/logs/app.log",
             },
           },
