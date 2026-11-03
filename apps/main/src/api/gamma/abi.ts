@@ -44,6 +44,10 @@ export const HYPERVISOR_ABI = parseAbi([
   "function pool() view returns (address)",
 ])
 
+export const HYPERVISOR_WITHDRAW_ABI = parseAbi([
+  "function withdraw(uint256 shares, address to, address from, uint256[4] minAmounts) returns (uint256 amount0, uint256 amount1)",
+])
+
 export const POOL_ABI = parseAbi([
   "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)",
   "function liquidity() view returns (uint128)",
