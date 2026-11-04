@@ -51,6 +51,7 @@ type OnrampModalState = {
   openDepositChoice: () => void
   depositAssetsLayout: "steps" | "split"
   walletFirstFlow: DepositWalletFirstFlow
+  depositToHydration: boolean
   depositRecoveryId: string | null
   depositSourceAccount: Account | null
   depositSuggestedDestination: Account | null
@@ -74,6 +75,7 @@ type OnrampModalState = {
   openOnchain: (
     flow: DepositFlow,
     options?: {
+      useActiveDestination?: boolean
       resume?: boolean
       txHash?: string
       assetIntent?: DepositAssetIntent
@@ -107,6 +109,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
   },
   depositAssetsLayout: "steps",
   walletFirstFlow: "current",
+  depositToHydration: false,
   depositRecoveryId: null,
   depositSourceAccount: null,
   depositSuggestedDestination: null,
@@ -172,13 +175,16 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       ...(modal === "deposit"
         ? { depositEntryFlow: "choice", depositEntryChoice: true }
         : {}),
-      ...(modal !== "depositOnchain" ? { walletFirstAsset: null } : {}),
+      ...(modal !== "depositOnchain"
+        ? { walletFirstAsset: null, depositToHydration: false }
+        : {}),
     })
   },
   openOnchain: (requestedFlow, options) => {
     // Keep existing preview links working while Balance browser is hidden.
     const flow = requestedFlow === "preview" ? "guided" : requestedFlow
     set({
+      depositToHydration: options?.useActiveDestination === true,
       depositEntryFlow:
         options?.entryChoice === true &&
         (flow === "connected" || flow === "simple")

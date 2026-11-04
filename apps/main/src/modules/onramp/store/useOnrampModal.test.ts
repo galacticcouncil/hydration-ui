@@ -89,6 +89,42 @@ describe("wallet-first receiving account suggestion", () => {
   })
 })
 
+describe("Portfolio deposit-to-Hydration shortcut", () => {
+  it("preserves the requested source asset and connected Hydration recipient", () => {
+    wallet.account = recipient
+    wallet.accounts = [recipient]
+    const assetIntent = { chainKey: "ethereum", assetKey: "usdc" }
+    modal().openOnchain("connected", {
+      useActiveDestination: true,
+      assetIntent,
+    })
+    expect(modal()).toMatchObject({
+      depositToHydration: true,
+      depositSuggestedDestination: recipient,
+      walletFirstAsset: assetIntent,
+    })
+    modal().setDepositSourceAccount({
+      ...recipient,
+      name: "Source",
+      address: "source",
+    })
+    expect(modal().depositSuggestedDestination).toEqual(recipient)
+  })
+
+  it("does not reuse shortcut destination behavior for a normal deposit", () => {
+    modal().openOnchain("connected", { useActiveDestination: true })
+    modal().setModal(null)
+    expect(modal().depositToHydration).toBe(false)
+    modal().openOnchain("connected")
+    expect(modal().depositToHydration).toBe(false)
+  })
+
+  it("leaves destination selection available when no Hydration account is connected", () => {
+    modal().openOnchain("connected", { useActiveDestination: true })
+    expect(modal().depositSuggestedDestination).toBeNull()
+  })
+})
+
 describe("on-chain deposit design variants", () => {
   it("opens the fifth version from the main deposit modal after visiting an older flow", () => {
     journey().setSubmitted(transfer)

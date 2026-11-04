@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  formatDestChainAddress,
+  HYDRATION_CHAIN_KEY,
+} from "@galacticcouncil/utils"
 import {
   AccountOverrideProvider,
   useAccount,
@@ -20,6 +23,11 @@ export const DepositOnchain = () => {
   )
   const selection = useOnrampModal((state) => state.walletFirstAsset)
   const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
+  const shortcut = useOnrampModal((state) => state.depositToHydration)
+  const destination = useOnrampModal(
+    (state) => state.depositSuggestedDestination,
+  )
+  const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
   const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
   const sourceChain = selection ? chainsMap.get(selection.chainKey) : null
   const sourceAsset = selection
@@ -36,6 +44,15 @@ export const DepositOnchain = () => {
             ...defaults,
             ...(walletFirstFlow === "connected"
               ? { destAddress: "", destAccount: null }
+              : {}),
+            ...(shortcut && destination && hydration
+              ? {
+                  destAddress: formatDestChainAddress(
+                    destination.rawAddress,
+                    hydration,
+                  ),
+                  destAccount: destination,
+                }
               : {}),
             srcChain: sourceAsset ? (sourceChain ?? null) : null,
             srcAsset: sourceAsset ?? null,

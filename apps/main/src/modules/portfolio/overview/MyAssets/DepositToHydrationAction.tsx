@@ -19,6 +19,7 @@ const openAssetDeposit = (asset: DepositAsset) => {
   const { openOnchain } = useOnrampModal.getState()
   openOnchain("connected", {
     entryChoice: true,
+    useActiveDestination: true,
     assetIntent: { chainKey: asset.origin!.key, assetKey: asset.xcAssetKey! },
   })
 }

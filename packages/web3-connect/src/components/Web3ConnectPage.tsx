@@ -26,7 +26,7 @@ type Web3ConnectPageProps = {
   walletListVariant?: Web3ConnectContextType["walletListVariant"]
   onContentWidthChange?: (width: string) => void
   onAccountSelect: (account: Account) => void
-  onBack: () => void
+  onBack?: () => void
 }
 
 const ignoreModalChange = () => undefined
