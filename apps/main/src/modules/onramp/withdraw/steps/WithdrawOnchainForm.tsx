@@ -1,6 +1,5 @@
 import {
   AccountAvatar,
-  Button,
   Flex,
   InputSuggestions,
   InputSuggestionsOption,
@@ -24,14 +23,12 @@ import {
   useAddresses,
   useAddressStore,
   WalletMode,
-  Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { ComponentProps, FC, useEffect, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient } from "@/api/neckwork"
 import {
   useCrossChainBalance,
   useCrossChainConfigService,
@@ -55,13 +52,13 @@ import {
 import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelectButton"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
 import { ConnectChainTile } from "@/modules/xcm/transfer/components/ConnectButton/ConnectChainTile"
+import { RecipientSelectPage } from "@/modules/xcm/transfer/components/Recipient/RecipientSelectPage"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 
 import { getWithdrawSelectionFormValues } from "./WithdrawOnchainAsset.utils"
@@ -69,7 +66,6 @@ import { getWithdrawSelectionFormValues } from "./WithdrawOnchainAsset.utils"
 export const WithdrawOnchainForm: FC = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { account } = useAccount()
-  const { papi } = useRpcProvider()
   const connected = useDepositAccounts()
   const savedAddresses = useAddresses()
   const touchAddress = useAddressStore((state) => state.touch)
@@ -233,51 +229,11 @@ export const WithdrawOnchainForm: FC = () => {
 
   if (isRecipientWalletOpen && destChain)
     return (
-      <Web3ConnectPage
-        layout={flow === "connected" ? "split" : "page"}
-        walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
-        neckwork={neckworkClient}
-        papi={papi}
-        mode={destinationMode}
-        accountFilter={(account) =>
-          isAddressValidOnChain(account.rawAddress, destChain)
-        }
-        meta={{
-          title: t("deposit.flow.destination.title"),
-          description: t("common:connectWallet.modal.description", {
-            chain: destChain.name,
-          }),
-          closable: true,
-          hideAccountFilters: flow === "connected",
-        }}
-        customSource={{
-          title: t("deposit.onchain.customAddress"),
-          content: (
-            <Stack gap="l" p="l">
-              <AddressBook
-                address={recipientInput}
-                onAddressChange={updateRecipient}
-                onOpenMyContacts={() => {
-                  setIsRecipientWalletOpen(false)
-                  setIsRecipientOpen(true)
-                }}
-                contactsVariant="icon"
-              />
-              <Button
-                variant="primary"
-                disabled={!isRecipientValid}
-                onClick={() => setIsRecipientWalletOpen(false)}
-              >
-                {t("withdraw.onchain.destination.continue")}
-              </Button>
-            </Stack>
-          ),
-        }}
+      <RecipientSelectPage
         onBack={back}
-        onAccountSelect={(recipient) => {
-          if (!isAddressValidOnChain(recipient.rawAddress, destChain)) return
-          updateRecipient(recipient.rawAddress)
-          setValue("destAccount", recipient)
+        onSelectAddress={(address, recipient) => {
+          updateRecipient(address)
+          setValue("destAccount", recipient ?? null)
           setIsRecipientWalletOpen(false)
         }}
       />
