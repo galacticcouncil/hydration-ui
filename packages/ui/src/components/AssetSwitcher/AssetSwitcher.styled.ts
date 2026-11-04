@@ -24,7 +24,6 @@ export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
   css`
     border-radius: ${theme.radii.full};
     padding: ${theme.space.base};
-    background: ${theme.controls.dim.base};
 
     flex-shrink: 0;
 
@@ -35,11 +34,6 @@ export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
 
     &:hover:not([disabled]) {
       transform: rotate(180deg);
-      background: ${theme.controls.dim.hover};
-    }
-
-    &[disabled] {
-      cursor: not-allowed;
     }
   `,
 ])
@@ -75,6 +69,11 @@ export const SAssetSwitcher = styled(Flex)(
     & > div:last-of-type {
       flex-shrink: 0;
       width: ${theme.sizes.xl};
+    }
+
+    & > div:nth-of-type(2):last-of-type {
+      flex-shrink: 1;
+      width: 100%;
     }
   `,
 )

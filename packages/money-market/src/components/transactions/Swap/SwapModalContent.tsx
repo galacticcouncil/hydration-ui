@@ -1,5 +1,4 @@
-import { Alert, Separator, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Alert, Separator, Stack } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { BigNumber } from "bignumber.js"
 import { useRef, useState } from "react"
@@ -28,18 +27,11 @@ import {
 } from "@/utils/transactions"
 import { amountToUsd } from "@/utils/utils"
 
-export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
-  poolReserve,
-  userReserve,
-}) => {
-  const { reserves, marketReferencePriceInUsd, user } = useAppDataContext()
-  const [currentChainId, currentNetworkConfig] = useRootStore((store) => [
-    store.currentChainId,
-    store.currentNetworkConfig,
-  ])
-  const { account } = useAccount()
-  const { mainTxState: swapTxState, txError } = useModalContext()
-  const { swapSlippage } = useSwapSlippageSettings()
+export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = (
+  props,
+) => {
+  const { reserves, user } = useAppDataContext()
+  const { poolReserve } = props
 
   const swapTargets = reserves
     .filter(
@@ -60,7 +52,30 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
       }
     })
 
-  // states
+  if (!swapTargets.length) {
+    return (
+      <Alert
+        variant="info"
+        description="There are no assets you can currently swap this supply to."
+      />
+    )
+  }
+
+  return <SwapForm {...props} swapTargets={swapTargets} />
+}
+
+const SwapForm: React.FC<
+  TxModalWrapperRenderProps & { swapTargets: Asset[] }
+> = ({ poolReserve, userReserve, swapTargets }) => {
+  const { marketReferencePriceInUsd, user } = useAppDataContext()
+  const [currentChainId, currentNetworkConfig] = useRootStore((store) => [
+    store.currentChainId,
+    store.currentNetworkConfig,
+  ])
+  const { account } = useAccount()
+  const { mainTxState: swapTxState, txError } = useModalContext()
+  const { swapSlippage } = useSwapSlippageSettings()
+
   const [_amount, setAmount] = useState("")
   const amountRef = useRef<string>("")
   const [targetReserve, setTargetReserve] = useState<Asset>(swapTargets[0])
@@ -69,13 +84,13 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
     (r) => r.underlyingAsset === targetReserve.address,
   ) as ComputedUserReserveData
 
-  // a user can never swap more then 100% of available as the txn would fail on withdraw step
+  // Capped below available liquidity, otherwise the withdraw step of the swap fails.
   const maxAmountToSwap = BigNumber.min(
     userReserve.underlyingBalance,
     new BigNumber(poolReserve.availableLiquidity).multipliedBy(0.99),
   ).toString(10)
 
-  const isMaxSelected = _amount === "-1"
+  const isMaxSelected = !!_amount && new BigNumber(_amount).gte(maxAmountToSwap)
   const amount = isMaxSelected ? maxAmountToSwap : _amount
 
   const {
@@ -98,7 +113,7 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
   })
 
   const handleChange = (value: string) => {
-    const maxSelected = value === "-1"
+    const maxSelected = !!value && new BigNumber(value).gte(maxAmountToSwap)
     amountRef.current = maxSelected ? maxAmountToSwap : value
     setAmount(value)
   }
@@ -112,14 +127,13 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
     toAssetData: swapTarget.reserve,
   })
 
-  // if the hf would drop below 1 from the hf effect a flashloan should be used to mitigate liquidation
+  // A flashloan avoids liquidation when the swap would briefly drop HF below 1.
   const shouldUseFlashloan = useFlashloan(
     user.healthFactor,
     hfEffectOfFromAmount,
   )
 
-  // consider caps
-  // we cannot check this in advance as it's based on the swap result
+  // The supply cap can only be checked after quoting, it depends on the swap output.
   const remainingSupplyCap = remainingCap(
     swapTarget.reserve.supplyCap,
     swapTarget.reserve.totalLiquidity,
@@ -162,7 +176,7 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
     }
   }
 
-  // hf is only relevant when there are borrows
+  // HF is only relevant when there are borrows.
   const showHealthFactor =
     user.totalBorrowsMarketReferenceCurrency !== "0" &&
     poolReserve.reserveLiquidationThreshold !== "0"
@@ -262,13 +276,8 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
         isValueLoading={loading}
         balanceLabel="Supply balance"
         hideMaxBalanceAction
+        isReadOnly
       />
-
-      {error && !loading && (
-        <Text fs="p5" color={getToken("accents.danger.secondary")}>
-          {error}
-        </Text>
-      )}
 
       <Separator mx="var(--modal-content-inset)" />
 
@@ -287,20 +296,16 @@ export const SwapModalContent: React.FC<TxModalWrapperRenderProps> = ({
         loading={loading}
       />
 
-      {txError && (
-        <Alert
-          variant="error"
-          description={txError.rawError.message}
-          sx={{ mt: "xl" }}
-        />
-      )}
-
-      {blockingErrorText && (
-        <Alert
-          variant="error"
-          description={blockingErrorText}
-          sx={{ mt: "xl" }}
-        />
+      {(txError || blockingErrorText || (error && !loading)) && (
+        <Stack gap="m" py="m">
+          {error && !loading && <Alert variant="error" description={error} />}
+          {txError && (
+            <Alert variant="error" description={txError.rawError.message} />
+          )}
+          {blockingErrorText && (
+            <Alert variant="error" description={blockingErrorText} />
+          )}
+        </Stack>
       )}
 
       <SwapActions

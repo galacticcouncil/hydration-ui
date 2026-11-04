@@ -1,17 +1,14 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
 import { MaxUint256 } from "@ethersproject/constants"
-import {
-  Alert,
-  ModalContentDivider,
-  Separator,
-} from "@galacticcouncil/ui/components"
+import { Alert, Separator, Stack } from "@galacticcouncil/ui/components"
 import { BigNumber } from "bignumber.js"
 import { useRef, useState } from "react"
 
 import { Asset, AssetInput } from "@/components/primitives/AssetInput"
 import { DebtSwitchActions } from "@/components/transactions/DebtSwitch/DebtSwitchActions"
 import { DebtSwitchModalDetails } from "@/components/transactions/DebtSwitch/DebtSwitchModalDetails"
+import { SwapAssetSwitcher } from "@/components/transactions/Swap/SwapAssetSwitcher"
 import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrapper"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { ComputedUserReserveData } from "@/hooks/commonTypes"
@@ -31,11 +28,46 @@ interface SwitchTargetAsset extends Asset {
   variableApy: string
 }
 
-export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
-  poolReserve,
-  userReserve,
-}) => {
+export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = (
+  props,
+) => {
   const { reserves, user } = useAppDataContext()
+  const { poolReserve } = props
+
+  const switchTargets = reserves
+    .filter(
+      (r) =>
+        r.underlyingAsset !== poolReserve.underlyingAsset &&
+        r.availableLiquidity !== "0" &&
+        assetCanBeBorrowedByUser(r, user),
+    )
+    .map<SwitchTargetAsset>((reserve) => ({
+      address: reserve.underlyingAsset,
+      symbol: reserve.symbol,
+      iconSymbol: reserve.iconSymbol,
+      variableApy: reserve.variableBorrowAPY,
+      balance:
+        user.userReservesData.find(
+          (r) => r.underlyingAsset === reserve.underlyingAsset,
+        )?.variableBorrows ?? "0",
+    }))
+
+  if (!switchTargets.length) {
+    return (
+      <Alert
+        variant="info"
+        description="There are no assets you can currently switch this debt to."
+      />
+    )
+  }
+
+  return <DebtSwitchForm {...props} switchTargets={switchTargets} />
+}
+
+const DebtSwitchForm: React.FC<
+  TxModalWrapperRenderProps & { switchTargets: SwitchTargetAsset[] }
+> = ({ poolReserve, userReserve, switchTargets }) => {
+  const { user } = useAppDataContext()
   const [currentChainId, currentNetworkConfig] = useRootStore((store) => [
     store.currentChainId,
     store.currentNetworkConfig,
@@ -50,22 +82,6 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const { currentRateMode } = modalArgs as ModalArgsType
   const { swapSlippage } = useSwapSlippageSettings()
 
-  const switchTargets = reserves
-    .filter(
-      (r) =>
-        r.underlyingAsset !== poolReserve.underlyingAsset &&
-        r.availableLiquidity !== "0" &&
-        assetCanBeBorrowedByUser(r, user),
-    )
-    .map<SwitchTargetAsset>((reserve) => ({
-      address: reserve.underlyingAsset,
-      symbol: reserve.symbol,
-      iconSymbol: reserve.iconSymbol,
-      variableApy: reserve.variableBorrowAPY,
-      balance: "0",
-    }))
-
-  // states
   const [_amount, setAmount] = useState("")
   const amountRef = useRef<string>("")
   const [targetReserve, setTargetReserve] = useState<Asset>(switchTargets[0])
@@ -76,7 +92,8 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
 
   const maxAmountToSwitch = userReserve.variableBorrows
 
-  const isMaxSelected = _amount === "-1"
+  const isMaxSelected =
+    !!_amount && new BigNumber(_amount).gte(maxAmountToSwitch)
   const amount = isMaxSelected ? maxAmountToSwitch : _amount
 
   const {
@@ -100,7 +117,7 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const loadingSkeleton = routeLoading && outputAmountUSD === "0"
 
   const handleChange = (value: string) => {
-    const maxSelected = value === "-1"
+    const maxSelected = !!value && new BigNumber(value).gte(maxAmountToSwitch)
     amountRef.current = maxSelected ? maxAmountToSwitch : value
     setAmount(value)
     setTxError(undefined)
@@ -156,6 +173,7 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
   return (
     <>
       <AssetInput
+        label="From"
         value={amount}
         onChange={handleChange}
         displayValue={poolReserveAmountUSD.toString()}
@@ -173,16 +191,24 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
         isDisabled={mainTxState.loading}
       />
 
-      <ModalContentDivider mb="xl" />
+      <SwapAssetSwitcher
+        assetInSymbol={targetReserve.symbol}
+        assetOutSymbol={poolReserve.symbol}
+        priceInUSD={poolReserve.priceInUSD}
+        priceOutUSD={switchTarget.reserve.priceInUSD}
+      />
 
       <AssetInput<SwitchTargetAsset>
+        label="To"
         value={inputAmount}
         onSelect={setTargetReserve}
         displayValue={targetReserveAmountUSD.toString()}
         symbol={targetReserve.symbol}
         assets={switchTargets}
-        balanceLabel="Switch to"
+        balanceLabel="Borrow balance"
         isValueLoading={loadingSkeleton}
+        hideMaxBalanceAction
+        isReadOnly
       />
 
       <Separator mx="var(--modal-content-inset)" />
@@ -199,28 +225,21 @@ export const DebtSwitchModalContent: React.FC<TxModalWrapperRenderProps> = ({
         priceImpactPct={priceImpactPct}
       />
 
-      {txError && (
-        <Alert
-          variant="error"
-          description={txError.rawError.message}
-          sx={{ mt: "xl" }}
-        />
-      )}
-
-      {insufficientCollateral && (
-        <Alert
-          variant="error"
-          description="Insufficient collateral to cover new borrow position. Wallet must have borrowing power remaining to perform debt switch."
-          sx={{ mt: "xl" }}
-        />
-      )}
-
-      {blockingErrorText && (
-        <Alert
-          variant="error"
-          description={blockingErrorText}
-          sx={{ mt: "xl" }}
-        />
+      {(txError || insufficientCollateral || blockingErrorText) && (
+        <Stack gap="m" py="m">
+          {txError && (
+            <Alert variant="error" description={txError.rawError.message} />
+          )}
+          {insufficientCollateral && (
+            <Alert
+              variant="error"
+              description="Insufficient collateral to cover new borrow position. Wallet must have borrowing power remaining to perform debt switch."
+            />
+          )}
+          {blockingErrorText && (
+            <Alert variant="error" description={blockingErrorText} />
+          )}
+        </Stack>
       )}
 
       <DebtSwitchActions

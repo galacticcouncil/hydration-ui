@@ -21,8 +21,6 @@ export const SwapActions = ({
   const handleAction = async () => {
     setMainTxState({ loading: true })
     try {
-      // Builds the native aToken -> aToken router trade and opens the standard
-      // sign/submit modal.
       await submitTxFn()
     } catch (error) {
       console.error(error)

@@ -4,13 +4,8 @@ import { BigNumber } from "bignumber.js"
 
 import { ComputedReserveData } from "@/hooks/commonTypes"
 
-/**
- * Minimal local equivalent of ParaSwap's `OptimalRate` type. The full
- * `@paraswap/sdk` type is intentionally NOT imported here (see PRD): the swap
- * hooks only read the fields below from a returned route, and a Hydration-native
- * SwapRateProvider implementation is free to return a richer object cast to this
- * type.
- */
+// The subset of ParaSwap's `OptimalRate` the swap hooks read, so the package
+// doesn't depend on `@paraswap/sdk`.
 export type OptimalRate = {
   srcToken: string
   srcDecimals: number
@@ -54,13 +49,8 @@ export type SwapTransactionParams = SwapRateParams & {
   augustus: string
 }
 
-/**
- * Injectable rate/tx-building provider. This isolates the ParaSwap-specific
- * logic (rate fetching + transaction param building) behind an interface so a
- * Hydration-native implementation can be supplied via `MoneyMarketProvider`
- * without pulling in `@paraswap/sdk`. The signatures mirror the original
- * aave-interface `hooks/paraswap/common.ts` helpers consumed by the swap hooks.
- */
+// Rate fetching and tx building, injected through `MoneyMarketProvider` so the
+// swap hooks don't depend on ParaSwap. Signatures follow aave-interface.
 export interface SwapRateProvider {
   /**
    * Fetch the route for a 'Sell' / 'Exact In' swap. The swap-in amount is fixed
@@ -83,15 +73,8 @@ export interface SwapRateProvider {
     maxSlippage: number,
   ): Promise<SwapTransactionParams>
   /**
-   * Build AND submit the native collateral-swap transaction for a 'Sell' /
-   * 'Exact In' swap, owning both steps in app-land.
-   *
-   * Unlike {@link fetchExactInTxParams} (ParaSwap path: returns calldata for an
-   * EVM call routed through `onCreateTransaction`), the Hydration-native
-   * collateral swap is a papi extrinsic that cannot pass through the EVM-typed
-   * `MoneyMarketTxFn`. So the implementation closes over the app's
-   * `createTransaction` and submits directly, returning once the standard
-   * sign/submit modal has been opened.
+   * Builds and submits the collateral swap. It is a papi extrinsic, which can't
+   * go through the EVM-typed `MoneyMarketTxFn`.
    */
   submitCollateralSwap(
     route: OptimalRate,
@@ -123,11 +106,7 @@ export interface SwapRateProvider {
   ): Promise<SwapTransactionParams>
 }
 
-/**
- * Default stub used until a real `SwapRateProvider` implementation is injected
- * through `MoneyMarketProvider`. Every method throws so that an unwired Swap /
- * Debt Switch flow fails loudly instead of silently returning bad data.
- */
+// Used until a provider is injected; throws so an unwired flow fails loudly.
 const throwNotImplemented = (): never => {
   throw new Error(
     "SwapRateProvider not implemented. Inject a `swapRateProvider` implementation via <MoneyMarketProvider />.",
@@ -145,7 +124,7 @@ export const notImplementedSwapRateProvider: SwapRateProvider = {
 const MESSAGE_MAP: { [key: string]: string } = {
   ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT:
     "Price impact too high. Please try a different amount or asset pair.",
-  // not sure why this error-code is not upper-cased
+  // ParaSwap returns this one as a sentence rather than an error code.
   "No routes found with enough liquidity":
     "No routes found with enough liquidity.",
 }
@@ -157,11 +136,6 @@ const MESSAGE_REGEX_MAP: Array<{ regex: RegExp; message: string }> = [
   },
 ]
 
-/**
- * Converts Paraswap error message to message for displaying in interface
- * @param message Paraswap error message
- * @returns Message for displaying in interface
- */
 export function convertParaswapErrorMessage(
   message: string,
 ): string | undefined {
@@ -175,10 +149,9 @@ export function convertParaswapErrorMessage(
   return newMessage
 }
 
-// generate signature approval a certain threshold above the current balance to account for accrued interest
+// Margin above the balance so the signature still covers interest accrued before execution.
 export const SIGNATURE_AMOUNT_MARGIN = 0.1
 
-// Calculate aToken amount to request for signature, adding small margin to account for accruing interest
 export const calculateSignedAmount = (
   amount: string,
   decimals: number,

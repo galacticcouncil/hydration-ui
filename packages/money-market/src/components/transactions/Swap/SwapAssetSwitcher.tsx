@@ -1,7 +1,8 @@
 import { AssetSwitcher } from "@galacticcouncil/ui/components"
-import { formatNumber } from "@galacticcouncil/utils"
 import BigNumber from "bignumber.js"
 import { useState } from "react"
+
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 
 type ViewType = "default" | "reversed"
 
@@ -18,6 +19,7 @@ export const SwapAssetSwitcher: React.FC<SwapAssetSwitcherProps> = ({
   priceInUSD,
   priceOutUSD,
 }) => {
+  const { formatCurrency } = useAppFormatters()
   const [view, setView] = useState<ViewType>("default")
 
   const price = BigNumber(priceInUSD).gt(0)
@@ -37,11 +39,12 @@ export const SwapAssetSwitcher: React.FC<SwapAssetSwitcherProps> = ({
 
   const value = isPriceDisabled
     ? "Exchange rate: - = -"
-    : `1 ${shownAssetIn} = ${formatNumber(shownPrice.toString())} ${shownAssetOut}`
+    : `1 ${shownAssetIn} = ${formatCurrency(shownPrice.toString(), { symbol: shownAssetOut })}`
 
   return (
     <AssetSwitcher
-      sx={{ mx: "var(--modal-content-inset)", mb: "xl" }}
+      mx="var(--modal-content-inset)"
+      mb="xl"
       onValueClick={() =>
         setView((view) => (view === "default" ? "reversed" : "default"))
       }

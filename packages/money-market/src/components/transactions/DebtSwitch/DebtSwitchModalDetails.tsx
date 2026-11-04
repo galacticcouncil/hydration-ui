@@ -1,24 +1,20 @@
 import { valueToBigNumber } from "@aave/math-utils"
-import { ArrowRight, Settings } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonTransparent,
   Flex,
   Icon,
   Separator,
-  Skeleton,
   Stack,
   SummaryRow,
-  SummaryRowValue,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { ReactNode } from "react"
 
 import { IncentivesButton } from "@/components/primitives/IncentivesButton"
-import { ReserveLogo } from "@/components/primitives/ReserveLogo"
+import { ValueChange } from "@/components/primitives/ValueChange"
+import { ReserveAmount } from "@/components/transactions/Swap/ReserveAmount"
+import { SwapPriceImpactSummaryRow } from "@/components/transactions/Swap/SwapPriceImpactSummaryRow"
+import { SwapSlippageSummaryRow } from "@/components/transactions/Swap/SwapSlippageSummaryRow"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedUserReserveData } from "@/hooks/commonTypes"
-import { useSwapSlippageSettings } from "@/hooks/paraswap/useSwapRateProvider"
 
 export type DebtSwitchModalDetailsProps = {
   switchSource: ComputedUserReserveData
@@ -32,24 +28,6 @@ export type DebtSwitchModalDetailsProps = {
   priceImpactPct: number
 }
 
-const ChangeValue: React.FC<{
-  from: ReactNode
-  to: ReactNode
-  loading: boolean
-}> = ({ from, to, loading }) => {
-  if (loading) {
-    return <Skeleton width={80} height={16} />
-  }
-
-  return (
-    <Flex gap="s" align="center">
-      <Text fw={500}>{from}</Text>
-      <Icon size="xs" component={ArrowRight} />
-      <Text fw={500}>{to}</Text>
-    </Flex>
-  )
-}
-
 export const DebtSwitchModalDetails: React.FC<DebtSwitchModalDetailsProps> = ({
   switchSource,
   switchTarget,
@@ -61,10 +39,7 @@ export const DebtSwitchModalDetails: React.FC<DebtSwitchModalDetailsProps> = ({
   targetBorrowAPY,
   priceImpactPct,
 }) => {
-  const { formatCurrency, formatPercent } = useAppFormatters()
-  const { swapSlippage, onSwapModalOpenChange } = useSwapSlippageSettings()
-
-  const isPriceImpactWarning = priceImpactPct <= -1
+  const { formatPercent } = useAppFormatters()
 
   const sourceAmountAfterSwap = valueToBigNumber(sourceBalance).minus(
     valueToBigNumber(fromAmount),
@@ -86,42 +61,18 @@ export const DebtSwitchModalDetails: React.FC<DebtSwitchModalDetailsProps> = ({
       separator={<Separator mx="var(--modal-content-inset)" />}
       withTrailingSeparator
     >
-      <SummaryRow
-        label="Slippage tolerance"
-        content={
-          <Flex gap="s" align="center">
-            <SummaryRowValue>{formatPercent(swapSlippage)}</SummaryRowValue>
-            <ButtonTransparent
-              onClick={() => onSwapModalOpenChange(true)}
-              sx={{ opacity: 0.5, "&:hover": { opacity: 1 } }}
-            >
-              <Icon size="s" component={Settings} />
-            </ButtonTransparent>
-          </Flex>
-        }
-      />
+      <SwapSlippageSummaryRow />
 
-      <SummaryRow
-        label="Price impact"
+      <SwapPriceImpactSummaryRow
+        priceImpactPct={priceImpactPct}
         loading={loading}
-        content={
-          <SummaryRowValue
-            color={
-              isPriceImpactWarning
-                ? getToken("accents.danger.emphasis")
-                : getToken("text.high")
-            }
-          >
-            {formatPercent(priceImpactPct)}
-          </SummaryRowValue>
-        }
       />
 
       <SummaryRow
         label="Borrow APY"
+        loading={loading}
         content={
-          <ChangeValue
-            loading={loading}
+          <ValueChange
             from={formatPercent(Number(sourceBorrowAPY) * 100)}
             to={formatPercent(Number(targetBorrowAPY) * 100)}
           />
@@ -131,22 +82,19 @@ export const DebtSwitchModalDetails: React.FC<DebtSwitchModalDetailsProps> = ({
       {shouldRenderIncentives && (
         <SummaryRow
           label="Incentives"
+          loading={loading}
           content={
-            loading ? (
-              <Skeleton width={80} height={16} />
-            ) : (
-              <Flex gap="s" align="center">
-                <IncentivesButton
-                  incentives={sourceIncentives}
-                  symbol={switchSource.reserve.symbol}
-                />
-                <Icon size="xs" component={ArrowRight} />
-                <IncentivesButton
-                  incentives={targetIncentives}
-                  symbol={switchTarget.reserve.symbol}
-                />
-              </Flex>
-            )
+            <Flex gap="s" align="center">
+              <IncentivesButton
+                incentives={sourceIncentives}
+                symbol={switchSource.reserve.symbol}
+              />
+              <Icon size="xs" component={ArrowRight} />
+              <IncentivesButton
+                incentives={targetIncentives}
+                symbol={switchTarget.reserve.symbol}
+              />
+            </Flex>
           }
         />
       )}
@@ -154,57 +102,18 @@ export const DebtSwitchModalDetails: React.FC<DebtSwitchModalDetailsProps> = ({
       <SummaryRow
         label="Borrow balance after switch"
         align="flex-start"
+        loading={loading}
         content={
-          loading ? (
-            <Skeleton width={100} height={32} />
-          ) : (
-            <Flex direction="column" align="flex-end" gap="s">
-              <Flex gap="s" align="center">
-                <ReserveLogo
-                  address={switchSource.reserve.underlyingAsset}
-                  size="small"
-                />
-                <Text>
-                  {formatCurrency(sourceAmountAfterSwap.toString(), {
-                    symbol: switchSource.reserve.symbol,
-                  })}
-                </Text>
-                <Text color={getToken("text.medium")}>
-                  (
-                  {formatCurrency(
-                    sourceAmountAfterSwap
-                      .multipliedBy(
-                        valueToBigNumber(switchSource.reserve.priceInUSD),
-                      )
-                      .toString(),
-                  )}
-                  )
-                </Text>
-              </Flex>
-              <Flex gap="s" align="center">
-                <ReserveLogo
-                  address={switchTarget.reserve.underlyingAsset}
-                  size="small"
-                />
-                <Text>
-                  {formatCurrency(targetAmountAfterSwap.toString(), {
-                    symbol: switchTarget.reserve.symbol,
-                  })}
-                </Text>
-                <Text color={getToken("text.medium")}>
-                  (
-                  {formatCurrency(
-                    targetAmountAfterSwap
-                      .multipliedBy(
-                        valueToBigNumber(switchTarget.reserve.priceInUSD),
-                      )
-                      .toString(),
-                  )}
-                  )
-                </Text>
-              </Flex>
-            </Flex>
-          )
+          <Flex direction="column" align="flex-end" gap="s">
+            <ReserveAmount
+              reserve={switchSource.reserve}
+              amount={sourceAmountAfterSwap}
+            />
+            <ReserveAmount
+              reserve={switchTarget.reserve}
+              amount={targetAmountAfterSwap}
+            />
+          </Flex>
         }
       />
     </Stack>

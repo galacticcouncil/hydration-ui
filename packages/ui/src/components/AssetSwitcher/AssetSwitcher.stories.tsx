@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { ArrowUpDown } from "lucide-react"
 
 import { Box } from "@/components/Box"
-import { getToken } from "@/utils"
+import { getToken, pxToRem } from "@/utils"
 
 import { AssetSwitcher } from "./AssetSwitcher"
 
@@ -14,7 +14,7 @@ export default {
 
 const StoryContainer = (args: Story["args"]) => (
   <Box
-    width={500}
+    width={pxToRem(500)}
     bg={getToken("surfaces.themeBasePalette.surfaceHigh")}
     p="xxl"
   >
@@ -63,6 +63,14 @@ export const ValueDisabled: Story = {
   args: {
     value: "Unknown exchange rate",
     valueDisabled: true,
+    onSwitchClick: () => {},
+  },
+}
+
+export const HideValue: Story = {
+  render: StoryContainer,
+  args: {
+    hideValue: true,
     onSwitchClick: () => {},
   },
 }

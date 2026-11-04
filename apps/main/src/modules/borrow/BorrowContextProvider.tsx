@@ -22,6 +22,7 @@ import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
 import { useMoneyMarketPostTxRefresh } from "@/modules/borrow/hooks/useMoneyMarketPostTxRefresh"
+import { ReserveLogo } from "@/modules/borrow/reserve/components/ReserveLogo"
 import { createSwapRateProvider } from "@/modules/borrow/swap/createSwapRateProvider"
 import { SwapSettingsModal } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SwapSettingsModal"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
@@ -141,6 +142,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
         formatReserve={formatReserve}
         externalApyData={externalApyData}
         getRelatedATokenId={getRelatedATokenId}
+        AssetLogo={ReserveLogo}
         swapSlippage={swapSlippage}
         onSwapModalOpenChange={setSlippageModalOpen}
         swapRateProvider={swapRateProvider}
@@ -152,7 +154,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
           open={isSlippageModalOpen}
           onOpenChange={setSlippageModalOpen}
         >
-          <SwapSettingsModal />
+          <SwapSettingsModal section="single" />
         </Modal>
       </MoneyMarketProvider>
     </ApyProvider>

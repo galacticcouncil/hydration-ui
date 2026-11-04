@@ -6,7 +6,7 @@ import { ApprovedAmountService } from "@/services/ApprovedAmountService"
 import { UiIncentivesService } from "@/services/UIIncentivesService"
 import { UiPoolService } from "@/services/UIPoolService"
 import { WalletBalanceService } from "@/services/WalletBalanceService"
-import { UseMaxBalanceFn } from "@/types"
+import { AssetLogoComponent, UseMaxBalanceFn } from "@/types"
 import { getProvider } from "@/utils/provider"
 
 interface SharedDependenciesContextProps {
@@ -17,6 +17,7 @@ interface SharedDependenciesContextProps {
   neckwork: NeckworkClient
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
+  AssetLogo: AssetLogoComponent
 }
 
 const SharedDependenciesContext =
@@ -27,7 +28,8 @@ export const SharedDependenciesProvider: React.FC<{
   neckwork: NeckworkClient
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
-}> = ({ children, neckwork, useMaxBalance, getRelatedATokenId }) => {
+  AssetLogo: AssetLogoComponent
+}> = ({ children, neckwork, useMaxBalance, getRelatedATokenId, AssetLogo }) => {
   const poolTokensBalanceService = new WalletBalanceService(getProvider)
   const approvedAmountService = new ApprovedAmountService(getProvider)
 
@@ -44,6 +46,7 @@ export const SharedDependenciesProvider: React.FC<{
         neckwork,
         useMaxBalance,
         getRelatedATokenId,
+        AssetLogo,
       }}
     >
       {children}

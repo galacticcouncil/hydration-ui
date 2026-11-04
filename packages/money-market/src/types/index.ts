@@ -1,4 +1,5 @@
 import { ReserveDataHumanized } from "@aave/contract-helpers"
+import { AssetLogoProps } from "@galacticcouncil/ui/components"
 import { ActivityType } from "@galacticcouncil/utils"
 import { EvmCall } from "@galacticcouncil/xc-sdk"
 
@@ -40,6 +41,12 @@ type MaxBalanceParams = {
 export type UseMaxBalanceFn = (
   params: MaxBalanceParams,
 ) => MaxBalanceResult | undefined
+
+export type AssetLogoComponent = React.ComponentType<{
+  id: string
+  size?: AssetLogoProps["size"]
+  className?: string
+}>
 
 export interface ExtendedEvmCall extends EvmCall {
   nonce?: bigint

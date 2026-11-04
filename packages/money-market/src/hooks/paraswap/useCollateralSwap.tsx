@@ -123,7 +123,6 @@ export const useCollateralSwap = ({
       }
     }
 
-    // Update the transaction on any dependency change
     const timeout = setTimeout(() => {
       fetchRoute()
     }, 400)
@@ -151,7 +150,7 @@ export const useCollateralSwap = ({
     priceImpactPct,
     loading,
     error,
-    // Used for calling paraswap buildTx as very last step in transaction
+    // Built only on submit so the route is as fresh as possible.
     buildTxFn: async () => {
       if (!route) throw new Error("Route required to build transaction")
       return fetchExactInTxParams(
@@ -163,8 +162,6 @@ export const useCollateralSwap = ({
         maxSlippage,
       )
     },
-    // Native Hydration collateral swap: builds AND submits the router trade
-    // (aToken -> aToken) via the injected provider's `submitCollateralSwap`.
     submitTxFn: async () => {
       if (!route) throw new Error("Route required to build transaction")
       return submitCollateralSwap(

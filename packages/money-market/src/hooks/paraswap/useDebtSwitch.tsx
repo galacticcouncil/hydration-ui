@@ -123,7 +123,6 @@ export const useDebtSwitch = ({
       }
     }
 
-    // Update the transaction on any dependency change
     const timeout = setTimeout(() => {
       fetchRoute()
     }, 400)
@@ -149,7 +148,7 @@ export const useDebtSwitch = ({
     priceImpactPct,
     loading,
     error,
-    // Used for calling paraswap buildTx as very last step in transaction
+    // Built only on submit so the route is as fresh as possible.
     buildTxFn: async () => {
       if (!route) throw new Error("Route required to build transaction")
       return fetchExactOutTxParams(

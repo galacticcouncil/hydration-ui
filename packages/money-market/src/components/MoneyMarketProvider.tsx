@@ -15,7 +15,12 @@ import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { ExternalApyData, MoneyMarketTxFn, UseMaxBalanceFn } from "@/types"
+import {
+  AssetLogoComponent,
+  ExternalApyData,
+  MoneyMarketTxFn,
+  UseMaxBalanceFn,
+} from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -73,6 +78,7 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   onCreateTransaction: MoneyMarketTxFn
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
+  AssetLogo: AssetLogoComponent
   externalApyData: ExternalApyData
   swapSlippage: number
   onSwapModalOpenChange: (open: boolean) => void
@@ -85,6 +91,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   onCreateTransaction,
   useMaxBalance,
   getRelatedATokenId,
+  AssetLogo,
   provider: externalProvider,
   neckwork,
   externalApyData,
@@ -122,6 +129,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
                   neckwork={neckwork}
                   useMaxBalance={useMaxBalance}
                   getRelatedATokenId={getRelatedATokenId}
+                  AssetLogo={AssetLogo}
                 >
                   <SwapRateProvider
                     swapRateProvider={swapRateProvider}

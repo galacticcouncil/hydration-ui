@@ -1,16 +1,14 @@
-import { AssetLogo, AssetLogoProps } from "@galacticcouncil/ui/components"
-import {
-  AssetMetadataFactory,
-  getAssetIdFromAddress,
-  HYDRATION_PARACHAIN_ID,
-  stringEquals,
-} from "@galacticcouncil/utils"
+import { AssetLogoProps } from "@galacticcouncil/ui/components"
+import { getAssetIdFromAddress, stringEquals } from "@galacticcouncil/utils"
 
 import { useProtocolDataContext } from "@/hooks"
+import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
 import { GHO_ASSET_ID } from "@/utils"
 
-export type ReserveLogoProps = AssetLogoProps & {
+export type ReserveLogoProps = {
   address: string
+  size?: AssetLogoProps["size"]
+  className?: string
 }
 
 export const ReserveLogo: React.FC<ReserveLogoProps> = ({
@@ -18,18 +16,13 @@ export const ReserveLogo: React.FC<ReserveLogoProps> = ({
   ...props
 }) => {
   const { currentMarketData } = useProtocolDataContext()
+  const { AssetLogo } = useSharedDependencies()
 
-  const metadata = AssetMetadataFactory.getInstance()
   const isGho = stringEquals(
     currentMarketData.addresses.GHO_TOKEN_ADDRESS ?? "",
     address,
   )
   const assetId = isGho ? GHO_ASSET_ID : getAssetIdFromAddress(address)
 
-  return (
-    <AssetLogo
-      src={metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, assetId)}
-      {...props}
-    />
-  )
+  return <AssetLogo id={assetId} {...props} />
 }

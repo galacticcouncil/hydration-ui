@@ -40,18 +40,9 @@ export type SwapRateProviderDeps = {
   ghoTokenAddress?: string
 }
 
-/**
- * Hydration-native `SwapRateProvider` backed by the on-chain trade router
- * (`sdk.api.router.getBestSell` / `getBestBuy`) — the same SDK calls the Trade
- * Market screen uses. Money-market reserve EVM `underlyingAsset` addresses are
- * resolved to Hydration numeric asset IDs via {@link getRoutingAssetId} before
- * the router is queried.
- *
- * The rate methods and the native collateral-swap submit
- * ({@link SwapRateProvider.submitCollateralSwap}) are implemented here; the
- * ParaSwap-style `*TxParams` builders remain unimplemented and throw a neutral
- * error (the legacy Aave/ParaSwap path owns those).
- */
+// `SwapRateProvider` backed by the Hydration trade router. Only the rate
+// methods and `submitCollateralSwap` are implemented; the ParaSwap-style
+// `*TxParams` builders throw.
 export const createSwapRateProvider = ({
   sdk,
   getAsset,
@@ -75,11 +66,6 @@ export const createSwapRateProvider = ({
     return assetId
   }
 
-  /**
-   * Collateral-swap variant: routes aToken → aToken (e.g. aDOT → aPRIME) since
-   * money-market collateral is held as aTokens. Debt-switch keeps using
-   * {@link resolveAssetId} (underlying routing).
-   */
   const resolveCollateralAssetId = (underlyingAsset: string): string => {
     const assetId = getCollateralRoutingAssetId(
       underlyingAsset,
@@ -94,12 +80,7 @@ export const createSwapRateProvider = ({
     return assetId
   }
 
-  /**
-   * Human-readable USD value of `baseAmount` (base-unit / wei string) for the
-   * resolved Hydration `assetId`, using the same spot-price source the rest of
-   * the app consumes ({@link getSpotPrice} against the display stablecoin).
-   * Falls back to "0" when no spot price is available — never throws.
-   */
+  // Falls back to "0" when no spot price is available.
   const toUSD = async (
     assetId: string,
     baseAmount: string,
@@ -184,17 +165,9 @@ export const createSwapRateProvider = ({
     } satisfies OptimalRate
   }
 
-  /**
-   * Build AND submit the native collateral-swap transaction (exact-in / Sell).
-   * Routes the aToken pair (aDOT → aPRIME) through the on-chain trade router —
-   * the same `sdk.tx.trade(...).withSlippage().withBeneficiary().build()` flow
-   * the Trade Market screen uses ({@link file://useSubmitSwap.ts}) — then submits
-   * `tx.get()` via the app `createTransaction` with Market-Swap-style toasts.
-   *
-   * `userAddress` is the connected wallet's SS58 address (same as Market Swap's
-   * `withBeneficiary`); the SDK uses it for substrate balance checks during
-   * `tx.build()` and as the trade beneficiary so swapped aTokens remain collateral.
-   */
+  // The collateral swap is a papi extrinsic, so it is submitted here through
+  // `createTransaction` rather than the EVM-typed `MoneyMarketTxFn`. The
+  // beneficiary is the user so the swapped aTokens stay as collateral.
   const submitCollateralSwap: SwapRateProvider["submitCollateralSwap"] = async (
     _route,
     swapIn,
