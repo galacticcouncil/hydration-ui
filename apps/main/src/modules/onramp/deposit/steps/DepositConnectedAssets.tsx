@@ -3,7 +3,6 @@ import {
   ChevronUp,
   Layers,
   Search,
-  WalletIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
@@ -22,24 +21,19 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
-import {
-  useAccount,
-  WalletMode,
-  Web3ConnectPage,
-} from "@galacticcouncil/web3-connect"
-import { WalletSourceButton } from "@galacticcouncil/web3-connect/src/components/content/WalletManagementSource"
-import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { neckworkClient } from "@/api/neckwork"
 import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { depositStepAfterAsset } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
 import { useDepositDiscovery } from "@/modules/onramp/deposit/hooks/useDepositDiscovery"
+import { DepositWalletList } from "@/modules/onramp/deposit/preview/components/DepositWalletList"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
@@ -51,7 +45,6 @@ import {
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 
 type DepositAssetEntry =
   | { kind: "holding"; key: string; row: DepositBalanceRow }
@@ -65,15 +58,15 @@ export const DepositConnectedAssets = ({
 }: {
   splitWallets?: boolean
 }) => {
-  const [connecting, setConnecting] = useState(false)
-  const [walletSearch, setWalletSearch] = useState("")
-  const { papi } = useRpcProvider()
+  const [selectedProvider, setSelectedProvider] =
+    useState<WalletProviderType | null>(null)
   const { t } = useTranslation(["onramp", "common"])
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
   const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
   const data = useDepositDiscovery({
-    account: splitWallets && !sourceAccount ? undefined : sourceAccount,
+    account: splitWallets ? undefined : sourceAccount,
+    provider: splitWallets ? selectedProvider : undefined,
   })
   const { sourceChainAssetPairs: supportedPairs } = useXcmProvider()
   const sourceChainAssetPairs = supportedPairs.filter(({ chain }) =>
@@ -149,29 +142,6 @@ export const DepositConnectedAssets = ({
     paginateTo(depositStepAfterAsset("connected"))
   }
 
-  if (connecting)
-    return (
-      <Web3ConnectPage
-        layout="split"
-        walletFirst
-        neckwork={neckworkClient}
-        papi={papi}
-        mode={WalletMode.Default}
-        meta={{
-          title: t("deposit.onchain.wallet.title"),
-          hideExternalWallet: true,
-          hideMultisig: true,
-          closable: true,
-        }}
-        onBack={() => setConnecting(false)}
-        onAccountSelect={(account) => {
-          setSourceAccount(account)
-          setChainKey(null)
-          setConnecting(false)
-        }}
-      />
-    )
-
   return (
     <>
       <SDepositStepHeader
@@ -222,54 +192,14 @@ export const DepositConnectedAssets = ({
             sx={{ minHeight: 0 }}
           >
             {splitWallets ? (
-              <Stack gap="s" justify="flex-start" sx={{ overflowY: "auto" }}>
-                <Input
-                  iconStart={Search}
-                  placeholder={t("deposit.split.searchWallets")}
-                  aria-label={t("deposit.split.searchWallets")}
-                  value={walletSearch}
-                  onChange={(event) => setWalletSearch(event.target.value)}
-                />
-                <WalletSourceButton
-                  title={t("deposit.split.allWallets")}
-                  icon={Layers}
-                  active={!sourceAccount}
-                  onClick={() => {
-                    useOnrampModal.setState({ depositSourceAccount: null })
-                    setChainKey(null)
-                  }}
-                />
-                {data.accounts
-                  .filter((account) =>
-                    `${getWallet(account.provider)?.title} ${account.name} ${account.displayAddress}`
-                      .toLowerCase()
-                      .includes(walletSearch.trim().toLowerCase()),
-                  )
-                  .map((account) => (
-                    <WalletSourceButton
-                      key={`${account.provider}:${account.address}`}
-                      title={
-                        getWallet(account.provider)?.title ?? account.provider
-                      }
-                      subtitle={`${account.name} · ${shortenAccountAddress(account.displayAddress)}`}
-                      logo={getWallet(account.provider)?.logo}
-                      connected
-                      active={
-                        sourceAccount?.provider === account.provider &&
-                        sourceAccount.address === account.address
-                      }
-                      onClick={() => {
-                        setSourceAccount(account)
-                        setChainKey(null)
-                      }}
-                    />
-                  ))}
-                <WalletSourceButton
-                  title={t("deposit.quick.connectSourceWallet")}
-                  icon={WalletIcon}
-                  onClick={() => setConnecting(true)}
-                />
-              </Stack>
+              <DepositWalletList
+                showConnectedOnly
+                selectedProvider={selectedProvider}
+                onSelectProvider={(provider) => {
+                  setSelectedProvider(provider)
+                  setChainKey(null)
+                }}
+              />
             ) : (
               <>
                 {!isMobile && (
@@ -403,8 +333,14 @@ export const DepositConnectedAssets = ({
                         asset={row.balance}
                         route={null}
                         symbol={row.balance.originSymbol}
-                        name={`${getChainName(row.source.chain)} · ${row.source.account.name}`}
+                        name={
+                          splitWallets
+                            ? `${row.source.account.name} · ${shortenAccountAddress(row.source.account.displayAddress)}`
+                            : `${getChainName(row.source.chain)} · ${row.source.account.name}`
+                        }
                         chain={row.source.chain}
+                        showSourceChain={splitWallets}
+                        showChainLogo={!splitWallets}
                         balance={row.balance}
                         balanceDisplay={row.value}
                         isLoading={false}
