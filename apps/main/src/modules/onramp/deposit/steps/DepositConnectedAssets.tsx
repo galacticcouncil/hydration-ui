@@ -84,24 +84,17 @@ export const DepositConnectedAssets = ({
     (state) => state.setWalletFirstAsset,
   )
   const [chainKey, setChainKey] = useState<string | null>(null)
-  const [chainSearch, setChainSearch] = useState("")
   const [assetSearch, setAssetSearch] = useState("")
   const [showMoreChains, setShowMoreChains] = useState(false)
   const fundedChainKeys = new Set(data.rows.map((row) => row.source.chain.key))
   const fundedPairs = sourceChainAssetPairs.slice(0, 5)
-  const chainPairs =
-    showMoreChains || chainSearch.trim()
-      ? sourceChainAssetPairs
-      : sourceChainAssetPairs.filter(
-          ({ chain }) =>
-            fundedPairs.some((pair) => pair.chain.key === chain.key) ||
-            chain.key === chainKey,
-        )
-  const visiblePairs = chainPairs.filter(({ chain }) =>
-    `${getChainName(chain)} ${chain.name} ${chain.key}`
-      .toLowerCase()
-      .includes(chainSearch.trim().toLowerCase()),
-  )
+  const chainPairs = showMoreChains
+    ? sourceChainAssetPairs
+    : sourceChainAssetPairs.filter(
+        ({ chain }) =>
+          fundedPairs.some((pair) => pair.chain.key === chain.key) ||
+          chain.key === chainKey,
+      )
   const selectedPair = sourceChainAssetPairs.find(
     ({ chain }) => chain.key === chainKey,
   )
@@ -203,16 +196,6 @@ export const DepositConnectedAssets = ({
               />
             ) : (
               <>
-                {!isMobile && (
-                  <Input
-                    iconStart={Search}
-                    placeholder={t("deposit.onchain.search.chains")}
-                    aria-label={t("deposit.onchain.search.chains")}
-                    value={chainSearch}
-                    onChange={(event) => setChainSearch(event.target.value)}
-                    sx={{ flexShrink: 0 }}
-                  />
-                )}
                 <Button
                   variant={selectedChain ? "transparent" : "accent"}
                   outline={!selectedChain}
@@ -228,10 +211,10 @@ export const DepositConnectedAssets = ({
                     t("deposit.onchain.allChains")
                   )}
                 </Button>
-                {visiblePairs.length > 0 && (
+                {chainPairs.length > 0 && (
                   <Box
                     height={pxToRem(
-                      visiblePairs.length *
+                      chainPairs.length *
                         (isMobile ? 48 : COMPACT_CHAIN_ITEM_HEIGHT),
                     )}
                     flex="0 1 auto"
@@ -240,7 +223,7 @@ export const DepositConnectedAssets = ({
                     <ChainList
                       compact
                       getChainName={getChainName}
-                      items={visiblePairs}
+                      items={chainPairs}
                       selectedChain={selectedChain}
                       setSelectedChain={(chain) =>
                         setChainKey(chain?.key ?? null)
@@ -262,7 +245,6 @@ export const DepositConnectedAssets = ({
                     aria-expanded={showMoreChains}
                     onClick={() => {
                       setShowMoreChains((value) => !value)
-                      setChainSearch("")
                       if (showMoreChains && browsingUnowned) setChainKey(null)
                     }}
                   >
