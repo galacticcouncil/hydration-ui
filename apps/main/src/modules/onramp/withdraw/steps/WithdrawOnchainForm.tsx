@@ -383,9 +383,8 @@ export const WithdrawOnchainForm: FC = () => {
         </Stack>
         <Separator />
         <OnrampAssetAmount
-          label={t("withdraw.onchain.form.fromChain", {
-            chain: srcChain?.name ?? "Hydration",
-          })}
+          variant="transaction"
+          label={t("common:from")}
           selection={
             srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
           }
