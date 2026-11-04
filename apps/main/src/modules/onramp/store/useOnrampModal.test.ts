@@ -462,14 +462,37 @@ describe("on-chain withdrawal design variants", () => {
     },
   )
 
-  it("opens Guided steps by default without requiring a connected wallet", () => {
+  it("opens V2 wallet connection when no active source is connected", () => {
     modal().openWithdrawOnchain()
 
     expect(modal()).toMatchObject({
-      modal: "withdrawAsset",
-      withdrawFlow: "guided",
+      modal: "withdrawOnchain",
+      withdrawFlow: "connected",
+      withdrawPage: OnrampScreen.WithdrawOnchainWallet,
+    })
+  })
+
+  it("opens V2 at assets with the connected active Hydration account already selected", () => {
+    wallet.account = recipient
+    wallet.accounts = [recipient]
+    modal().openWithdrawOnchain()
+    expect(modal()).toMatchObject({
+      modal: "withdrawOnchain",
+      withdrawFlow: "connected",
       withdrawPage: OnrampScreen.WithdrawOnchainAsset,
     })
+    expect(wallet.account).toBe(recipient)
+  })
+
+  it("requires a source connection if the active wallet is disconnected or incompatible", () => {
+    wallet.account = recipient
+    wallet.getStatus.mockReturnValue("disconnected")
+    modal().openWithdrawOnchain()
+    expect(modal().withdrawPage).toBe(OnrampScreen.WithdrawOnchainWallet)
+    wallet.getStatus.mockReturnValue("connected")
+    wallet.account = { ...recipient, canUseOnHydration: false }
+    modal().openWithdrawOnchain()
+    expect(modal().withdrawPage).toBe(OnrampScreen.WithdrawOnchainWallet)
   })
 
   it.each([

@@ -1,5 +1,6 @@
 import {
   AccountAvatar,
+  Button,
   Flex,
   InputSuggestions,
   InputSuggestionsOption,
@@ -133,7 +134,9 @@ export const WithdrawOnchainForm: FC = () => {
   }, [submit.isPending])
 
   const [isRecipientOpen, setIsRecipientOpen] = useState(false)
-  const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(false)
+  const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(
+    flow === "connected",
+  )
   const [isRouteOpen, setIsRouteOpen] = useState(false)
   const [recipientInput, setRecipientInput] = useState(destAddress)
   const isRecipientValid =
@@ -240,16 +243,37 @@ export const WithdrawOnchainForm: FC = () => {
           isAddressValidOnChain(account.rawAddress, destChain)
         }
         meta={{
-          title: t("common:connectWallet.modal.title", {
-            chain: destChain.name,
-          }),
+          title: t("deposit.flow.destination.title"),
           description: t("common:connectWallet.modal.description", {
             chain: destChain.name,
           }),
           closable: true,
           hideAccountFilters: flow === "connected",
         }}
-        onBack={() => setIsRecipientWalletOpen(false)}
+        customSource={{
+          title: t("deposit.onchain.customAddress"),
+          content: (
+            <Stack gap="l" p="l">
+              <AddressBook
+                address={recipientInput}
+                onAddressChange={updateRecipient}
+                onOpenMyContacts={() => {
+                  setIsRecipientWalletOpen(false)
+                  setIsRecipientOpen(true)
+                }}
+                contactsVariant="icon"
+              />
+              <Button
+                variant="primary"
+                disabled={!isRecipientValid}
+                onClick={() => setIsRecipientWalletOpen(false)}
+              >
+                {t("withdraw.onchain.destination.continue")}
+              </Button>
+            </Stack>
+          ),
+        }}
+        onBack={back}
         onAccountSelect={(recipient) => {
           if (!isAddressValidOnChain(recipient.rawAddress, destChain)) return
           updateRecipient(recipient.rawAddress)
@@ -288,7 +312,13 @@ export const WithdrawOnchainForm: FC = () => {
           flow === "simple" ? t("withdraw.quick.description") : undefined
         }
         align="center"
-        onBack={submit.isPending ? undefined : back}
+        onBack={
+          submit.isPending
+            ? undefined
+            : flow === "connected"
+              ? () => setIsRecipientWalletOpen(true)
+              : back
+        }
         closable
       />
       <ModalBody noPadding scrollable={false}>

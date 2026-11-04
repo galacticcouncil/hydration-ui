@@ -1,4 +1,5 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AssetAmount } from "@galacticcouncil/xc-core"
 import { useQueries } from "@tanstack/react-query"
@@ -6,7 +7,10 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { accountBalancesQuery, useAccountBalanceFilter } from "@/api/balances"
-import { getDepositSources } from "@/modules/onramp/deposit/DepositDiscovery.utils"
+import {
+  getDepositSources,
+  getSelectedDepositAccounts,
+} from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useWithdrawDestinationOptions } from "@/modules/onramp/withdraw/hooks/useWithdrawDestinationOptions"
 import { getWithdrawFundedAssets } from "@/modules/onramp/withdraw/WithdrawConnectedAssets.utils"
@@ -18,7 +22,12 @@ import { useAssetsPrice } from "@/states/displayAsset"
 export const useWithdrawConnectedAssets = () => {
   const rpc = useRpcProvider()
   const filter = useAccountBalanceFilter()
-  const accounts = useDepositAccounts({ signersOnly: true })
+  const connected = useDepositAccounts({ signersOnly: true })
+  const { account } = useAccount()
+  const accounts = useMemo(
+    () => getSelectedDepositAccounts(connected, account),
+    [connected, account],
+  )
   const options = useWithdrawDestinationOptions()
   const { getAsset } = useAssets()
   const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)

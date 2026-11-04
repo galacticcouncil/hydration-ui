@@ -2,7 +2,6 @@ import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Box,
-  Button,
   Flex,
   Grid,
   Input,
@@ -15,14 +14,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { isAnyEvmChain } from "@galacticcouncil/utils"
 import {
   toAccount,
   useAccount,
   useWeb3Connect,
   WalletProviderStatus,
 } from "@galacticcouncil/web3-connect"
-import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC, useEffect, useMemo, useState } from "react"
@@ -76,7 +73,6 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
   const { getAsset } = useAssets()
   const [chainSearch, setChainSearch] = useState("")
   const [search, setSearch] = useState("")
-  const [filter, setFilter] = useState("all")
   const [selectedChainKey, setSelectedChainKey] = useState<string | null>(
     initialDestinationChainKey ?? null,
   )
@@ -127,16 +123,7 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
   const mobileChains = isMobile && showChainSelector && mobileStep === "chains"
   const visiblePairs = pairs.filter(({ chain }) => {
     if (!showChainSelector) return true
-    const matchesEcosystem =
-      filter === "all" ||
-      (filter === "polkadot"
-        ? chain.ecosystem === ChainEcosystem.Polkadot ||
-          chain.ecosystem === ChainEcosystem.Kusama
-        : isAnyEvmChain(chain))
-    return (
-      matchesEcosystem &&
-      chain.name.toLowerCase().includes(chainSearch.trim().toLowerCase())
-    )
+    return chain.name.toLowerCase().includes(chainSearch.trim().toLowerCase())
   })
   const selectedChain =
     visiblePairs.find(({ chain }) => chain.key === selectedChainKey)?.chain ??
@@ -293,21 +280,6 @@ export const WithdrawAssetSelect: FC<WithdrawAssetSelectProps> = ({
                 placeholder={t("common:search.placeholder.assets")}
                 aria-label={t("common:search.placeholder.assets")}
               />
-              {!isMobile && showChainSelector && (
-                <Flex gap="base" wrap>
-                  {(["all", "polkadot", "evm"] as const).map((value) => (
-                    <Button
-                      key={value}
-                      variant={filter === value ? "secondary" : "muted"}
-                      size="small"
-                      minWidth={pxToRem(72)}
-                      onClick={() => setFilter(value)}
-                    >
-                      {t(`deposit.onchain.filter.${value}`)}
-                    </Button>
-                  ))}
-                </Flex>
-              )}
               {isBalancesError && (
                 <Alert
                   variant="warning"

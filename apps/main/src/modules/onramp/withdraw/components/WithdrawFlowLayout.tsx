@@ -24,6 +24,7 @@ export const WithdrawFlowLayout: FC<WithdrawFlowLayoutProps> = ({
   return (
     <OnrampVariantLayout
       value={flow}
+      showSwitcher={flow !== "connected"}
       desktopMinHeight={isWalletFirstWithdrawFlow(flow) ? 550 : undefined}
       disabled={pending}
       label={t("withdraw.flowSwitcher.label")}

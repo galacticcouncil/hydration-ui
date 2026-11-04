@@ -117,7 +117,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
     set({ depositSourceAccount }),
   walletFirstAsset: null,
   setWalletFirstAsset: (walletFirstAsset) => set({ walletFirstAsset }),
-  withdrawFlow: "guided",
+  withdrawFlow: "connected",
   withdrawPending: false,
   walletContentWidth: null,
   setWalletContentWidth: (walletContentWidth) => set({ walletContentWidth }),
@@ -155,6 +155,14 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
     if (get().withdrawPending) return
     useDepositJourneyStore.getState().leave()
     const withdrawFlow = requestedFlow ?? get().withdrawFlow
+    const wallets = useWeb3Connect.getState()
+    const active = wallets.account ? toAccount(wallets.account) : null
+    const hasActiveSource =
+      !!active &&
+      active.canUseOnHydration &&
+      isAddressValidOnHydration(active.rawAddress) &&
+      active.provider !== WalletProviderType.ExternalWallet &&
+      wallets.getStatus(active.provider) === WalletProviderStatus.Connected
     set({
       modal: isWalletFirstWithdrawFlow(withdrawFlow)
         ? "withdrawOnchain"
@@ -162,9 +170,10 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       withdrawFlow,
       withdrawAssetId: null,
       withdrawSelection: null,
-      withdrawPage: isWalletFirstWithdrawFlow(withdrawFlow)
-        ? OnrampScreen.WithdrawOnchainWallet
-        : OnrampScreen.WithdrawOnchainAsset,
+      withdrawPage:
+        isWalletFirstWithdrawFlow(withdrawFlow) && !hasActiveSource
+          ? OnrampScreen.WithdrawOnchainWallet
+          : OnrampScreen.WithdrawOnchainAsset,
     })
   },
   setModal: (modal) => {

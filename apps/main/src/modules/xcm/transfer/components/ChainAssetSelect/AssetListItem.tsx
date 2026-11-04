@@ -40,6 +40,7 @@ export type AssetListItemProps = {
   chain?: AnyChain
   showChainLogo?: boolean
   showSourceChain?: boolean
+  symbolBadge?: ReactNode
   trailingElement?: ReactNode
   onClick: () => void
 }
@@ -54,6 +55,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   chain,
   showChainLogo = true,
   showSourceChain = false,
+  symbolBadge,
   trailingElement,
   isLoading,
   isSelected,
@@ -91,7 +93,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
               </Flex>
             </Tooltip>
           ) : (
-            <AssetLabel symbol={symbol} name={name} />
+            <AssetLabel symbol={symbol} name={name} badge={symbolBadge} />
           )}
           {route && isBridgeAssetRoute(route) && (
             <AssetBridgeTags route={route} />

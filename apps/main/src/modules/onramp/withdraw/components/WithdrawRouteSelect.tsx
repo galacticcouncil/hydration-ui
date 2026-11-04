@@ -31,6 +31,7 @@ type WithdrawRouteSelectProps = {
   onBack: () => void
   initialSelection?: WithdrawAssetSelection | null
   guided?: boolean
+  destinationChainKey?: string | null
   sourceAssetKey?: string
 }
 
@@ -40,9 +41,19 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   initialSelection,
   guided = false,
   sourceAssetKey,
+  destinationChainKey,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
-  const options = useWithdrawDestinationOptions()
+  const allOptions = useWithdrawDestinationOptions()
+  const options = useMemo(
+    () =>
+      allOptions.filter(
+        (option) =>
+          !destinationChainKey ||
+          option.destinationChainKey === destinationChainKey,
+      ),
+    [allOptions, destinationChainKey],
+  )
   const { getAsset } = useAssets()
   const [assetKey, setAssetKey] = useState(
     sourceAssetKey ?? initialSelection?.sourceAssetKey ?? null,

@@ -21,12 +21,7 @@ export const WithdrawOnchainAsset: FC<WithdrawOnchainAssetProps> = () => {
   const config = useCrossChainConfigService()
   const flow = useOnrampModal((state) => state.withdrawFlow)
   const selection = useOnrampModal((state) => state.withdrawSelection)
-  const back = () =>
-    flow === "connected"
-      ? useOnrampModal
-          .getState()
-          .paginateWithdraw(OnrampScreen.WithdrawOnchainWallet)
-      : useOnrampModal.getState().setModal("withdraw")
+  const back = () => useOnrampModal.getState().setModal("withdraw")
   const select = (selection: WithdrawAssetSelection) => {
     const previous = getValues()
     if (
