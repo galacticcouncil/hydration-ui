@@ -22,6 +22,7 @@ export const DepositOnchainSteps = () => {
   const { papi } = useRpcProvider()
   const page = useOnrampStore((state) => state.page)
   const paginateTo = useOnrampStore((state) => state.paginateTo)
+  const assetsLayout = useOnrampModal((state) => state.depositAssetsLayout)
   const walletFirstFlow = useOnrampModal((state) => state.walletFirstFlow)
   const setWalletContentWidth = useOnrampModal(
     (state) => state.setWalletContentWidth,
@@ -34,6 +35,14 @@ export const DepositOnchainSteps = () => {
   const sourceChain = getValues("srcChain")
   const sourceAsset = getValues("srcAsset")
   const funded = useFundedDepositAccounts(accounts, sourceChain, sourceAsset)
+
+  if (
+    walletFirstFlow === "connected" &&
+    assetsLayout === "split" &&
+    (page === OnrampScreen.DepositOnchainWallet ||
+      page === OnrampScreen.DepositOnchainAsset)
+  )
+    return <DepositConnectedAssets splitWallets />
 
   if (page === OnrampScreen.DepositOnchainWallet) {
     const resumingAsset =

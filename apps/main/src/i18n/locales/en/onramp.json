@@ -467,6 +467,7 @@
   "deposit.v3.destination.continue": "Continue with {{ name }}",
   "deposit.v3.assets.title": "Deposit from another chain",
   "deposit.v3.assets.search": "Search tokens",
+  "deposit.split.allWallets": "All connected wallets",
   "deposit.v3.assets.total": "You can bring in",
   "deposit.v3.assets.routeCount_one": "{{ count, number }} route",
   "deposit.v3.assets.routeCount_other": "{{ count, number }} routes",

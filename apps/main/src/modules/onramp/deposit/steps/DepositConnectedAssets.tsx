@@ -20,12 +20,19 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { shortenAccountAddress } from "@galacticcouncil/utils"
+import {
+  useAccount,
+  WalletMode,
+  Web3ConnectPage,
+} from "@galacticcouncil/web3-connect"
+import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { neckworkClient } from "@/api/neckwork"
 import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
@@ -42,6 +49,7 @@ import {
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type DepositAssetEntry =
   | { kind: "holding"; key: string; row: DepositBalanceRow }
@@ -50,12 +58,20 @@ type DepositAssetEntry =
 const getChainName = (chain: AnyChain) =>
   chain.name === "AssetHub Polkadot" ? "Assethub" : chain.name
 
-export const DepositConnectedAssets = () => {
+export const DepositConnectedAssets = ({
+  splitWallets = false,
+}: {
+  splitWallets?: boolean
+}) => {
+  const [connecting, setConnecting] = useState(false)
+  const { papi } = useRpcProvider()
   const { t } = useTranslation(["onramp", "common"])
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
   const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
-  const data = useDepositDiscovery({ account: sourceAccount })
+  const data = useDepositDiscovery({
+    account: splitWallets && !sourceAccount ? undefined : sourceAccount,
+  })
   const { sourceChainAssetPairs: supportedPairs } = useXcmProvider()
   const sourceChainAssetPairs = supportedPairs.filter(({ chain }) =>
     data.rows.some((row) => row.source.chain.key === chain.key),
@@ -130,6 +146,29 @@ export const DepositConnectedAssets = () => {
     paginateTo(depositStepAfterAsset("connected"))
   }
 
+  if (connecting)
+    return (
+      <Web3ConnectPage
+        layout="split"
+        walletFirst
+        neckwork={neckworkClient}
+        papi={papi}
+        mode={WalletMode.Default}
+        meta={{
+          title: t("deposit.onchain.wallet.title"),
+          hideExternalWallet: true,
+          hideMultisig: true,
+          closable: true,
+        }}
+        onBack={() => setConnecting(false)}
+        onAccountSelect={(account) => {
+          setSourceAccount(account)
+          setChainKey(null)
+          setConnecting(false)
+        }}
+      />
+    )
+
   return (
     <>
       <SDepositStepHeader
@@ -144,7 +183,10 @@ export const DepositConnectedAssets = () => {
           setValue("srcAsset", null)
           setValue("bridgeProvider", null)
           void resetAmounts()
-          paginateTo(OnrampScreen.DepositOnchainWallet)
+          if (splitWallets) {
+            paginateTo(OnrampScreen.MethodSelect)
+            useOnrampModal.getState().setModal("deposit")
+          } else paginateTo(OnrampScreen.DepositOnchainWallet)
         }}
       />
       <ModalBody
@@ -156,7 +198,13 @@ export const DepositConnectedAssets = () => {
         <Grid
           data-onramp-step="deposit-connected-assets"
           columnTemplate={
-            isMobile ? `${pxToRem(52)} minmax(0, 1fr)` : "9rem minmax(0, 1fr)"
+            splitWallets
+              ? isMobile
+                ? "7rem minmax(0, 1fr)"
+                : "12rem minmax(0, 1fr)"
+              : isMobile
+                ? `${pxToRem(52)} minmax(0, 1fr)`
+                : "9rem minmax(0, 1fr)"
           }
           gap={isMobile ? "base" : "l"}
           py={isMobile ? "base" : "m"}
@@ -170,78 +218,132 @@ export const DepositConnectedAssets = () => {
             minWidth={0}
             sx={{ minHeight: 0 }}
           >
-            {!isMobile && (
-              <Input
-                iconStart={Search}
-                placeholder={t("deposit.onchain.search.chains")}
-                aria-label={t("deposit.onchain.search.chains")}
-                value={chainSearch}
-                onChange={(event) => setChainSearch(event.target.value)}
-                sx={{ flexShrink: 0 }}
-              />
-            )}
-            <Button
-              variant={selectedChain ? "transparent" : "accent"}
-              outline={!selectedChain}
-              aria-label={t("deposit.onchain.allChains")}
-              borderRadius={isMobile ? "m" : undefined}
-              height={isMobile ? pxToRem(44) : undefined}
-              sx={{ flexShrink: 0 }}
-              onClick={() => setChainKey(null)}
-            >
-              {isMobile ? (
-                <Icon component={Layers} size="m" />
-              ) : (
-                t("deposit.onchain.allChains")
-              )}
-            </Button>
-            {visiblePairs.length > 0 && (
-              <Box
-                height={pxToRem(
-                  visiblePairs.length *
-                    (isMobile ? 48 : COMPACT_CHAIN_ITEM_HEIGHT),
+            {splitWallets ? (
+              <Stack gap="s" justify="flex-start" sx={{ overflowY: "auto" }}>
+                <Text fs="p5" color={getToken("text.medium")}>
+                  {t("deposit.quick.sourceWallet")}
+                </Text>
+                <Button
+                  size="small"
+                  variant={!sourceAccount ? "secondary" : "muted"}
+                  onClick={() => {
+                    useOnrampModal.setState({ depositSourceAccount: null })
+                    setChainKey(null)
+                  }}
+                >
+                  {t("deposit.split.allWallets")}
+                </Button>
+                {data.accounts.map((account) => (
+                  <Button
+                    key={`${account.provider}:${account.address}`}
+                    variant={
+                      sourceAccount?.provider === account.provider &&
+                      sourceAccount.address === account.address
+                        ? "secondary"
+                        : "muted"
+                    }
+                    onClick={() => {
+                      setSourceAccount(account)
+                      setChainKey(null)
+                    }}
+                    sx={{ height: "auto", py: "m", minWidth: 0 }}
+                  >
+                    <Stack gap="xs" minWidth={0}>
+                      <Text fs="p5" truncate>
+                        {getWallet(account.provider)?.title} · {account.name}
+                      </Text>
+                      <Text fs="p6" truncate>
+                        {shortenAccountAddress(account.displayAddress)}
+                      </Text>
+                    </Stack>
+                  </Button>
+                ))}
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={() => setConnecting(true)}
+                >
+                  {t("deposit.quick.connectSourceWallet")}
+                </Button>
+              </Stack>
+            ) : (
+              <>
+                {!isMobile && (
+                  <Input
+                    iconStart={Search}
+                    placeholder={t("deposit.onchain.search.chains")}
+                    aria-label={t("deposit.onchain.search.chains")}
+                    value={chainSearch}
+                    onChange={(event) => setChainSearch(event.target.value)}
+                    sx={{ flexShrink: 0 }}
+                  />
                 )}
-                flex="0 1 auto"
-                sx={{ minHeight: 0 }}
-              >
-                <ChainList
-                  compact
-                  getChainName={getChainName}
-                  items={visiblePairs}
-                  selectedChain={selectedChain}
-                  setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
-                  fillHeight
-                />
-              </Box>
-            )}
-            {sourceChainAssetPairs.length > fundedPairs.length && (
-              <Button
-                variant="muted"
-                size="small"
-                sx={{ flexShrink: 0 }}
-                aria-label={t(
-                  showMoreChains
-                    ? "deposit.connected.fewerChains"
-                    : "deposit.connected.moreChains",
-                )}
-                aria-expanded={showMoreChains}
-                onClick={() => {
-                  setShowMoreChains((value) => !value)
-                  setChainSearch("")
-                  if (showMoreChains && browsingUnowned) setChainKey(null)
-                }}
-              >
-                <Icon
-                  component={showMoreChains ? ChevronUp : ChevronDown}
-                  size="s"
-                />
-                {!isMobile &&
-                  t(
-                    showMoreChains
-                      ? "deposit.connected.fewerChains"
-                      : "deposit.connected.moreChains",
+                <Button
+                  variant={selectedChain ? "transparent" : "accent"}
+                  outline={!selectedChain}
+                  aria-label={t("deposit.onchain.allChains")}
+                  borderRadius={isMobile ? "m" : undefined}
+                  height={isMobile ? pxToRem(44) : undefined}
+                  sx={{ flexShrink: 0 }}
+                  onClick={() => setChainKey(null)}
+                >
+                  {isMobile ? (
+                    <Icon component={Layers} size="m" />
+                  ) : (
+                    t("deposit.onchain.allChains")
                   )}
-              </Button>
+                </Button>
+                {visiblePairs.length > 0 && (
+                  <Box
+                    height={pxToRem(
+                      visiblePairs.length *
+                        (isMobile ? 48 : COMPACT_CHAIN_ITEM_HEIGHT),
+                    )}
+                    flex="0 1 auto"
+                    sx={{ minHeight: 0 }}
+                  >
+                    <ChainList
+                      compact
+                      getChainName={getChainName}
+                      items={visiblePairs}
+                      selectedChain={selectedChain}
+                      setSelectedChain={(chain) =>
+                        setChainKey(chain?.key ?? null)
+                      }
+                      fillHeight
+                    />
+                  </Box>
+                )}
+                {sourceChainAssetPairs.length > fundedPairs.length && (
+                  <Button
+                    variant="muted"
+                    size="small"
+                    sx={{ flexShrink: 0 }}
+                    aria-label={t(
+                      showMoreChains
+                        ? "deposit.connected.fewerChains"
+                        : "deposit.connected.moreChains",
+                    )}
+                    aria-expanded={showMoreChains}
+                    onClick={() => {
+                      setShowMoreChains((value) => !value)
+                      setChainSearch("")
+                      if (showMoreChains && browsingUnowned) setChainKey(null)
+                    }}
+                  >
+                    <Icon
+                      component={showMoreChains ? ChevronUp : ChevronDown}
+                      size="s"
+                    />
+                    {!isMobile &&
+                      t(
+                        showMoreChains
+                          ? "deposit.connected.fewerChains"
+                          : "deposit.connected.moreChains",
+                      )}
+                  </Button>
+                )}
+              </>
             )}
           </Stack>
           <Stack

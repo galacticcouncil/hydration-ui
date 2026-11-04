@@ -49,6 +49,7 @@ type OnrampModalState = {
   setDepositEntryFlow: (flow: DepositEntryFlow) => void
   openSelectedDepositFlow: () => void
   openDepositChoice: () => void
+  depositAssetsLayout: "steps" | "split"
   walletFirstFlow: DepositWalletFirstFlow
   depositRecoveryId: string | null
   depositSourceAccount: Account | null
@@ -104,6 +105,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       walletFirstAsset: null,
     })
   },
+  depositAssetsLayout: "steps",
   walletFirstFlow: "current",
   depositRecoveryId: null,
   depositSourceAccount: null,

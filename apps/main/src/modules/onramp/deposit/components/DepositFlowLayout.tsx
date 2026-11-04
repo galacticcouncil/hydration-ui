@@ -24,12 +24,14 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
   const entryChoice = useOnrampModal((state) => state.depositEntryChoice)
   const modal = useOnrampModal((state) => state.modal)
   const page = useOnrampStore((state) => state.page)
+  const assetsLayout = useOnrampModal((state) => state.depositAssetsLayout)
+  const showAssetsAlternative = flow === "connected" && modal !== "deposit"
   const selectedFlow =
     modal === "deposit" ? entryFlow : entryChoice ? "choice" : flow
   return (
     <OnrampVariantLayout
-      value={selectedFlow}
-      showSwitcher={false}
+      value={showAssetsAlternative ? assetsLayout : selectedFlow}
+      showSwitcher={showAssetsAlternative}
       desktopMinHeight={
         modal !== "deposit" &&
         page !== OnrampScreen.DepositOnchainForm &&
@@ -38,14 +40,36 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
           : undefined
       }
       label={t("deposit.flowSwitcher.label")}
-      options={[
-        { value: "current", label: t("deposit.flowSwitcher.current") },
-        { value: "guided", label: t("deposit.flowSwitcher.guided") },
-        { value: "simple", label: t("deposit.flowSwitcher.simple") },
-        { value: "connected", label: t("deposit.flowSwitcher.connected") },
-        { value: "choice", label: t("deposit.flowSwitcher.choice") },
-      ]}
+      options={
+        showAssetsAlternative
+          ? [
+              { value: "steps", label: "V2" },
+              { value: "split", label: "V2 alt" },
+            ]
+          : [
+              { value: "current", label: t("deposit.flowSwitcher.current") },
+              { value: "guided", label: t("deposit.flowSwitcher.guided") },
+              { value: "simple", label: t("deposit.flowSwitcher.simple") },
+              {
+                value: "connected",
+                label: t("deposit.flowSwitcher.connected"),
+              },
+              { value: "choice", label: t("deposit.flowSwitcher.choice") },
+            ]
+      }
       onValueChange={(value) => {
+        if (showAssetsAlternative && (value === "steps" || value === "split")) {
+          if (value === assetsLayout) return
+          useOnrampModal.setState({
+            depositAssetsLayout: value,
+            walletFirstAsset: null,
+            depositSourceAccount: null,
+          })
+          useOnrampStore
+            .getState()
+            .paginateTo(OnrampScreen.DepositOnchainWallet)
+          return
+        }
         if (value === selectedFlow) return
         if (
           value === "current" ||
