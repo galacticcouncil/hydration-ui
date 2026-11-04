@@ -1,4 +1,5 @@
 import {
+  Alert,
   AssetInput,
   Box,
   LoadingButton,
@@ -23,6 +24,8 @@ import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 type MultiplyAmountModalProps = {
   title: string
   cta: string
+  // replaces `cta` while the amount is the max
+  maxCta?: string
   note?: string
   // replaces `note` while the amount is the max
   maxNote?: string
@@ -42,6 +45,7 @@ type MultiplyAmountModalProps = {
 export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
   title,
   cta,
+  maxCta,
   note,
   maxNote,
   summary,
@@ -68,7 +72,7 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
 
   const amount = watch("amount")
   const isMax = amount === max
-  const shownNote = isMax && maxNote ? maxNote : note
+  const showMaxNote = isMax && !!maxNote
 
   return (
     <Modal variant="popup" open onOpenChange={onClose} disableInteractOutside>
@@ -107,13 +111,19 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
             />
           </Box>
           {summary?.(amount, isMax)}
-          {shownNote && (
-            <>
-              <ModalContentDivider />
-              <Text fs="p5" color={getToken("text.medium")} pt="l">
-                {shownNote}
-              </Text>
-            </>
+          {showMaxNote ? (
+            <Box pt="l">
+              <Alert variant="info" description={maxNote} />
+            </Box>
+          ) : (
+            note && (
+              <>
+                <ModalContentDivider />
+                <Text fs="p5" color={getToken("text.medium")} pt="l">
+                  {note}
+                </Text>
+              </>
+            )
           )}
         </ModalBody>
         <Separator />
@@ -125,7 +135,7 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
             isLoading={isPending}
             disabled={!formState.isValid || isPending}
           >
-            {cta}
+            {isMax && maxCta ? maxCta : cta}
           </LoadingButton>
         </ModalFooter>
       </form>
