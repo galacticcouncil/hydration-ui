@@ -251,7 +251,6 @@ export const DepositOnchainForm = () => {
         <XcmFooter
           isSubmitting={submit.isPending}
           canSubmit={isSourceCompatible && !sameAccount}
-          onCancel={() => setModal(null)}
           submitLabel={t("deposit.onchain.confirm")}
           onSubmit={() => {
             void handleSubmit((values) => {

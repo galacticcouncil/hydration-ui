@@ -588,7 +588,6 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
           canSubmit={
             isSourceCompatible && destinationConfirmed && recipientReady
           }
-          onCancel={() => setModal(null)}
           submitLabel={t(
             error ? "deposit.v3.amount.tryAgain" : "deposit.onchain.confirm",
           )}

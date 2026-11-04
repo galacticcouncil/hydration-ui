@@ -3,11 +3,6 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
-import { DepositWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
-import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
-import { depositStepAfterSource } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
-import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
-import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositConnectedAssets } from "@/modules/onramp/deposit/steps/DepositConnectedAssets"
 import { DepositOnchainAsset } from "@/modules/onramp/deposit/steps/DepositOnchainAsset"
 import { DepositOnchainForm } from "@/modules/onramp/deposit/steps/DepositOnchainForm"
@@ -31,10 +26,8 @@ export const DepositOnchainSteps = () => {
     (state) => state.setDepositSourceAccount,
   )
   const { getValues, setValue } = useFormContext<XcmFormValues>()
-  const accounts = useDepositAccounts({ signersOnly: true })
   const sourceChain = getValues("srcChain")
   const sourceAsset = getValues("srcAsset")
-  const funded = useFundedDepositAccounts(accounts, sourceChain, sourceAsset)
 
   if (
     walletFirstFlow === "connected" &&
@@ -55,17 +48,6 @@ export const DepositOnchainSteps = () => {
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.Default}
-        accountFilter={
-          resumingAsset
-            ? (account) =>
-                canUseDepositAccount(account, sourceChain) &&
-                funded.accounts.some(
-                  (candidate) =>
-                    candidate.provider === account.provider &&
-                    candidate.address === account.address,
-                )
-            : undefined
-        }
         meta={{
           title: t(
             resumingAsset
@@ -74,32 +56,6 @@ export const DepositOnchainSteps = () => {
           ),
           closable: true,
           hideAccountFilters: true,
-          filteredAccountsEmpty: resumingAsset
-            ? {
-                title: t(
-                  funded.isLoading
-                    ? "deposit.quick.sourceLoading"
-                    : "deposit.quick.sourceEmptyTitle",
-                ),
-                description: t(
-                  funded.failed
-                    ? "deposit.flow.assets.partial"
-                    : "deposit.quick.sourceEmpty",
-                  {
-                    symbol: sourceAsset.originSymbol,
-                    chain: sourceChain.name,
-                  },
-                ),
-                loading: funded.isLoading,
-                content: (
-                  <DepositWalletEmptyState
-                    symbol={sourceAsset.originSymbol}
-                    chain={sourceChain.name}
-                    failed={funded.failed}
-                  />
-                ),
-              }
-            : undefined,
         }}
         onBack={() => {
           if (resumingAsset) {
@@ -115,25 +71,11 @@ export const DepositOnchainSteps = () => {
         }}
         onAccountSelect={(account) => {
           setSourceAccount(account)
-          if (
-            resumingAsset &&
-            canUseDepositAccount(account, sourceChain) &&
-            funded.accounts.some(
-              (candidate) =>
-                candidate.provider === account.provider &&
-                candidate.address === account.address,
-            )
-          ) {
-            setValue("srcAmount", "")
-            setValue("destAmount", "")
-            paginateTo(
-              depositStepAfterSource(walletFirstFlow, getValues("destAddress")),
-            )
-            return
-          }
           useOnrampModal.getState().setWalletFirstAsset(null)
           setValue("srcChain", null)
           setValue("srcAsset", null)
+          setValue("bridgeProvider", null)
+          setValue("destAsset", null)
           setValue("srcAmount", "")
           setValue("destAmount", "")
           paginateTo(OnrampScreen.DepositOnchainAsset)

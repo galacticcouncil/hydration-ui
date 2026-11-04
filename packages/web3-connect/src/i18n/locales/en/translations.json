@@ -120,6 +120,7 @@
   "multisig.signerSelect.noSignerAccounts.description": "None of your connected accounts are signers for this multisig.",
   "multisig.signerSelect.connectDifferentWallet": "Connect different wallet",
   "multisig.signerSelect.otherSignatories": "Other signatories ({{count}})",
+  "provider.queue.timedOut": "No response. Connect this wallet individually to retry.",
   "provider.queue.pending": "Waiting for approval…",
   "provider.queue.connected": "✓ Connected",
   "provider.queue.rejected": "Not connected"

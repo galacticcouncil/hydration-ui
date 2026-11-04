@@ -94,6 +94,7 @@ import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { Wallet } from "@/types/wallet"
 import { getWalletModeName, isNovaWalletApp, toAccount } from "@/utils"
 import { filterAccounts, getFilteredAccounts } from "@/utils/accountFilter"
+import { connectWalletsSequentially } from "@/utils/connectWallets"
 import {
   getConflictingWalletProviders,
   getConnectAllGroups,
@@ -191,8 +192,14 @@ export const WalletManagementContent = () => {
   const [isAdditionalWalletsOpen, setIsAdditionalWalletsOpen] = useState(false)
   const additionalWalletsId = useId()
   const [isConnectingAll, setIsConnectingAll] = useState(false)
+  const connectingAllRef = useRef(false)
   const [connectionResults, setConnectionResults] = useState<
-    Partial<Record<WalletProviderType, "pending" | "connected" | "rejected">>
+    Partial<
+      Record<
+        WalletProviderType,
+        "pending" | "connected" | "rejected" | "timedOut"
+      >
+    >
   >({})
   const externalWalletForm = useExternalWalletForm()
   const isChainMode = mode !== WalletMode.Default
@@ -656,56 +663,35 @@ export const WalletManagementContent = () => {
     }
   }
 
-  /** Page flows request authorization in sequence; the global picker keeps its existing behavior. */
   const handleConnectAll = async () => {
-    if (isConnectingAll) return
+    if (connectingAllRef.current) return
+    connectingAllRef.current = true
     setIsConnectingAll(true)
     selectSource("all")
+    setConnectionResults({})
 
-    const queue = connectAllGroups
-      .flatMap(prop("providers"))
-      .filter(
-        (provider) =>
-          !hasConnectedWalletSource(
-            provider,
-            useWeb3Connect.getState().providers,
-          ),
+    try {
+      await connectWalletsSequentially(
+        connectAllGroups.flatMap(prop("providers")),
+        {
+          isConnected: (provider) =>
+            hasConnectedWalletSource(
+              provider,
+              useWeb3Connect.getState().providers,
+            ),
+          connect: enableWithDisconnectOnError,
+          abandon: disconnect,
+          onResult: (provider, result) =>
+            setConnectionResults((previous) => ({
+              ...previous,
+              [provider]: result,
+            })),
+        },
       )
-    if (isPage) {
-      setConnectionResults({})
-      for (const provider of queue) {
-        if (
-          hasConnectedWalletSource(
-            provider,
-            useWeb3Connect.getState().providers,
-          )
-        ) {
-          continue
-        }
-        setConnectionResults((previous) => ({
-          ...previous,
-          [provider]: "pending",
-        }))
-        try {
-          await enableWithDisconnectOnError(provider)
-          setConnectionResults((previous) => ({
-            ...previous,
-            [provider]: "connected",
-          }))
-        } catch {
-          setConnectionResults((previous) => ({
-            ...previous,
-            [provider]: "rejected",
-          }))
-        }
-      }
-    } else {
-      await Promise.allSettled(
-        queue.map((provider) => enableWithDisconnectOnError(provider)),
-      )
+    } finally {
+      connectingAllRef.current = false
+      setIsConnectingAll(false)
     }
-
-    setIsConnectingAll(false)
   }
 
   const handleWalletGroupSelect = (group: WalletSourceGroup) => {
@@ -820,7 +806,7 @@ export const WalletManagementContent = () => {
         description={meta?.description}
         align="center"
       />
-      {isPage && Object.entries(connectionResults).length > 0 && (
+      {Object.entries(connectionResults).length > 0 && (
         <Flex direction="column" gap="s" px="m" pb="m">
           {Object.entries(connectionResults).map(([provider, status]) => (
             <Flex key={provider} justify="space-between">
