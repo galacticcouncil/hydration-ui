@@ -74,21 +74,13 @@ export const OnrampModal = () => {
     isWithdrawOnchain &&
     withdrawFlow === "current" &&
     withdrawPage === OnrampScreen.WithdrawOnchainWallet
-  const isSplitDepositConnection =
-    modal === "depositOnchainPreview" && walletContentWidth !== null
-  const contentWidth =
-    modal === "depositOnchain" &&
-    (page === OnrampScreen.DepositOnchainRecipient ||
-      page === OnrampScreen.DepositOnchainDestination)
+  const contentWidth = isOnchain
+    ? 650
+    : isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)
       ? 520
-      : (modal === "depositOnchain" &&
-            page === OnrampScreen.DepositOnchainForm) ||
-          (isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)) ||
-          (modal === "depositOnchainPreview" && depositFlow !== "preview")
-        ? 520
-        : isTransferFlow
-          ? 600
-          : 520
+      : isTransferFlow
+        ? 600
+        : 520
   const disableInteractOutside = isOnchain || isWithdraw
 
   useEffect(
@@ -123,7 +115,7 @@ export const OnrampModal = () => {
           stepKey={`${modal}:${isWithdraw ? withdrawPage : isOnchain ? (modal === "depositOnchainPreview" ? phase : page) : "method"}`}
           loadingTitle={t(isWithdraw ? "withdraw" : "deposit")}
           contentWidth={
-            isSplitWalletConnection || isSplitDepositConnection
+            isSplitWalletConnection
               ? (walletContentWidth ?? pxToRem(650))
               : pxToRem(contentWidth)
           }

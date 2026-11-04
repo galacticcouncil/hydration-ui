@@ -77,10 +77,16 @@ export const OnrampAssetInput: FC<OnrampAssetAmountProps> = ({
                 ecosystem={selection.chain.ecosystem}
                 chainId={getChainId(selection.chain)}
                 size="extra-small"
-                alt={selection.chain.name}
+                alt={
+                  selection.chain.name === "AssetHub Polkadot"
+                    ? "Assethub"
+                    : selection.chain.name
+                }
               />
               <Text fs="p5" fw={500} color={getToken("text.high")} truncate>
-                {selection.chain.name}
+                {selection.chain.name === "AssetHub Polkadot"
+                  ? "Assethub"
+                  : selection.chain.name}
               </Text>
             </Flex>
           )

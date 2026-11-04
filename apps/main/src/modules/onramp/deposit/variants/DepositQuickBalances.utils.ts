@@ -29,10 +29,13 @@ export const splitQuickAssetGroups = (
   balances: QuickDepositBalances,
 ) => {
   const funded: DepositQuickAssetGroup[] = []
-  const other: DepositQuickAssetGroup[] = []
+  const other = groups
   for (const group of groups) {
-    if (getQuickGroupBalance(group, balances) === undefined) other.push(group)
-    else funded.push(group)
+    const sources = group.sources.filter(({ chain, asset }) => {
+      const balance = balances.get(quickBalanceKey(chain.key, asset.key))
+      return !!balance && balance.depositable && balance.amount.amount > 0n
+    })
+    if (sources.length) funded.push({ ...group, ...sources[0]!, sources })
   }
   return { funded, other }
 }

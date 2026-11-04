@@ -50,6 +50,7 @@ export type ChainAssetSelectModalSelectionChange = {
 }
 
 export type ChainAssetSelectModalProps = {
+  embedded?: boolean
   type: "source" | "destination"
   address?: string
   disabled?: boolean
@@ -79,6 +80,7 @@ export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = (
 
 export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   type,
+  embedded = false,
   address = "",
   chainAssetPairs,
   currentSelection,
@@ -162,6 +164,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     >
       {activeChain && isCompatibleWalletMode && (
         <AssetList
+          closeOnSelect={!embedded}
           fillHeight={isMobile}
           items={filteredAssetsWithRoutes}
           address={address}
@@ -213,7 +216,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
             : "xcm:chainAssetSelect.modal.title",
         )}
         onBack={
-          isMobile && hasMultipleChains && !showChainScreen
+          !embedded && isMobile && hasMultipleChains && !showChainScreen
             ? () => setMobileStep("chains")
             : undefined
         }

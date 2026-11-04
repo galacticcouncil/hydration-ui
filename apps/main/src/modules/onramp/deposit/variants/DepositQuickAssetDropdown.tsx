@@ -134,7 +134,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
         },
         ...funded.map((group) => ({
           kind: "asset" as const,
-          key: group.key,
+          key: `funded:${group.key}`,
           group,
         })),
         ...(other.length
@@ -148,7 +148,7 @@ export const DepositQuickAssetDropdown: FC<DepositQuickAssetDropdownProps> = ({
           : []),
         ...other.map((group) => ({
           kind: "asset" as const,
-          key: group.key,
+          key: `other:${group.key}`,
           group,
         })),
       ]

@@ -11,6 +11,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -31,6 +32,7 @@ import {
   insertOptimisticJourney,
   removeOptimisticJourney,
 } from "@/modules/xcm/history/utils/optimistic"
+import { ChainAssetSelectContent } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { RecipientSelectPage } from "@/modules/xcm/transfer/components/Recipient/RecipientSelectPage"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
@@ -42,8 +44,12 @@ import { useAssetPrice } from "@/states/displayAsset"
 export const DepositOnchainForm = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { account } = useAccount()
-  const { transfer, isConnectedAccountValid, isLoadingSrcBalances } =
-    useXcmProvider()
+  const {
+    transfer,
+    isConnectedAccountValid,
+    isLoadingSrcBalances,
+    sourceChainAssetPairs,
+  } = useXcmProvider()
   const { watch, handleSubmit, setValue } = useFormContext<XcmFormValues>()
   const [srcChain, srcAsset, destAccount, destAddress] = watch([
     "srcChain",
@@ -96,6 +102,7 @@ export const DepositOnchainForm = () => {
       if (account) removeOptimisticJourney(queryClient, account.address, txHash)
     },
   })
+  const [selectingAsset, setSelectingAsset] = useState(false)
   const selectAsset = () => paginateTo(OnrampScreen.DepositOnchainAsset)
   const back = () =>
     paginateTo(
@@ -112,6 +119,32 @@ export const DepositOnchainForm = () => {
     setValue("destAccount", recipient ?? null)
     paginateTo(OnrampScreen.DepositOnchainForm)
   }
+  if (selectingAsset)
+    return (
+      <ChainAssetSelectContent
+        embedded
+        type="source"
+        address={account?.address ?? ""}
+        chainAssetPairs={sourceChainAssetPairs.filter(({ chain }) =>
+          canUseDepositAccount(account, chain),
+        )}
+        currentSelection={
+          srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
+        }
+        selectedChain={srcChain}
+        onAssetSelect={({ chain, asset }) => {
+          useOnrampModal.getState().setWalletFirstAsset({
+            chainKey: chain.key,
+            assetKey: asset.key,
+          })
+          void resetAmounts()
+          setValue("srcChain", chain)
+          setValue("srcAsset", asset)
+          setSelectingAsset(false)
+        }}
+      />
+    )
+
   if (page === OnrampScreen.DepositOnchainDestination)
     return (
       <DepositOnchainDestination
@@ -156,7 +189,7 @@ export const DepositOnchainForm = () => {
           selection={
             srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
           }
-          onAssetClick={selectAsset}
+          onAssetClick={() => setSelectingAsset(true)}
           amountProps={{
             fieldName: "srcAmount",
             balance: balances?.get(srcAsset?.key ?? ""),

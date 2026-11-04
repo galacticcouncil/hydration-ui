@@ -246,7 +246,7 @@
   "deposit.guided.receivingAccount": "Receiving account",
   "deposit.guided.selectReceiver": "Select a Hydration account",
   "deposit.guided.connectReceiver": "Connect a receiving wallet",
-  "deposit.guided.receiverTitle": "Connect a Hydration account",
+  "deposit.guided.receiverTitle": "Where should funds arrive?",
   "deposit.guided.receiverDescription": "Connect a Polkadot or EVM wallet to receive your deposit on Hydration.",
   "deposit.guided.chooseSourceFirst": "Choose a source account above to continue.",
   "deposit.variants.sourceTitle": "Choose a source account",

@@ -83,7 +83,7 @@ export const DepositQuickHydrationForm: FC<Props> = ({
   )
   useEffect(() => {
     if (!connecting) return
-    setWalletContentWidth(pxToRem(520))
+    setWalletContentWidth(pxToRem(650))
     return () => setWalletContentWidth(null)
   }, [connecting, setWalletContentWidth])
   const { form, getMaxBalance } = useTransferPosition({ assetId: "0" })
@@ -113,7 +113,7 @@ export const DepositQuickHydrationForm: FC<Props> = ({
         layout="split"
         walletFirst
         walletListVariant="connectedFirst"
-        onContentWidthChange={() => setWalletContentWidth("32.5rem")}
+        onContentWidthChange={() => setWalletContentWidth("40.625rem")}
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.SubstrateEVM}

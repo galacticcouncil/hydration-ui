@@ -1,4 +1,4 @@
-import { Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import { Glasses, Search, WalletIcon } from "@galacticcouncil/ui/assets/icons"
 import TrackedWalletImage from "@galacticcouncil/ui/assets/images/TrackedWalletGlasses.webp"
 import {
   Button,
@@ -16,7 +16,6 @@ import { EmptyState } from "@/components/EmptyState"
 import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { ManageTrackedWalletsModal } from "@/modules/portfolio/tracked/ManageTrackedWalletsModal"
 import { TrackedWalletCard } from "@/modules/portfolio/tracked/TrackedWalletCard"
-import { TrackedWalletGlyph } from "@/modules/portfolio/tracked/TrackedWalletGlyph"
 import { useTrackedWallets } from "@/states/trackedWallets"
 
 type Props = {
@@ -44,7 +43,7 @@ export const TrackedWallets: FC<Props> = ({
         direction={["column", null, "row"]}
       >
         <Flex align="center" gap="s">
-          <TrackedWalletGlyph size={20} />
+          <Icon component={Glasses} size="l" color="text.high" aria-hidden />
           <Text as="h2" font="primary" fs="h7" fw={500} color="text.high">
             {t("myAssets.tracked.title")}
           </Text>

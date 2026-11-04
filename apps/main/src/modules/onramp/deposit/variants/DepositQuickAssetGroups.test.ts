@@ -117,7 +117,7 @@ describe("quick deposit balances", () => {
     ])
     const { funded, other } = splitQuickAssetGroups(groups, balances)
     expect(funded.map((group) => group.key)).toEqual(["usdc"])
-    expect(other.map((group) => group.key)).toEqual(["aave", "usdt"])
+    expect(other.map((group) => group.key)).toEqual(["aave", "usdc", "usdt"])
     expect(getQuickGroupBalance(funded[0]!, balances)).toBe("3.75")
     const baseOnly = groupDepositAssetOptions(
       [
@@ -127,5 +127,31 @@ describe("quick deposit balances", () => {
       "base",
     )
     expect(getQuickGroupBalance(baseOnly[0]!, balances)).toBe("2.5")
+  })
+  it("limits holdings to funded networks and repeats the full asset catalog below", () => {
+    const groups = groupDepositAssetOptions(dotSources)
+    const balances: QuickDepositBalances = new Map([
+      [
+        quickBalanceKey("assethub", "dot"),
+        {
+          amount: { amount: 62126n, decimals: 4 } as AssetAmount,
+          depositable: true,
+        },
+      ],
+      [
+        quickBalanceKey("bifrost", "dot"),
+        {
+          amount: { amount: 0n, decimals: 4 } as AssetAmount,
+          depositable: true,
+        },
+      ],
+    ])
+    const { funded, other } = splitQuickAssetGroups(groups, balances)
+    expect(funded[0]?.sources.map(({ chain }) => chain.key)).toEqual([
+      "assethub",
+    ])
+    expect(getQuickGroupBalance(funded[0]!, balances)).toBe("6.2126")
+    expect(other[0]?.sources).toHaveLength(3)
+    expect(groups[0]?.sources).toHaveLength(3)
   })
 })
