@@ -50,10 +50,13 @@ export const DepositWalletList: FC<DepositWalletListProps> = ({
   const [showMore, setShowMore] = useState(false)
   const wallets = useDepositWallets()
   const term = search.trim().toLowerCase()
+  const hasConnectedWallets = wallets.connectedGroups.length > 0
+  const showAvailableWallets = showMore || !hasConnectedWallets || !!term
   const groups = wallets.groups.filter(
     (group) =>
       group.title.toLowerCase().includes(term) &&
       (!showConnectedOnly ||
+        !hasConnectedWallets ||
         group.providers.some(
           (provider) =>
             wallets.connectedProviders.has(provider) ||
@@ -127,7 +130,7 @@ export const DepositWalletList: FC<DepositWalletListProps> = ({
         {!compact && groups.length > 0 && (
           <WalletSourceCategoryLabel>
             {t(
-              showConnectedOnly
+              showConnectedOnly && hasConnectedWallets
                 ? "deposit.wallets.yourWallets"
                 : "deposit.wallets.installed",
             )}
@@ -260,7 +263,7 @@ export const DepositWalletList: FC<DepositWalletListProps> = ({
           }}
         />
       )}
-      {showMore && (
+      {showAvailableWallets && (
         <Stack gap="s">
           {compact && (
             <SearchInput

@@ -295,21 +295,25 @@ export const DepositConnectedAssets = ({
                 sx={{ flexShrink: 0 }}
               />
             )}
-            <Input
-              iconStart={Search}
-              placeholder={t("common:search.placeholder.assets")}
-              aria-label={t("common:search.placeholder.assets")}
-              value={assetSearch}
-              onChange={(event) => setAssetSearch(event.target.value)}
-            />
-            <Flex justify="space-between" px="l">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("common:asset")}
-              </Text>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("common:balance")}
-              </Text>
-            </Flex>
+            {(!splitWallets || data.accounts.length > 0) && (
+              <>
+                <Input
+                  iconStart={Search}
+                  placeholder={t("common:search.placeholder.assets")}
+                  aria-label={t("common:search.placeholder.assets")}
+                  value={assetSearch}
+                  onChange={(event) => setAssetSearch(event.target.value)}
+                />
+                <Flex justify="space-between" px="l">
+                  <Text fs="p5" color={getToken("text.medium")}>
+                    {t("common:asset")}
+                  </Text>
+                  <Text fs="p5" color={getToken("text.medium")}>
+                    {t("common:balance")}
+                  </Text>
+                </Flex>
+              </>
+            )}
             {data.failed > 0 && (
               <Alert
                 variant="warning"
