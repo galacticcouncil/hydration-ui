@@ -468,6 +468,8 @@
   "deposit.v3.assets.title": "Deposit from another chain",
   "deposit.v3.assets.search": "Search tokens",
   "deposit.split.searchWallets": "Search wallets...",
+  "deposit.empty.connectTitle": "Connect a wallet to see your assets",
+  "deposit.empty.connectDescription": "Choose or add a wallet on the left, then approve the connection in your wallet. Your available assets and balances will appear here.",
   "deposit.split.allWallets": "All connected wallets",
   "deposit.v3.assets.total": "You can bring in",
   "deposit.v3.assets.routeCount_one": "{{ count, number }} route",

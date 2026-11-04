@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
+import { DepositConnectWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
 import { DepositConnectedAssets } from "@/modules/onramp/deposit/steps/DepositConnectedAssets"
 import { DepositOnchainAsset } from "@/modules/onramp/deposit/steps/DepositOnchainAsset"
 import { DepositOnchainForm } from "@/modules/onramp/deposit/steps/DepositOnchainForm"
@@ -56,6 +57,7 @@ export const DepositOnchainSteps = () => {
           ),
           closable: true,
           hideAccountFilters: true,
+          disconnectedWalletsContent: <DepositConnectWalletEmptyState />,
         }}
         onBack={() => {
           if (resumingAsset) {

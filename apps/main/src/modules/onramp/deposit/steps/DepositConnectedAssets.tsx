@@ -20,7 +20,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
@@ -30,6 +29,8 @@ import { useTranslation } from "react-i18next"
 
 import { DepositAssetListSkeleton } from "@/modules/onramp/deposit/components/DepositAssetListSkeleton"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
+import { DepositConnectWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
+import { getDepositAccountLabel } from "@/modules/onramp/deposit/DepositAccountLabel.utils"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/DepositDiscovery.utils"
 import { depositStepAfterAsset } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
 import { useDepositDiscovery } from "@/modules/onramp/deposit/hooks/useDepositDiscovery"
@@ -316,7 +317,16 @@ export const DepositConnectedAssets = ({
               />
             )}
             <Box flex={1} sx={{ minHeight: 0 }}>
-              {entries.length ? (
+              {splitWallets && data.accounts.length === 0 ? (
+                <Flex
+                  height="100%"
+                  align="center"
+                  justify="center"
+                  sx={{ overflowY: "auto" }}
+                >
+                  <DepositConnectWalletEmptyState />
+                </Flex>
+              ) : entries.length ? (
                 <VirtualizedList
                   items={entries}
                   itemSize={50}
@@ -335,7 +345,7 @@ export const DepositConnectedAssets = ({
                         symbol={row.balance.originSymbol}
                         name={
                           splitWallets
-                            ? `${row.source.account.name} · ${shortenAccountAddress(row.source.account.displayAddress)}`
+                            ? getDepositAccountLabel(row.source.account)
                             : `${getChainName(row.source.chain)} · ${row.source.account.name}`
                         }
                         chain={row.source.chain}

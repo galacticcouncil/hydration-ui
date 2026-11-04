@@ -1264,11 +1264,21 @@ export const WalletManagementContent = () => {
             ) : keepSplitPanel &&
               connectedProviderTypes.length === 0 &&
               connectedAccountsCount === 0 ? (
-              <WalletConnectionState
-                title={t("provider.connectWalletsTitle")}
-                description={t("provider.connectWalletsDescription")}
-                visual={{ type: "icon", icon: WalletIcon }}
-              />
+              <Flex
+                direction="column"
+                justify="center"
+                align="center"
+                height="100%"
+                sx={{ overflowY: "auto" }}
+              >
+                {meta?.disconnectedWalletsContent ?? (
+                  <WalletConnectionState
+                    title={t("provider.connectWalletsTitle")}
+                    description={t("provider.connectWalletsDescription")}
+                    visual={{ type: "icon", icon: WalletIcon }}
+                  />
+                )}
+              </Flex>
             ) : (
               <SRightColumn key={selectedSource}>
                 <SSearchInput

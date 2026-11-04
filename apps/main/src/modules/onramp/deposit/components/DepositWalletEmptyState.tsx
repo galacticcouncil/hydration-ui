@@ -24,3 +24,13 @@ export const DepositWalletEmptyState = ({
     />
   )
 }
+
+export const DepositConnectWalletEmptyState = () => {
+  const { t } = useTranslation("onramp", { i18n })
+  return (
+    <EmptyState
+      header={t("deposit.empty.connectTitle")}
+      description={t("deposit.empty.connectDescription")}
+    />
+  )
+}
