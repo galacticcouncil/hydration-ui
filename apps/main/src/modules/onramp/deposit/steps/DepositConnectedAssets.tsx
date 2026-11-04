@@ -54,7 +54,8 @@ export const DepositConnectedAssets = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { gte } = useBreakpoints()
   const isMobile = !gte("sm")
-  const data = useDepositDiscovery()
+  const sourceAccount = useOnrampModal((state) => state.depositSourceAccount)
+  const data = useDepositDiscovery({ account: sourceAccount })
   const { sourceChainAssetPairs: supportedPairs } = useXcmProvider()
   const sourceChainAssetPairs = supportedPairs.filter(({ chain }) =>
     data.rows.some((row) => row.source.chain.key === chain.key),
