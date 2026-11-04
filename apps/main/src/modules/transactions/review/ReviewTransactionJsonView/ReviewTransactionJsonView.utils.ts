@@ -22,6 +22,10 @@ import {
   BIL_POOL_ABI,
   VAULT_ABI,
 } from "@/modules/strategies/bil/config/abi"
+import {
+  LOOPER_FACTORY_ABI,
+  LOOPER_POSITION_ABI,
+} from "@/modules/strategies/multiply/config/abi"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
@@ -79,6 +83,8 @@ const KNOWN_ABIS: Abi = [
   ...BIL_DEPOSIT_ZAP_ABI,
   ...poolAbi,
   ...incentiveControllerAbi,
+  ...LOOPER_FACTORY_ABI,
+  ...LOOPER_POSITION_ABI,
 ]
 
 const decodeEvmCallInput = (call: unknown): unknown => {
