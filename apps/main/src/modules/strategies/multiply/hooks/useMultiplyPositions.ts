@@ -38,7 +38,7 @@ export type MultiplyPosition = {
   pnl: bigint
   principal: bigint
   // WAD
-  aaveLeverage: bigint
+  leverage: bigint
   targetLeverage: bigint
   healthFactor: bigint
   // fee asset base units
@@ -125,7 +125,7 @@ export const useMultiplyPositions = (pair: MultiplyPair) => {
             nav,
             pnl,
             principal,
-            aaveLeverage,
+            leverage,
             targetLeverage,
             healthFactor,
             feeBudget,
@@ -141,7 +141,7 @@ export const useMultiplyPositions = (pair: MultiplyPair) => {
             read(address, "nav"),
             read(address, "pnl"),
             read(address, "principal"),
-            read(address, "aaveLeverage"),
+            read(address, "leverage"),
             read(address, "targetLeverage"),
             read(address, "effectiveHealthFactor"),
             evm.readContract({
@@ -164,7 +164,7 @@ export const useMultiplyPositions = (pair: MultiplyPair) => {
             nav,
             pnl,
             principal,
-            aaveLeverage,
+            leverage,
             targetLeverage,
             healthFactor,
             feeBudget,

@@ -42,6 +42,14 @@ export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
 
   const stats = [
     {
+      label: t("multiply.details.liquidityAvailable"),
+      icon: <AssetLogo id={debt.id} />,
+      value:
+        metrics.availableLiquidity === null
+          ? "-"
+          : t("common:number.compact", { value: metrics.availableLiquidity }),
+    },
+    {
       label: t("cards.multiply.maxApy"),
       value: percent(metrics.maxNetApy),
       color: getToken("accents.success.emphasis"),
@@ -49,14 +57,6 @@ export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
     {
       label: t("cards.multiply.maxLeverage"),
       value: t("cards.multiply.leverage", { value: metrics.maxLeverage }),
-    },
-    {
-      label: t("multiply.details.supplyApy", { symbol: collateral.symbol }),
-      value: percent(metrics.supplyApy),
-    },
-    {
-      label: t("multiply.details.borrowApy", { symbol: debt.symbol }),
-      value: percent(metrics.borrowApy),
     },
   ]
 
@@ -89,14 +89,17 @@ export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
               isLoading={isLoading}
               label={stat.label}
               customValue={
-                <Text
-                  font="primary"
-                  fs="h6"
-                  fw={600}
-                  color={stat.color ?? getToken("text.high")}
-                >
-                  {stat.value}
-                </Text>
+                <Flex align="center" gap="s">
+                  {stat.icon}
+                  <Text
+                    font="primary"
+                    fs="h6"
+                    fw={600}
+                    color={stat.color ?? getToken("text.high")}
+                  >
+                    {stat.value}
+                  </Text>
+                </Flex>
               }
             />
           ))}

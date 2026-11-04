@@ -37,6 +37,13 @@ export type MultiplyProjectionInput = {
   borrowApy: number
 }
 
+// On equity: the collateral earns supply on `leverage` of it, the debt costs borrow on the rest.
+export const getNetApy = (
+  leverage: number,
+  supplyApy: number,
+  borrowApy: number,
+) => leverage * supplyApy - (leverage - 1) * borrowApy
+
 export const projectMultiplyPosition = ({
   amount,
   collateralPriceUsd,
@@ -59,7 +66,7 @@ export const projectMultiplyPosition = ({
     healthFactor,
     // collateral price (debt price held fixed) at which HF reaches 1
     liquidationPriceUsd: collateralPriceUsd / healthFactor,
-    netApy: leverage * supplyApy - (leverage - 1) * borrowApy,
+    netApy: getNetApy(leverage, supplyApy, borrowApy),
   }
 }
 
@@ -124,3 +131,52 @@ export const getIntentFloors = ({
     minIntentAToken: max(2n * aCollateralEd, aTokenShare),
   }
 }
+
+// What the ramp's swaps lose against the oracle the position is valued at, in
+// collateral; negative when they beat it. `quotedOut` is a router quote for the whole debt volume.
+// ponytail: one quote for the full volume; the ramp swaps it in shrinking rungs
+// through intents, so price impact is overstated a little on thin pools
+export const getEntryCost = ({
+  amount,
+  debt,
+  quotedOut,
+  collateralPriceInDebt,
+}: {
+  amount: number
+  debt: number
+  quotedOut: number
+  collateralPriceInDebt: number
+}) => {
+  if (amount <= 0 || debt <= 0 || collateralPriceInDebt <= 0)
+    return { cost: 0, percent: 0 }
+  const cost = debt / collateralPriceInDebt - quotedOut
+  return { cost, percent: (cost / amount) * 100 }
+}
+
+// A withdraw keeps the leverage, so it repays debt in proportion to the share
+// of the net value taken out. `debt` is the position's whole debt.
+export const getWithdrawDebtRepay = ({
+  amount,
+  nav,
+  debt,
+}: {
+  amount: number
+  nav: number
+  debt: number
+}) => (nav > 0 ? debt * Math.min(1, amount / nav) : 0)
+
+// What unwinding loses against the oracle, in collateral: `sold` collateral
+// is swapped for `quotedOut` debt, worth `sold * collateralPriceInDebt`.
+// Negative when the swap beats the oracle, which then shows up as a gain.
+export const getExitCost = ({
+  sold,
+  quotedOut,
+  collateralPriceInDebt,
+}: {
+  sold: number
+  quotedOut: number
+  collateralPriceInDebt: number
+}) =>
+  sold > 0 && collateralPriceInDebt > 0
+    ? sold - quotedOut / collateralPriceInDebt
+    : 0

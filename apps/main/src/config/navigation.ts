@@ -72,6 +72,7 @@ export const LINKS = {
   strategiesBil: "/strategies/bil-vault",
   strategiesJuicer: "/strategies/juicer",
   strategiesHollarBonds: "/strategies/hollar-bonds",
+  strategiesMultiply: "/strategies/multiply/$pairId",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -169,6 +170,13 @@ export const NAVIGATION: NavigationItem[] = [
       {
         key: "strategiesHollarBonds",
         to: LINKS.strategiesHollarBonds,
+        icon: GoalIcon,
+      },
+      {
+        key: "strategiesMultiply",
+        to: LINKS.strategiesMultiply,
+        // ponytail: the only pair; list the pairs here when there are more
+        params: { pairId: "prime-hollar" },
         icon: GoalIcon,
       },
     ],
@@ -397,6 +405,10 @@ export const getMenuTranslations = (t: TFunction) =>
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
       description: t("navigation.strategiesHollarBonds.description"),
+    },
+    strategiesMultiply: {
+      title: t("navigation.strategiesMultiply.title"),
+      description: t("navigation.strategiesMultiply.description"),
     },
     deposit: {
       title: t("navigation.deposit.title"),
