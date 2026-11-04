@@ -75,6 +75,7 @@
   "multiply.deposit.toast.success": "Deposited {{ amount }} {{ symbol }} into position #{{ id }}",
   "multiply.withdraw.title": "Withdraw from position #{{ id }}",
   "multiply.withdraw.cta": "Withdraw",
+  "multiply.withdraw.maxCta": "Withdraw & Close",
   "multiply.withdraw.note": "The position unwinds step by step; your {{ symbol }} arrives when it finishes. Withdrawing everything closes the position.",
   "multiply.withdraw.maxNote": "Withdrawing everything closes the position and also returns any leftover {{ debt }}.",
   "multiply.withdraw.receive": "You receive",

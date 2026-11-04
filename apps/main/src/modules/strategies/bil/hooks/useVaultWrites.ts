@@ -118,10 +118,10 @@ export function useVaultEvmCall() {
     [evmAddress, rpc, createTransaction],
   )
 
-  const buildBatchCalls = useCallback(
+  const buildEvmTxs = useCallback(
     async (calls: BatchEvmCall[], callGas = EVM_CALL_GAS) => {
       if (calls.length === 0) {
-        throw new Error("buildBatchCalls called with no calls")
+        throw new Error("buildEvmTxs called with no calls")
       }
 
       const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
@@ -142,21 +142,29 @@ export function useVaultEvmCall() {
         abi: safeStringify(abi),
       }))
 
-      const papiCalls = evmCalls.map(
-        (c) => transformEvmCallToPapiTx(rpc.papi, c).decodedCall,
-      )
-
-      return papiCalls
+      return evmCalls.map((c) => transformEvmCallToPapiTx(rpc.papi, c))
     },
     [evmAddress, rpc],
   )
 
+  const buildBatchCalls = useCallback(
+    async (calls: BatchEvmCall[], callGas?: bigint) =>
+      (await buildEvmTxs(calls, callGas)).map((tx) => tx.decodedCall),
+    [buildEvmTxs],
+  )
+
+  // A single call goes out bare: batch_all around one call adds nothing.
   const buildBatchTx = useCallback(
     async (calls: BatchEvmCall[], callGas?: bigint) => {
-      const batchInner = await buildBatchCalls(calls, callGas)
-      return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
+      const txs = await buildEvmTxs(calls, callGas)
+      const [only] = txs
+      return only && txs.length === 1
+        ? only
+        : rpc.papi.tx.Utility.batch_all({
+            calls: txs.map((tx) => tx.decodedCall),
+          })
     },
-    [buildBatchCalls, rpc],
+    [buildEvmTxs, rpc],
   )
 
   const submitBatch = useCallback(

@@ -446,6 +446,7 @@ export const MultiplyPositionsCard: React.FC<MultiplyPositionsCardProps> = ({
             id: modal.position.id.toString(),
           })}
           cta={t("multiply.withdraw.cta")}
+          maxCta={t("multiply.withdraw.maxCta")}
           note={t("multiply.withdraw.note", { symbol: collateral.symbol })}
           maxNote={t("multiply.withdraw.maxNote", { debt: debt.symbol })}
           summary={(value, isMax) => (
