@@ -1,17 +1,24 @@
 name: e2e
 on:
   pull_request:
-    branches: [master]
+    branches: [production, master]
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
 permissions:
   contents: read
   pull-requests: write
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   e2e:
     name: E2E
+    # PRs into production: every push. PRs into master: only when the `e2e` label is added.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.base_ref == 'production' && github.event.action != 'labeled') ||
+      (github.event.action == 'labeled' && github.event.label.name == 'e2e')
+    # Job-level so skipped runs (unlabeled pushes to master PRs) don't cancel a labeled run.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
