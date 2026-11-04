@@ -171,7 +171,7 @@ export const DepositOnchainForm = () => {
       <ModalBody noPadding scrollable={false}>
         <Stack px={["l", "xl"]} py={["m", "l"]} gap="s">
           <Text fs="p5" color={getToken("text.medium")}>
-            {t("common:from")}
+            {t("deposit.quick.sourceWallet")}
           </Text>
           {account && (
             <DepositAccountButton

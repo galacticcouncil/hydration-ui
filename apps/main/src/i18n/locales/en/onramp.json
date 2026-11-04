@@ -471,7 +471,7 @@
   "deposit.empty.connectTitle": "Connect a wallet to see your assets",
   "deposit.empty.connectDescription": "Choose or add a wallet on the left, then approve the connection in your wallet. Your available assets and balances will appear here.",
   "deposit.split.allWallets": "All connected wallets",
-  "deposit.v3.assets.total": "You can bring in",
+  "deposit.v3.assets.total": "Earn on your assets",
   "deposit.v3.assets.routeCount_one": "{{ count, number }} route",
   "deposit.v3.assets.routeCount_other": "{{ count, number }} routes",
   "deposit.v3.assets.claimRequired": "Claim on arrival",
