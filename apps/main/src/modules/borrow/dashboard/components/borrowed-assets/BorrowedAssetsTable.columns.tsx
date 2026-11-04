@@ -13,6 +13,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { SwapActionMenu } from "@/modules/borrow/components/SwapActionMenu"
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
@@ -87,7 +88,6 @@ export const useBorrowedAssetsTableColumns = () => {
 
     const actionsColumn = columnHelper.display({
       id: "actions",
-      size: 210,
       meta: {
         sx: {
           textAlign: "right",
@@ -102,17 +102,7 @@ export const useBorrowedAssetsTableColumns = () => {
             <Button
               variant="tertiary"
               size="small"
-              disabled={isDisabled}
-              onClick={(e) => {
-                e.stopPropagation()
-                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
-              }}
-            >
-              {t("borrow:swap")}
-            </Button>
-            <Button
-              variant="tertiary"
-              size="small"
+              outline
               disabled={isDisabled}
               onClick={(e) => {
                 e.stopPropagation()
@@ -121,6 +111,13 @@ export const useBorrowedAssetsTableColumns = () => {
             >
               {t("borrow:repay")}
             </Button>
+            <SwapActionMenu
+              label={t("borrow:debtSwap")}
+              disabled={isDisabled}
+              onSelect={() =>
+                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
+              }
+            />
             <Icon
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
@@ -141,18 +138,6 @@ export const useBorrowedAssetsTableColumns = () => {
         return (
           <Flex gap="l" width="100%">
             <Button
-              variant="tertiary"
-              width="100%"
-              size="large"
-              disabled={isDisabled}
-              onClick={(e) => {
-                e.stopPropagation()
-                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
-              }}
-            >
-              {t("borrow:swap")}
-            </Button>
-            <Button
               width="100%"
               size="large"
               disabled={isDisabled}
@@ -171,6 +156,14 @@ export const useBorrowedAssetsTableColumns = () => {
                 {t("details")}
               </Link>
             </Button>
+            <SwapActionMenu
+              label={t("borrow:debtSwap")}
+              disabled={isDisabled}
+              size="large"
+              onSelect={() =>
+                openDebtSwitch(underlyingAsset, borrowRateMode, reserve.symbol)
+              }
+            />
           </Flex>
         )
       },

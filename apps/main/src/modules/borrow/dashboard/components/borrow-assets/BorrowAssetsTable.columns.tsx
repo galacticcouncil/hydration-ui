@@ -105,6 +105,7 @@ export const useBorrowAssetsTableColumns = () => {
             <Button
               variant="tertiary"
               size="small"
+              outline
               disabled={isDisabled}
               onClick={(e) => {
                 e.stopPropagation()

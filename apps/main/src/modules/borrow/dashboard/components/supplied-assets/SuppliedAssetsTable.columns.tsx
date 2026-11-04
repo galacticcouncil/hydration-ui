@@ -26,6 +26,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { SwapActionMenu } from "@/modules/borrow/components/SwapActionMenu"
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { TRemoveMoneyMarketLiquidityProps } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity"
 import { useAssets } from "@/providers/assetsProvider"
@@ -156,7 +157,6 @@ export const useSuppliedAssetsTableColumns = ({
 
     const actionsColumn = columnHelper.display({
       id: "actions",
-      size: 180,
       meta: {
         sx: {
           textAlign: "right",
@@ -175,17 +175,7 @@ export const useSuppliedAssetsTableColumns = ({
               disabled={isDisabled}
               variant="tertiary"
               size="small"
-              onClick={(e) => {
-                e.stopPropagation()
-                openSwap(underlyingAsset, reserve.symbol)
-              }}
-            >
-              {t("borrow:swap")}
-            </Button>
-            <Button
-              disabled={isDisabled}
-              variant="tertiary"
-              size="small"
+              outline
               onClick={(e) => {
                 e.stopPropagation()
                 handleWithdrawClick(
@@ -199,6 +189,11 @@ export const useSuppliedAssetsTableColumns = ({
             >
               {t("borrow:withdraw")}
             </Button>
+            <SwapActionMenu
+              label={t("borrow:collateralSwap")}
+              disabled={isDisabled}
+              onSelect={() => openSwap(underlyingAsset, symbol)}
+            />
             <Icon
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
@@ -227,18 +222,6 @@ export const useSuppliedAssetsTableColumns = ({
               width="100%"
               onClick={(e) => {
                 e.stopPropagation()
-                openSwap(underlyingAsset, reserve.symbol)
-              }}
-            >
-              {t("borrow:swap")}
-            </Button>
-            <Button
-              disabled={isDisabled}
-              variant="tertiary"
-              size="large"
-              width="100%"
-              onClick={(e) => {
-                e.stopPropagation()
                 handleWithdrawClick(
                   underlyingAsset,
                   getRelatedAToken,
@@ -258,6 +241,12 @@ export const useSuppliedAssetsTableColumns = ({
                 {t("details")}
               </Link>
             </Button>
+            <SwapActionMenu
+              label={t("borrow:collateralSwap")}
+              disabled={isDisabled}
+              size="large"
+              onSelect={() => openSwap(underlyingAsset, symbol)}
+            />
           </Flex>
         )
       },
