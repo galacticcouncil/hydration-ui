@@ -96,16 +96,25 @@ export const AddVaultLiquidity = ({
     ? (wrapHintFor(assetA, amountA) ?? wrapHintFor(assetB, amountB))
     : undefined
 
-  useEffect(() => {
-    if (pairedAmount === undefined) return
+  const typed = lastUpdated === "assetA" ? amountA : amountB
+  const isTypedEmpty = !(Number(typed) > 0)
 
+  useEffect(() => {
     const target = lastUpdated === "assetA" ? "amountB" : "amountA"
+
+    if (isTypedEmpty) {
+      form.setValue(target, "")
+      form.clearErrors(target)
+      return
+    }
+
+    if (pairedAmount === undefined) return
 
     form.setValue(target, pairedAmount, {
       shouldValidate: true,
       shouldTouch: true,
     })
-  }, [pairedAmount, lastUpdated, form])
+  }, [pairedAmount, isTypedEmpty, lastUpdated, form])
 
   if (supplyAssetId)
     return (
