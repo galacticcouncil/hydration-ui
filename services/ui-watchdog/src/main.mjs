@@ -50,7 +50,6 @@ if (["browser", "observer"].includes(c.role)) {
       [
         "production_changed",
         "deployment_verified",
-        "daily_heartbeat",
         "external_origin",
       ].includes(kind) ||
       data.recovery

@@ -138,7 +138,8 @@ again while it remains open. Only **critical** events can mention Discord users.
 Transient failures, egress outages and ordinary releases do not mention anyone.
 Content events are throttled per observer; routine freshness changes remain in
 history rather than generating a Discord stream. Releases include a compare link
-and escaped commit titles. Verified operation emits a daily heartbeat.
+and escaped commit titles. Verified operation records a daily heartbeat in history;
+it is not posted to Discord.
 
 The outbox prioritizes critical events, stops permanently on Discord 400/401/403/404
 or after 12 failed attempts, and has a 1,000-pending-event cap. Failed deliveries
@@ -188,7 +189,7 @@ monitor. The watchdog sends an HTTPS GET approximately every minute only after a
 successful persistence cycle, with credentials/references present and no terminal
 Discord delivery failure. Configure that provider to alert after missed heartbeats
 (e.g. five minutes). No external monitor is enabled until an operator supplies the
-URL. Daily Discord heartbeats alone cannot detect a dead process or broken webhook.
+URL. Discord alone cannot detect a dead process or broken webhook.
 
 Set `DASHBOARD_TOKEN` (or `_FILE`): dashboard, status, history and evidence endpoints
 require HTTP Basic auth (any username, token as password) or `Authorization: Bearer`.
