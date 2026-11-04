@@ -42,6 +42,9 @@ const MultiplyPageContent: React.FC<{ pair: MultiplyPair }> = ({ pair }) => {
             <MultiplyPositionsCard
               pair={pair}
               collateralPriceUsd={Number(collateralReserve.priceInUsd)}
+              debtPriceUsd={Number(debtReserve.priceInUsd)}
+              supplyApy={data.supplyApy}
+              borrowApy={data.borrowApy}
             />
 
             <MultiplyDetailsCard

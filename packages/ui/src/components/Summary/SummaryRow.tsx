@@ -47,7 +47,20 @@ export const SummaryRow = ({
   const renderLabel = () => {
     const labelContent =
       typeof label === "string" ? (
-        <SummaryRowLabel>{label}:</SummaryRowLabel>
+        <SummaryRowLabel
+          decoration={
+            tooltip
+              ? (theme) =>
+                  `underline dashed color-mix(in srgb, ${getToken("text.low")(theme)} 75%, transparent) 1px`
+              : undefined
+          }
+          // Text overwrites its sx with a passed one, so the offset goes inline
+          style={
+            tooltip ? { textUnderlineOffset: 3, cursor: "help" } : undefined
+          }
+        >
+          {label}:
+        </SummaryRowLabel>
       ) : (
         label
       )

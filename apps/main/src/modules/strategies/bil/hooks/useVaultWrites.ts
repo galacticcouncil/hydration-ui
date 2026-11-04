@@ -43,6 +43,9 @@ export interface BatchEvmCall {
   to: Hex
   data: Hex
   abi: Abi
+  // Overrides the batch's callGas. Every inner gas limit adds to the batch
+  // weight, which the EVM permit must keep under the 2^24 EIP-7825 cap.
+  gas?: bigint
 }
 
 function buildCancelResupplyCalls(
@@ -127,13 +130,13 @@ export function useVaultEvmCall() {
           gasLimit: callGas.toString(),
         })
 
-      const evmCalls = calls.map(({ to, data, abi }) => ({
+      const evmCalls = calls.map(({ to, data, abi, gas }) => ({
         from: evmAddress,
         to,
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit,
+        gasLimit: gas ?? gasLimit,
         maxFeePerGas: maxFeePerGas[0],
         maxPriorityFeePerGas: maxPriorityFeePerGas[0],
         abi: safeStringify(abi),
