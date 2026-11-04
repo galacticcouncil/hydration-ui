@@ -1,12 +1,13 @@
 import {
   AssetInput,
+  Box,
   LoadingButton,
   Modal,
   ModalBody,
+  ModalContentDivider,
   ModalFooter,
   ModalHeader,
   Separator,
-  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -23,13 +24,17 @@ type MultiplyAmountModalProps = {
   title: string
   cta: string
   note?: string
+  // replaces `note` while the amount is the max
+  maxNote?: string
+  // rendered below the input, from the amount being entered
+  summary?: (amount: string, isMax: boolean) => React.ReactNode
   asset: TAsset
   // human units
   max: string
   maxLabel: string
   priceUsd: number
   isPending: boolean
-  onSubmit: (amount: string) => void
+  onSubmit: (amount: string, isMax: boolean) => void
   onClose: () => void
 }
 
@@ -38,6 +43,8 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
   title,
   cta,
   note,
+  maxNote,
+  summary,
   asset,
   max,
   maxLabel,
@@ -47,7 +54,9 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation("common")
-  const { control, handleSubmit, formState } = useForm<{ amount: string }>({
+  const { control, handleSubmit, formState, watch } = useForm<{
+    amount: string
+  }>({
     defaultValues: { amount: "" },
     resolver: standardSchemaResolver(
       z.object({
@@ -57,12 +66,20 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
     mode: "onChange",
   })
 
+  const amount = watch("amount")
+  const isMax = amount === max
+  const shownNote = isMax && maxNote ? maxNote : note
+
   return (
     <Modal variant="popup" open onOpenChange={onClose} disableInteractOutside>
       <ModalHeader title={title} />
-      <form onSubmit={handleSubmit(({ amount }) => onSubmit(amount))}>
+      <form
+        onSubmit={handleSubmit(({ amount }) =>
+          onSubmit(amount, amount === max),
+        )}
+      >
         <ModalBody>
-          <Stack gap="l">
+          <Box pb="l">
             <Controller
               control={control}
               name="amount"
@@ -88,12 +105,16 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
                 />
               )}
             />
-            {note && (
-              <Text fs="p5" color={getToken("text.medium")}>
-                {note}
+          </Box>
+          {summary?.(amount, isMax)}
+          {shownNote && (
+            <>
+              <ModalContentDivider />
+              <Text fs="p5" color={getToken("text.medium")} pt="l">
+                {shownNote}
               </Text>
-            )}
-          </Stack>
+            </>
+          )}
         </ModalBody>
         <Separator />
         <ModalFooter>

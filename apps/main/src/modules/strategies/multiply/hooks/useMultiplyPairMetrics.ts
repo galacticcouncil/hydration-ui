@@ -1,7 +1,13 @@
-import { useReserveSummaries } from "@galacticcouncil/money-market/react"
+import {
+  useHollarFacilitator,
+  useMoneyMarket,
+  useReserveSummaries,
+} from "@galacticcouncil/money-market/react"
+import Big from "big.js"
 import { useMemo } from "react"
 
 import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
+import { isHollar } from "@/modules/money-market/reserves/reserves"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 import { getMultiplyUnavailableReason } from "@/modules/strategies/multiply/utils/availability"
 import {
@@ -25,6 +31,8 @@ export type MultiplyPairMetrics = NonNullable<
 export const useMultiplyPairMetrics = (pair: MultiplyPair) => {
   const { data: reserves, isPending } = useReserveSummaries()
   const resolveApy = useResolveReserveApy()
+  const { market } = useMoneyMarket()
+  const facilitator = useHollarFacilitator()
 
   const collateralReserve = reserves?.find(
     (r) => r.underlyingAsset.toLowerCase() === pair.collateral.toLowerCase(),
@@ -62,6 +70,17 @@ export const useMultiplyPairMetrics = (pair: MultiplyPair) => {
           }).netApy
         : null
 
+    // Hollar is minted, so its room is the facilitator bucket, not the
+    // reserve's liquidity (same rule as the borrow dashboard)
+    const availableLiquidity = isHollar(debtReserve.underlyingAsset, market)
+      ? facilitator.data
+        ? Big.max(
+            Big(facilitator.data.maxCapacity).minus(facilitator.data.level),
+            0,
+          ).toString()
+        : null
+      : debtReserve.availableLiquidity
+
     return {
       lt,
       ltv,
@@ -70,12 +89,21 @@ export const useMultiplyPairMetrics = (pair: MultiplyPair) => {
       supplyApy,
       borrowApy,
       maxNetApy,
+      availableLiquidity,
       unavailableReason:
         maxLeverage > 1
           ? getMultiplyUnavailableReason(collateralReserve, debtReserve)
           : "notBorrowable",
     }
-  }, [collateralReserve, debtReserve, pair.minHf, supplyApy, borrowApy])
+  }, [
+    collateralReserve,
+    debtReserve,
+    pair.minHf,
+    supplyApy,
+    borrowApy,
+    market,
+    facilitator.data,
+  ])
 
   return {
     data: metrics,

@@ -9,6 +9,7 @@ import {
 } from "@/modules/strategies/bil/hooks/useVaultWrites"
 import { LOOPER_FACTORY_ABI } from "@/modules/strategies/multiply/config/abi"
 import {
+  MULTIPLY_APPROVE_GAS,
   MULTIPLY_OPEN_GAS,
   MULTIPLY_QUERY_KEY_PREFIX,
 } from "@/modules/strategies/multiply/config/constants"
@@ -105,6 +106,7 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
               args: [factory, value],
             }),
             abi: [...ERC20_ABI],
+            gas: MULTIPLY_APPROVE_GAS,
           })
         }
       }
