@@ -53,7 +53,7 @@ export default {
   ...(process.env.OPENROUTER_API_KEY && {
     agents: {
       default: {
-        model: openrouter(process.env.E2E_MODEL ?? E2E_MODEL_DEFAULT),
+        model: openrouter(process.env.E2E_MODEL || E2E_MODEL_DEFAULT),
         system: 'You are a thorough QA agent. Verify every outcome.',
         context:
           "Hydration is a DeFi app on Polkadot. The connected account is watch-only: submitting a form opens a review dialog with an \"Open in Polkadot.js.org\" link instead of a signature prompt. That dialog ends every flow: stop once it opens, never close it or try to sign. \"Trade limit\" is slippage. GIGAHDX is staked HDX. Omnipool is the main liquidity pool; Borrow is the lending market.",

@@ -2,8 +2,6 @@ name: e2e
 on:
   pull_request:
     branches: [master]
-  schedule:
-    - cron: "0 3 * * *"
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +29,7 @@ jobs:
           yarn test:e2e --retries 0 "$@" || yarn test:e2e --last-failed --retries 0 "$@"
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER }}
+          E2E_MODEL: ${{ vars.E2E_MODEL }}
           GITHUB_TOKEN: ${{ github.token }}
       - name: Upload artifacts
         if: ${{ !cancelled() }}
