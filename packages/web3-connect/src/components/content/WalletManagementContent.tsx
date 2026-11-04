@@ -134,6 +134,7 @@ export const WalletManagementContent = () => {
     isPage,
     isEmbedded,
     keepSplitOpen,
+    walletFirst,
     walletListVariant,
     accountFilter: filterPageAccount,
     customSource,
@@ -179,7 +180,7 @@ export const WalletManagementContent = () => {
   )
   // Global pickers open the selected account; embedded flows start with sources.
   const [showAccounts, setShowAccounts] = useState(
-    !prioritizeConnectedWallets && !isPage && !!currentAccount,
+    !walletFirst && !prioritizeConnectedWallets && !isPage && !!currentAccount,
   )
   const [isCustomSourceSelected, setIsCustomSourceSelected] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
@@ -361,17 +362,18 @@ export const WalletManagementContent = () => {
     !!selectedWalletGroup &&
     getSelectableWallets(selectedWalletGroup, connectedProviderTypes).length > 1
 
-  const showAccountPanel = isPage
-    ? showAccounts
-    : keepSplitPanel ||
-      connectedProviderTypes.length > 0 ||
-      connectedAccountsCount > 0 ||
-      isExternalWalletSelected ||
-      isMultisigSelected ||
-      isProvidersConnecting ||
-      showSelectedWalletConnectState ||
-      showWalletGroupChainSelectState ||
-      showErrorState
+  const showAccountPanel =
+    isPage || walletFirst
+      ? showAccounts
+      : keepSplitPanel ||
+        connectedProviderTypes.length > 0 ||
+        connectedAccountsCount > 0 ||
+        isExternalWalletSelected ||
+        isMultisigSelected ||
+        isProvidersConnecting ||
+        showSelectedWalletConnectState ||
+        showWalletGroupChainSelectState ||
+        showErrorState
   const showAllAccounts =
     (isPage || showAccountPanel) && connectedAccountsCount > 0
   const showConnectedWalletSummary =
@@ -403,9 +405,11 @@ export const WalletManagementContent = () => {
    */
   useLayoutEffect(() => {
     setModalContentWidth(
-      !isDesktop || showAccountPanel ? pxToRem(650) : pxToRem(452),
+      walletFirst || !isDesktop || showAccountPanel
+        ? pxToRem(650)
+        : pxToRem(452),
     )
-  }, [isDesktop, setModalContentWidth, showAccountPanel])
+  }, [isDesktop, setModalContentWidth, showAccountPanel, walletFirst])
 
   const excludedConnectedProviders = prioritizeConnectedWallets
     ? connectedProviderTypes
@@ -1318,10 +1322,26 @@ export const WalletManagementContent = () => {
                   overflow="hidden"
                   sx={{ minHeight: 0 }}
                 >
-                  <ScrollArea>
-                    <SScrollAreaContent direction="column" gap="xl">
-                      {accountsWithBalances.length > 0 ? (
-                        selectedSource === "all" ? (
+                  {accountsWithBalances.length === 0 ? (
+                    <Flex
+                      height="100%"
+                      direction="column"
+                      justify="center"
+                      sx={{ overflowY: "auto" }}
+                    >
+                      <WalletAccountsEmptyState
+                        source={emptyStateWallet}
+                        filteredEmpty={
+                          accountSearch
+                            ? undefined
+                            : meta?.filteredAccountsEmpty
+                        }
+                      />
+                    </Flex>
+                  ) : (
+                    <ScrollArea>
+                      <SScrollAreaContent direction="column" gap="xl">
+                        {selectedSource === "all" ? (
                           groupedAccounts.map((group) => (
                             <WalletAccountSection
                               key={group.provider}
@@ -1340,19 +1360,10 @@ export const WalletManagementContent = () => {
                             isBalanceLoading={areBalancesLoading}
                             onAccountSelect={handleAccountSelect}
                           />
-                        )
-                      ) : (
-                        <WalletAccountsEmptyState
-                          source={emptyStateWallet}
-                          filteredEmpty={
-                            accountSearch
-                              ? undefined
-                              : meta?.filteredAccountsEmpty
-                          }
-                        />
-                      )}
-                    </SScrollAreaContent>
-                  </ScrollArea>
+                        )}
+                      </SScrollAreaContent>
+                    </ScrollArea>
+                  )}
                 </Box>
               </SRightColumn>
             )}

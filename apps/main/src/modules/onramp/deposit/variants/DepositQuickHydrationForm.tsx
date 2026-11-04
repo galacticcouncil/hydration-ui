@@ -25,6 +25,8 @@ import { neckworkClient } from "@/api/neckwork"
 import { ChainLogo } from "@/components/ChainLogo"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
+import { DepositSameAccountAlert } from "@/modules/onramp/deposit/components/DepositSameAccountAlert"
+import { isSameHydrationDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
 import { DepositVariantForm } from "@/modules/onramp/deposit/variants/DepositVariantForm"
@@ -81,7 +83,7 @@ export const DepositQuickHydrationForm: FC<Props> = ({
   )
   useEffect(() => {
     if (!connecting) return
-    setWalletContentWidth(pxToRem(650))
+    setWalletContentWidth(pxToRem(520))
     return () => setWalletContentWidth(null)
   }, [connecting, setWalletContentWidth])
   const { form, getMaxBalance } = useTransferPosition({ assetId: "0" })
@@ -98,15 +100,20 @@ export const DepositQuickHydrationForm: FC<Props> = ({
     !!sourceAccount &&
     sourceSigner?.provider === sourceAccount.provider &&
     sourceSigner.address === sourceAccount.address
+  const sameAccount = isSameHydrationDepositAccount(
+    sourceAccount,
+    selection.chain.key,
+    receiver?.rawAddress ?? "",
+  )
   const eligibleReceiver = (account: Account) => account.canUseOnHydration
 
   if (connecting)
     return (
       <Web3ConnectPage
         layout="split"
-        keepSplitOpen
+        walletFirst
         walletListVariant="connectedFirst"
-        onContentWidthChange={setWalletContentWidth}
+        onContentWidthChange={() => setWalletContentWidth("32.5rem")}
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.SubstrateEVM}
@@ -194,11 +201,19 @@ export const DepositQuickHydrationForm: FC<Props> = ({
                 disabled={submit.isPending}
                 onChange={() => setConnecting(true)}
               />
-              {sourceCurrent && form.formState.errors.address && (
-                <Text fs="p5" color={getToken("accents.danger.emphasis")}>
-                  {form.formState.errors.address.message}
-                </Text>
+              {sameAccount && (
+                <DepositSameAccountAlert
+                  onChange={() => setConnecting(true)}
+                  disabled={submit.isPending}
+                />
               )}
+              {!sameAccount &&
+                sourceCurrent &&
+                form.formState.errors.address && (
+                  <Text fs="p5" color={getToken("accents.danger.emphasis")}>
+                    {form.formState.errors.address.message}
+                  </Text>
+                )}
             </Stack>
           ) : null
         }
@@ -220,9 +235,13 @@ export const DepositQuickHydrationForm: FC<Props> = ({
         }
         footer={
           <Stack px={["l", "xl"]} py="l" gap="m">
-            {!receiver ? (
+            {!receiver || sameAccount ? (
               <Button size="large" onClick={() => setConnecting(true)}>
-                {t("common:connectWallet")}
+                {t(
+                  sameAccount
+                    ? "deposit.sameAccount.action"
+                    : "deposit.quick.connectDestinationWallet",
+                )}
               </Button>
             ) : (
               <LoadingButton

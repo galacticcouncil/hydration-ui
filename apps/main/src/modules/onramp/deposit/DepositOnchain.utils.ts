@@ -1,4 +1,8 @@
-import { accountPublicKey, isAddressValidOnChain } from "@galacticcouncil/utils"
+import {
+  accountPublicKey,
+  HYDRATION_CHAIN_KEY,
+  isAddressValidOnChain,
+} from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain } from "@galacticcouncil/xc-core"
 
@@ -23,3 +27,13 @@ export const isDepositReceivingAccount = (
     ? accountPublicKey(account.rawAddress) === receiverKey
     : account.rawAddress === receivingAddress
 }
+
+/** Reusing an account across chains is valid; only a local self-transfer is blocked. */
+export const isSameHydrationDepositAccount = (
+  source: Account | null | undefined,
+  sourceChainKey: string | undefined,
+  destinationAddress: string,
+) =>
+  sourceChainKey === HYDRATION_CHAIN_KEY &&
+  !!source &&
+  isDepositReceivingAccount(source, destinationAddress)

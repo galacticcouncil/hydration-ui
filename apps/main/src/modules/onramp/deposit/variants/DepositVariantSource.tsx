@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
 import { SDepositStepHeader } from "@/modules/onramp/deposit/components/DepositStepHeader.styled"
+import { DepositWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
@@ -160,6 +161,30 @@ export const DepositVariantSource: FC<DepositVariantSourceProps> = ({
           }),
           closable: true,
           hideAccountFilters: true,
+          filteredAccountsEmpty: {
+            title: t(
+              funded.isLoading
+                ? "deposit.quick.sourceLoading"
+                : "deposit.quick.sourceEmptyTitle",
+            ),
+            description: t(
+              funded.failed
+                ? "deposit.flow.assets.partial"
+                : "deposit.quick.sourceEmpty",
+              {
+                symbol: asset.originSymbol,
+                chain: pair.chain.name,
+              },
+            ),
+            loading: funded.isLoading,
+            content: (
+              <DepositWalletEmptyState
+                symbol={asset.originSymbol}
+                chain={pair.chain.name}
+                failed={funded.failed}
+              />
+            ),
+          },
           hideExternalWallet: true,
           hideMultisig: true,
         }}

@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next"
 import { portfolioBalanceQueryKey } from "@/api/portfolio"
 import { useCrossChainConfigService } from "@/api/xcm"
 import { PendingApproval } from "@/components/PendingApproval"
+import { useDepositJourneyStore } from "@/modules/onramp/deposit/store/useDepositJourneyStore"
+import { useDepositRecoveryStore } from "@/modules/onramp/deposit/store/useDepositRecoveryStore"
 import {
   isEvmApproveCall,
   isEvmCall,
@@ -32,6 +34,8 @@ import { toDecimal } from "@/utils/formatting"
 
 export type XcmTransferOptions = TransactionActions & {
   automaticBridgeSelection?: boolean
+  recoverDeposit?: boolean
+  depositRecoveryId?: string | null
   onTransferSubmitted?: (
     txHash: string,
     values: XcmFormValues,
@@ -51,6 +55,8 @@ export type XcmTransferOptions = TransactionActions & {
 
 export const useSubmitXcmTransfer = ({
   automaticBridgeSelection = false,
+  recoverDeposit = false,
+  depositRecoveryId,
   ...options
 }: XcmTransferOptions = {}) => {
   const { t } = useTranslation(["xcm", "common"])
@@ -110,6 +116,52 @@ export const useSubmitXcmTransfer = ({
       // Prerequisites (native wrap, erc20 approve) the sender signs before the
       // transfer itself, each dropping off the sequence once executed.
       const prerequisites = calls.slice(0, -1)
+      const recoveryId = recoverDeposit
+        ? (depositRecoveryId ?? crypto.randomUUID())
+        : null
+      const recovery = useDepositRecoveryStore.getState()
+      invariant(
+        !recoveryId ||
+          !recovery.deposits.some(
+            (item) => item.id === recoveryId && item.stage !== "setup",
+          ),
+        "Check the existing deposit transaction before continuing",
+      )
+      if (recoveryId)
+        recovery.save({
+          id: recoveryId,
+          source: account,
+          destination: values.destAccount,
+          destinationAddress: destAddress,
+          chainKey: srcChain.key,
+          assetKey: srcAsset.key,
+          symbol: srcAsset.originSymbol,
+          amount: srcAmount,
+          stage: "setup",
+        })
+      const submitted = (txHash: string) => {
+        if (recoveryId) {
+          recovery.update(recoveryId, { stage: "transfer", txHash })
+          useDepositJourneyStore.getState().setSubmitted({
+            txHash,
+            sourceAddress: account.address,
+            sourceProvider: account.provider,
+            destinationAddress: destAddress,
+            destinationName: values.destAccount?.name,
+            destinationProvider: values.destAccount?.provider,
+            sourceChainKey: srcChain.key,
+            symbol: srcAsset.originSymbol,
+            amount: srcAmount,
+            receivedAmount: values.destAmount,
+            receivedSymbol: destAsset.originSymbol,
+            receivedAssetKey: destAsset.key,
+            bridgeTag: values.bridgeProvider,
+            sentAt: Date.now(),
+            settled: false,
+          })
+        }
+        options.onTransferSubmitted?.(txHash, values, transfer)
+      }
 
       // Approve is the only erc20-specific prerequisite. Every other one the
       // platforms emit is a native wrap — WETH.deposit on evm, wSOL on
@@ -136,6 +188,8 @@ export const useSubmitXcmTransfer = ({
             }
 
       const buildTransferTransaction = async () => {
+        if (recoveryId)
+          recovery.update(recoveryId, { stage: "transfer", txHash: undefined })
         const tx = await buildXcmTx(srcChain, transfer, srcAmount, papi)
         const sourceFee = await transfer.estimateFee(srcAmount)
 
@@ -204,7 +258,16 @@ export const useSubmitXcmTransfer = ({
                   type: TransactionType.EvmApprove as const,
                   srcChainKey: srcChain.key,
                 },
+                beforeNext: async () => {
+                  if (recoveryId)
+                    recovery.update(recoveryId, {
+                      stage: "setup",
+                      txHash: undefined,
+                    })
+                },
                 onSubmitted: async (txHash: string) => {
+                  if (recoveryId)
+                    recovery.update(recoveryId, { stage: "pending", txHash })
                   const isEvmCallOnEvmChain =
                     !!srcChain &&
                     isAnyEvmChain(srcChain) &&
@@ -231,7 +294,7 @@ export const useSubmitXcmTransfer = ({
                 tx: buildTransferTransaction,
                 onSubmitted: (txHash: string) => {
                   transferTxHash = txHash
-                  options.onTransferSubmitted?.(txHash, values, transfer)
+                  submitted(txHash)
                 },
               },
             ],
@@ -246,6 +309,10 @@ export const useSubmitXcmTransfer = ({
             },
             onError: (message) => {
               if (transferTxHash) {
+                useDepositJourneyStore
+                  .getState()
+                  .updateSubmitted({ error: message }, transferTxHash)
+                if (recoveryId) recovery.update(recoveryId, { error: message })
                 options.onTransferError?.(transferTxHash, values, transfer)
               }
               options.onError?.(message)
@@ -259,7 +326,7 @@ export const useSubmitXcmTransfer = ({
         ...options,
         onSubmitted: (txHash) => {
           submittedTxHash = txHash
-          options.onTransferSubmitted?.(txHash, values, transfer)
+          submitted(txHash)
           options.onSubmitted?.(txHash)
         },
         onSuccess: (event) => {
@@ -269,8 +336,15 @@ export const useSubmitXcmTransfer = ({
           options.onSuccess?.(event)
         },
         onError: (message) => {
-          if (submittedTxHash)
+          if (submittedTxHash) {
+            if (recoveryId) {
+              recovery.update(recoveryId, { error: message })
+              useDepositJourneyStore
+                .getState()
+                .updateSubmitted({ error: message }, submittedTxHash)
+            }
             options.onTransferError?.(submittedTxHash, values, transfer)
+          }
           options.onError?.(message)
         },
       })

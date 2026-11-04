@@ -1,5 +1,6 @@
 import { updateQueryString } from "@galacticcouncil/utils"
 import { produce } from "immer"
+import type { ReactNode } from "react"
 import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -62,6 +63,7 @@ export type Web3ConnectModalMeta = {
     title: string
     description: string
     loading?: boolean
+    content?: ReactNode
   }
   hideExternalWallet?: boolean
   hideMultisig?: boolean

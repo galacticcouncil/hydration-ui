@@ -21,6 +21,9 @@ import { MultisigNotification } from "@/modules/layout/components/NotificationCe
 import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
 import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
+import { DepositRecoveryCards } from "@/modules/onramp/deposit/components/DepositRecoveryCards"
+import { useDepositRecoveryStore } from "@/modules/onramp/deposit/store/useDepositRecoveryStore"
+import { isDepositAccountAddress } from "@/modules/portfolio/deposits/PortfolioDepositActivity.utils"
 import { BankSetupResume } from "@/modules/ramp/BankSetupResume"
 import { useBankPreviewStore } from "@/modules/ramp/useBankPreviewStore"
 import { useClaimableTransactions } from "@/modules/xcm/history/hooks/useClaimableTransactions"
@@ -57,8 +60,19 @@ export const NotificationCenter: FC<NotificationCenterProps> = ({
   const completed = groups.completed ?? []
 
   const totalclaimableCount = visibleClaimable.length
+  const recoveryCount = useDepositRecoveryStore(
+    (state) =>
+      state.deposits.filter(
+        (deposit) =>
+          isDepositAccountAddress(deposit.source.address, account?.address) ||
+          isDepositAccountAddress(deposit.destinationAddress, account?.address),
+      ).length,
+  )
   const totalImportantCount =
-    totalclaimableCount + totalPendingTxCount + (bankSetup ? 1 : 0)
+    totalclaimableCount +
+    totalPendingTxCount +
+    (bankSetup ? 1 : 0) +
+    recoveryCount
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -98,6 +112,7 @@ export const NotificationCenter: FC<NotificationCenterProps> = ({
             {totalImportantCount > 0 && (
               <NotificationGroup label={t("important")} defaultOpen>
                 <BankSetupResume notification />
+                <DepositRecoveryCards notification />
                 {multisigs.map((multisig) => {
                   const address = safeConvertPublicKeyToSS58(multisig.pubKey)
                   const pendingTxs = pendingTxsByMultisig.get(address) ?? []

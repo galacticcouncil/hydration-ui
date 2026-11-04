@@ -123,8 +123,8 @@ export const DepositGuidedDestination: FC<DepositGuidedDestinationProps> = ({
     return (
       <Web3ConnectPage
         layout="split"
-        keepSplitOpen
-        onContentWidthChange={setWalletContentWidth}
+        walletFirst
+        onContentWidthChange={() => setWalletContentWidth("32.5rem")}
         neckwork={neckworkClient}
         papi={papi}
         mode={WalletMode.SubstrateEVM}

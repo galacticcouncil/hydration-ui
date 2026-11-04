@@ -21,7 +21,6 @@ import {
   AccountWalletAvatar,
   PROVIDERS_BY_WALLET_MODE,
   useWeb3Connect,
-  WalletMode,
   WalletProviderStatus,
   WalletRestoreState,
   Web3ConnectPage,
@@ -34,11 +33,9 @@ import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { DepositWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
 import { withHydrationDepositSource } from "@/modules/onramp/deposit/DepositLocalSource.utils"
-import {
-  canUseDepositAccount,
-  isDepositReceivingAccount,
-} from "@/modules/onramp/deposit/DepositOnchain.utils"
+import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useFundedDepositAccounts } from "@/modules/onramp/deposit/hooks/useFundedDepositAccounts"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
@@ -59,7 +56,6 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { DepositAssetNetworkPair } from "./DepositQuickAssetGroups"
-import { quickBalanceKey } from "./DepositQuickBalances.utils"
 import { DepositQuickNetworkSelect } from "./DepositQuickNetworkSelect"
 import { useQuickDepositBalances } from "./useQuickDepositBalances"
 
@@ -77,12 +73,6 @@ export const DepositQuickStart = () => {
   const catalogLoading = useAssets().all.size === 0
   const intent = useDepositJourneyStore((state) => state.assetIntent)
   const selection = useDepositJourneyStore((state) => state.selection)
-  const receivingAddress = useDepositJourneyStore(
-    (state) =>
-      state.destinationAccount?.rawAddress ??
-      state.suggestedDestinationAccount?.rawAddress ??
-      "",
-  )
   const [chainKey, setChainKey] = useState(intent?.chainKey ?? "")
   const [assetKey, setAssetKey] = useState(intent?.assetKey ?? "")
   const [sourceKey, setSourceKey] = useState("")
@@ -134,29 +124,34 @@ export const DepositQuickStart = () => {
   )
   const eligible = useCallback(
     (account: Account) =>
-      funded.accounts.some(
-        (candidate) =>
-          candidate.provider === account.provider &&
-          candidate.address === account.address,
-      ) &&
       !!selectedPair &&
       !!selectedAsset &&
-      canUseDepositAccount(account, selectedPair.chain) &&
-      (!directEntry || !isDepositReceivingAccount(account, receivingAddress)),
-    [
-      funded.accounts,
-      selectedPair,
-      selectedAsset,
-      directEntry,
-      receivingAddress,
-    ],
+      canUseDepositAccount(account, selectedPair.chain),
+    [selectedPair, selectedAsset],
   )
-  const compatible = accounts.filter(eligible)
+  const isFunded = (account: Account) =>
+    funded.accounts.some(
+      (candidate) =>
+        candidate.provider === account.provider &&
+        candidate.address === account.address,
+    )
+  const compatible = accounts
+    .filter(eligible)
+    .sort((a, b) => Number(isFunded(b)) - Number(isFunded(a)))
   const sameRoute =
     selection?.chainKey === chainKey && selection?.assetKey === assetKey
-  const selectedSource = compatible.find(
+  // Wallet identity persists independently of the asset being browsed or balance queries.
+  const selectedSource = accounts.find(
     (account) => `${account.provider}:${account.address}` === sourceKey,
   )
+  const sourceOptions =
+    selectedSource && !compatible.includes(selectedSource)
+      ? [selectedSource, ...compatible]
+      : compatible
+  const sourceCompatible =
+    !!selectedSource &&
+    !!selectedPair &&
+    canUseDepositAccount(selectedSource, selectedPair.chain)
 
   const quickBalances = useQuickDepositBalances(
     selectedSource,
@@ -166,13 +161,7 @@ export const DepositQuickStart = () => {
 
   const selectSource = useCallback(
     (account: Account) => {
-      if (
-        !selectedPair ||
-        !selectedAsset ||
-        !eligible(account) ||
-        (directEntry && isDepositReceivingAccount(account, receivingAddress))
-      )
-        return
+      if (!selectedPair || !selectedAsset || !eligible(account)) return
       const journey = useDepositJourneyStore.getState()
       const values = getValues()
       if (!directEntry) setAccount(account)
@@ -230,23 +219,10 @@ export const DepositQuickStart = () => {
       getValues,
       reset,
       directEntry,
-      receivingAddress,
       setAccount,
       eligible,
     ],
   )
-
-  useEffect(() => {
-    if (
-      !directEntry ||
-      !selection ||
-      !isDepositReceivingAccount(selection.account, receivingAddress)
-    )
-      return
-    setSourceKey("")
-    useDepositJourneyStore.setState({ selection: null, amount: "" })
-    reset({ ...getValues(), srcAmount: "", destAmount: "" })
-  }, [directEntry, selection, receivingAddress, getValues, reset])
 
   useEffect(() => {
     if (selectedSource) selectSource(selectedSource)
@@ -259,16 +235,6 @@ export const DepositQuickStart = () => {
     if (asset.key === assetKey && chain.key === chainKey) return
     setAssetKey(asset.key)
     setChainKey(chain.key)
-    const canKeepSource =
-      selectedSource &&
-      canUseDepositAccount(selectedSource, chain) &&
-      quickBalances.balances.get(quickBalanceKey(chain.key, asset.key))
-        ?.depositable
-    setSourceKey(
-      canKeepSource
-        ? `${selectedSource.provider}:${selectedSource.address}`
-        : "",
-    )
     reset({
       ...getValues(),
       srcChain: null,
@@ -334,7 +300,7 @@ export const DepositQuickStart = () => {
         keepSplitOpen={directEntry}
         neckwork={neckworkClient}
         papi={papi}
-        mode={WalletMode.Default}
+        mode={getWalletModeByChain(selectedPair.chain)}
         accountFilter={eligible}
         meta={{
           title: t("deposit.variants.connectTitle", {
@@ -355,15 +321,20 @@ export const DepositQuickStart = () => {
             description: t(
               funded.failed
                 ? "deposit.flow.assets.partial"
-                : directEntry
-                  ? "deposit.quick.sourceEmptyDifferent"
-                  : "deposit.quick.sourceEmpty",
+                : "deposit.quick.sourceEmpty",
               {
                 symbol: selectedAsset.originSymbol,
                 chain: selectedPair.chain.name,
               },
             ),
             loading: funded.isLoading || walletsLoading,
+            content: (
+              <DepositWalletEmptyState
+                symbol={selectedAsset.originSymbol}
+                chain={selectedPair.chain.name}
+                failed={funded.failed}
+              />
+            ),
           },
           hideExternalWallet: true,
           hideMultisig: true,
@@ -404,7 +375,7 @@ export const DepositQuickStart = () => {
         <Text fs="p5" color={getToken("text.medium")}>
           {t("deposit.quick.sourceWallet")}
         </Text>
-        {directEntry || compatible.length > 0 ? (
+        {directEntry || sourceOptions.length > 0 ? (
           <Select
             iconEnd={ClassicChevronDownSmall}
             sx={{
@@ -423,7 +394,7 @@ export const DepositQuickStart = () => {
             value={selectedSource ? sourceKey : undefined}
             iconSize={24}
             items={[
-              ...compatible.map((account) => ({
+              ...sourceOptions.map((account) => ({
                 key: `${account.provider}:${account.address}`,
                 label: `${account.name} · ${getWallet(account.provider)?.title ?? ""} · ${shortenAccountAddress(account.displayAddress)}`,
                 icon: () => (
@@ -450,7 +421,7 @@ export const DepositQuickStart = () => {
                 setConnecting(true)
                 return
               }
-              const account = compatible.find(
+              const account = sourceOptions.find(
                 (account) => `${account.provider}:${account.address}` === key,
               )
               if (!account) return
@@ -467,25 +438,40 @@ export const DepositQuickStart = () => {
             onClick={() => setConnecting(true)}
           >
             <Icon component={Wallet} size="m" />
-            {t("deposit.quick.connectWallet")}
+            {t("deposit.quick.connectSourceWallet")}
           </Button>
         )}
-        {selectedAsset &&
+        {selectedSource &&
+          selectedAsset &&
+          selectedPair &&
+          (!sourceCompatible ? (
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("deposit.quick.incompatibleSource", {
+                chain: selectedPair.chain.name,
+              })}
+            </Text>
+          ) : !funded.isLoading &&
+            !funded.failed &&
+            !isFunded(selectedSource) ? (
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("deposit.quick.emptySourceBalance", {
+                symbol: selectedAsset.originSymbol,
+                chain: selectedPair.chain.name,
+              })}
+            </Text>
+          ) : null)}
+        {!selectedSource &&
+          selectedAsset &&
           !funded.isLoading &&
           !funded.failed &&
           !compatible.length && (
-            <Flex gap="s" align="center">
-              <Icon component={Wallet} size="m" />
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t(
-                  directEntry
-                    ? "deposit.quick.sourceEmptyDifferent"
-                    : "deposit.quick.sourceEmpty",
-                  {
-                    symbol: selectedAsset.originSymbol,
-                    chain: selectedPair?.chain.name ?? "",
-                  },
-                )}
+            <Flex gap="s" align="center" color={getToken("text.medium")}>
+              <Icon component={Wallet} size="s" sx={{ flexShrink: 0 }} />
+              <Text fs="p5" color={getToken("text.medium")} align="left">
+                {t("deposit.quick.sourceEmpty", {
+                  symbol: selectedAsset.originSymbol,
+                  chain: selectedPair?.chain.name ?? "",
+                })}
               </Text>
             </Flex>
           )}
@@ -593,6 +579,13 @@ export const DepositQuickStart = () => {
             }
             assetSelectorDisabled={!pairs.length}
             destination={destination}
+            onConnectSource={
+              selectedPair &&
+              selectedAsset &&
+              (!selectedSource || !sourceCompatible)
+                ? () => setConnecting(true)
+                : undefined
+            }
             onConnectDestination={connectDestination}
             footerHint={sourceHint}
             recipientReady={ready && !!selectedSource && sameRoute}

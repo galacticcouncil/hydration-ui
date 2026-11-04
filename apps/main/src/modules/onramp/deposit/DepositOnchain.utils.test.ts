@@ -10,6 +10,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   canUseDepositAccount,
   isDepositReceivingAccount,
+  isSameHydrationDepositAccount,
 } from "@/modules/onramp/deposit/DepositOnchain.utils"
 
 // The picker owns address validation; the native wallet mode gate remains upstream.
@@ -87,5 +88,38 @@ describe("Deposit source accounts", () => {
         chain("ethereum"),
       ),
     ).toBe(true)
+  })
+})
+
+describe("same-account deposits", () => {
+  it("blocks a Hydration self-transfer across address formats", () => {
+    expect(
+      isSameHydrationDepositAccount(
+        account(WalletProviderType.MetaMask, evm),
+        "hydration",
+        safeConvertH160toSS58(evm),
+      ),
+    ).toBe(true)
+  })
+  it("allows the same identity when funds come from another chain", () => {
+    expect(
+      isSameHydrationDepositAccount(
+        account(WalletProviderType.MetaMask, evm),
+        "ethereum",
+        safeConvertH160toSS58(evm),
+      ),
+    ).toBe(false)
+  })
+  it("allows another recipient and waits for a selected source", () => {
+    expect(
+      isSameHydrationDepositAccount(
+        account(WalletProviderType.MetaMask, evm),
+        "hydration",
+        substrate,
+      ),
+    ).toBe(false)
+    expect(isSameHydrationDepositAccount(null, "hydration", substrate)).toBe(
+      false,
+    )
   })
 })

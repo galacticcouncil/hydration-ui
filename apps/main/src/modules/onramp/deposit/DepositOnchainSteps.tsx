@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
+import { DepositWalletEmptyState } from "@/modules/onramp/deposit/components/DepositWalletEmptyState"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { depositStepAfterSource } from "@/modules/onramp/deposit/DepositWalletFirstFlow.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
@@ -40,7 +41,7 @@ export const DepositOnchainSteps = () => {
     return (
       <Web3ConnectPage
         layout="split"
-        keepSplitOpen={walletFirstFlow === "connected"}
+        keepSplitOpen
         onContentWidthChange={setWalletContentWidth}
         neckwork={neckworkClient}
         papi={papi}
@@ -64,6 +65,32 @@ export const DepositOnchainSteps = () => {
           ),
           closable: true,
           hideAccountFilters: true,
+          filteredAccountsEmpty: resumingAsset
+            ? {
+                title: t(
+                  funded.isLoading
+                    ? "deposit.quick.sourceLoading"
+                    : "deposit.quick.sourceEmptyTitle",
+                ),
+                description: t(
+                  funded.failed
+                    ? "deposit.flow.assets.partial"
+                    : "deposit.quick.sourceEmpty",
+                  {
+                    symbol: sourceAsset.originSymbol,
+                    chain: sourceChain.name,
+                  },
+                ),
+                loading: funded.isLoading,
+                content: (
+                  <DepositWalletEmptyState
+                    symbol={sourceAsset.originSymbol}
+                    chain={sourceChain.name}
+                    failed={funded.failed}
+                  />
+                ),
+              }
+            : undefined,
         }}
         onBack={() => {
           if (resumingAsset) {

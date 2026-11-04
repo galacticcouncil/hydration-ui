@@ -39,12 +39,6 @@ export const SOnrampVariantRoot = styled(TabsRoot, {
           flex: 1;
         }
       `}
-    max-height: calc(
-      100dvh - 2 * var(--modal-block-offset) - var(
-          --onramp-bottom-content-height,
-          0px
-        )
-    );
   }
 
   ${mq("max-xs")} {

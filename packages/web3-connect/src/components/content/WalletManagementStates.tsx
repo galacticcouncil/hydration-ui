@@ -237,9 +237,14 @@ export const WalletAccountsEmptyState: React.FC<{
     title: string
     description: string
     loading?: boolean
+    content?: React.ReactNode
   }
 }> = ({ source, filteredEmpty }) => {
   const { t } = useTranslation()
+
+  if (filteredEmpty?.content && !filteredEmpty.loading) {
+    return <>{filteredEmpty.content}</>
+  }
 
   return (
     <Flex

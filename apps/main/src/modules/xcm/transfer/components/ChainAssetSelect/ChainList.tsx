@@ -28,6 +28,7 @@ export type ChainListProps = {
   variant?: "rail" | "list"
   fillHeight?: boolean
   compact?: boolean
+  getChainName?: (chain: AnyChain) => string
 }
 
 export const ChainList: React.FC<ChainListProps> = ({
@@ -37,6 +38,7 @@ export const ChainList: React.FC<ChainListProps> = ({
   variant = "rail",
   fillHeight = false,
   compact = false,
+  getChainName = (chain) => chain.name,
 }) => {
   const { isMobile } = useBreakpoints()
   const isList = variant === "list"
@@ -75,8 +77,10 @@ export const ChainList: React.FC<ChainListProps> = ({
               variant={isActive ? "accent" : isList ? "muted" : "transparent"}
               outline={isActive}
               aria-disabled={isDisabled}
-              aria-label={chain.name}
+              aria-label={getChainName(chain)}
+              title={chain.name}
               sx={{
+                minWidth: 0,
                 width: isList ? "100%" : isMobile ? pxToRem(44) : "100%",
                 justifyContent: isList
                   ? "flex-start"
@@ -101,12 +105,14 @@ export const ChainList: React.FC<ChainListProps> = ({
               />
               <Text
                 flex={1}
+                minWidth={0}
+                truncate
                 display={isList ? "block" : ["none", "block"]}
                 color={
                   isActive ? getToken("text.high") : getToken("text.medium")
                 }
               >
-                {chain.name}
+                {getChainName(chain)}
               </Text>
             </Button>
             {isDisabled && (

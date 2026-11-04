@@ -50,6 +50,7 @@ type OnrampModalState = {
   openSelectedDepositFlow: () => void
   openDepositChoice: () => void
   walletFirstFlow: DepositWalletFirstFlow
+  depositRecoveryId: string | null
   depositSourceAccount: Account | null
   depositSuggestedDestination: Account | null
   setDepositSourceAccount: (account: Account) => void
@@ -104,6 +105,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
     })
   },
   walletFirstFlow: "current",
+  depositRecoveryId: null,
   depositSourceAccount: null,
   depositSuggestedDestination: null,
   setDepositSourceAccount: (depositSourceAccount) =>
@@ -202,6 +204,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       set({
         modal: "depositOnchain",
         walletFirstFlow: flow,
+        depositRecoveryId: null,
         depositSourceAccount: null,
         depositSuggestedDestination: suggested,
         walletFirstAsset: options?.assetIntent ?? null,

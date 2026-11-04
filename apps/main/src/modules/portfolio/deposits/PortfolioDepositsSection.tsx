@@ -4,6 +4,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { DepositRecoveryCards } from "@/modules/onramp/deposit/components/DepositRecoveryCards"
 import { BankSetupResume } from "@/modules/ramp/BankSetupResume"
 
 import { PortfolioDepositClaims } from "./PortfolioDepositClaims"
@@ -64,6 +65,7 @@ export const PortfolioDepositsSection: FC<PortfolioDepositsSectionProps> = ({
         />
       </Flex>
       <BankSetupResume />
+      <DepositRecoveryCards />
       <PortfolioDepositClaims />
       <PortfolioTransferHistory
         search={search}

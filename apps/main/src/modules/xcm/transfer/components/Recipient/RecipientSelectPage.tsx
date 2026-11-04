@@ -40,7 +40,7 @@ export const RecipientSelectPage = ({
   return (
     <Web3ConnectPage
       layout="split"
-      keepSplitOpen
+      walletFirst
       neckwork={neckworkClient}
       papi={papi}
       mode={destChain ? getWalletModeByChain(destChain) : WalletMode.Default}

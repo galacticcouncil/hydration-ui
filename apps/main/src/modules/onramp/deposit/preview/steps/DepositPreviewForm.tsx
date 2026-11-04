@@ -1,8 +1,10 @@
+import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Box,
   Button,
   Flex,
+  Icon,
   Separator,
   Stack,
   Text,
@@ -76,6 +78,7 @@ type DepositPreviewFormProps = {
   assetSelector?: (disabled: boolean) => ReactNode
   assetSelectorLayout?: OnrampAssetAmountProps["assetSelectorLayout"]
   onBack?: () => void
+  onConnectSource?: () => void
   onConnectDestination?: () => void
 }
 
@@ -92,6 +95,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
   assetSelector,
   assetSelectorLayout,
   onBack,
+  onConnectSource,
   onConnectDestination,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
@@ -168,6 +172,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
       : undefined,
   )
   const submit = useSubmitXcmTransfer({
+    recoverDeposit: true,
     automaticBridgeSelection: true,
     onTransferSubmitted: (txHash, values, transfer) => {
       if (!account) return
@@ -200,6 +205,7 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         settled: false,
       })
       void queryClient.invalidateQueries({ queryKey: ["deposit", "balances"] })
+      setModal(null)
     },
     onTransferError: (txHash) => {
       if (account) removeOptimisticJourney(queryClient, account.address, txHash)
@@ -409,14 +415,19 @@ export const DepositPreviewForm: FC<DepositPreviewFormProps> = ({
         summary={<OnrampTransferSummary />}
         footer={
           <>
-            {onConnectDestination ? (
+            {onConnectSource || onConnectDestination ? (
               <Box px={["l", "xl"]} py="l">
                 <Button
                   width="100%"
                   size="large"
-                  onClick={onConnectDestination}
+                  onClick={onConnectSource ?? onConnectDestination}
                 >
-                  {t("common:connectWallet")}
+                  <Icon component={Wallet} size="m" />
+                  {t(
+                    onConnectSource
+                      ? "deposit.quick.connectSourceWallet"
+                      : "deposit.quick.connectDestinationWallet",
+                  )}
                 </Button>
               </Box>
             ) : (

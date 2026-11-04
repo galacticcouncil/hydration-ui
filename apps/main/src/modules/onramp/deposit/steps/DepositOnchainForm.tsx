@@ -1,3 +1,4 @@
+import { WalletIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   Flex,
@@ -19,6 +20,8 @@ import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
 import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
+import { DepositSameAccountAlert } from "@/modules/onramp/deposit/components/DepositSameAccountAlert"
+import { isSameHydrationDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/DepositOnchain.utils"
 import { DepositOnchainDestination } from "@/modules/onramp/deposit/steps/DepositOnchainDestination"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
@@ -48,6 +51,11 @@ export const DepositOnchainForm = () => {
     "destAccount",
     "destAddress",
   ])
+  const sameAccount = isSameHydrationDepositAccount(
+    account,
+    srcChain?.key,
+    destAddress,
+  )
   const isSourceCompatible =
     !!srcChain && canUseDepositAccount(account, srcChain)
   const paginateTo = useOnrampStore((state) => state.paginateTo)
@@ -67,7 +75,10 @@ export const DepositOnchainForm = () => {
       ? (getHydrationAssetId(srcAsset, srcChain?.key ?? "") ?? undefined)
       : undefined,
   )
+  const depositRecoveryId = useOnrampModal((state) => state.depositRecoveryId)
   const submit = useSubmitXcmTransfer({
+    depositRecoveryId,
+    recoverDeposit: true,
     automaticBridgeSelection: true,
     onTransferSubmitted: (txHash, values, transfer) => {
       if (account)
@@ -79,6 +90,7 @@ export const DepositOnchainForm = () => {
           transfer,
         )
       resetAmounts()
+      setModal(null)
     },
     onTransferError: (txHash) => {
       if (account) removeOptimisticJourney(queryClient, account.address, txHash)
@@ -176,6 +188,12 @@ export const DepositOnchainForm = () => {
               Hydration
             </Text>
           </Flex>
+          {sameAccount && (
+            <DepositSameAccountAlert
+              onChange={selectRecipient}
+              disabled={submit.isPending}
+            />
+          )}
           {destAddress ? (
             <DepositAccountButton
               active
@@ -185,7 +203,12 @@ export const DepositOnchainForm = () => {
               onChange={selectRecipient}
             />
           ) : (
-            <Button variant="secondary" onClick={selectRecipient}>
+            <Button
+              variant="secondary"
+              size="large"
+              iconStart={WalletIcon}
+              onClick={selectRecipient}
+            >
               {t("deposit.onchain.selectDestination")}
             </Button>
           )}
@@ -194,12 +217,12 @@ export const DepositOnchainForm = () => {
         <Separator />
         <XcmFooter
           isSubmitting={submit.isPending}
-          canSubmit={isSourceCompatible}
+          canSubmit={isSourceCompatible && !sameAccount}
           onCancel={() => setModal(null)}
           submitLabel={t("deposit.onchain.confirm")}
           onSubmit={() => {
             void handleSubmit((values) => {
-              if (transfer && isSourceCompatible)
+              if (transfer && isSourceCompatible && !sameAccount)
                 submit.mutate([values, transfer])
             })()
           }}

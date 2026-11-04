@@ -91,7 +91,15 @@ export const SOnrampModalViewport = styled.div`
 
   ${mq("sm")} {
     height: auto;
-    overflow: hidden;
+    max-height: calc(
+      100dvh - 2 * var(--modal-block-offset) - var(
+          --onramp-bottom-content-height,
+          0px
+        ) - var(--modal-top-content-height, 0px)
+    );
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -80,8 +80,10 @@ export const OnrampModal = () => {
     modal === "depositOnchain" &&
     (page === OnrampScreen.DepositOnchainRecipient ||
       page === OnrampScreen.DepositOnchainDestination)
-      ? 650
-      : (isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)) ||
+      ? 520
+      : (modal === "depositOnchain" &&
+            page === OnrampScreen.DepositOnchainForm) ||
+          (isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)) ||
           (modal === "depositOnchainPreview" && depositFlow !== "preview")
         ? 520
         : isTransferFlow
