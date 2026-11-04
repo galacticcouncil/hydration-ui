@@ -3,6 +3,7 @@ import {
   ChevronUp,
   Layers,
   Search,
+  WalletIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
@@ -26,6 +27,7 @@ import {
   WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
+import { WalletSourceButton } from "@galacticcouncil/web3-connect/src/components/content/WalletManagementSource"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { useState } from "react"
@@ -64,6 +66,7 @@ export const DepositConnectedAssets = ({
   splitWallets?: boolean
 }) => {
   const [connecting, setConnecting] = useState(false)
+  const [walletSearch, setWalletSearch] = useState("")
   const { papi } = useRpcProvider()
   const { t } = useTranslation(["onramp", "common"])
   const { gte } = useBreakpoints()
@@ -220,51 +223,52 @@ export const DepositConnectedAssets = ({
           >
             {splitWallets ? (
               <Stack gap="s" justify="flex-start" sx={{ overflowY: "auto" }}>
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t("deposit.quick.sourceWallet")}
-                </Text>
-                <Button
-                  size="small"
-                  variant={!sourceAccount ? "secondary" : "muted"}
+                <Input
+                  iconStart={Search}
+                  placeholder={t("deposit.split.searchWallets")}
+                  aria-label={t("deposit.split.searchWallets")}
+                  value={walletSearch}
+                  onChange={(event) => setWalletSearch(event.target.value)}
+                />
+                <WalletSourceButton
+                  title={t("deposit.split.allWallets")}
+                  icon={Layers}
+                  active={!sourceAccount}
                   onClick={() => {
                     useOnrampModal.setState({ depositSourceAccount: null })
                     setChainKey(null)
                   }}
-                >
-                  {t("deposit.split.allWallets")}
-                </Button>
-                {data.accounts.map((account) => (
-                  <Button
-                    key={`${account.provider}:${account.address}`}
-                    variant={
-                      sourceAccount?.provider === account.provider &&
-                      sourceAccount.address === account.address
-                        ? "secondary"
-                        : "muted"
-                    }
-                    onClick={() => {
-                      setSourceAccount(account)
-                      setChainKey(null)
-                    }}
-                    sx={{ height: "auto", py: "m", minWidth: 0 }}
-                  >
-                    <Stack gap="xs" minWidth={0}>
-                      <Text fs="p5" truncate>
-                        {getWallet(account.provider)?.title} · {account.name}
-                      </Text>
-                      <Text fs="p6" truncate>
-                        {shortenAccountAddress(account.displayAddress)}
-                      </Text>
-                    </Stack>
-                  </Button>
-                ))}
-                <Button
-                  size="small"
-                  variant="secondary"
+                />
+                {data.accounts
+                  .filter((account) =>
+                    `${getWallet(account.provider)?.title} ${account.name} ${account.displayAddress}`
+                      .toLowerCase()
+                      .includes(walletSearch.trim().toLowerCase()),
+                  )
+                  .map((account) => (
+                    <WalletSourceButton
+                      key={`${account.provider}:${account.address}`}
+                      title={
+                        getWallet(account.provider)?.title ?? account.provider
+                      }
+                      subtitle={`${account.name} · ${shortenAccountAddress(account.displayAddress)}`}
+                      logo={getWallet(account.provider)?.logo}
+                      connected
+                      active={
+                        sourceAccount?.provider === account.provider &&
+                        sourceAccount.address === account.address
+                      }
+                      onClick={() => {
+                        setSourceAccount(account)
+                        setChainKey(null)
+                      }}
+                    />
+                  ))}
+                <WalletSourceButton
+                  title={t("deposit.quick.connectSourceWallet")}
+                  icon={WalletIcon}
                   onClick={() => setConnecting(true)}
-                >
-                  {t("deposit.quick.connectSourceWallet")}
-                </Button>
+                />
               </Stack>
             ) : (
               <>
