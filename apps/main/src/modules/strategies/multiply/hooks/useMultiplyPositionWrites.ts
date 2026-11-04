@@ -14,6 +14,7 @@ import {
 } from "@/modules/strategies/multiply/config/abi"
 import {
   MULTIPLY_ACTION_GAS,
+  MULTIPLY_APPROVE_GAS,
   MULTIPLY_QUERY_KEY_PREFIX,
 } from "@/modules/strategies/multiply/config/constants"
 import {
@@ -80,6 +81,7 @@ export const useMultiplyPositionWrites = (pair: MultiplyPair) => {
             args: [factory, amountBig],
           }),
           abi: [...ERC20_ABI],
+          gas: MULTIPLY_APPROVE_GAS,
         })
       }
 

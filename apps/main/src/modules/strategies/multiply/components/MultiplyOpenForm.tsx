@@ -13,19 +13,24 @@ import {
   Stack,
   Summary,
   SummaryRow,
+  SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
 import { useAccountBalances } from "@/api/balances/account.hooks"
+import { bestSellQuery } from "@/api/trade"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { useMultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
+import { MultiplySwapResult } from "@/modules/strategies/multiply/components/MultiplySwapResult"
 import {
   MULTIPLY_DEFAULT_LEVERAGE,
   MULTIPLY_LEVERAGE_STEP,
@@ -35,8 +40,12 @@ import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 import { useFactoryMaxLeverage } from "@/modules/strategies/multiply/hooks/useLooperFactory"
 import { type MultiplyPairMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useOpenMultiplyPosition } from "@/modules/strategies/multiply/hooks/useOpenMultiplyPosition"
-import { projectMultiplyPosition } from "@/modules/strategies/multiply/utils/projection"
+import {
+  getEntryCost,
+  projectMultiplyPosition,
+} from "@/modules/strategies/multiply/utils/projection"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { percentageOf } from "@/utils/formatting"
 
 type MultiplyOpenFormProps = {
@@ -56,6 +65,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
+  const rpc = useRpcProvider()
   const { data: factoryMaxLeverage } = useFactoryMaxLeverage(pair)
   const openMutation = useOpenMultiplyPosition(pair)
 
@@ -91,6 +101,28 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     supplyApy: metrics.supplyApy ?? 0,
     borrowApy: metrics.borrowApy ?? 0,
   })
+
+  // The ramp swaps the whole debt into collateral; quote it to price the entry.
+  const [debouncedDebt] = useDebouncedValue(
+    projection.debt > 0 ? projection.debt.toFixed(debt.decimals) : "",
+  )
+  const { data: entryQuote, isLoading: isEntryQuoteLoading } = useQuery(
+    bestSellQuery(rpc, {
+      assetIn: pair.debtAssetId,
+      assetOut: pair.collateralAssetId,
+      amountIn: debouncedDebt,
+    }),
+  )
+  const entryCost = entryQuote
+    ? getEntryCost({
+        amount: Number(amount || 0),
+        debt: Number(debouncedDebt),
+        quotedOut: Number(
+          formatUnits(entryQuote.amountOut, collateral.decimals),
+        ),
+        collateralPriceInDebt: collateralPriceUsd / debtPriceUsd,
+      })
+    : null
 
   const leverageLabel = (value: number) =>
     t("cards.multiply.leverage", { value })
@@ -184,7 +216,9 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             <Paper p="m" shadow={false}>
               <Flex justify="space-between" align="center">
                 <Stack>
-                  <Text fs="p4">{t("multiply.open.multiplied")}</Text>
+                  <Text fs="p4" fw={500}>
+                    {t("multiply.open.multiplied")}
+                  </Text>
                   <Text fs="p6" color={getToken("text.medium")}>
                     {t("multiply.open.leverageValue", {
                       value: leverageLabel(leverage),
@@ -209,13 +243,15 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             {metrics.unavailableReason && (
               <Alert
                 variant="warning"
-                title={t(`multiply.unavailable.${metrics.unavailableReason}`)}
+                description={t(
+                  `multiply.unavailable.${metrics.unavailableReason}`,
+                )}
               />
             )}
             {account && !hasFeeBudget && (
               <Alert
                 variant="warning"
-                title={t("multiply.open.feeBudgetLow", {
+                description={t("multiply.open.feeBudgetLow", {
                   amount: feeBudget,
                   symbol: feeAsset.symbol,
                 })}
@@ -240,6 +276,20 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             <CollapsibleContent>
               <Separator mx="-xl" />
               <Summary separator={<Separator mx="-xl" />}>
+                <SummaryRow
+                  label={t("multiply.open.netApy")}
+                  content={
+                    <SummaryRowValue
+                      color={
+                        projection.netApy > 0
+                          ? getToken("accents.success.emphasis")
+                          : getToken("text.high")
+                      }
+                    >
+                      {t("common:percent", { value: projection.netApy * 100 })}
+                    </SummaryRowValue>
+                  }
+                />
                 <SummaryRow
                   label={t("multiply.open.totalCollateral")}
                   content={t("common:currency", {
@@ -271,13 +321,30 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
                   })}
                 />
                 <SummaryRow
-                  label={t("multiply.open.netApy")}
-                  content={t("common:percent", {
-                    value: projection.netApy * 100,
-                  })}
+                  label={
+                    entryCost && entryCost.cost < 0
+                      ? t("multiply.open.entryGain")
+                      : t("multiply.open.entryCost")
+                  }
+                  tooltip={t("multiply.open.entryTooltip")}
+                  loading={isEntryQuoteLoading}
+                  content={
+                    entryCost ? (
+                      <MultiplySwapResult
+                        value={-entryCost.cost}
+                        base={Number(amount || 0)}
+                        symbol={collateral.symbol}
+                      />
+                    ) : (
+                      "-"
+                    )
+                  }
                 />
                 <SummaryRow
                   label={t("multiply.open.feeBudget")}
+                  tooltip={t("multiply.open.feeBudgetTooltip", {
+                    symbol: feeAsset.symbol,
+                  })}
                   content={t("common:currency", {
                     value: feeBudget,
                     symbol: feeAsset.symbol,

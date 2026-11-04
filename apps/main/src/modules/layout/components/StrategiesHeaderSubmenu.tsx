@@ -1,7 +1,11 @@
 import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import { Box, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  BIL_ERC20_ID,
+  HOLLAR_ASSET_ID,
+  PRIME_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -17,6 +21,7 @@ const STRATEGY_ASSET_ICON_BY_KEY: Partial<
 > = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
+  strategiesMultiply: PRIME_ASSET_ID,
 }
 
 type Props = {
@@ -28,7 +33,7 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
   const { isReady } = useRpcProvider()
   const { getAsset } = useAssets()
 
-  return items.map(({ key, to, search }) => {
+  return items.map(({ key, to, params, search }) => {
     const assetIconId = STRATEGY_ASSET_ICON_BY_KEY[key]
     const showAssetIcon =
       isReady &&
@@ -37,7 +42,7 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
 
     return (
       <SDetailedLink key={key} asChild>
-        <Link to={to} search={search}>
+        <Link to={to} params={params} search={search}>
           {key === "strategiesJuicer" ? (
             <JuicerStrategyLogo size="medium" />
           ) : showAssetIcon ? (

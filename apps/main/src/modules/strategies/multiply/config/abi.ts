@@ -153,7 +153,7 @@ export const LOOPER_POSITION_ABI = [
   view("request", "uint256"),
   view("principal", "uint256"),
   view("targetLeverage", "uint256"),
-  view("aaveLeverage", "uint256"),
+  view("leverage", "uint256"),
   view("effectiveHealthFactor", "uint256"),
   view("collateral", "uint256"),
   view("debt", "uint256"),
