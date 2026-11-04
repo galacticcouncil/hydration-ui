@@ -31,7 +31,7 @@ export const JuicerStrategyCard: FC = () => {
           isLoading,
         },
       ]}
-      badges={[StrategyBadgeType.Leverage, StrategyBadgeType.NoLiquidation]}
+      badges={[StrategyBadgeType.Leverage, StrategyBadgeType.OneToOneExposure]}
       link={LINKS.strategiesJuicer}
     />
   )

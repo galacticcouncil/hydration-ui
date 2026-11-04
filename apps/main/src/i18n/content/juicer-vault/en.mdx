@@ -1,21 +1,19 @@
-A confirmed deposit supplies **your collateral asset** to the money market and mints funded vault shares. It does not borrow or trade into the strategy during your deposit transaction; paying with another asset first swaps it into the collateral within your trade limit. Keepers then borrow HOLLAR and build the shared **leveraged PRIME position** gradually through trades that respect the vault’s price limits.
+You deposit one asset, for example ETH. It's supplied to the Hydration money market and you receive **vault shares**. Your exposure to the asset stays **1:1**; your deposit is never traded into the strategy.
 
-Collateral awaiting deployment is pooled across the vault, including deposits and harvested earnings. It is not a separate personal queue or a promise of when your position will be fully deployed. Trading limits and market conditions determine the pace; the vault manages borrowing and rebalancing for you.
+The vault borrows HOLLAR against the pooled collateral and builds a looped **PRIME position**. PRIME earns yield from real-world credit. The position is built gradually, so new deposits start earning as they're deployed.
 
-Harvested yield is converted into your collateral asset. Protocol fees and interest are paid before the remainder becomes funded collateral rewards. Keepers can then deploy that new collateral gradually; some earned yield stays invested in PRIME awaiting conversion. Returns vary with yield, borrowing rates and trading costs.
+### Earnings
 
-Converted earnings become **funded collateral shares** and count towards your balance automatically; there is nothing to claim, and further strategy deployment happens gradually. Yield that has not been harvested yet shows separately as **pending yield**. It is an estimate, not a funded collateral balance.
+Harvested PRIME yield pays interest and fees first. The rest is converted into your deposited asset and added to your balance, with **nothing to claim**. Yield not yet harvested shows as **pending yield**. Earnings only arrive while the PRIME position is worth more than the vault borrowed, so they can be zero for a while.
 
-### Key features
+### Withdrawals
 
-- The vault manages the leveraged position
-- Available rewards compound into your deposited asset
-- You can request a full or partial withdrawal when withdrawals are enabled
+Request all or part **at any time**. Your shares keep earning during the cooldown. After it, the amount you get back is fixed and your part of the position unwinds. Claim it **in parts** as it settles; anything recovered later can be claimed in HOLLAR.
 
-### Withdrawals and risk
+### Risks
 
-Exits go through an **async withdrawal queue**. Your shares remain invested during the configured cooldown. When unwinding starts after that delay, the vault fixes your collateral claim. The cooldown is the earliest unwind start, **not a payout deadline**.
+- A sudden drop in PRIME's price can liquidate the looped position.
+- Withdrawals can take longer when many are open, and they can be paused.
+- If the position falls short, your claim stays, but payment may wait for recovery funding.
 
-Your collateral becomes claimable as the withdrawal settles, **possibly in parts**. Later source recoveries may also become claimable in HOLLAR, even after you have claimed the collateral.
-
-Juicer aims to preserve principal in the deposited asset. The leveraged PRIME position can lose value or be liquidated, and protection depends on functioning oracles, keepers and governance. A shortfall preserves your unpaid collateral claim but may require recovery funding before payment. This is not a guarantee of immediate withdrawal or full recovery.
+Returns, principal and timing are not guaranteed.
