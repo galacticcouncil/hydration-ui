@@ -91,15 +91,30 @@ export class Store {
     )
     for (const f of samples)
       insert.run(sha, observer, f.path, f.sha256, f.size || 0)
-    const count = this.db
-      .prepare("SELECT COUNT(*) AS n FROM pending_evidence")
-      .get().n
-    if (count > 20000) {
+    if (this.pendingCount() > 20000) {
       this.set("evidenceOverflow", true)
       this.db.exec(
         "DELETE FROM pending_evidence WHERE rowid NOT IN (SELECT rowid FROM pending_evidence ORDER BY rowid LIMIT 20000)",
       )
     }
+  }
+  // samples of older production commits can no longer be resolved; keep the last few
+  trimPending(sha, keep = 3) {
+    const recent = [
+      sha,
+      ...this.get("pendingShas", []).filter((s) => s !== sha),
+    ].slice(0, keep)
+    this.set("pendingShas", recent)
+    this.db
+      .prepare(
+        `DELETE FROM pending_evidence WHERE sha NOT IN (${recent.map(() => "?").join(",")})`,
+      )
+      .run(...recent)
+    if (this.get("evidenceOverflow") && this.pendingCount() < 20000)
+      this.set("evidenceOverflow", false)
+  }
+  pendingCount() {
+    return this.db.prepare("SELECT COUNT(*) AS n FROM pending_evidence").get().n
   }
   resolvePending(references) {
     const findings = []

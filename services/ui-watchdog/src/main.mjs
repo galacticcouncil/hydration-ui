@@ -32,6 +32,7 @@ if (["browser", "observer"].includes(c.role)) {
   let source = store.get("source"),
     sourceError = null,
     sourceChecked = 0
+  if (source?.sha) store.trimPending(source.sha)
   let referenceStatus = {
     state: c.token ? "pending" : "unconfigured",
     message: c.token
@@ -114,6 +115,11 @@ if (["browser", "observer"].includes(c.role)) {
     pollSeconds: c.pollSeconds,
     references: referenceStatus,
     sourceError,
+    evidence: {
+      pending: store.pendingCount(),
+      overflow: Boolean(store.get("evidenceOverflow")),
+      retrospective: (store.get("retrospectiveIssues", []) || []).length,
+    },
     notifications: {
       configured: Boolean(c.webhook),
       ...store.notifications(),
@@ -145,6 +151,7 @@ if (["browser", "observer"].includes(c.role)) {
         source = { sha, firstSeen: Date.now() }
         referenceStatus = { state: c.token ? "pending" : "unconfigured", sha }
         store.set("source", source)
+        store.trimPending(sha)
         const changelog = previous
           ? await github.compare(previous, sha).catch(() => null)
           : null

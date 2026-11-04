@@ -121,7 +121,8 @@ become a critical incident even if the live app has since recovered, and are
 posted as `retrospective_mismatch` even while another incident is open. Expiry is
 critical. Missing/failed runs have their own error state. A known asset mismatch
 or executable/header-policy violation never receives this grace. Pending metadata
-is capped at 20,000 samples; overflow alerts instead of silently discarding evidence.
+is capped at 20,000 samples and kept for the last three production commits; overflow
+alerts instead of silently discarding evidence, and clears once older commits are trimmed.
 
 HTML/entry probes run about every 30 seconds after completion, rendered checks every
 five minutes and full audits every **15 minutes**, with 20% scheduling jitter.
