@@ -1,10 +1,12 @@
 import { Box, ScrollArea } from "@galacticcouncil/ui/components"
 import {
+  accountPublicKey,
   formatDestChainAddress,
   isAddressValidOnChain,
 } from "@galacticcouncil/utils"
 import {
   Account,
+  useAccount,
   WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
@@ -32,10 +34,21 @@ export const RecipientSelectPage = ({
 }: RecipientSelectPageProps) => {
   const { t } = useTranslation("xcm")
   const { papi } = useRpcProvider()
+  const { account: sourceAccount } = useAccount()
   const { watch } = useFormContext<XcmFormValues>()
-  const [destChain, destAccount] = watch(["destChain", "destAccount"])
+  const [srcChain, destChain, destAccount] = watch([
+    "srcChain",
+    "destChain",
+    "destAccount",
+  ])
   const isValidAddress = (address: string) =>
-    !!destChain && isAddressValidOnChain(address, destChain)
+    !!destChain &&
+    isAddressValidOnChain(address, destChain) &&
+    !(
+      srcChain?.key === destChain.key &&
+      sourceAccount &&
+      accountPublicKey(sourceAccount.rawAddress) === accountPublicKey(address)
+    )
 
   return (
     <Web3ConnectPage

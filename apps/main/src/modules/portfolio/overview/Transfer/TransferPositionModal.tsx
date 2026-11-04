@@ -20,9 +20,9 @@ import {
   Toggle,
 } from "@galacticcouncil/ui/components"
 import {
+  accountPublicKey,
+  isAddressValidOnHydration,
   normalizeSS58Address,
-  safeConvertAddressH160,
-  safeConvertAddressSS58,
   safeConvertSS58toPublicKey,
   stringEquals,
 } from "@galacticcouncil/utils"
@@ -35,7 +35,7 @@ import {
   useAddressStore,
   useWeb3Connect,
   WalletMode,
-  Web3ConnectModal,
+  Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { FC, ReactNode, useEffect, useState } from "react"
@@ -140,10 +140,15 @@ export const TransferPositionModal: FC<Props> = ({
   const userOwnedAddresses = useAddresses()
   const recipientAccount =
     connectedRecipient?.rawAddress === address ? connectedRecipient : null
+  const isEligibleRecipient = (address: string) =>
+    isAddressValidOnHydration(address) &&
+    accountPublicKey(address) !==
+      accountPublicKey((sourceAccount ?? account)?.rawAddress ?? "")
   const recipientSearch = address.trim().toLowerCase()
   const suggestions = sortByLastUsed(
     userOwnedAddresses.filter(
       (entry) =>
+        isEligibleRecipient(entry.address) &&
         (entry.mode === WalletMode.Substrate ||
           entry.mode === WalletMode.EVM) &&
         (!recipientSearch ||
@@ -178,6 +183,35 @@ export const TransferPositionModal: FC<Props> = ({
   const isCexDisclaimerSatisfied = shouldShowCexDisclaimer
     ? cexDisclaimerAccepted
     : true
+
+  if (isRecipientWalletOpen)
+    return (
+      <Web3ConnectPage
+        layout="split"
+        walletFirst
+        onBack={() => setIsRecipientWalletOpen(false)}
+        neckwork={neckworkClient}
+        papi={rpc.papi}
+        mode={WalletMode.SubstrateEVM}
+        meta={{
+          title: t("common:connectWallet.modal.title", { chain: "Hydration" }),
+          description: t("common:connectWallet.modal.description", {
+            chain: "Hydration",
+          }),
+          closable: true,
+        }}
+        accountFilter={(recipient) => isEligibleRecipient(recipient.rawAddress)}
+        onAccountSelect={(recipient) => {
+          if (!isEligibleRecipient(recipient.rawAddress)) return
+          form.setValue("address", recipient.rawAddress, {
+            shouldValidate: true,
+            shouldTouch: true,
+          })
+          setConnectedRecipient(recipient)
+          setIsRecipientWalletOpen(false)
+        }}
+      />
+    )
 
   if (isMyContactsOpen) {
     return (
@@ -376,32 +410,6 @@ export const TransferPositionModal: FC<Props> = ({
           </LoadingButton>
         </ModalFooter>
       </Box>
-      <Web3ConnectModal
-        open={isRecipientWalletOpen}
-        onOpenChange={setIsRecipientWalletOpen}
-        neckwork={neckworkClient}
-        papi={rpc.papi}
-        mode={WalletMode.SubstrateEVM}
-        meta={{
-          title: t("common:connectWallet.modal.title", { chain: "Hydration" }),
-          description: t("common:connectWallet.modal.description", {
-            chain: "Hydration",
-          }),
-          closable: true,
-        }}
-        accountFilter={(recipient) =>
-          !!safeConvertAddressSS58(recipient.rawAddress, 0) ||
-          !!safeConvertAddressH160(recipient.rawAddress)
-        }
-        onAccountSelect={(recipient) => {
-          form.setValue("address", recipient.rawAddress, {
-            shouldValidate: true,
-            shouldTouch: true,
-          })
-          setConnectedRecipient(recipient)
-          setIsRecipientWalletOpen(false)
-        }}
-      />
     </FormProvider>
   )
 }

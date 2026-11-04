@@ -130,6 +130,7 @@ export const WithdrawOnchainForm: FC = () => {
   }, [submit.isPending])
 
   const [isRecipientOpen, setIsRecipientOpen] = useState(false)
+  const [isChangingRecipient, setIsChangingRecipient] = useState(false)
   const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(
     flow === "connected",
   )
@@ -230,11 +231,17 @@ export const WithdrawOnchainForm: FC = () => {
   if (isRecipientWalletOpen && destChain)
     return (
       <RecipientSelectPage
-        onBack={back}
+        onBack={() => {
+          if (isChangingRecipient) {
+            setIsRecipientWalletOpen(false)
+            setIsChangingRecipient(false)
+          } else back()
+        }}
         onSelectAddress={(address, recipient) => {
           updateRecipient(address)
           setValue("destAccount", recipient ?? null)
           setIsRecipientWalletOpen(false)
+          setIsChangingRecipient(false)
         }}
       />
     )
@@ -377,7 +384,10 @@ export const WithdrawOnchainForm: FC = () => {
                       walletProvider={destAccount?.provider}
                       address={destAccount?.rawAddress}
                       placeholder={t("common:connectWallet")}
-                      onClick={() => setIsRecipientWalletOpen(true)}
+                      onClick={() => {
+                        setIsChangingRecipient(true)
+                        setIsRecipientWalletOpen(true)
+                      }}
                     />
                   ) : undefined
                 }
