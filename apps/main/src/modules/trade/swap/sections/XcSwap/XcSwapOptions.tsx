@@ -50,7 +50,7 @@ export const XcSwapOptions = () => {
         />
       )}
       {isTradeModeShown && (
-        <Box pt={isOrderMatchShown ? undefined : "l"} pb="l">
+        <Box py="l">
           <TradeModeOptions
             sellAsset={sellAsset}
             buyAsset={buyAsset}

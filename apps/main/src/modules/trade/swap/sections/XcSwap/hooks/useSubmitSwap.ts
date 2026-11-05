@@ -121,9 +121,8 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
           .intentLimit({ ...swap, amountIn: iceAmounts.amountIn })
           .withBeneficiary(account.address)
           .withMinAmountOut(iceAmounts.amountOut)
-          // An Order Match intent is offered to the solver only when opposite
-          // orders cover it; all-or-nothing, two opposite orders of slightly
-          // different value never cover each other, so it is always partial
+          // Opposite orders rarely match in value exactly, so an all-or-nothing
+          // Order Match intent would never fill; it is always partial
           .withPartial(values.isOrderMatch)
           .withDeadline(deadline)
 
