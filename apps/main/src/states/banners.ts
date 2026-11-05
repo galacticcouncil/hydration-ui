@@ -1,19 +1,52 @@
 import { type PromoteBannerItem } from "@galacticcouncil/ui/components"
-import { useMemo } from "react"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { type ParseKeys } from "i18next"
+import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+import { useBondData } from "@/api/bonds"
 import { LINKS } from "@/config/navigation"
+import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import { useHasFillableStableBondsOrders } from "@/modules/strategies/stable-bonds/hooks/useStableBondsOtcOrders"
+import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export type BannerConfig = PromoteBannerItem & {
-  to?: string
+type BannerTextKey = ParseKeys<"common">
+
+export type EnabledBanner = PromoteBannerItem & { to?: string }
+
+export type BannerConfig = Omit<
+  EnabledBanner,
+  "title" | "description" | "cta"
+> & {
+  title: BannerTextKey
+  description?: BannerTextKey
+  cta?: BannerTextKey
   priority: number
   enabled: boolean
+  /** Live condition checked on top of `enabled`. */
+  useCondition?: () => boolean
+  /** Interpolation values for the texts, `undefined` until they are known. */
+  useValues?: () => Record<string, unknown> | undefined
 }
 
 const bannerEntries: BannerConfig[] = [
+  {
+    id: "juicer",
+    backgroundImage: "/images/juicer.webp",
+    backgroundImageMobile: "/images/juicerMobile.webp",
+    title: "banners.juicer.title",
+    description: "banners.juicer.description",
+    textColor: "#15171E",
+    ctaColor: "#15171E",
+    ctaTextColor: "#FFFFFF",
+    cta: "banners.juicer.cta",
+    to: LINKS.strategiesJuicer,
+    priority: 0,
+    enabled: true,
+  },
   {
     id: "bil-vault",
     backgroundImage: "/images/bil.webp",
@@ -40,27 +73,80 @@ const bannerEntries: BannerConfig[] = [
     to: LINKS.strategiesHollarBonds,
     priority: 2,
     enabled: false,
+    useCondition: () => {
+      const { featureFlags } = useRpcProvider()
+      const hasFillableStableBondsOrders = useHasFillableStableBondsOrders()
+      return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
+    },
+    useValues: () => {
+      const { active } = useStableBonds()
+      const bondId = active?.id ?? ""
+      const { timeLeft } = useBondData(bondId)
+      const apr = getBondApr(bondId, timeLeft)
+      return apr ? { apr } : undefined
+    },
   },
 ]
-
-export const useEnabledBanners = () => {
-  const { featureFlags } = useRpcProvider()
-  const hasFillableStableBondsOrders = useHasFillableStableBondsOrders()
-
-  return useMemo(() => {
-    return bannerEntries.filter((banner) => {
-      if (banner.id.startsWith("hollarb")) {
-        return featureFlags.hollarBondsEnabled && hasFillableStableBondsOrders
-      }
-
-      return banner.enabled
-    })
-  }, [featureFlags.hollarBondsEnabled, hasFillableStableBondsOrders])
-}
 
 export const bannerConfig: BannerConfig[] = [...bannerEntries].sort(
   (a, b) => a.priority - b.priority,
 )
+
+const useImagesLoaded = (srcs: string[]) => {
+  const [loaded, setLoaded] = useState<Record<string, boolean>>({})
+  const key = srcs.join("|")
+
+  useEffect(() => {
+    if (!key) return
+    for (const src of key.split("|")) {
+      const image = new Image()
+      image.src = src
+      image.decode().then(
+        () => setLoaded((prev) => ({ ...prev, [src]: true })),
+        () => setLoaded((prev) => ({ ...prev, [src]: false })),
+      )
+    }
+  }, [key])
+
+  return loaded
+}
+
+export const useEnabledBanners = (): EnabledBanner[] => {
+  const { t } = useTranslation("common")
+  const { gte } = useBreakpoints()
+  const isDesktop = gte("sm")
+
+  // bannerConfig is static, so the banner hooks run in the same order on every render
+  const candidates = bannerConfig.flatMap((banner) => {
+    if (!banner.enabled) return []
+
+    const isConditionMet = banner.useCondition?.() ?? true
+    const values = banner.useValues ? banner.useValues() : {}
+    if (!isConditionMet || !values) return []
+
+    const image = isDesktop
+      ? banner.backgroundImage
+      : banner.backgroundImageMobile
+
+    return [{ banner, values, image }]
+  })
+
+  const imagesLoaded = useImagesLoaded(candidates.map(({ image }) => image))
+
+  // hold the whole stack until every image has loaded or failed
+  if (candidates.some(({ image }) => imagesLoaded[image] === undefined)) {
+    return []
+  }
+
+  return candidates
+    .filter(({ image }) => imagesLoaded[image])
+    .map(({ banner, values }) => ({
+      ...banner,
+      title: t(banner.title, values),
+      description: banner.description && t(banner.description, values),
+      cta: banner.cta && t(banner.cta, values),
+    }))
+}
 
 type BannerType = "top" | "flow"
 
