@@ -13,7 +13,6 @@ import {
   Stack,
   Summary,
   SummaryRow,
-  SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -28,8 +27,8 @@ import { bestSellQuery } from "@/api/trade"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
-import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { useMultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
+import { MultiplyPositionPreview } from "@/modules/strategies/multiply/components/MultiplyPositionPreview"
 import { MultiplySwapResult } from "@/modules/strategies/multiply/components/MultiplySwapResult"
 import {
   MULTIPLY_DEFAULT_LEVERAGE,
@@ -53,6 +52,7 @@ type MultiplyOpenFormProps = {
   metrics: MultiplyPairMetrics
   collateralPriceUsd: number
   debtPriceUsd: number
+  onPairClick: () => void
 }
 
 export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
@@ -60,6 +60,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   metrics,
   collateralPriceUsd,
   debtPriceUsd,
+  onPairClick,
 }) => {
   const { t } = useTranslation(["strategies", "common"])
   const { getAssetWithFallback } = useAssets()
@@ -72,7 +73,6 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   const collateral = getAssetWithFallback(pair.collateralAssetId)
   const debt = getAssetWithFallback(pair.debtAssetId)
   const feeAsset = getAssetWithFallback(pair.feeAssetId)
-  const aCollateral = getAssetWithFallback(pair.aCollateralAssetId.toString())
 
   const balance = formatUnits(
     getTransferableBalance(pair.collateralAssetId),
@@ -157,6 +157,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
                     symbol: collateral.symbol,
                     icon: <AssetLogo id={collateral.id} />,
                   }}
+                  onAssetClick={onPairClick}
                   value={field.value}
                   onChange={field.onChange}
                   displayValue={t("common:currency", {
@@ -213,32 +214,15 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
 
             <Separator mx="-xl" />
 
-            <Paper p="m" shadow={false}>
-              <Flex justify="space-between" align="center">
-                <Stack>
-                  <Text fs="p4" fw={500}>
-                    {t("multiply.open.multiplied")}
-                  </Text>
-                  <Text fs="p6" color={getToken("text.medium")}>
-                    {t("multiply.open.leverageValue", {
-                      value: leverageLabel(leverage),
-                    })}
-                  </Text>
-                </Stack>
-                <Stack align="end">
-                  <Text fs="p2" fw={600} color={getToken("text.high")}>
-                    {t("common:currency", {
-                      prefix: t("common:approx.short"),
-                      value: projection.collateral,
-                      symbol: aCollateral.symbol,
-                    })}
-                  </Text>
-                  <Text fs="p6" color={getToken("text.medium")}>
-                    {t("common:currency", { value: projection.collateralUsd })}
-                  </Text>
-                </Stack>
-              </Flex>
-            </Paper>
+            <MultiplyPositionPreview
+              amount={Number(amount || 0)}
+              leverage={leverage}
+              collateral={collateral}
+              debt={debt}
+              supplyApy={metrics.supplyApy ?? 0}
+              borrowApy={metrics.borrowApy ?? 0}
+              projection={projection}
+            />
 
             {metrics.unavailableReason && (
               <Alert
@@ -276,44 +260,6 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             <CollapsibleContent>
               <Separator mx="-xl" />
               <Summary separator={<Separator mx="-xl" />}>
-                <SummaryRow
-                  label={t("multiply.open.netApy")}
-                  content={
-                    <SummaryRowValue
-                      color={
-                        projection.netApy > 0
-                          ? getToken("accents.success.emphasis")
-                          : getToken("text.high")
-                      }
-                    >
-                      {t("common:percent", { value: projection.netApy * 100 })}
-                    </SummaryRowValue>
-                  }
-                />
-                <SummaryRow
-                  label={t("multiply.open.totalCollateral")}
-                  content={t("common:currency", {
-                    prefix: t("common:approx.short"),
-                    value: projection.collateral,
-                    symbol: aCollateral.symbol,
-                  })}
-                />
-                <SummaryRow
-                  label={t("multiply.open.totalDebt")}
-                  content={t("common:currency", {
-                    prefix: t("common:approx.short"),
-                    value: projection.debt,
-                    symbol: debt.symbol,
-                  })}
-                />
-                <SummaryRow
-                  label={t("common:healthFactor")}
-                  content={
-                    <HealthFactorNumber
-                      value={projection.healthFactor.toString()}
-                    />
-                  }
-                />
                 <SummaryRow
                   label={t("multiply.open.liquidationPrice")}
                   content={t("common:currency", {

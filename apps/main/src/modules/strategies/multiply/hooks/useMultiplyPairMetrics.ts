@@ -3,12 +3,15 @@ import {
   useMoneyMarket,
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
+import { type ReserveSummary } from "@galacticcouncil/money-market/types"
 import Big from "big.js"
-import { useMemo } from "react"
 
 import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
-import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
+import {
+  MULTIPLY_PAIRS,
+  type MultiplyPair,
+} from "@/modules/strategies/multiply/config/pairs"
 import { getMultiplyUnavailableReason } from "@/modules/strategies/multiply/utils/availability"
 import {
   getMaxLeverage,
@@ -24,94 +27,123 @@ const knownRate = (rate: { status: string; total?: string } | undefined) =>
     : null
 
 export type MultiplyPairMetrics = NonNullable<
-  ReturnType<typeof useMultiplyPairMetrics>["data"]
+  ReturnType<typeof useMultiplyPairsMetrics>[number]["data"]
 >
 
-// Reserve-derived figures for one pair. Needs a ReserveApyProvider above it.
-export const useMultiplyPairMetrics = (pair: MultiplyPair) => {
+// Reserve-derived figures for every pair, in config order. Needs a
+// ReserveApyProvider above it.
+export const useMultiplyPairsMetrics = () => {
   const { data: reserves, isPending } = useReserveSummaries()
   const resolveApy = useResolveReserveApy()
   const { market } = useMoneyMarket()
   const facilitator = useHollarFacilitator()
 
-  const collateralReserve = reserves?.find(
-    (r) => r.underlyingAsset.toLowerCase() === pair.collateral.toLowerCase(),
-  )
-  const debtReserve = reserves?.find(
-    (r) => r.underlyingAsset.toLowerCase() === pair.debt.toLowerCase(),
-  )
+  const findReserve = (address: string) =>
+    reserves?.find(
+      (r) => r.underlyingAsset.toLowerCase() === address.toLowerCase(),
+    )
 
-  const supplyRate = collateralReserve
-    ? resolveApy(collateralReserve).supply
-    : undefined
-  const borrowRate = debtReserve ? resolveApy(debtReserve).borrow : undefined
-  const supplyApy = knownRate(supplyRate)
-  const borrowApy = knownRate(borrowRate)
-
-  const metrics = useMemo(() => {
-    if (!collateralReserve || !debtReserve) return null
-
-    const lt = Number(collateralReserve.liquidationThreshold)
-    const ltv = Number(collateralReserve.ltv)
-    const minHf = Number(pair.minHf) / WAD
-    const maxLeverage = getSliderMaxLeverage(getMaxLeverage({ lt, ltv, minHf }))
-
-    const maxNetApy =
-      supplyApy !== null && borrowApy !== null && maxLeverage > 1
-        ? projectMultiplyPosition({
-            amount: 1,
-            collateralPriceUsd: Number(collateralReserve.priceInUsd),
-            debtPriceUsd: Number(debtReserve.priceInUsd),
-            leverage: maxLeverage,
-            lt,
-            minHf,
-            supplyApy,
-            borrowApy,
-          }).netApy
-        : null
-
-    // Hollar is minted, so its room is the facilitator bucket, not the
-    // reserve's liquidity (same rule as the borrow dashboard)
-    const availableLiquidity = isHollar(debtReserve.underlyingAsset, market)
-      ? facilitator.data
-        ? Big.max(
-            Big(facilitator.data.maxCapacity).minus(facilitator.data.level),
-            0,
-          ).toString()
-        : null
-      : debtReserve.availableLiquidity
+  return MULTIPLY_PAIRS.map((pair) => {
+    const collateralReserve = findReserve(pair.collateral)
+    const debtReserve = findReserve(pair.debt)
+    const supplyRate = collateralReserve
+      ? resolveApy(collateralReserve).supply
+      : undefined
+    const borrowRate = debtReserve ? resolveApy(debtReserve).borrow : undefined
+    const supplyApy = knownRate(supplyRate)
+    const borrowApy = knownRate(borrowRate)
 
     return {
-      lt,
-      ltv,
-      minHf,
-      maxLeverage,
-      supplyApy,
-      borrowApy,
-      maxNetApy,
-      availableLiquidity,
-      unavailableReason:
-        maxLeverage > 1
-          ? getMultiplyUnavailableReason(collateralReserve, debtReserve)
-          : "notBorrowable",
+      pair,
+      data:
+        collateralReserve && debtReserve
+          ? getPairMetrics({
+              pair,
+              collateralReserve,
+              debtReserve,
+              supplyApy,
+              borrowApy,
+              hollarRoom: isHollar(debtReserve.underlyingAsset, market)
+                ? facilitator.data
+                  ? Big.max(
+                      Big(facilitator.data.maxCapacity).minus(
+                        facilitator.data.level,
+                      ),
+                      0,
+                    ).toString()
+                  : null
+                : undefined,
+            })
+          : null,
+      collateralReserve,
+      debtReserve,
+      isLoading:
+        isPending ||
+        supplyRate?.status === "loading" ||
+        borrowRate?.status === "loading",
     }
-  }, [
-    collateralReserve,
-    debtReserve,
-    pair.minHf,
-    supplyApy,
-    borrowApy,
-    market,
-    facilitator.data,
-  ])
+  })
+}
+
+const getPairMetrics = ({
+  pair,
+  collateralReserve,
+  debtReserve,
+  supplyApy,
+  borrowApy,
+  hollarRoom,
+}: {
+  pair: MultiplyPair
+  collateralReserve: ReserveSummary
+  debtReserve: ReserveSummary
+  supplyApy: number | null
+  borrowApy: number | null
+  // Hollar is minted, so its room is the facilitator bucket, not the
+  // reserve's liquidity (same rule as the borrow dashboard); undefined when
+  // the debt is not Hollar
+  hollarRoom: string | null | undefined
+}) => {
+  // the position contract enters pair.eMode, so the category's figures apply
+  const inEMode =
+    pair.eMode !== 0 && collateralReserve.eModeCategoryId === pair.eMode
+  const lt = Number(
+    inEMode
+      ? collateralReserve.eModeLiquidationThreshold
+      : collateralReserve.liquidationThreshold,
+  )
+  const ltv = Number(
+    inEMode ? collateralReserve.eModeLtv : collateralReserve.ltv,
+  )
+  const minHf = Number(pair.minHf) / WAD
+  const maxLeverage = getSliderMaxLeverage(getMaxLeverage({ lt, ltv, minHf }))
+
+  const maxNetApy =
+    supplyApy !== null && borrowApy !== null && maxLeverage > 1
+      ? projectMultiplyPosition({
+          amount: 1,
+          collateralPriceUsd: Number(collateralReserve.priceInUsd),
+          debtPriceUsd: Number(debtReserve.priceInUsd),
+          leverage: maxLeverage,
+          lt,
+          minHf,
+          supplyApy,
+          borrowApy,
+        }).netApy
+      : null
 
   return {
-    data: metrics,
-    collateralReserve,
-    debtReserve,
-    isLoading:
-      isPending ||
-      supplyRate?.status === "loading" ||
-      borrowRate?.status === "loading",
+    lt,
+    ltv,
+    minHf,
+    maxLeverage,
+    supplyApy,
+    borrowApy,
+    maxNetApy,
+    availableLiquidity:
+      hollarRoom !== undefined ? hollarRoom : debtReserve.availableLiquidity,
+    unavailableReason:
+      maxLeverage > 1
+        ? getMultiplyUnavailableReason(collateralReserve, debtReserve)
+        : ("notBorrowable" as const),
   }
 }
