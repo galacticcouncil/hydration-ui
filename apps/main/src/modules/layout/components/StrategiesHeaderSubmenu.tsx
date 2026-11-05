@@ -1,11 +1,7 @@
-import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRight, Blend } from "@galacticcouncil/ui/assets/icons"
 import { Box, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  BIL_ERC20_ID,
-  HOLLAR_ASSET_ID,
-  PRIME_ASSET_ID,
-} from "@galacticcouncil/utils"
+import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -18,7 +14,10 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 const STRATEGY_ASSET_ICON_BY_KEY: Partial<Record<NavigationKey, string>> = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
-  strategiesMultiply: PRIME_ASSET_ID,
+}
+
+const STRATEGY_ICON_BY_KEY: Partial<Record<NavigationKey, typeof Blend>> = {
+  strategiesMultiply: Blend,
 }
 
 type Props = {
@@ -37,7 +36,11 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
     return (
       <SDetailedLink key={key} asChild>
         <Link to={to} params={params} search={search}>
-          {showAssetIcon ? <AssetLogo id={assetIconId} size="medium" /> : null}
+          {showAssetIcon ? (
+            <AssetLogo id={assetIconId} size="medium" />
+          ) : STRATEGY_ICON_BY_KEY[key] ? (
+            <Icon component={STRATEGY_ICON_BY_KEY[key]} />
+          ) : null}
           <Box>
             <Text fw={600} fs="p4" lh={1.4}>
               {translations[key].title}

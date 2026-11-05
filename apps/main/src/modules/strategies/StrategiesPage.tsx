@@ -8,7 +8,6 @@ import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStra
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { MultiplyStrategyCard } from "@/modules/strategies/multiply/components/MultiplyStrategyCard"
-import { MULTIPLY_PAIRS } from "@/modules/strategies/multiply/config/pairs"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import {
@@ -85,10 +84,7 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesHollarBonds}
           />
         )}
-        {featureFlags.looperEnabled &&
-          MULTIPLY_PAIRS.map((pair) => (
-            <MultiplyStrategyCard key={pair.slug} pair={pair} />
-          ))}
+        {featureFlags.looperEnabled && <MultiplyStrategyCard />}
       </Grid>
     </>
   )

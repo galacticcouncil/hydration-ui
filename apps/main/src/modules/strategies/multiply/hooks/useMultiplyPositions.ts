@@ -13,6 +13,7 @@ import {
 import { MULTIPLY_QUERY_KEY_PREFIX } from "@/modules/strategies/multiply/config/constants"
 import {
   LOOPER_FACTORY_ADDRESS,
+  MULTIPLY_PAIRS,
   type MultiplyPair,
 } from "@/modules/strategies/multiply/config/pairs"
 import { getMultiplyPositionStatus } from "@/modules/strategies/multiply/utils/status"
@@ -25,6 +26,7 @@ const IDLE_REFETCH_MS = 30_000
 const RUNNING_REFETCH_MS = 6_000
 
 export type MultiplyPosition = {
+  pair: MultiplyPair
   id: bigint
   address: Hex
   ladder: Ladder
@@ -46,11 +48,11 @@ export type MultiplyPosition = {
 }
 
 /**
- * The connected account's open positions for one pair. The factory NFT is not
+ * The connected account's open positions across the configured pairs. The factory NFT is not
  * enumerable, so this scans `ownerOf` over every id; ownership is read live
  * because the NFT can be transferred.
  */
-export const useMultiplyPositions = (pair: MultiplyPair) => {
+export const useMultiplyPositions = () => {
   const { evm, isReady } = useRpcProvider()
   const evmAddress = useEvmAddress()
   const factory = LOOPER_FACTORY_ADDRESS
@@ -112,10 +114,12 @@ export const useMultiplyPositions = (pair: MultiplyPair) => {
             }),
           ])
 
-          const isPair =
-            params.collateral.toLowerCase() === pair.collateral.toLowerCase() &&
-            params.debt.toLowerCase() === pair.debt.toLowerCase()
-          if (isClosed || !isPair) return null
+          const pair = MULTIPLY_PAIRS.find(
+            (p) =>
+              params.collateral.toLowerCase() === p.collateral.toLowerCase() &&
+              params.debt.toLowerCase() === p.debt.toLowerCase(),
+          )
+          if (isClosed || !pair) return null
 
           const [
             ladder,
@@ -153,6 +157,7 @@ export const useMultiplyPositions = (pair: MultiplyPair) => {
           ])
 
           return {
+            pair,
             id,
             address,
             ladder: ladder as Ladder,

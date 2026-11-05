@@ -9,6 +9,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FileRouteTypes, Link, LinkProps } from "@tanstack/react-router"
+import { type ReactNode } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import {
@@ -16,8 +17,10 @@ import {
   StrategyBadgeType,
 } from "@/modules/strategies/components/StrategyBadge"
 
-export type StrategyCardProps = {
-  logoId: string
+export type StrategyCardProps = (
+  | { logoId: string; logo?: never }
+  | { logo: ReactNode; logoId?: never }
+) & {
   stats: ValueStatsProps[]
   badges?: StrategyBadgeType[]
   title: string
@@ -28,6 +31,7 @@ export type StrategyCardProps = {
 
 export const StrategyCard: React.FC<StrategyCardProps> = ({
   logoId,
+  logo,
   stats,
   title,
   description,
@@ -43,7 +47,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["4 / 1", null, null, null, "2 / 1"] }}
         >
-          <AssetLogo id={logoId} size="extra-large" />
+          {logoId !== undefined ? (
+            <AssetLogo id={logoId} size="extra-large" />
+          ) : (
+            logo
+          )}
           {badges.length > 0 && (
             <Flex direction="column" gap="s" align="flex-end">
               {badges.map((badge) => (

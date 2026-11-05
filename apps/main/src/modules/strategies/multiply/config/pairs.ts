@@ -1,8 +1,10 @@
 import {
+  DOT_ASSET_ID,
   getAddressFromAssetId,
   HDX_ASSET_ID,
   HOLLAR_ASSET_ID,
   PRIME_ASSET_ID,
+  VDOT_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { type Hex, parseUnits } from "viem"
 
@@ -46,6 +48,25 @@ export const MULTIPLY_PAIRS: MultiplyPair[] = [
     variableDebt: "0x342923782cCaEBf9c38DD9cb40436e82C42c73B5",
     aCollateralAssetId: 1043,
     eMode: 0,
+    minHf: parseUnits("1.10", 18),
+    stepHf: parseUnits("1.05", 18),
+    slippageBps: 100,
+    feeAssetId: HDX_ASSET_ID,
+    feeAsset: getAddressFromAssetId(HDX_ASSET_ID) as Hex,
+    feeReserve: parseUnits("5", 12),
+    feeBudget: parseUnits("100", 12),
+  },
+  {
+    slug: "vdot-dot",
+    collateralAssetId: VDOT_ASSET_ID,
+    debtAssetId: DOT_ASSET_ID,
+    collateral: getAddressFromAssetId(VDOT_ASSET_ID) as Hex,
+    aCollateral: "0x0e13b904F4168F93814216B6874cA8349457f263",
+    debt: getAddressFromAssetId(DOT_ASSET_ID) as Hex,
+    variableDebt: "0x34321CB7334807eb718B3E1DdFaEb0c6c0403F1A",
+    aCollateralAssetId: 1005,
+    // DOT-correlated category, entered by the position contract on open
+    eMode: 2,
     minHf: parseUnits("1.10", 18),
     stepHf: parseUnits("1.05", 18),
     slippageBps: 100,
