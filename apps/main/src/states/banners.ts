@@ -46,6 +46,10 @@ const bannerEntries: BannerConfig[] = [
     to: LINKS.strategiesJuicer,
     priority: 0,
     enabled: true,
+    useCondition: () => {
+      const { featureFlags, isReady } = useRpcProvider()
+      return isReady && featureFlags.juicerEnabled
+    },
   },
   {
     id: "bil-vault",
