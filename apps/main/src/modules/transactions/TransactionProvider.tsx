@@ -111,7 +111,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const hasRendered = useAfterFirstRender()
 
-  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
+  const {
+    data: fee,
+    isLoading: isLoadingFeeEstimate,
+    isError: isFeeEstimateError,
+  } = useEstimateFee(
     hasRendered &&
       !hasInitialError &&
       transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
@@ -272,7 +276,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const isLoading =
     !hasRendered ||
     (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
-      (!isReady || (!hasInitialError && !fee))) ||
+      // a failed estimate must not block submit; it leaves the fee unknown
+      (!isReady || (!hasInitialError && !fee && !isFeeEstimateError))) ||
     isLoadingNonce ||
     isLoadingFeeEstimate ||
     isLoadingPaymentInfo

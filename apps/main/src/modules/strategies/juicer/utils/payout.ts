@@ -1,64 +1,49 @@
-import { isPlainObject } from "remeda"
+import { type Trade, TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
 
 import { type JuicerVaultConfig } from "@/modules/strategies/juicer/config/vaults"
 import { type AnyPapiTx } from "@/modules/transactions/types"
-
-import { isCallNode } from "./deposit"
-
-type DecodedCall = AnyPapiTx["decodedCall"]
-
-const NOT_A_SELL = "The payout trade is not a router sell"
+import { type Papi } from "@/providers/rpcProvider"
 
 /**
- * The SDK's trade as a sell of exactly `amountIn`. The SDK emits sell_all when
- * the amount nears the balance, which would also sell collateral already held.
- * With `sellAll`, a sell of the whole balance instead: a claim pays everything
- * settled at execution, which can be more than `amountIn`, and only a wallet
- * that held no collateral before can sell all of it. Keeps the SDK's route,
- * its Dispatcher wrapper and, unless `minAmountOut` is given, its slippage
- * minimum, which a larger sell only exceeds.
+ * Router sell of exactly `amountIn`. Built directly: the SDK's trade builder
+ * emits sell_all whenever the amount reaches the wallet's current balance,
+ * which before a claim lands is nearly always, and sell_all would also sell
+ * collateral the wallet already held.
  */
 export const buildPayoutSell = (
-  call: unknown,
-  amountIn: bigint,
+  papi: Papi,
   {
+    assetIn,
+    assetOut,
+    amountIn,
     minAmountOut,
-    sellAll = false,
-  }: { minAmountOut?: bigint; sellAll?: boolean } = {},
-): DecodedCall => {
-  if (!isCallNode(call) || !isCallNode(call.value)) throw new Error(NOT_A_SELL)
-  const { type: method, value: args } = call.value
-  if (!isPlainObject(args)) throw new Error(NOT_A_SELL)
-
-  if (call.type === "Dispatcher" && method === "dispatch_with_extra_gas")
-    return {
-      ...call,
-      value: {
-        ...call.value,
-        value: {
-          ...args,
-          call: buildPayoutSell(args.call, amountIn, {
-            minAmountOut,
-            sellAll,
-          }),
-        },
-      },
-    } as DecodedCall
-  if (call.type !== "Router" || (method !== "sell" && method !== "sell_all"))
-    throw new Error(NOT_A_SELL)
-
-  const limits = {
-    asset_in: args.asset_in,
-    asset_out: args.asset_out,
-    min_amount_out: minAmountOut ?? args.min_amount_out,
-    route: args.route,
-  }
-  return {
-    type: "Router",
-    value: sellAll
-      ? { type: "sell_all", value: limits }
-      : { type: "sell", value: { ...limits, amount_in: amountIn } },
-  } as DecodedCall
+    swaps,
+    extraGas,
+  }: {
+    assetIn: number
+    assetOut: number
+    amountIn: bigint
+    minAmountOut: bigint
+    swaps: Trade["swaps"]
+    /** set when sdk.api.aave.requiresExtraGas holds for the asset in */
+    extraGas?: bigint
+  },
+): AnyPapiTx => {
+  const sell = papi.tx.Router.sell({
+    asset_in: assetIn,
+    asset_out: assetOut,
+    amount_in: amountIn,
+    min_amount_out: minAmountOut,
+    route: TradeRouteBuilder.build(swaps) as Parameters<
+      typeof papi.tx.Router.sell
+    >[0]["route"],
+  })
+  return extraGas === undefined
+    ? sell
+    : papi.tx.Dispatcher.dispatch_with_extra_gas({
+        call: sell.decodedCall,
+        extra_gas: extraGas,
+      })
 }
 
 /** Payout assets a claim offers, base asset first; the first is the default. */

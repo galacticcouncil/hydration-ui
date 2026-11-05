@@ -1,106 +1,68 @@
+import { type Trade } from "@galacticcouncil/sdk-next/sor"
 import { describe, expect, it } from "vitest"
 
 import { type JuicerVaultConfig } from "@/modules/strategies/juicer/config/vaults"
+import { type Papi } from "@/providers/rpcProvider"
 
 import { buildPayoutSell, getPayoutAssetIds, getPayoutSell } from "./payout"
 
 const unit = 10n ** 18n
-const route = [
-  { pool: { type: "Stableswap", value: 4200 }, asset_in: 4200, asset_out: 4 },
-  { pool: { type: "Omnipool", value: undefined }, asset_in: 4, asset_out: 34 },
-]
-const sellAll = {
-  type: "Router",
-  value: {
-    type: "sell_all",
-    value: {
-      asset_in: 4200,
-      asset_out: 34,
-      min_amount_out: 2n * unit,
-      route,
-    },
-  },
-}
-const withExtraGas = (call: unknown) => ({
-  type: "Dispatcher",
-  value: { type: "dispatch_with_extra_gas", value: { call, extra_gas: 1n } },
-})
-const sell = (amountIn: bigint, minAmountOut: bigint) => ({
-  type: "Router",
-  value: {
-    type: "sell",
-    value: {
-      asset_in: 4200,
-      asset_out: 34,
-      amount_in: amountIn,
-      min_amount_out: minAmountOut,
-      route,
-    },
-  },
-})
 
 describe("Payout sell", () => {
-  it("sells exactly the claimed collateral, not the whole balance, keeping the SDK's route and minimum", () => {
-    expect(buildPayoutSell(sellAll, 3n * unit)).toEqual(
-      sell(3n * unit, 2n * unit),
-    )
-  })
-
-  it("resizes a sell the SDK already built", () => {
-    expect(buildPayoutSell(sell(5n * unit, 2n * unit), 3n * unit)).toEqual(
-      sell(3n * unit, 2n * unit),
-    )
-  })
-
-  it("keeps the extra gas dispatch the SDK added for Aave legs", () => {
-    expect(buildPayoutSell(withExtraGas(sellAll), 3n * unit)).toEqual(
-      withExtraGas(sell(3n * unit, 2n * unit)),
-    )
-  })
-
-  it("takes a caller's minimum over the SDK's, as the 1:1 GETH unwrap does", () => {
-    expect(
-      buildPayoutSell(withExtraGas(sellAll), 3n * unit, {
-        minAmountOut: 3n * unit,
-      }),
-    ).toEqual(withExtraGas(sell(3n * unit, 3n * unit)))
-  })
-
-  it("sells the whole balance when asked, keeping the route and minimum", () => {
-    const { amount_in: _, ...limits } = sell(5n * unit, 2n * unit).value.value
-    expect(
-      buildPayoutSell(sell(5n * unit, 2n * unit), 3n * unit, { sellAll: true }),
-    ).toEqual({ type: "Router", value: { type: "sell_all", value: limits } })
-  })
-
-  it("sells all through the extra gas dispatch, with a caller's minimum", () => {
-    expect(
-      buildPayoutSell(withExtraGas(sellAll), 3n * unit, {
-        minAmountOut: 3n * unit,
-        sellAll: true,
-      }),
-    ).toEqual(
-      withExtraGas({
-        type: "Router",
-        value: {
-          type: "sell_all",
-          value: { ...sellAll.value.value, min_amount_out: 3n * unit },
-        },
-      }),
-    )
-  })
-
-  it("refuses anything but a router sell", () => {
-    for (const call of [
-      { type: "Router", value: { type: "buy", value: {} } },
-      {
-        type: "Omnipool",
-        value: { type: "sell", value: { asset_in: 4200, asset_out: 34 } },
+  const papi = {
+    tx: {
+      Router: {
+        sell: (value: unknown) => ({
+          decodedCall: { type: "Router", value: { type: "sell", value } },
+        }),
       },
-      withExtraGas(undefined),
-      undefined,
-    ])
-      expect(() => buildPayoutSell(call, unit)).toThrow()
+      Dispatcher: {
+        dispatch_with_extra_gas: (value: unknown) => ({
+          decodedCall: {
+            type: "Dispatcher",
+            value: { type: "dispatch_with_extra_gas", value },
+          },
+        }),
+      },
+    },
+  } as unknown as Papi
+  const input = {
+    assetIn: 4200,
+    assetOut: 34,
+    amountIn: 3n * unit,
+    minAmountOut: 2n * unit,
+    swaps: [
+      { pool: "Stableswap", poolId: 4200, assetIn: 4200, assetOut: 4 },
+      { pool: "Omnipool", assetIn: 4, assetOut: 34 },
+    ] as unknown as Trade["swaps"],
+  }
+
+  it("sells exactly the claimed collateral through the router, never sell_all", () => {
+    expect(buildPayoutSell(papi, input).decodedCall).toMatchObject({
+      type: "Router",
+      value: {
+        type: "sell",
+        value: {
+          asset_in: 4200,
+          asset_out: 34,
+          amount_in: 3n * unit,
+          min_amount_out: 2n * unit,
+          route: [{ asset_in: 4200 }, { asset_out: 34 }],
+        },
+      },
+    })
+  })
+
+  it("wraps only when extra gas is set", () => {
+    expect(
+      buildPayoutSell(papi, { ...input, extraGas: 9n }).decodedCall,
+    ).toMatchObject({
+      type: "Dispatcher",
+      value: {
+        type: "dispatch_with_extra_gas",
+        value: { extra_gas: 9n, call: { type: "Router" } },
+      },
+    })
   })
 })
 

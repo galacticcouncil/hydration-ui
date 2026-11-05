@@ -271,10 +271,16 @@ export const useJuicerAccount = (evmAddress: Hex | undefined) => {
   const userQueues = projectedQueues.map((q) =>
     (q?.queue ?? []).filter((entry) => entry.isUser),
   )
+  // the scan is heavy (up to 100k blocks of getLogs) and only prices closed
+  // withdrawals in a base asset, so it runs only for a wallet that has one
   const settleLogQueries = useQueries({
-    queries: JUICER_VAULTS.map((vault) =>
-      vaultSettleLogsQuery(rpc, vault, decimalsOf(vault)),
-    ),
+    queries: JUICER_VAULTS.map((vault, i) => ({
+      ...vaultSettleLogsQuery(rpc, vault, decimalsOf(vault)),
+      enabled:
+        rpc.isReady &&
+        !!vault.baseAssetId &&
+        userQueues[i]!.some((entry) => !entry.active),
+    })),
   })
   // a closed withdrawal keeps the ETH value it settled at, not today's rate:
   // the oracle as of its last tranche (unknown past the scan window)

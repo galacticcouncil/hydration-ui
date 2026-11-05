@@ -185,14 +185,16 @@ export const useStrategyVaultColumns = (
         const { displayAsset, stats } = row.original
         const pendingDeployment = stats?.pendingDeployment
         return (
-          <Text fs="p4">
-            {typeof pendingDeployment === "string"
-              ? t("common:currency", {
-                  value: toDisplay(row.original, pendingDeployment),
-                  symbol: displayAsset.symbol,
-                })
-              : "—"}
-          </Text>
+          <Amount
+            value={
+              typeof pendingDeployment === "string"
+                ? t("common:currency", {
+                    value: toDisplay(row.original, pendingDeployment),
+                    symbol: displayAsset.symbol,
+                  })
+                : "—"
+            }
+          />
         )
       },
     })

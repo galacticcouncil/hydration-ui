@@ -34,8 +34,8 @@
   "strategy.action.paused": "Paused",
   "strategy.action.full": "Full",
   "strategy.apyEstimate": [
-    "Indicative annual carry assuming all collateral is deployed at current rates and source leverage, after source and Main borrowing costs and harvest fees.",
-    "Returns differ while collateral awaits deployment. Swap fees, slippage and conversion delays are excluded.",
+    "Indicative annual carry assuming the vault borrows at its target LTV, at current rates and source leverage, after source and Main borrowing costs and harvest fees.",
+    "Your position earns less while the vault borrows below target. Swap fees, slippage and conversion delays are excluded.",
     "This is not realized crypto APY; unconverted yield is not funded crypto."
   ],
   "strategy.pendingDeployment": "Awaiting deployment",
@@ -48,7 +48,7 @@
   "positions.col.amount": "Amount",
   "positions.col.netApy": "Est. APY",
   "positions.col.netApy.note": "variable rate",
-  "positions.col.netApy.deployed": "{{ value, number(maximumFractionDigits: 0) }}% of vault deployed",
+  "positions.col.netApy.deployed": "Borrowing at {{ value, number(maximumFractionDigits: 0) }}% of target",
   "positions.earning": "earning",
   "positions.accrualPaused": "accrual paused",
   "positions.statusLine": "{{ value }} · {{ status }}",

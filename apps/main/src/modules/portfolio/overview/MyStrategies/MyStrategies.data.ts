@@ -148,7 +148,7 @@ export const useMyJuicerPositions = () => {
         transferAssetId: null,
         // the same current run-rate the Juicer page shows for this position
         rate: market?.runRateApy ?? null,
-        rateKind: "apr",
+        rateKind: "apy",
         shareAmount: position?.sharesExact ?? "0",
         shareSymbol: vault.shareSymbol,
         pendingEarnings:

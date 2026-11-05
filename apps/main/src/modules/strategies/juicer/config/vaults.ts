@@ -6,8 +6,6 @@ import {
 } from "@galacticcouncil/utils"
 import { type Hex } from "viem"
 
-import { IS_LARK_4 } from "@/modules/strategies/juicer/config/constants"
-
 export interface JuicerVaultConfig {
   assetId: string
   vaultAddress: Hex
@@ -29,17 +27,7 @@ export interface JuicerVaultConfig {
   collateralDisplayId?: string
 }
 
-const LARK_4_VAULTS: JuicerVaultConfig[] = [
-  {
-    assetId: "1000765",
-    vaultAddress: "0x79b41c78a2b5ac1ddc3c80877449b1cc8f850c46",
-    shareAssetId: "5552",
-    shareSymbol: "jBTC",
-    shareName: "Juicer BTC",
-  },
-]
-
-const LARK_0_VAULTS: JuicerVaultConfig[] = [
+export const JUICER_VAULTS: JuicerVaultConfig[] = [
   {
     assetId: GETH_ASSET_ID,
     vaultAddress: "0xa64e418978482d5de91717cf6c77e1f40105f2ab",
@@ -52,8 +40,6 @@ const LARK_0_VAULTS: JuicerVaultConfig[] = [
     collateralDisplayId: GETH_ERC20_ID,
   },
 ]
-
-export const JUICER_VAULTS = IS_LARK_4 ? LARK_4_VAULTS : LARK_0_VAULTS
 
 export const JUICER_RISK_PROFILE = "low"
 

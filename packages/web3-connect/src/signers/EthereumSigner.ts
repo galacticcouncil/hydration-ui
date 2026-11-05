@@ -151,8 +151,6 @@ export class EthereumSigner {
 
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 
-    await this.walletClient.switchChain({ id: evmClient.chain.id })
-
     return chain
   }
 

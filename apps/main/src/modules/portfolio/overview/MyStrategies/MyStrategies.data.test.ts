@@ -293,7 +293,7 @@ describe("Portfolio strategy position projection", () => {
       transferAssetId: null,
       shareAmount: "1.800000000000000001",
       rate: 6.5,
-      rateKind: "apr",
+      rateKind: "apy",
       pendingEarnings: "0.03",
       status: "active",
       hasPosition: true,

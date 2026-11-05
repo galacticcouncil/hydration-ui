@@ -165,9 +165,8 @@ export const MyPositionsCard: FC<MyPositionsCardProps> = ({
                               : t("common:percent", { value: apy })}
                           </Text>
                         }
-                        // the rate is pooled: collateral still awaiting
-                        // deployment lowers everyone's rate, so say how much
-                        // of the vault is at work instead of a bare caveat
+                        // the rate is pooled: borrowing below target LTV
+                        // lowers everyone's rate, so say how far below
                         bottomLabel={
                           accrualPaused
                             ? t("positions.accrualPausedNote")

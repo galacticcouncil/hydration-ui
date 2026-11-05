@@ -24,10 +24,11 @@ import {
   maxUint256,
 } from "viem"
 
-import { useAccountBalances } from "@/api/balances"
+import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { getDryRunError } from "@/api/dryRun"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { bestSellWithTxQuery } from "@/api/trade"
+import { calculateSlippage } from "@/api/utils/slippage"
 import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
 import { EVM_CALL_GAS } from "@/modules/strategies/juicer/config/constants"
 import {
@@ -572,40 +573,41 @@ export function useClaim(options: VaultWriteOptions = {}) {
   const getDisplayAsset = useVaultDisplayAsset()
   const formatSurplus = useFormatSurplusHollar()
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
-  const { getTransferableBalance } = useAccountBalances()
   const address = account?.address ?? ""
 
   /**
    * Router sell of the claimed collateral, priced by the SDK now. The claim
-   * pays all settled at execution, and a keeper slice can land first: a wallet
-   * that held no collateral sells all of it, others exactly the quote, so
-   * collateral they already held stays theirs.
+   * pays exactly `collateral`, so the sell takes exactly that and collateral
+   * the wallet already held stays theirs.
    */
   const buildSell = async (
     vault: JuicerVaultConfig,
     payoutAssetId: string,
     collateral: bigint,
-    sellAll: boolean,
   ) => {
     const kind = getPayoutSell(vault, payoutAssetId)
     if (kind === "none" || collateral === 0n) return null
     const { decimals } = getAssetWithFallback(vault.assetId)
-    const swap = await sdk.api.router.getBestSell(
-      Number(vault.assetId),
-      Number(payoutAssetId),
-      formatUnits(collateral, decimals),
-    )
-    const tx = await sdk.tx
-      .trade(swap)
-      .withSlippage(slippage)
-      .withBeneficiary(address)
-      .build()
-      .then((built) => built.get())
-    // the 1:1 unwrap returns exactly what it sells, so it takes no buffer
-    return buildPayoutSell(tx.decodedCall, collateral, {
-      sellAll,
-      ...(kind === "exact" && { minAmountOut: collateral }),
-    })
+    const [swap, needsExtraGas] = await Promise.all([
+      sdk.api.router.getBestSell(
+        Number(vault.assetId),
+        Number(payoutAssetId),
+        formatUnits(collateral, decimals),
+      ),
+      sdk.api.aave.requiresExtraGas(address, Number(vault.assetId)),
+    ])
+    return buildPayoutSell(rpc.papi, {
+      assetIn: Number(vault.assetId),
+      assetOut: Number(payoutAssetId),
+      amountIn: collateral,
+      // the 1:1 unwrap returns exactly what it sells, so it takes no buffer
+      minAmountOut:
+        kind === "exact"
+          ? collateral
+          : swap.amountOut - calculateSlippage(swap.amountOut, slippage),
+      swaps: swap.swaps,
+      extraGas: needsExtraGas ? AAVE_GAS_LIMIT : undefined,
+    }).decodedCall
   }
 
   /**
@@ -664,8 +666,7 @@ export function useClaim(options: VaultWriteOptions = {}) {
         evmAddress,
       )
       if (calls.length === 0) throw new Error(t("withdrawals.claim.empty"))
-      const sellsAll = getTransferableBalance(vault.assetId) === 0n
-      const sell = await buildSell(vault, payoutAssetId, collateral, sellsAll)
+      const sell = await buildSell(vault, payoutAssetId, collateral)
       const payouts = describePayouts(
         vault,
         payoutAssetId,
