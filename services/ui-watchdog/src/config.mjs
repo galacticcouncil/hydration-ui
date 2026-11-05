@@ -203,6 +203,9 @@ export function config(env = process.env) {
     retentionDays: int("RETENTION_DAYS", 90, 1, 3650),
     timeoutMs: int("REQUEST_TIMEOUT_MS", 20000, 1000, 120000),
     concurrency: int("FETCH_CONCURRENCY", 6, 1, 16),
+    // tor circuits vary from seconds to minutes for a full audit
+    auditBudgetMs:
+      int("AUDIT_BUDGET_SECONDS", requireProxy ? 240 : 120, 30, 300) * 1000,
     browserUrl: env.BROWSER_URL || "http://browser:8080",
     observers,
     observerId: env.OBSERVER_ID || "direct",

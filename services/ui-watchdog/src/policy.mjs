@@ -80,6 +80,16 @@ export function incidentFingerprint(assessment, observers = []) {
   )
 }
 
+export function isRecovery(recovered, lastState, alerted) {
+  return Boolean(
+    recovered &&
+      (alerted ||
+        ["integrity_alert", "degraded", "down", "watchdog_error"].includes(
+          lastState,
+        )),
+  )
+}
+
 export function shouldNotify(
   assessment,
   observers,
