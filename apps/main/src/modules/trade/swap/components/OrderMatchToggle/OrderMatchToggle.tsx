@@ -9,11 +9,10 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { millisecondsToMinutes } from "date-fns"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ORDER_MATCH_WINDOW_MS } from "@/modules/trade/swap/lib/orderMatch"
+import { ORDER_MATCH_WINDOW_BLOCKS } from "@/modules/trade/swap/lib/orderMatch"
 
 type OrderMatchToggleProps = {
   readonly checked: boolean
@@ -44,7 +43,7 @@ export const OrderMatchToggle: FC<OrderMatchToggleProps> = ({
             side="top"
             asChild
             text={t("intent.orderMatch.tooltip", {
-              count: millisecondsToMinutes(ORDER_MATCH_WINDOW_MS),
+              count: ORDER_MATCH_WINDOW_BLOCKS,
             })}
           >
             <ToggleLabel htmlFor="orderMatch">
