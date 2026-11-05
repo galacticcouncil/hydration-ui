@@ -136,7 +136,6 @@ export const WithdrawOnchainForm: FC = () => {
     return () => useOnrampModal.setState({ withdrawPending: false })
   }, [submit.isPending])
 
-  const [isEditingDestination, setIsEditingDestination] = useState(false)
   const [isRecipientOpen, setIsRecipientOpen] = useState(false)
   const [isChangingRecipient, setIsChangingRecipient] = useState(false)
   const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(
@@ -234,15 +233,9 @@ export const WithdrawOnchainForm: FC = () => {
     return (
       <WithdrawRecipientSelect
         startInSplit
-        initialRecipient={
-          destAddress && !isEditingDestination
-            ? { address: destAddress, account: destAccount ?? undefined }
-            : undefined
-        }
         sourceAssetKey={srcAsset.key}
         onBack={() => {
           setIsDestinationFlowOpen(false)
-          setIsEditingDestination(false)
         }}
         onSelect={(selection) => {
           const option = destinationOptions.find(
@@ -272,7 +265,6 @@ export const WithdrawOnchainForm: FC = () => {
           }
           useOnrampModal.getState().selectWithdrawAsset(selection)
           setIsDestinationFlowOpen(false)
-          setIsEditingDestination(false)
         }}
       />
     )
@@ -456,7 +448,6 @@ export const WithdrawOnchainForm: FC = () => {
               address={destAddress}
               disabled={submit.isPending}
               onChange={() => {
-                setIsEditingDestination(true)
                 setIsDestinationFlowOpen(true)
               }}
             />

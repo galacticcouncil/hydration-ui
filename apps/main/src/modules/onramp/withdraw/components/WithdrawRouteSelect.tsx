@@ -1,25 +1,29 @@
-import { ChevronRight, Search } from "@galacticcouncil/ui/assets/icons"
+import { ChevronRight, Layers, Search } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   Button,
   Flex,
+  Grid,
   Icon,
   Input,
   Stack,
   Stepper,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { getChainId, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { FC, useMemo, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
+import { AssetSelectModalContent } from "@/components/AssetSelectModal"
 import { ChainLogo } from "@/components/ChainLogo"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { DepositScrollBody } from "@/modules/onramp/deposit/preview/components/DepositScrollBody"
 import { DepositAssetOption } from "@/modules/onramp/deposit/variants/DepositAssetOption"
+import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { useWithdrawDestinationOptions } from "@/modules/onramp/withdraw/hooks/useWithdrawDestinationOptions"
 import {
   WithdrawAssetSelection,
@@ -27,6 +31,7 @@ import {
   WithdrawRecipient,
 } from "@/modules/onramp/withdraw/WithdrawAssetSelect.utils"
 import { getWithdrawRecipientRoutes } from "@/modules/onramp/withdraw/WithdrawRecipient.utils"
+import { ChainList } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainList"
 import { useAssets } from "@/providers/assetsProvider"
 
 type WithdrawRouteSelectProps = {
@@ -77,8 +82,9 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       (editing ? null : initialSelection?.sourceAssetKey) ??
       null,
   )
+  const { isMobile } = useBreakpoints()
+  const [chainKey, setChainKey] = useState<string | null>(null)
   const [search, setSearch] = useState("")
-  const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
   const groups = useMemo(() => {
     const grouped = new Map<string, WithdrawDestinationOption[]>()
     for (const option of options) {
@@ -95,23 +101,45 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       .sort((a, b) => a.asset.originSymbol.localeCompare(b.asset.originSymbol))
   }, [options])
   const selected = groups.find(({ asset }) => asset.key === assetKey)
+  const setWalletContentWidth = useOnrampModal(
+    (state) => state.setWalletContentWidth,
+  )
+  useEffect(() => {
+    if (embedded || selected) return
+    setWalletContentWidth(pxToRem(650))
+    return () => setWalletContentWidth(null)
+  }, [embedded, selected, setWalletContentWidth])
+  const chainItems = [
+    ...new Map(
+      options.map((option) => [
+        option.destinationChainKey,
+        option.destinationChain,
+      ]),
+    ).values(),
+  ].map((chain) => ({
+    chain,
+    assets: options
+      .filter((option) => option.destinationChainKey === chain.key)
+      .map((option) => option.sourceAsset),
+  }))
+  const visibleGroups = groups.filter(
+    (group) =>
+      !chainKey ||
+      group.routes.some((route) => route.destinationChainKey === chainKey),
+  )
   const selectingDestinationAsset =
     !!selected &&
     selected.routes.length > 1 &&
     new Set(selected.routes.map((route) => route.destinationChainKey)).size ===
       1
   const query = search.trim().toLowerCase()
-  const assets = groups.filter(({ asset, assetId }) => {
-    const metadata = getAsset(assetId)
-    return `${asset.originSymbol} ${metadata?.name ?? ""} ${metadata?.symbol ?? ""}`
-      .toLowerCase()
-      .includes(query)
-  })
   const routes =
-    selected?.routes.filter(({ destinationChain, destinationAsset }) =>
-      `${destinationChain.name} ${destinationAsset.originSymbol}`
-        .toLowerCase()
-        .includes(query),
+    selected?.routes.filter(
+      ({ destinationChain, destinationAsset }) =>
+        (!chainKey || destinationChain.key === chainKey) &&
+        `${destinationChain.name} ${destinationAsset.originSymbol}`
+          .toLowerCase()
+          .includes(query),
     ) ?? []
   const back = () => {
     if (sourceAssetKey || editing) {
@@ -123,6 +151,80 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       setSearch("")
     } else onBack()
   }
+
+  if (!selected)
+    return (
+      <>
+        <SOnrampStepHeader
+          title={t("withdraw.onchain.asset.title")}
+          align="center"
+          closable
+          onBack={back}
+        />
+        <Grid
+          columnTemplate={
+            isMobile ? `${pxToRem(52)} minmax(0, 1fr)` : "9rem minmax(0, 1fr)"
+          }
+          gap={isMobile ? "base" : "l"}
+          p="m"
+          sx={{ minHeight: 0 }}
+        >
+          <Stack gap="base" justify="flex-start" minWidth={0}>
+            <Text fs="p5" color={getToken("text.medium")}>
+              {!isMobile && t("common:destination")}
+            </Text>
+            <Button
+              variant={!chainKey ? "accent" : "transparent"}
+              outline={!chainKey}
+              onClick={() => setChainKey(null)}
+              aria-label={t("deposit.onchain.allChains")}
+            >
+              {isMobile ? (
+                <Icon component={Layers} size="m" />
+              ) : (
+                t("deposit.onchain.allChains")
+              )}
+            </Button>
+            <ChainList
+              items={chainItems}
+              selectedChain={
+                chainItems.find(({ chain }) => chain.key === chainKey)?.chain ??
+                null
+              }
+              setSelectedChain={(chain) => setChainKey(chain?.key ?? null)}
+            />
+          </Stack>
+          <Box
+            sx={{
+              minHeight: 0,
+              overflowY: "auto",
+              maxHeight: "min(500px, 65dvh)",
+            }}
+          >
+            <AssetSelectModalContent
+              searchInputVariant="standalone"
+              height={450}
+              selectedAssetId={initialSelection?.assetId}
+              assets={visibleGroups.flatMap(({ assetId }) => {
+                const asset = getAsset(assetId)
+                return asset ? [asset] : []
+              })}
+              onSelect={(asset) => {
+                const group = groups.find(({ assetId }) => assetId === asset.id)
+                if (!group) return
+                const matchingRoutes = group.routes.filter(
+                  (route) =>
+                    !chainKey || route.destinationChainKey === chainKey,
+                )
+                if (matchingRoutes.length === 1) onSelect(matchingRoutes[0]!)
+                else setAssetKey(group.asset.key)
+                setSearch("")
+              }}
+            />
+          </Box>
+        </Grid>
+      </>
+    )
 
   return (
     <>
@@ -219,86 +321,71 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
             />
           )}
           <Stack gap="s" justify="flex-start">
-            {selected
-              ? routes.map((option) =>
-                  selectingDestinationAsset ? (
-                    <DepositAssetOption
-                      key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
-                      asset={option.destinationAsset}
-                      chain={option.destinationChain}
-                      isSelected={
-                        initialSelection?.sourceAssetKey ===
-                          option.sourceAssetKey &&
-                        initialSelection.destinationChainKey ===
-                          option.destinationChainKey &&
-                        initialSelection.destinationAssetKey ===
-                          option.destinationAssetKey
-                      }
-                      onSelect={() => onSelect(option)}
+            {routes.map((option) =>
+              selectingDestinationAsset ? (
+                <DepositAssetOption
+                  key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
+                  asset={option.destinationAsset}
+                  chain={option.destinationChain}
+                  isSelected={
+                    initialSelection?.sourceAssetKey ===
+                      option.sourceAssetKey &&
+                    initialSelection.destinationChainKey ===
+                      option.destinationChainKey &&
+                    initialSelection.destinationAssetKey ===
+                      option.destinationAssetKey
+                  }
+                  onSelect={() => onSelect(option)}
+                />
+              ) : (
+                <Button
+                  key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
+                  variant="ghost"
+                  width="100%"
+                  aria-pressed={
+                    initialSelection?.sourceAssetKey ===
+                      option.sourceAssetKey &&
+                    initialSelection.destinationChainKey ===
+                      option.destinationChainKey &&
+                    initialSelection.destinationAssetKey ===
+                      option.destinationAssetKey
+                  }
+                  onClick={() => onSelect(option)}
+                  sx={{
+                    height: "auto",
+                    px: "m",
+                    py: "m",
+                    borderRadius: "m",
+                    gridTemplateColumns: "minmax(0, 1fr)",
+                  }}
+                >
+                  <Flex gap="m" align="center" width="100%">
+                    <ChainLogo
+                      ecosystem={option.destinationChain.ecosystem}
+                      chainId={getChainId(option.destinationChain)}
+                      alt={option.destinationChain.name}
                     />
-                  ) : (
-                    <Button
-                      key={`${option.sourceAssetKey}:${option.destinationChainKey}:${option.destinationAssetKey}`}
-                      variant="ghost"
-                      width="100%"
-                      aria-pressed={
-                        initialSelection?.sourceAssetKey ===
-                          option.sourceAssetKey &&
-                        initialSelection.destinationChainKey ===
-                          option.destinationChainKey &&
-                        initialSelection.destinationAssetKey ===
-                          option.destinationAssetKey
-                      }
-                      onClick={() => onSelect(option)}
-                      sx={{
-                        height: "auto",
-                        px: "m",
-                        py: "m",
-                        borderRadius: "m",
-                        gridTemplateColumns: "minmax(0, 1fr)",
-                      }}
-                    >
-                      <Flex gap="m" align="center" width="100%">
-                        <ChainLogo
-                          ecosystem={option.destinationChain.ecosystem}
-                          chainId={getChainId(option.destinationChain)}
-                          alt={option.destinationChain.name}
-                        />
-                        <Stack gap="s" flex={1} align="start">
-                          <Text fs="p3" fw={500}>
-                            {option.destinationChain.name}
-                          </Text>
-                          {(selected.routes.filter(
-                            ({ destinationChainKey }) =>
-                              destinationChainKey ===
-                              option.destinationChainKey,
-                          ).length > 1 ||
-                            selected.asset.originSymbol !==
-                              option.destinationAsset.originSymbol) && (
-                            <Text fs="p5" color={getToken("text.medium")}>
-                              {option.destinationAsset.originSymbol}
-                            </Text>
-                          )}
-                        </Stack>
-                        <Icon component={ChevronRight} size="m" />
-                      </Flex>
-                    </Button>
-                  ),
-                )
-              : hydration &&
-                assets.map(({ asset, routes }) => (
-                  <DepositAssetOption
-                    key={asset.key}
-                    asset={asset}
-                    chain={hydration}
-                    onSelect={() => {
-                      if (routes.length === 1) onSelect(routes[0]!)
-                      else setAssetKey(asset.key)
-                      setSearch("")
-                    }}
-                  />
-                ))}
-            {!(selected ? routes : assets).length && <AssetSelectEmptyState />}
+                    <Stack gap="s" flex={1} align="start">
+                      <Text fs="p3" fw={500}>
+                        {option.destinationChain.name}
+                      </Text>
+                      {(selected.routes.filter(
+                        ({ destinationChainKey }) =>
+                          destinationChainKey === option.destinationChainKey,
+                      ).length > 1 ||
+                        selected.asset.originSymbol !==
+                          option.destinationAsset.originSymbol) && (
+                        <Text fs="p5" color={getToken("text.medium")}>
+                          {option.destinationAsset.originSymbol}
+                        </Text>
+                      )}
+                    </Stack>
+                    <Icon component={ChevronRight} size="m" />
+                  </Flex>
+                </Button>
+              ),
+            )}
+            {!routes.length && <AssetSelectEmptyState />}
           </Stack>
         </Stack>
       </DepositScrollBody>

@@ -197,7 +197,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
             )
           }}
           onAssetClick={chooseRoute}
-          header={(pending) => (
+          header={(pending, onDestinationBack) => (
             <SOnrampStepHeader
               align="center"
               title={
@@ -208,7 +208,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
               description={
                 flow === "simple" ? t("withdraw.quick.description") : undefined
               }
-              onBack={pending ? undefined : back}
+              onBack={pending ? undefined : (onDestinationBack ?? back)}
               closable
               customHeader={
                 flow !== "current" ? (

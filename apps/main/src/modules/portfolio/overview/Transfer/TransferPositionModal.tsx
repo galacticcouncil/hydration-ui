@@ -59,7 +59,9 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly assetId?: string
-  readonly header?: ReactNode | ((pending: boolean) => ReactNode)
+  readonly header?:
+    | ReactNode
+    | ((pending: boolean, onDestinationBack?: () => void) => ReactNode)
   readonly defaultAddress?: string
   readonly defaultRecipient?: Account | null
   readonly sourceAccount?: Account
@@ -320,7 +322,14 @@ export const TransferPositionModal: FC<Props> = ({
         })}
       >
         {(typeof header === "function"
-          ? header(transferPosition.isPending)
+          ? header(
+              transferPosition.isPending,
+              renderDestinationPicker
+                ? () => {
+                    setIsRecipientWalletOpen(true)
+                  }
+                : undefined,
+            )
           : header) ?? (
           <ModalHeader
             align="center"
@@ -363,7 +372,9 @@ export const TransferPositionModal: FC<Props> = ({
                 }
                 address={address}
                 disabled={transferPosition.isPending}
-                onChange={() => setIsRecipientWalletOpen(true)}
+                onChange={() => {
+                  setIsRecipientWalletOpen(true)
+                }}
               />
             </Box>
           ) : (
