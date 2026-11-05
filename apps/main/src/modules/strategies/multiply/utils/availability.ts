@@ -6,6 +6,7 @@ export type MultiplyUnavailableReason =
   | "notBorrowable"
   | "debtCeiling"
   | "borrowCap"
+  | "supplyCap"
 
 type AvailabilityReserve = Pick<
   ReserveSummary,
@@ -18,6 +19,8 @@ type AvailabilityReserve = Pick<
   | "availableDebtCeilingUsd"
   | "borrowCap"
   | "totalDebt"
+  | "supplyCap"
+  | "totalLiquidity"
 >
 
 // Why a new position could not ramp, or null when it can. The factory's
@@ -40,6 +43,12 @@ export const getMultiplyUnavailableReason = (
     return "debtCeiling"
   if (Big(debt.borrowCap).gt(0) && Big(debt.totalDebt).gte(debt.borrowCap))
     return "borrowCap"
+  // the ladder supplies collateral, so a full supply cap stalls it too
+  if (
+    Big(collateral.supplyCap).gt(0) &&
+    Big(collateral.totalLiquidity).gte(collateral.supplyCap)
+  )
+    return "supplyCap"
 
   return null
 }
