@@ -13,6 +13,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { DemoWalletBanner } from "@/modules/onramp/demo/DemoWalletBanner"
 import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
@@ -32,6 +33,12 @@ const MobileTabBar = lazy(async () => ({
 const TransactionManager = lazy(async () => ({
   default: await import("@/modules/transactions/TransactionManager").then(
     (m) => m.TransactionManager,
+  ),
+}))
+
+const OnrampModal = lazy(async () => ({
+  default: await import("@/modules/onramp/OnrampModal").then(
+    (m) => m.OnrampModal,
   ),
 }))
 
@@ -90,6 +97,7 @@ function RootComponent() {
           <TutorialProvider>
             <MultisigProvider>
               <AssetRegistryGate>
+                <DemoWalletBanner />
                 <MainLayout />
                 <Services />
                 <Footer />
@@ -137,6 +145,11 @@ function Services() {
     <>
       <Suspense fallback={null}>
         <TransactionManager />
+      </Suspense>
+      <Suspense fallback={null}>
+        <OnrampModal />
+      </Suspense>
+      <Suspense fallback={null}>
         <Web3ConnectSession />
         <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
       </Suspense>

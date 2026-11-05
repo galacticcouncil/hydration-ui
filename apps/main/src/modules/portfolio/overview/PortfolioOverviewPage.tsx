@@ -1,9 +1,11 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { useSearch } from "@tanstack/react-router"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { PortfolioDepositsSection } from "@/modules/portfolio/deposits/PortfolioDepositsSection"
 import { MyBonds } from "@/modules/portfolio/overview/MyBonds/MyBonds"
 import { MyLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyLiquidity"
 import { PortfolioOverview } from "@/modules/portfolio/overview/PortfolioOverview"
@@ -13,6 +15,7 @@ import { TrackedWallets } from "@/modules/portfolio/tracked/TrackedWallets"
 
 export const PortfolioOverviewPage = () => {
   const { account } = useAccount()
+  const { depositStatus } = useSearch({ from: "/portfolio/" })
 
   const liquidityPagination = useDataTableUrlPagination(
     "/portfolio/",
@@ -57,13 +60,9 @@ export const PortfolioOverviewPage = () => {
 
   const isPortfolioEmpty = useIsPortfolioEmpty()
 
-  if (!account) {
-    return <PortfolioEmptyState />
-  }
-
   return (
     <Flex direction="column" gap="xxxl">
-      {!isPortfolioEmpty && (
+      {account && !isPortfolioEmpty && (
         <PortfolioOverview
           key={account.address + "_assets"}
           searchPhrase={searchPhrase}
@@ -87,11 +86,20 @@ export const PortfolioOverviewPage = () => {
           }
         />
       )}
-      <TrackedWallets
-        key={account.address + "_tracked"}
-        searchPhrase={searchPhrase}
-        onSearchPhraseChange={isPortfolioEmpty ? changeSearch : undefined}
-        sortingProps={assetsSorting}
+      {account ? (
+        <TrackedWallets
+          key={account.address + "_tracked"}
+          searchPhrase={searchPhrase}
+          onSearchPhraseChange={isPortfolioEmpty ? changeSearch : undefined}
+          sortingProps={assetsSorting}
+        />
+      ) : (
+        <PortfolioEmptyState />
+      )}
+      <PortfolioDepositsSection
+        embedded
+        filter={depositStatus}
+        filterTo="/portfolio"
       />
     </Flex>
   )

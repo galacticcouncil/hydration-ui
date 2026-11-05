@@ -8,18 +8,22 @@ export type ExternalAssetLogoProps = LogoProps & {
   id: ChainAssetId
   ecosystem: ChainEcosystem
   chainId: string | number
+  showChainLogo?: boolean
 }
 
 export const ExternalAssetLogo: React.FC<ExternalAssetLogoProps> = ({
   chainId,
   id,
   ecosystem,
+  showChainLogo = true,
   ...props
 }) => {
   const metadata = useAssetMetadata()
 
   const src = metadata.getAssetLogoSrc(chainId, id.toString(), ecosystem)
-  const chainSrc = metadata.getChainLogoSrc(chainId, ecosystem)
+  const chainSrc = showChainLogo
+    ? metadata.getChainLogoSrc(chainId, ecosystem)
+    : undefined
 
   return <AssetLogo src={src} chainSrc={chainSrc} {...props} />
 }

@@ -1,12 +1,13 @@
-import { Flex, ModalContainer } from "@galacticcouncil/ui/components"
+import { Flex } from "@galacticcouncil/ui/components"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useUnmount } from "react-use"
 
+import { SOnrampPageContainer } from "@/modules/onramp/components/OnrampPageContainer.styled"
+import { OnrampRedirect } from "@/modules/onramp/OnrampRedirect"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { WithdrawBank } from "@/modules/onramp/withdraw/steps/WithdrawBank"
 import { WithdrawCexSelect } from "@/modules/onramp/withdraw/steps/WithdrawCexSelect"
-import { WithdrawMethodSelect } from "@/modules/onramp/withdraw/steps/WithdrawMethodSelect"
 import { WithdrawSuccess } from "@/modules/onramp/withdraw/steps/WithdrawSuccess"
 import { WithdrawTransfer } from "@/modules/onramp/withdraw/steps/WithdrawTransfer"
 import { WithdrawTransferOnchain } from "@/modules/onramp/withdraw/steps/WithdrawTransferOnchain"
@@ -20,9 +21,12 @@ export const WithdrawPage = () => {
 
   return (
     <Flex direction="column" align="center">
-      <ModalContainer open>
+      <SOnrampPageContainer
+        open
+        wide={page === OnrampScreen.WithdrawAssetSelect}
+      >
         {page === OnrampScreen.MethodSelect && (
-          <WithdrawMethodSelect onSelect={paginateTo} />
+          <OnrampRedirect modal="withdraw" />
         )}
 
         {page === OnrampScreen.WithdrawAssetSelect && (
@@ -55,7 +59,7 @@ export const WithdrawPage = () => {
         {page === OnrampScreen.WithdrawSuccess && (
           <WithdrawSuccess onConfirm={reset} />
         )}
-      </ModalContainer>
+      </SOnrampPageContainer>
     </Flex>
   )
 }

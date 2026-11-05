@@ -37,14 +37,13 @@ export const useCBreakerOutboundLimitAlerts = (
       : undefined
 
   const { price: nativePrice, isValid: isNativePriceValid } = useAssetPrice(
-    native.id,
+    native?.id,
   )
   const { price: srcPrice, isValid: isSrcPriceValid } =
     useAssetPrice(srcAssetId)
 
-  const headroomAmount = data?.headroom
-    ? toDecimal(data.headroom, native.decimals)
-    : null
+  const headroomAmount =
+    data?.headroom && native ? toDecimal(data.headroom, native.decimals) : null
 
   const headroomUsd =
     isNativePriceValid && headroomAmount

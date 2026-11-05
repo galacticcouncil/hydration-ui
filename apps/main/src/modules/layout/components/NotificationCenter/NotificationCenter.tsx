@@ -11,7 +11,8 @@ import {
   Stack,
 } from "@galacticcouncil/ui/components"
 import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
-import { FC } from "react"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { FC, RefObject } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EmptyState } from "@/components/EmptyState/EmptyState"
@@ -20,15 +21,34 @@ import { MultisigNotification } from "@/modules/layout/components/NotificationCe
 import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
 import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
+import { DepositRecoveryCards } from "@/modules/onramp/deposit/components/DepositRecoveryCards"
+import { useDepositRecoveryStore } from "@/modules/onramp/deposit/store/useDepositRecoveryStore"
+import { isDepositAccountAddress } from "@/modules/portfolio/deposits/PortfolioDepositActivity.utils"
+import { BankSetupResume } from "@/modules/ramp/BankSetupResume"
+import { useBankPreviewStore } from "@/modules/ramp/useBankPreviewStore"
 import { useClaimableTransactions } from "@/modules/xcm/history/hooks/useClaimableTransactions"
 import { useMultisigContext } from "@/providers/MultisigProvider"
 import { useToasts } from "@/states/toasts"
 
-export const NotificationCenter: FC = () => {
-  const { t } = useTranslation()
+type NotificationCenterProps = {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  returnFocusRef?: RefObject<HTMLElement | null>
+}
+
+export const NotificationCenter: FC<NotificationCenterProps> = ({
+  open,
+  onOpenChange,
+  returnFocusRef,
+}) => {
+  const { t } = useTranslation("common")
 
   const { totalPendingTxCount, multisigs, pendingTxsByMultisig } =
     useMultisigContext()
+  const { account } = useAccount()
+  const bankSetup = useBankPreviewStore(
+    (state) => state.setups[account?.address ?? ""],
+  )
   const { toasts } = useToasts()
   const visibleClaimable = useClaimableTransactions()
 
@@ -40,12 +60,32 @@ export const NotificationCenter: FC = () => {
   const completed = groups.completed ?? []
 
   const totalclaimableCount = visibleClaimable.length
-  const totalImportantCount = totalclaimableCount + totalPendingTxCount
+  const recoveryCount = useDepositRecoveryStore(
+    (state) =>
+      state.deposits.filter(
+        (deposit) =>
+          isDepositAccountAddress(deposit.source.address, account?.address) ||
+          isDepositAccountAddress(deposit.destinationAddress, account?.address),
+      ).length,
+  )
+  const totalImportantCount =
+    totalclaimableCount +
+    totalPendingTxCount +
+    (bankSetup ? 1 : 0) +
+    recoveryCount
 
   return (
-    <SheetRoot>
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button icon={BellIcon} variant="ghost" size="medium">
+        <Button
+          icon={BellIcon}
+          variant="ghost"
+          size="medium"
+          aria-label={t("notifications")}
+          onClick={() => {
+            if (returnFocusRef) returnFocusRef.current = null
+          }}
+        >
           {pending.length > 0 && (
             <Box position="absolute" sx={{ inset: 0 }}>
               <Spinner sx={{ size: "100%", strokeWidth: 1 }} />
@@ -57,12 +97,22 @@ export const NotificationCenter: FC = () => {
           />
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent
+        onCloseAutoFocus={(event) => {
+          const trigger = returnFocusRef?.current
+          if (trigger?.isConnected) {
+            event.preventDefault()
+            trigger.focus()
+          }
+        }}
+      >
         <SheetHeader title={t("notifications")} />
         <SheetBody sx={{ pt: 10 }}>
           <Stack gap="xl">
             {totalImportantCount > 0 && (
               <NotificationGroup label={t("important")} defaultOpen>
+                <BankSetupResume notification />
+                <DepositRecoveryCards notification />
                 {multisigs.map((multisig) => {
                   const address = safeConvertPublicKeyToSS58(multisig.pubKey)
                   const pendingTxs = pendingTxsByMultisig.get(address) ?? []
@@ -100,14 +150,12 @@ export const NotificationCenter: FC = () => {
               </NotificationGroup>
             )}
 
-            {toasts.length === 0 &&
-              visibleClaimable.length === 0 &&
-              totalPendingTxCount === 0 && (
-                <EmptyState
-                  header={t("notifications.empty.title")}
-                  description={t("notifications.empty.description")}
-                />
-              )}
+            {toasts.length === 0 && totalImportantCount === 0 && (
+              <EmptyState
+                header={t("notifications.empty.title")}
+                description={t("notifications.empty.description")}
+              />
+            )}
           </Stack>
         </SheetBody>
       </SheetContent>

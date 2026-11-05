@@ -20,7 +20,12 @@ import {
 import { RoundLogo } from "@/components/RoundLogo"
 import { getWalletChainModes, getWalletModeIcon } from "@/config/wallet"
 import { useReorderAnimation } from "@/hooks/useReorderAnimation"
-import { isEip1193Provider, requestAccounts, toAccount } from "@/utils"
+import {
+  getWalletModeByAddress,
+  isEip1193Provider,
+  requestAccounts,
+  toAccount,
+} from "@/utils"
 import { isAccountSelected } from "@/utils/accountFilter"
 import { getWallet, MetaMask } from "@/wallets"
 
@@ -96,7 +101,9 @@ export const WalletAccountTile: React.FC<{
   readonly onClick: () => void
 }> = ({ account, isActive, isBalanceLoading, onClick }) => {
   const { t } = useTranslation()
-  const [mode] = getWalletChainModes(account.provider)
+  const modes = getWalletChainModes(account.provider)
+  const mode =
+    modes.length > 1 ? getWalletModeByAddress(account.rawAddress) : modes[0]
   const modeIcon = mode ? getWalletModeIcon(mode) : ""
   const wallet = getWallet(account.provider)
   const metaMaskExtension =

@@ -1,0 +1,3549 @@
+{
+  "text": [
+    {
+      "id": "S:8287a83af781bfe7b1c537fbb373c1a37bedfc18,",
+      "key": "8287a83af781bfe7b1c537fbb373c1a37bedfc18",
+      "name": "headlines/2xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 70,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 72
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:b764d7c187fab04cbf6d1129e1bdd44f748f90e6,",
+      "key": "b764d7c187fab04cbf6d1129e1bdd44f748f90e6",
+      "name": "headlines/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 56,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 64
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:a6cab8c87d675387f5948a57b868ee628f98f995,",
+      "key": "a6cab8c87d675387f5948a57b868ee628f98f995",
+      "name": "headlines/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Regular"
+      },
+      "fontSize": 45,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 48
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:3238c14995016e42d8c881690ac864a12ee0e94c,",
+      "key": "3238c14995016e42d8c881690ac864a12ee0e94c",
+      "name": "headlines/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 36,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 40
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:b7dec930a9d8a5092c2fde043e9e7d476d49ede3,",
+      "key": "b7dec930a9d8a5092c2fde043e9e7d476d49ede3",
+      "name": "headlines/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 29,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 30
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:a2c811fbc3a869c4f11ca252e9595a18220d2b57,",
+      "key": "a2c811fbc3a869c4f11ca252e9595a18220d2b57",
+      "name": "headlines/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 23,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 24
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:84a11eb143ab18449c9de7f937ae57dc2eb9c92f,",
+      "key": "84a11eb143ab18449c9de7f937ae57dc2eb9c92f",
+      "name": "headlines/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:30114048a4972e05d5e8094b8cf65e011636ea7a,",
+      "key": "30114048a4972e05d5e8094b8cf65e011636ea7a",
+      "name": "headlines/2xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:1da35ff351927ad4dad475e7fddd9e7fcafef67d,",
+      "key": "1da35ff351927ad4dad475e7fddd9e7fcafef67d",
+      "name": "medium/2xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:cf63a4b997223a55b19ba7b7abec112ac1564cc8,",
+      "key": "cf63a4b997223a55b19ba7b7abec112ac1564cc8",
+      "name": "medium/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:473b14e10fa06fc3c7ed984d6b54831792f11b4e,",
+      "key": "473b14e10fa06fc3c7ed984d6b54831792f11b4e",
+      "name": "medium/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8ba7619b346cc1b6ca360bbaf588e8cf6d84e3ba,",
+      "key": "8ba7619b346cc1b6ca360bbaf588e8cf6d84e3ba",
+      "name": "medium/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8b95e6089273cb47bcb3dfb9709460b58148169f,",
+      "key": "8b95e6089273cb47bcb3dfb9709460b58148169f",
+      "name": "medium/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:a5ca18ad68667985efaa8f3e8ace37f8f20709ab,",
+      "key": "a5ca18ad68667985efaa8f3e8ace37f8f20709ab",
+      "name": "medium/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 10,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 12
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:7e3e1e5145fdff6c306110d91a59be76639339b3,",
+      "key": "7e3e1e5145fdff6c306110d91a59be76639339b3",
+      "name": "medium/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:d0ede8ad62f05b15c35f45e81fd4006ef8ae37bb,",
+      "key": "d0ede8ad62f05b15c35f45e81fd4006ef8ae37bb",
+      "name": "medium/caps/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:055817042417ab833255a76fadb43a0cab5a99a9,",
+      "key": "055817042417ab833255a76fadb43a0cab5a99a9",
+      "name": "medium/caps/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:9ffe1278da799e1956b6619497c4ef76ccf79fbf,",
+      "key": "9ffe1278da799e1956b6619497c4ef76ccf79fbf",
+      "name": "medium/caps/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:6015642b8b76a096a740b4e026d8e54caebfa0c9,",
+      "key": "6015642b8b76a096a740b4e026d8e54caebfa0c9",
+      "name": "medium/caps/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:835095d9c9d3a93f97660bf87db388eeb11e8777,",
+      "key": "835095d9c9d3a93f97660bf87db388eeb11e8777",
+      "name": "medium/caps/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:68ebd1c429aefecfbc3d92997ea71ac897740408,",
+      "key": "68ebd1c429aefecfbc3d92997ea71ac897740408",
+      "name": "semibold/caps/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 28
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:b405376bcfee3d55768a2548dcf2b26b5c11fb34,",
+      "key": "b405376bcfee3d55768a2548dcf2b26b5c11fb34",
+      "name": "semibold/caps/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:ca60c00dfb912fc981378211c9b55fce5429a2e0,",
+      "key": "ca60c00dfb912fc981378211c9b55fce5429a2e0",
+      "name": "semibold/caps/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:31ced9c9589a99f7a76c7a2a55f38ac52c12c0c0,",
+      "key": "31ced9c9589a99f7a76c7a2a55f38ac52c12c0c0",
+      "name": "semibold/caps/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:3af982c70448ed6aa4db418e7671066640f25d04,",
+      "key": "3af982c70448ed6aa4db418e7671066640f25d04",
+      "name": "semibold/xxl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:7516ab89718e19b41958d63fb3c178f8f0b0f948,",
+      "key": "7516ab89718e19b41958d63fb3c178f8f0b0f948",
+      "name": "semibold/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:cce8297692a16cc146a1346eda204d5dc7e77610,",
+      "key": "cce8297692a16cc146a1346eda204d5dc7e77610",
+      "name": "semibold/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:db69db4885420bca2c5c44c16790786a37c00590,",
+      "key": "db69db4885420bca2c5c44c16790786a37c00590",
+      "name": "semibold/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:fe546d81e39eafe6141f496aee36c0e1158fe0fd,",
+      "key": "fe546d81e39eafe6141f496aee36c0e1158fe0fd",
+      "name": "semibold/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:23b06e5ce4d42e2168338cc178a1825c890f92bf,",
+      "key": "23b06e5ce4d42e2168338cc178a1825c890f92bf",
+      "name": "semibold/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:fe79baa8e10a4f9f3b57f7a095a24bf371a623d1,",
+      "key": "fe79baa8e10a4f9f3b57f7a095a24bf371a623d1",
+      "name": "semibold/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "SemiBold",
+        "variationSettings": {
+          "wght": 600
+        }
+      },
+      "fontSize": 8,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "UPPER",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:b361767678560f46de2e7abbb18b43d068e6036a,",
+      "key": "b361767678560f46de2e7abbb18b43d068e6036a",
+      "name": "bold/2xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:6dcdc619ec08d3485d60dbde8574d7a83fe84617,",
+      "key": "6dcdc619ec08d3485d60dbde8574d7a83fe84617",
+      "name": "bold/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:920392fc1fdd4d41f2b37cae3d0c4957ff64f377,",
+      "key": "920392fc1fdd4d41f2b37cae3d0c4957ff64f377",
+      "name": "bold/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 18
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8e3565f1c0a10ed7ff4a4884ec16bfe4fe8aaa6d,",
+      "key": "8e3565f1c0a10ed7ff4a4884ec16bfe4fe8aaa6d",
+      "name": "bold/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 24
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8dae1ec0d58c7ad3dc152a35a4de3b3ac9d75aee,",
+      "key": "8dae1ec0d58c7ad3dc152a35a4de3b3ac9d75aee",
+      "name": "bold/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:2b170c9cd8540c67ea19be26d4331e1a2cc49e0e,",
+      "key": "2b170c9cd8540c67ea19be26d4331e1a2cc49e0e",
+      "name": "bold/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:c287b0c6aaddf00945df4d10cf32bd52d522d845,",
+      "key": "c287b0c6aaddf00945df4d10cf32bd52d522d845",
+      "name": "bold/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Bold",
+        "variationSettings": {
+          "wght": 700
+        }
+      },
+      "fontSize": 8,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:f869650eaf0b2c5bca6876a2952f8ce67560aa66,",
+      "key": "f869650eaf0b2c5bca6876a2952f8ce67560aa66",
+      "name": "regular/2xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:b4bf975840dca982da42b14097b3f60b662bdab9,",
+      "key": "b4bf975840dca982da42b14097b3f60b662bdab9",
+      "name": "regular/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 16,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 28
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:d58e67507a73b3d22e62fea8e52bba6f7eaa4238,",
+      "key": "d58e67507a73b3d22e62fea8e52bba6f7eaa4238",
+      "name": "regular/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:9b7488968201fa40eea984efcbfeca0d246171b6,",
+      "key": "9b7488968201fa40eea984efcbfeca0d246171b6",
+      "name": "regular/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 13,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:e5c3176084de43f685e1f0d002822dbd926ab27e,",
+      "key": "e5c3176084de43f685e1f0d002822dbd926ab27e",
+      "name": "regular/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 12,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:5d571065aa926930b99add642cd3f4cc0a69f032,",
+      "key": "5d571065aa926930b99add642cd3f4cc0a69f032",
+      "name": "regular/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 12
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:63e9094399cc16bf7f671ea99884ca53561c79af,",
+      "key": "63e9094399cc16bf7f671ea99884ca53561c79af",
+      "name": "regular/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 9,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 9
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:37f6db7e18cbf10593c5bb7985003c1fb808381f,",
+      "key": "37f6db7e18cbf10593c5bb7985003c1fb808381f",
+      "name": "headlinesSecondary/2xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 70,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 72
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:fb053fee2e1b68e32d24c7579191a64dedc27ea9,",
+      "key": "fb053fee2e1b68e32d24c7579191a64dedc27ea9",
+      "name": "headlinesSecondary/xl",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 56,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 64
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:80f3e7ab34dd1c43d4b5030f060d32b426ec36dc,",
+      "key": "80f3e7ab34dd1c43d4b5030f060d32b426ec36dc",
+      "name": "headlinesSecondary/lg",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Regular"
+      },
+      "fontSize": 45,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 48
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:908f1eb352d52dbf77c8513590cf1395a5f4c317,",
+      "key": "908f1eb352d52dbf77c8513590cf1395a5f4c317",
+      "name": "headlinesSecondary/md",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 36,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 40
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8d56ade06183337f6e184a35adea0247a7e121d6,",
+      "key": "8d56ade06183337f6e184a35adea0247a7e121d6",
+      "name": "headlinesSecondary/base",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 29,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 30
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:a93fe20b23a3122521e713ea27b28cc7b6413d04,",
+      "key": "a93fe20b23a3122521e713ea27b28cc7b6413d04",
+      "name": "headlinesSecondary/sm",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Medium",
+        "variationSettings": {
+          "wght": 500
+        }
+      },
+      "fontSize": 23,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 24
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:0eba990103446ff7eb750a5ae5afa34dba1ca2b9,",
+      "key": "0eba990103446ff7eb750a5ae5afa34dba1ca2b9",
+      "name": "headlinesSecondary/xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 18,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 21
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:eb0b9ae12affcc239fd06e7c9fcef0a3f34e65ec,",
+      "key": "eb0b9ae12affcc239fd06e7c9fcef0a3f34e65ec",
+      "name": "headlinesSecondary/2xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 14,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:6a46f6fcc04fcc2e762f128773f0595eb75fc756,",
+      "key": "6a46f6fcc04fcc2e762f128773f0595eb75fc756",
+      "name": "headlines/3xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Gazpacho",
+        "style": "Medium"
+      },
+      "fontSize": 11,
+      "lineHeight": {
+        "unit": "PIXELS",
+        "value": 15
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:c682d1824c4ae86c39fb85130b5089a7443f2f5d,",
+      "key": "c682d1824c4ae86c39fb85130b5089a7443f2f5d",
+      "name": "regular/2xs",
+      "type": "TEXT",
+      "description": "",
+      "remote": false,
+      "fontName": {
+        "family": "Geist",
+        "style": "Regular",
+        "variationSettings": {
+          "wght": 400
+        }
+      },
+      "fontSize": 10,
+      "lineHeight": {
+        "unit": "PERCENT",
+        "value": 100
+      },
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL",
+      "textDecoration": "NONE",
+      "paragraphSpacing": 0,
+      "paragraphIndent": 0,
+      "listSpacing": 0,
+      "hangingPunctuation": false,
+      "hangingList": false,
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    }
+  ],
+  "paint": [],
+  "effect": [
+    {
+      "id": "S:93dfd5d7b3e4c70f2bb6923dea7ee2736ca03e7a,",
+      "key": "93dfd5d7b3e4c70f2bb6923dea7ee2736ca03e7a",
+      "name": "Dark/container/primaryModal",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 37,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.10000000149011612
+          },
+          "offset": {
+            "x": 0,
+            "y": 14
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        },
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 9,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.10000000149011612
+          },
+          "offset": {
+            "x": 0,
+            "y": 3
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:6912c0e7d1a4c6858b70d6a36839f85bf8a9be11,",
+      "key": "6912c0e7d1a4c6858b70d6a36839f85bf8a9be11",
+      "name": "Dark/info/tooltips",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 15,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.09000000357627869
+          },
+          "offset": {
+            "x": 0,
+            "y": 8
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:8012d615ef97e419bcc813348424163a64cdc35b,",
+      "key": "8012d615ef97e419bcc813348424163a64cdc35b",
+      "name": "containerPrimary/secondary",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 37,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": 14
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        },
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 9,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": 3
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:da4bddddcae0a285dbaf2dc0a8223a4fb05a92c9,",
+      "key": "da4bddddcae0a285dbaf2dc0a8223a4fb05a92c9",
+      "name": "Light/container/softOnPrimary",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 0,
+          "boundVariables": {
+            "color": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:288:8028"
+            }
+          },
+          "color": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:f4a82f6bf533ec84d95f116a62c9dfc911973b53,",
+      "key": "f4a82f6bf533ec84d95f116a62c9dfc911973b53",
+      "name": "Dark/uiControls/slider",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 2.799999952316284,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.10000000149011612
+          },
+          "offset": {
+            "x": 0,
+            "y": 4
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        },
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 17.200000762939453,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.029999999329447746
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:f16ea195a89d1449a7dac498d1359a93ed314f7b,",
+      "key": "f16ea195a89d1449a7dac498d1359a93ed314f7b",
+      "name": "Dark/container/softOnPrimary",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 37,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.09000000357627869
+          },
+          "offset": {
+            "x": 0,
+            "y": 14
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        },
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 3,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.07000000029802322
+          },
+          "offset": {
+            "x": 0,
+            "y": 1
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:d64270ff8a8b2d206976809c2a94ea96689f046a,",
+      "key": "d64270ff8a8b2d206976809c2a94ea96689f046a",
+      "name": "Dark/container/secondary",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 37,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.029999999329447746
+          },
+          "offset": {
+            "x": 0,
+            "y": 14
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        },
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 3,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": 1
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:04d4b4158b393398fd50503cb7b96c75b9462448,",
+      "key": "04d4b4158b393398fd50503cb7b96c75b9462448",
+      "name": "Dark/info/toasts",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 18,
+          "boundVariables": {
+            "color": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:1394:322"
+            }
+          },
+          "color": {
+            "r": 0.0117647061124444,
+            "g": 0.0313725508749485,
+            "b": 0.08627451211214066,
+            "a": 0.30000001192092896
+          },
+          "offset": {
+            "x": 0,
+            "y": 4
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:4684a565e2d90c4f63d83f9f8a959baeef625f30,",
+      "key": "4684a565e2d90c4f63d83f9f8a959baeef625f30",
+      "name": "Light/container/none",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 0,
+          "boundVariables": {
+            "color": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:294:7334"
+            }
+          },
+          "color": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:5f50b1ac8aec9ed53c80a9d087f252296f029051,",
+      "key": "5f50b1ac8aec9ed53c80a9d087f252296f029051",
+      "name": "Dark/container/none",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 0,
+          "boundVariables": {
+            "color": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:294:7334"
+            }
+          },
+          "color": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:9bbc51ace0b83d497cee6af5646bdbb2b43fc542,",
+      "key": "9bbc51ace0b83d497cee6af5646bdbb2b43fc542",
+      "name": "Light/container/softOnPrimary-copy",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 6,
+          "boundVariables": {},
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.07000000029802322
+          },
+          "offset": {
+            "x": 0,
+            "y": 3
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    },
+    {
+      "id": "S:369c1a0204ce42e58365eb6f8912adac4854e73b,",
+      "key": "369c1a0204ce42e58365eb6f8912adac4854e73b",
+      "name": "Dark/info/toastsMobile",
+      "type": "EFFECT",
+      "description": "",
+      "remote": false,
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "visible": true,
+          "radius": 20,
+          "boundVariables": {
+            "color": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:3289:26828"
+            }
+          },
+          "color": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          },
+          "offset": {
+            "x": 0,
+            "y": 20
+          },
+          "spread": 0,
+          "blendMode": "NORMAL",
+          "showShadowBehindNode": false
+        }
+      ],
+      "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+      "url": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/",
+      "importMethod": "importStyleByKeyAsync",
+      "provenance": {
+        "snapshot": "foundations",
+        "source": "raw/chunks/foundations",
+        "exportDate": "2026-10-26"
+      },
+      "verification": {
+        "inventory": {
+          "status": "live-export",
+          "date": "2026-10-26"
+        },
+        "import": {
+          "status": "not-tested"
+        },
+        "behavior": {
+          "status": "not-tested",
+          "note": "Exported layout is not proof of resize or interaction behavior."
+        }
+      }
+    }
+  ],
+  "grid": []
+}

@@ -14,6 +14,7 @@ export const SRow = styled(ButtonTransparent)(
     gap: ${theme.space.m};
 
     &:hover {
+      border-radius: ${theme.radii.m};
       background: ${theme.details.separators};
     }
   `,

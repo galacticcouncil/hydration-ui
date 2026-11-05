@@ -1,10 +1,13 @@
 import {
+  getAccountSigner,
   isEthereumSigner,
   isNearSigner,
   isPolkadotSigner,
   isSolanaSigner,
   isSuiSigner,
   isZecSigner,
+  useAccount,
+  useAccountOverride,
   useWallet,
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
@@ -54,6 +57,8 @@ export const useSignAndSubmit = (
   const { t } = useTranslation("common")
   const { papi, papiClient } = useRpcProvider()
   const wallet = useWallet()
+  const { account } = useAccount()
+  const accountOverride = useAccountOverride()
 
   const subscription = useRef<Subscription | null>(null)
 
@@ -71,7 +76,12 @@ export const useSignAndSubmit = (
     mutationFn: async (txOptions: TxOptions) => {
       const { tx, isUnsigned } = transaction
 
-      const signer = wallet?.signer
+      const signer =
+        accountOverride !== undefined
+          ? wallet && account
+            ? getAccountSigner(wallet, account)
+            : undefined
+          : wallet?.signer
 
       if (isUnsigned && isPapiTransaction(tx)) {
         return submitUnsignedPolkadotTx(tx, papiClient, txOptions)

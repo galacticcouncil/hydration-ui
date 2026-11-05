@@ -14,9 +14,15 @@ import {
   WalletProviderStatus,
   WalletRestoreState,
 } from "@/hooks/useWeb3Connect"
-import { BaseWalletError, UserRejectedError } from "@/utils/errors"
+import {
+  AuthError,
+  BaseWalletError,
+  StaleAttemptError,
+  UserRejectedError,
+} from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
-import { getWallet } from "@/wallets"
+import { getConflictingWalletProviders } from "@/utils/walletSource"
+import { getWallet, getWallets } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 type UseWeb3EnableOptions = {
@@ -24,6 +30,8 @@ type UseWeb3EnableOptions = {
   restore?: boolean
   eager?: boolean
 }
+
+type EnableRequest = { type: WalletProviderType; attempt: number }
 
 const ADDRESS_BOOK_PROVIDER_BLACKLIST = [
   WalletProviderType.ExternalWallet,
@@ -48,6 +56,28 @@ export const abandonEnable = (type: WalletProviderType) => {
   nextAttempt(type)
 }
 
+const disconnectUnusedWallet = (type: WalletProviderType) => {
+  const status = useWeb3Connect.getState().getStatus(type)
+  if (
+    status !== WalletProviderStatus.Connected &&
+    status !== WalletProviderStatus.Pending
+  )
+    getWallet(type)?.disconnect()
+}
+
+const assertCurrentRequest = ({ type, attempt }: EnableRequest) => {
+  if (
+    isCurrentAttempt(type, attempt) &&
+    useWeb3Connect.getState().getStatus(type) !==
+      WalletProviderStatus.Disconnected
+  )
+    return
+  disconnectUnusedWallet(type)
+  const wallet = getWallet(type)
+  if (wallet) throw new StaleAttemptError(wallet)
+  throw new Error("Wallet connection attempt was superseded.")
+}
+
 const isTimeoutError = (error: unknown) =>
   error instanceof Error && error.name === "TimeoutError"
 
@@ -58,6 +88,8 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
     setError,
     disconnect: disconnectProvider,
     setAccounts,
+    connectProvider,
+    cancelPendingProvider,
     setRestoreState,
     clearRestoreState,
     markRecent,
@@ -69,6 +101,8 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
         "setError",
         "disconnect",
         "setAccounts",
+        "connectProvider",
+        "cancelPendingProvider",
         "setRestoreState",
         "clearRestoreState",
         "markRecent",
@@ -86,12 +120,19 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
         Object.values(WalletProviderType).forEach(abandonEnable)
       }
       disconnectProvider(provider)
+      if (provider) disconnectUnusedWallet(provider)
+      else
+        getWallets().forEach((wallet) =>
+          disconnectUnusedWallet(wallet.provider),
+        )
     },
     [disconnectProvider],
   )
 
-  const { mutateAsync: enable, ...mutation } = useMutation({
-    mutationFn: async (type: WalletProviderType) => {
+  const { mutateAsync, ...mutation } = useMutation({
+    mutationFn: async (request: EnableRequest) => {
+      const { type } = request
+      assertCurrentRequest(request)
       const wallet = getWallet(type)
       if (!wallet) return []
       // A restore must bring back a stored session, never open the wallet
@@ -100,25 +141,35 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
       } else {
         await wallet.enable()
       }
-      return wallet.getAccounts()
+      assertCurrentRequest(request)
+      const accounts = await wallet.getAccounts()
+      assertCurrentRequest(request)
+      if (!accounts.length) throw new AuthError(wallet)
+      return accounts
     },
     retry: false,
-    onMutate: (type) => {
-      const attempt = nextAttempt(type)
+    onMutate: ({ type, attempt }) => {
+      if (!isCurrentAttempt(type, attempt)) return
       if (options.restore) {
         setRestoreState(type, WalletRestoreState.Restoring)
       } else {
         clearRestoreState(type)
         setStatus(type, WalletProviderStatus.Pending)
       }
-      return attempt
     },
-    onSuccess: (data, type, attempt) => {
-      if (!isCurrentAttempt(type, attempt)) return
-      if (getStatus(type) === WalletProviderStatus.Disconnected) return
+    onSuccess: (data, request) => {
+      assertCurrentRequest(request)
+      const { type } = request
 
-      setAccounts(data.map(toStoredAccount), type)
-      setStatus(type, WalletProviderStatus.Connected)
+      if (options.restore) {
+        setAccounts(data.map(toStoredAccount), type)
+        setStatus(type, WalletProviderStatus.Connected)
+      } else {
+        const conflicts = getConflictingWalletProviders(getWallets(), type)
+        conflicts.forEach(abandonEnable)
+        connectProvider(data.map(toStoredAccount), type)
+        conflicts.forEach(disconnectUnusedWallet)
+      }
       if (!options.eager) markRecent(type)
 
       if (options.restore) {
@@ -153,18 +204,28 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
 
       addToAddressBook(addresses)
     },
-    onError: (error, type, attempt) => {
-      if (!isCurrentAttempt(type, attempt)) return
+    onError: (error, { type, attempt }) => {
+      if (
+        !isCurrentAttempt(type, attempt) ||
+        error instanceof StaleAttemptError
+      ) {
+        disconnectUnusedWallet(type)
+        return
+      }
 
       if (options.restore) {
         if (isTimeoutError(error)) {
           return setRestoreState(type, WalletRestoreState.Unavailable)
         }
-        return disconnectProvider(type)
+        disconnectProvider(type)
+        disconnectUnusedWallet(type)
+        return
       }
 
       if (options.disconnectOnError || error instanceof UserRejectedError) {
-        return disconnectProvider(type)
+        disconnectProvider(type)
+        disconnectUnusedWallet(type)
+        return
       }
 
       setStatus(type, WalletProviderStatus.Error)
@@ -175,8 +236,30 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
             ? error.message
             : "Unexpected error, please try again."
       setError(errorMessage)
+      disconnectUnusedWallet(type)
     },
   })
+
+  const enable = useCallback(
+    async (type: WalletProviderType) => {
+      const request = { type, attempt: nextAttempt(type) }
+      if (!options.restore) {
+        for (const sibling of getConflictingWalletProviders(
+          getWallets(),
+          type,
+        )) {
+          if (getStatus(sibling) === WalletProviderStatus.Connected) continue
+          abandonEnable(sibling)
+          cancelPendingProvider(sibling)
+          disconnectUnusedWallet(sibling)
+        }
+      }
+      const accounts = await mutateAsync(request)
+      assertCurrentRequest(request)
+      return accounts
+    },
+    [mutateAsync, options.restore, getStatus, cancelPendingProvider],
+  )
 
   return {
     enable,

@@ -4,8 +4,11 @@ import Big from "big.js"
 import { enableMapSet } from "immer"
 import { createRoot } from "react-dom/client"
 
+import { installDemoWallet } from "@/modules/onramp/demo/installDemoWallet"
+
 import { App } from "./App"
 
+installDemoWallet()
 enableMapSet()
 patchBigJs()
 // sdk-definitions-ntt@7 turned layout registration from an import side effect

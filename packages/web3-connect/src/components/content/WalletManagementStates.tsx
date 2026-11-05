@@ -1,6 +1,13 @@
-import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Spinner,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
-import { ChevronRight, Download } from "lucide-react"
+import { ChevronRight, Download, Wallet as WalletIcon } from "lucide-react"
 import type { ComponentType } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -232,9 +239,20 @@ export const WalletChainSelectState: React.FC<{
 }
 
 export const WalletAccountsEmptyState: React.FC<{
+  readonly onChooseWallet?: () => void
   readonly source?: { readonly title: string; readonly logo?: string }
-}> = ({ source }) => {
+  readonly filteredEmpty?: {
+    title: string
+    description: string
+    loading?: boolean
+    content?: React.ReactNode
+  }
+}> = ({ source, filteredEmpty, onChooseWallet }) => {
   const { t } = useTranslation()
+
+  if (filteredEmpty?.content && !filteredEmpty.loading) {
+    return <>{filteredEmpty.content}</>
+  }
 
   return (
     <Flex
@@ -244,24 +262,54 @@ export const WalletAccountsEmptyState: React.FC<{
       gap="base"
       borderRadius="m"
       bg={getToken("surfaces.containers.dim.dimOnBg")}
+      flex={1}
+      width="100%"
       sx={{ minHeight: pxToRem(260) }}
     >
-      {source?.logo && <RoundLogo src={source.logo} size="2xl" />}
-      {source && (
-        <Text
-          fs="h7"
-          fw={500}
-          lh={1}
-          font="primary"
-          align="center"
-          color={getToken("text.high")}
-        >
-          {source.title}
-        </Text>
+      {filteredEmpty ? (
+        <>
+          {filteredEmpty.loading ? (
+            <Spinner size={32} />
+          ) : (
+            <Icon component={WalletIcon} size="xl" />
+          )}
+          <Text fs="h7" fw={500} align="center">
+            {filteredEmpty.title}
+          </Text>
+          <Text
+            fs="p4"
+            color={getToken("text.medium")}
+            align="center"
+            sx={{ maxWidth: pxToRem(300) }}
+          >
+            {filteredEmpty.description}
+          </Text>
+          {!filteredEmpty.loading && onChooseWallet && (
+            <Button onClick={onChooseWallet}>
+              {t("account.chooseAnotherWallet")}
+            </Button>
+          )}
+        </>
+      ) : (
+        <>
+          {source?.logo && <RoundLogo src={source.logo} size="2xl" />}
+          {source && (
+            <Text
+              fs="h7"
+              fw={500}
+              lh={1}
+              font="primary"
+              align="center"
+              color={getToken("text.high")}
+            >
+              {source.title}
+            </Text>
+          )}
+          <Text fs="p4" color={getToken("text.medium")}>
+            {t("account.noResults")}
+          </Text>
+        </>
       )}
-      <Text fs="p4" color={getToken("text.medium")}>
-        {t("account.noResults")}
-      </Text>
     </Flex>
   )
 }

@@ -225,7 +225,9 @@ export function getWalletChainModes(
  */
 export const chipModesForAccounts = (
   accounts: Array<{ provider: WalletProviderType }>,
+  mode: WalletMode = WalletMode.Default,
 ): WalletAccountFilterOption[] => {
+  if (WALLET_MODES[mode].chain) return []
   const modes = WALLET_ACCOUNT_FILTER_OPTIONS.filter((mode) =>
     accounts.some(
       (account) =>

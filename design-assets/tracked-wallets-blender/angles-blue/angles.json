@@ -1,0 +1,85 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/tracked-wallets-blender/tracked-glasses.blend",
+  "study": "blue-glasses-angles.blend",
+  "frames": "Native Royal Blue",
+  "lenses": "Clear ice-blue physical convex glass",
+  "samples": 192,
+  "resolution": 768,
+  "angles": [
+    {
+      "id": "A",
+      "name": "Front",
+      "camera": "CAMERA A - Front",
+      "location": [
+        0,
+        -8.8,
+        2.45
+      ],
+      "file": "a.png"
+    },
+    {
+      "id": "B",
+      "name": "Three-quarter left",
+      "camera": "CAMERA B - Three-quarter left",
+      "location": [
+        -4.6,
+        -7.8,
+        3.15
+      ],
+      "file": "b.png"
+    },
+    {
+      "id": "C",
+      "name": "From above",
+      "camera": "CAMERA C - From above",
+      "location": [
+        -3.2,
+        -6.8,
+        5.5
+      ],
+      "file": "c.png"
+    },
+    {
+      "id": "D",
+      "name": "Three-quarter right",
+      "camera": "CAMERA D - Three-quarter right",
+      "location": [
+        4.6,
+        -7.8,
+        2.6
+      ],
+      "file": "d.png"
+    }
+  ],
+  "glassRoughness": 0.14,
+  "lensCenterThickness": 0.162,
+  "lensEdgeThickness": 0.032,
+  "armShape": "Straight main span with short curved end and hemispherical rounded tip",
+  "exports": [
+    {
+      "id": "A",
+      "title": "Front",
+      "renderSha256": "4f192ae244f59ce544605b2cd10c2c256a2a83e9ec82411cb96a0743c17e1bb0",
+      "preview": "apps/main/public/static/previews/tracked-wallet-glasses/a.webp"
+    },
+    {
+      "id": "B",
+      "title": "Three-quarter left",
+      "renderSha256": "00116c87fb0d3b49aef38e6200c0f9e45cc45a415985ef5d4a02194b7fac568a",
+      "preview": "apps/main/public/static/previews/tracked-wallet-glasses/b.webp"
+    },
+    {
+      "id": "C",
+      "title": "From above",
+      "renderSha256": "4b6f424e47c6dd4e5807eca78122f078bb8c235f0665892277f1fac567317b27",
+      "preview": "apps/main/public/static/previews/tracked-wallet-glasses/c.webp"
+    },
+    {
+      "id": "D",
+      "title": "Three-quarter right",
+      "renderSha256": "33c5f4807323e58d810bcdc161ef06093e2e83b6c7f49271cbef00a03d886634",
+      "preview": "apps/main/public/static/previews/tracked-wallet-glasses/d.webp"
+    }
+  ],
+  "blendSha256": "45c46b3ca40b24df0bcfa077bc993f785837edc4fac0ea3259bb86e82e352012"
+}

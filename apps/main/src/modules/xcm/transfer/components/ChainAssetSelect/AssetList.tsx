@@ -29,6 +29,8 @@ type AssetListItem = {
 
 export type AssetListProps = {
   address: string
+  closeOnSelect?: boolean
+  fillHeight?: boolean
   items: AssetListItem[]
   selectedChain?: AnyChain
   selectedAsset?: Asset
@@ -37,6 +39,8 @@ export type AssetListProps = {
 
 export const AssetList: React.FC<AssetListProps> = ({
   address,
+  closeOnSelect = true,
+  fillHeight = false,
   items,
   selectedAsset,
   selectedChain,
@@ -122,24 +126,28 @@ export const AssetList: React.FC<AssetListProps> = ({
     <VirtualizedList
       items={assetList}
       itemSize={itemSize}
-      maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
+      maxVisibleItems={fillHeight ? undefined : MAX_VISIBLE_ASSET_ITEMS}
+      height={fillHeight ? "100%" : undefined}
       initialScrollIndex={initialScrollIndex}
       renderItem={(item) => {
         const balance = balances?.get(item.asset.key)
         const isLoading = isLoadingBalances || isAssetPriceLoading
         const isSelectedAsset = selectedAsset?.key === item.asset.key
 
-        return (
-          <ModalCloseTrigger asChild>
-            <AssetListItem
-              {...item}
-              chain={selectedChain}
-              isSelected={isSelectedAsset}
-              isLoading={isLoading}
-              balance={balance}
-              onClick={() => setSelectedAsset(item.asset)}
-            />
-          </ModalCloseTrigger>
+        const itemContent = (
+          <AssetListItem
+            {...item}
+            chain={selectedChain}
+            isSelected={isSelectedAsset}
+            isLoading={isLoading}
+            balance={balance}
+            onClick={() => setSelectedAsset(item.asset)}
+          />
+        )
+        return closeOnSelect ? (
+          <ModalCloseTrigger asChild>{itemContent}</ModalCloseTrigger>
+        ) : (
+          itemContent
         )
       }}
     />

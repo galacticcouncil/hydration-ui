@@ -1,0 +1,53 @@
+{
+  "sourceBlend": "status-icons.blend",
+  "exports": [
+    {
+      "icon": "review",
+      "render": "document-1024.png",
+      "appAsset": "packages/ui/src/assets/images/Review3D.webp",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 20502,
+      "sha256": "3c5b71cde8aefad8f16ba9c7bbf3503d51590aea2c956eb0fcf56e1cd0124509",
+      "sharedComponent": "BankProviderHandoff",
+      "flowVersions": [
+        "Current flow",
+        "Version 2"
+      ],
+      "sourceBlendSha256": "325b25c7ab5dad1a27e9695db5d009cefad82cbf3042e8399e977ef0c3abc46a",
+      "sourceScene": "02 - Review Document",
+      "sourceAuthority": "user-saved-blend",
+      "renderedAt": "2026-10-21T19:48:36.932549+00:00",
+      "renderSettings": {
+        "engine": "CYCLES",
+        "resolution": [
+          1024,
+          1024
+        ],
+        "samples": 600,
+        "format": "PNG",
+        "mode": "RGBA",
+        "depth": 16,
+        "device": "GPU"
+      }
+    },
+    {
+      "icon": "waiting",
+      "render": "hourglass-1024.png",
+      "appAsset": "packages/ui/src/assets/images/Waiting3D.webp",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 37780,
+      "sha256": "7b63359c309d39e6ed620035965f08bbf16948a4f57a5cfb05116843b553c3e4",
+      "sharedComponent": "BankTransferStatusIllustration",
+      "flowVersions": [
+        "Current flow",
+        "Version 2"
+      ]
+    }
+  ]
+}

@@ -1,33 +1,30 @@
 import {
   ArrowRightLeftIcon,
-  CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
-import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import { ModalBody, Stack } from "@galacticcouncil/ui/components"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
+import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { OnrampScreen } from "@/modules/onramp/types"
 
 type WithdrawMethodSelectProps = {
   onSelect: (method: OnrampScreen) => void
+  onOnchain: () => void
+  onBank: () => void
 }
 
-export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
+export const WithdrawMethodSelect: FC<WithdrawMethodSelectProps> = ({
   onSelect,
+  onOnchain,
+  onBank,
 }) => {
-  const { t } = useTranslation(["onramp"])
-  const navigate = useNavigate()
-
+  const { t } = useTranslation("onramp")
   return (
     <>
-      <ModalHeader
-        title={t("withdraw.method.title")}
-        closable={false}
-        align="center"
-      />
+      <SOnrampStepHeader title={t("withdraw.method.title")} align="center" />
       <ModalBody>
         <Stack gap="m">
           <StepButton
@@ -38,18 +35,16 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
           />
           <StepButton
             icon={ArrowRightLeftIcon}
-            onClick={() => navigate({ to: "/cross-chain" })}
+            onClick={onOnchain}
             title={t("withdraw.method.onchain.title")}
             description={t("withdraw.method.onchain.description")}
           />
-          {ENV.VITE_ENV !== "production" && (
-            <StepButton
-              icon={CreditCardIcon}
-              onClick={() => onSelect(OnrampScreen.WithdrawBank)}
-              title={t("withdraw.method.bank.title")}
-              description={t("withdraw.method.bank.description")}
-            />
-          )}
+          <StepButton
+            icon={LandmarkIcon}
+            onClick={onBank}
+            title={t("withdraw.method.bank.title")}
+            description={t("withdraw.method.bank.previewDescription")}
+          />
         </Stack>
       </ModalBody>
     </>

@@ -1,5 +1,5 @@
 import { shortenAccountAddress } from "@galacticcouncil/utils"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 
 import { AccountAvatar } from "@/components/AccountAvatar"
 import { Flex, FlexProps } from "@/components/Flex"
@@ -13,6 +13,7 @@ type Props = {
   readonly name: string
   readonly address: string
   readonly value?: string
+  readonly action?: ReactNode
   readonly active?: boolean
   readonly label?: string
   readonly className?: string
@@ -25,6 +26,7 @@ export const AccountTile: FC<Props> = ({
   name,
   address,
   value,
+  action,
   active,
   label,
   className,
@@ -71,11 +73,12 @@ export const AccountTile: FC<Props> = ({
             </Text>
           </Flex>
         </Flex>
-        {value && (
-          <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
-            {value}
-          </Text>
-        )}
+        {action ??
+          (value && (
+            <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
+              {value}
+            </Text>
+          ))}
       </SAccountTileContainer>
     </Flex>
   )

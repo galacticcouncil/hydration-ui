@@ -1,0 +1,650 @@
+{
+  "snapshotDate": "2026-10-27",
+  "scope": "Original 29 raster references plus current review-clock, selected pearl shell and citrus press; full-resolution masters and six editable projects travel in a separate companion directory.",
+  "colorPolicy": "Subject-led palette. Monochrome pink, yellow, green, violet or other suitable hues are valid; blue and white are not required.",
+  "referencePriority": [
+    "User request and current reference",
+    "Current saved Blender source / current runtime exports",
+    "Saved Blender studies",
+    "Legacy isolated illustrations",
+    "Wider promotional context"
+  ],
+  "uiPalette": {
+    "source": "packages/ui/src/theme/tokens/dark.json / colors.basePalette",
+    "values": {
+      "coralPink": "#e53e76",
+      "hollar-green": "#b3cf92",
+      "aubergine": "#240e32",
+      "lavender": "#dfb1f3",
+      "beige": "#f6f6ec",
+      "skyBlue": "#b3d7fa",
+      "white": "#ffffff"
+    },
+    "note": "UI tokens are optional color starting points, not measured Blender material values or output pixel targets."
+  },
+  "blenderProjects": {
+    "status": {
+      "originalSource": "design-assets/status-icons-blender/status-icons.blend",
+      "sha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+      "bytes": 3912515,
+      "sourceFile": "blender/status-icons.blend",
+      "location": "source-companion"
+    },
+    "lounger": {
+      "originalSource": "design-assets/deposit-empty-lounger-blender/status-icons-with-deposit-lounger.blend",
+      "sha256": "bad303b9fbe7a2115fbeace48dfe7a893beb49c4b22cb078b7bbe88db6d788a2",
+      "bytes": 5411120,
+      "sourceFile": "blender/lounger-v6.blend",
+      "location": "source-companion"
+    },
+    "glasses": {
+      "originalSource": "design-assets/tracked-wallets-blender/angles-blue/d-frosted/adaptive/d-adaptive.blend",
+      "sha256": "aa22ad1d41d04e5fa4416347e8ddb48162437e06ad4a1e2270d6ff9d96f1ba57",
+      "bytes": 328096,
+      "sourceFile": "blender/tracked-glasses-adaptive.blend",
+      "location": "source-companion"
+    },
+    "bank": {
+      "originalSource": "design-assets/bank-status-blender/bank-status.blend",
+      "sha256": "1ab6e8ec0eeb12f02cb3f3244ebbbe94cfb9a6ff09dd80ef9b042e33bcd38545",
+      "bytes": 129768,
+      "sourceFile": "blender/bank-selected-a4.blend",
+      "location": "source-companion"
+    },
+    "pearl": {
+      "sourceFile": "blender/pearl-shell.blend",
+      "location": "source-companion",
+      "sha256": "94afe7bba102cf4f48544f6a13d53f9b55b41340042801f2f0d52fda4f38d3d4",
+      "bytes": 6883096,
+      "scene": "LIGHTING 02 - Warm studio - Larger pearl",
+      "measuredProfileIncluded": false
+    },
+    "citrus": {
+      "sourceFile": "blender/citrus-press.blend",
+      "location": "source-companion",
+      "sha256": "1f1a7818242cbb16420997a2bfdd28a285b24b5cc636977934c87291415fc1b4",
+      "bytes": 4398439,
+      "scene": "07 - Citrus Press - Deeper Collecting Tray",
+      "measuredProfileIncluded": false
+    }
+  },
+  "samples": [
+    {
+      "name": "Bank3D",
+      "file": "assets/samples/Bank3D.webp",
+      "originalSource": "packages/ui/src/assets/images/Bank3D.webp",
+      "sha256": "f878044b8b6b1b75174161f12e552f6bb69955e267c5b8351e77026a5407a11c",
+      "bytes": 32330,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "authority": "current runtime export; saved Blender source authoritative",
+      "usage": "Bank withdrawal tracking / at your bank",
+      "scene": "Bank Status - At Your Bank",
+      "profile": "bank",
+      "masterRender": {
+        "originalSource": "design-assets/bank-status-blender/bank-status-1024.png",
+        "sha256": "d9e7a54512ac3b78fbcfbca5d8cd36ff683e79ab8e9d9f91d64a10207c458497",
+        "bytes": 759296,
+        "sourceFile": "masters/Bank3D.png",
+        "location": "source-companion"
+      },
+      "blenderProjectId": "bank"
+    },
+    {
+      "name": "Casette",
+      "file": "assets/samples/Casette.webp",
+      "originalSource": "packages/ui/src/assets/images/Casette.webp",
+      "sha256": "358ea2a5c9a49d83d2ef3e8e66f80d563089dcf23c6b8384d569083613a16a17",
+      "bytes": 8296,
+      "size": [
+        150,
+        150
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Chart empty, 404 and order errors"
+    },
+    {
+      "name": "Caution3D",
+      "file": "assets/samples/Caution3D.webp",
+      "originalSource": "packages/ui/src/assets/images/Caution3D.webp",
+      "sha256": "9d835afdb2782305de756f1579ee89ddf765fff3ca9cc4b7c3816588c08e3392",
+      "bytes": 4610,
+      "size": [
+        180,
+        180
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Route error; yellow floor sign"
+    },
+    {
+      "name": "ChartError",
+      "file": "assets/samples/ChartError.webp",
+      "originalSource": "packages/ui/src/assets/images/ChartError.webp",
+      "sha256": "8cbf3ea0026660f6ac12369878af48bb6f20f947d55ad61a8512832a91747c80",
+      "bytes": 7894,
+      "size": [
+        150,
+        150
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Chart error"
+    },
+    {
+      "name": "DepositEmptyLounger",
+      "file": "assets/samples/DepositEmptyLounger.webp",
+      "originalSource": "packages/ui/src/assets/images/DepositEmptyLounger.webp",
+      "sha256": "abcb42200653e5454da15e05c1c938732e2a45e37f06b7771a4be6c3559c75e9",
+      "bytes": 30930,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "authority": "current runtime export; saved Blender source authoritative",
+      "usage": "Portfolio deposits / no transfer history",
+      "scene": "05 - Empty Deposits - Poolside Lounger",
+      "profile": "lounger",
+      "masterRender": {
+        "originalSource": "design-assets/deposit-empty-lounger-blender/deposit-lounger-v6-1024.png",
+        "sha256": "bee1ee2d753b44c17a0aeec6154ced1d2ff4dfcc76452b4b81fd167b131c65ce",
+        "bytes": 1622350,
+        "sourceFile": "masters/DepositEmptyLounger.png",
+        "location": "source-companion"
+      },
+      "blenderProjectId": "lounger"
+    },
+    {
+      "name": "ErrorStatus",
+      "file": "assets/samples/ErrorStatus.webp",
+      "originalSource": "packages/ui/src/assets/images/ErrorStatus.webp",
+      "sha256": "e3506acdce35aec13e102b61b88d18bd7775752404ccc703c487af546a42dea6",
+      "bytes": 11130,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Transaction and deposit error; coral circular backdrop"
+    },
+    {
+      "name": "ErrorStatusPlain",
+      "file": "assets/samples/ErrorStatusPlain.webp",
+      "originalSource": "packages/ui/src/assets/images/ErrorStatusPlain.webp",
+      "sha256": "7891a64ba30a134f268b70f69f2d96d9318fdc3eb9051bd2fc9c152c49aa2bee",
+      "bytes": 18796,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Bank handoff error; isolated coral token"
+    },
+    {
+      "name": "Flamingo",
+      "file": "assets/samples/Flamingo.webp",
+      "originalSource": "packages/ui/src/assets/images/Flamingo.webp",
+      "sha256": "3b1a8b7030730aef789dbc13926dc01d09a1dc4f75dca70710f57ffbf5ef2955",
+      "bytes": 10190,
+      "size": [
+        439,
+        439
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Shared default EmptyState; all-pink color-variety anchor"
+    },
+    {
+      "name": "GigaHDXCans",
+      "file": "assets/samples/GigaHDXCans.webp",
+      "originalSource": "packages/ui/src/assets/images/GigaHDXCans.webp",
+      "sha256": "c67a22a3038d47708707958ebe7e58a76c32c444c74d36a2c114cc40c3d4861e",
+      "bytes": 13296,
+      "size": [
+        270,
+        243
+      ],
+      "mode": "RGBA",
+      "tier": "brand-context",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Giga HDX promotional product art / palette and subject context only",
+      "guidance": "Subject/palette context only; do not copy photographic texture, dense branding or banner composition into isolated icons."
+    },
+    {
+      "name": "HollarBond",
+      "file": "assets/samples/HollarBond.webp",
+      "originalSource": "packages/ui/src/assets/images/HollarBond.webp",
+      "sha256": "b8ab40f45a25f7b4680e2ab15398edfc1d4a855cdb07f871bbbb9fa62da8d74e",
+      "bytes": 26540,
+      "size": [
+        439,
+        439
+      ],
+      "mode": "RGBA",
+      "tier": "brand-context",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Stable bonds sold out; realistic banknote / palette and subject context only",
+      "guidance": "Subject/palette context only; do not copy photographic texture, dense branding or banner composition into isolated icons."
+    },
+    {
+      "name": "HollarCans",
+      "file": "assets/samples/HollarCans.webp",
+      "originalSource": "packages/ui/src/assets/images/HollarCans.webp",
+      "sha256": "306bfac2923ce16be6354382bfe0bb851fdf31f6f90fb1aad773ea6d80d52e42",
+      "bytes": 17102,
+      "size": [
+        207,
+        207
+      ],
+      "mode": "RGBA",
+      "tier": "brand-context",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "HOLLAR promotional product art / palette and subject context only",
+      "guidance": "Subject/palette context only; do not copy photographic texture, dense branding or banner composition into isolated icons."
+    },
+    {
+      "name": "IcePromo",
+      "file": "assets/samples/IcePromo.webp",
+      "originalSource": "packages/ui/src/assets/images/IcePromo.webp",
+      "sha256": "77947b4ca72580bb2d1e473646a68f246879e0569187136e7dc076ff75886959",
+      "bytes": 103594,
+      "size": [
+        1040,
+        507
+      ],
+      "mode": "RGB",
+      "tier": "brand-context",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Photographic ice/cans banner; context only",
+      "guidance": "Subject/palette context only; do not copy photographic texture, dense branding or banner composition into isolated icons."
+    },
+    {
+      "name": "NoFunds",
+      "file": "assets/samples/NoFunds.png",
+      "originalSource": "packages/ui/src/assets/images/NoFunds.png",
+      "sha256": "9f9aae4009f1a696ba9a1590e16fa91e32983b3201f7a2615be290b70e2c1d90",
+      "bytes": 11121,
+      "size": [
+        106,
+        103
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Portfolio, borrow and bank empty/setup states"
+    },
+    {
+      "name": "NoPositions",
+      "file": "assets/samples/NoPositions.png",
+      "originalSource": "packages/ui/src/assets/images/NoPositions.png",
+      "sha256": "54c45731e22fdc6196336f6f25deb5c81a0ecd6b128045ece8772e8c28670aed",
+      "bytes": 12516,
+      "size": [
+        141,
+        141
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Liquidity empty state; violet pool"
+    },
+    {
+      "name": "ProjectedAPR",
+      "file": "assets/samples/ProjectedAPR.webp",
+      "originalSource": "packages/ui/src/assets/images/ProjectedAPR.webp",
+      "sha256": "de55443e1867bdccd0408778fa7fc6805947ff883937729ade8c25ba39be9e12",
+      "bytes": 4370,
+      "size": [
+        200,
+        200
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Staking statistics; violet medal"
+    },
+    {
+      "name": "ReferendaEmptyState",
+      "file": "assets/samples/ReferendaEmptyState.webp",
+      "originalSource": "packages/ui/src/assets/images/ReferendaEmptyState.webp",
+      "sha256": "524ea6171d7f728793f824a8316b84b1dd2f32de859d15f8fda2c6485a31b5b0",
+      "bytes": 8604,
+      "size": [
+        154,
+        154
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Ongoing referenda empty state; violet/lime fans"
+    },
+    {
+      "name": "Review3D",
+      "file": "assets/samples/Review3D.webp",
+      "originalSource": "packages/ui/src/assets/images/Review3D.webp",
+      "sha256": "3c5b71cde8aefad8f16ba9c7bbf3503d51590aea2c956eb0fcf56e1cd0124509",
+      "bytes": 20502,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "authority": "current runtime export; saved Blender source authoritative",
+      "usage": "Bank provider setup, handoff and review",
+      "scene": "02 - Review Document",
+      "profile": "status",
+      "masterRender": {
+        "originalSource": "design-assets/status-icons-blender/document-1024.png",
+        "sha256": "d73f6139077e876f6dde0122dd6d55b9d0dd3bf18371a9cf1431af6cc32b9fa8",
+        "bytes": 2140587,
+        "sourceFile": "masters/Review3D.png",
+        "location": "source-companion"
+      },
+      "blenderProjectId": "status"
+    },
+    {
+      "name": "StakedBalance",
+      "file": "assets/samples/StakedBalance.webp",
+      "originalSource": "packages/ui/src/assets/images/StakedBalance.webp",
+      "sha256": "e7ac45db0afdf909b5c40226726c16e98cdc55ed7ee30df84702468a603ec99b",
+      "bytes": 4342,
+      "size": [
+        200,
+        200
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Staking statistics; mint/cyan stack"
+    },
+    {
+      "name": "SuccessStatus",
+      "file": "assets/samples/SuccessStatus.webp",
+      "originalSource": "packages/ui/src/assets/images/SuccessStatus.webp",
+      "sha256": "b01babaf94824d8fe03b18dd44f758df87555b2be8fe780ef5aa24f7c7bb6bbe",
+      "bytes": 12936,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Transaction, deposit and withdrawal success; green backdrop"
+    },
+    {
+      "name": "SuccessStatusPlain",
+      "file": "assets/samples/SuccessStatusPlain.webp",
+      "originalSource": "packages/ui/src/assets/images/SuccessStatusPlain.webp",
+      "sha256": "612d2027858467196df01c93cda2d55e486d5de675261999ec19599a84c9f600",
+      "bytes": 23758,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Bank handoff/tracking success; isolated green token"
+    },
+    {
+      "name": "TrackedWallet",
+      "file": "assets/samples/TrackedWallet.webp",
+      "originalSource": "packages/ui/src/assets/images/TrackedWallet.webp",
+      "sha256": "6e1768bc4576dfe8e19b0e766045eb07962e2d7b7297fb865c31ed5ddbfb395b",
+      "bytes": 18314,
+      "size": [
+        469,
+        469
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Earlier tracked-wallet illustration; no current UI consumer",
+      "currentUiConsumer": false
+    },
+    {
+      "name": "TrackedWalletGlasses",
+      "file": "assets/samples/TrackedWalletGlasses.webp",
+      "originalSource": "packages/ui/src/assets/images/TrackedWalletGlasses.webp",
+      "sha256": "9d4e577f9c588a7e31f1dd70b0bb0d353ab1065f04b29138e27912cdd0589473",
+      "bytes": 30542,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "authority": "current runtime export; saved Blender source authoritative",
+      "usage": "Portfolio / tracked-wallet empty state",
+      "scene": "Tracked Wallets - Glasses",
+      "profile": "glasses",
+      "masterRender": {
+        "originalSource": "design-assets/tracked-wallets-blender/angles-blue/d-frosted/adaptive/d-adaptive-1024.png",
+        "sha256": "c914186091c24a9079b235193af6b4414f4228f506897f0f60b44d8db89d8adf",
+        "bytes": 1396924,
+        "sourceFile": "masters/TrackedWalletGlasses.png",
+        "location": "source-companion"
+      },
+      "blenderProjectId": "glasses"
+    },
+    {
+      "name": "VendingMachine",
+      "file": "assets/samples/VendingMachine.webp",
+      "originalSource": "packages/ui/src/assets/images/VendingMachine.webp",
+      "sha256": "310f86ab47eeeb86590543b84b88dd1e128d7e7dc8788c5a0f91c626d9be991f",
+      "bytes": 244206,
+      "size": [
+        2000,
+        300
+      ],
+      "mode": "RGB",
+      "tier": "brand-context",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Photographic vending-machine banner; context only",
+      "guidance": "Subject/palette context only; do not copy photographic texture, dense branding or banner composition into isolated icons."
+    },
+    {
+      "name": "Waiting3D",
+      "file": "assets/samples/Waiting3D.webp",
+      "originalSource": "packages/ui/src/assets/images/Waiting3D.webp",
+      "sha256": "7b63359c309d39e6ed620035965f08bbf16948a4f57a5cfb05116843b553c3e4",
+      "bytes": 37780,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "authority": "current runtime export; saved Blender source authoritative",
+      "usage": "Bank deposit and withdrawal / pending and processing",
+      "scene": "01 - Hourglass",
+      "profile": "status",
+      "masterRender": {
+        "originalSource": "design-assets/status-icons-blender/hourglass-1024.png",
+        "sha256": "0464631872c98a659b6a988452362a390b0881a85769ef79c7557626d39d7701",
+        "bytes": 2299203,
+        "sourceFile": "masters/Waiting3D.png",
+        "location": "source-companion"
+      },
+      "blenderProjectId": "status"
+    },
+    {
+      "name": "Warning3D",
+      "file": "assets/samples/Warning3D.webp",
+      "originalSource": "packages/ui/src/assets/images/Warning3D.webp",
+      "sha256": "ddbf18c3ad4b82dd284a4e7fa21a283c6bd12be00b80411676da7a1d4341b8ba",
+      "bytes": 3210,
+      "size": [
+        141,
+        148
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Staking warning; yellow triangle"
+    },
+    {
+      "name": "WarningStatus",
+      "file": "assets/samples/WarningStatus.webp",
+      "originalSource": "packages/ui/src/assets/images/WarningStatus.webp",
+      "sha256": "a8960fe79509e8d7ec850e74248d29f54dc312a7e3f9ca1aa7eda81310c26d4c",
+      "bytes": 10516,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Staking cancel warning; yellow backdrop"
+    },
+    {
+      "name": "WarningStatusPlain",
+      "file": "assets/samples/WarningStatusPlain.webp",
+      "originalSource": "packages/ui/src/assets/images/WarningStatusPlain.webp",
+      "sha256": "40e3b044422665ff2579fadb81f487a3926c618ae66f6eb5c79d09fd776bcd11",
+      "bytes": 19030,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "legacy-illustration",
+      "authority": "raster visual reference; no local Blender source located",
+      "usage": "Bank handoff/tracking warning; isolated yellow triangle"
+    },
+    {
+      "name": "Review Inbox",
+      "file": "assets/samples/review-inbox-reference.webp",
+      "originalSource": "design-assets/status-icons-blender/inbox-review/review-inbox-1024.png",
+      "sha256": "ccc555d1e50771668da45d58634596502b11717494fe3ea7ca527390bd8cb466",
+      "bytes": 22840,
+      "tier": "saved-blender-study",
+      "usage": "Saved final artwork study; not currently wired into the UI",
+      "authority": "Downscaled visual reference; unchanged full-resolution master in source companion",
+      "scene": "03 - Review Inbox",
+      "profile": "status",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "blenderProjectId": "status",
+      "originalMasterSha256": "453b73fc40e17e49df3f70b08e4c790e0c6329020d575b5c917f5fce973d6e55",
+      "masterRender": {
+        "sourceFile": "masters/review-inbox-1024.png",
+        "location": "source-companion",
+        "sha256": "453b73fc40e17e49df3f70b08e4c790e0c6329020d575b5c917f5fce973d6e55"
+      }
+    },
+    {
+      "name": "Document Clock",
+      "file": "assets/samples/document-clock-reference.webp",
+      "originalSource": "design-assets/status-icons-blender/clock-review/document-clock-1024.png",
+      "sha256": "75673358f32e89557de2a1f6249ce202300fd9ca25936830936d24e2d0ba1967",
+      "bytes": 21852,
+      "tier": "current-blender-ui",
+      "usage": "Bank deposit · Verification in review",
+      "authority": "Downscaled visual reference; unchanged full-resolution master in source companion",
+      "scene": "04 - Review Document Clock",
+      "profile": "status",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "blenderProjectId": "status",
+      "originalMasterSha256": "3077d34aee587770cbdea5ba5af60ee7c69c5f03804d7fc7da34813b38611d36",
+      "masterRender": {
+        "sourceFile": "masters/document-clock-1024.png",
+        "location": "source-companion",
+        "sha256": "3077d34aee587770cbdea5ba5af60ee7c69c5f03804d7fc7da34813b38611d36"
+      }
+    },
+    {
+      "name": "In review",
+      "file": "assets/samples/review-clock.webp",
+      "sha256": "93a16e30062e0a2f8272200c01917050254b6a428d56be10d6b20dda0a6133f0",
+      "bytes": 22830,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "current-blender-ui",
+      "status": "In use",
+      "usage": "Bank deposit · Verification in review",
+      "blenderProjectId": "status",
+      "scene": "04 - Review Document Clock",
+      "authority": "Selected saved render and editable Blender source",
+      "masterRender": {
+        "sourceFile": "masters/review-clock-1024.png",
+        "location": "source-companion",
+        "sha256": "3077d34aee587770cbdea5ba5af60ee7c69c5f03804d7fc7da34813b38611d36"
+      }
+    },
+    {
+      "name": "Pearl shell",
+      "file": "assets/samples/pearl-shell.webp",
+      "sha256": "5beb22f2f7d2675dc0ad96adb2dd4549d8db01abd1f4d6935fd90bd377703a4b",
+      "bytes": 23866,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "selected-design",
+      "status": "Used in design",
+      "usage": "Portfolio → Dashboard · Header illustration (Figma)",
+      "blenderProjectId": "pearl",
+      "scene": "LIGHTING 02 - Warm studio - Larger pearl",
+      "authority": "Selected saved render and editable Blender source",
+      "masterRender": {
+        "sourceFile": "masters/pearl-shell-1024.png",
+        "location": "source-companion",
+        "sha256": "1c4811a0a3020e21ed3977cb913fabf41e6425f04c43638bd0ac48f069426367"
+      }
+    },
+    {
+      "name": "Citrus press",
+      "file": "assets/samples/citrus-press.webp",
+      "sha256": "5c77c5098ddf670c4b82e3880a0f1974e4702c0024449ca7c7daa6b56ce72c68",
+      "bytes": 21878,
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "tier": "ready-to-use",
+      "status": "Ready to use",
+      "usage": "Available for future use · not yet assigned to a screen",
+      "blenderProjectId": "citrus",
+      "scene": "07 - Citrus Press - Deeper Collecting Tray",
+      "authority": "Selected saved render and editable Blender source",
+      "masterRender": {
+        "sourceFile": "masters/citrus-press-1024.png",
+        "location": "source-companion",
+        "sha256": "613030bc39907b9bec00cf383a99f2b82656e5f7158c7fb92a033e5c4bff8585"
+      }
+    }
+  ],
+  "originalSnapshotDate": "2026-10-24",
+  "sourceCompanion": "hydration-3d-icon-sources"
+}

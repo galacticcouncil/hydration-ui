@@ -1,7 +1,7 @@
 import { hydration } from "@galacticcouncil/descriptors"
 import { NeckworkClient } from "@galacticcouncil/indexer/neckwork"
 import { TypedApi } from "polkadot-api"
-import { createContext, useContext } from "react"
+import { createContext, ReactNode, useContext } from "react"
 
 import { Web3ConnectModalPage } from "@/config/modal"
 import {
@@ -12,6 +12,16 @@ import {
 
 export type Web3ConnectContextType = {
   isControlled: boolean
+  isPage?: boolean
+  isEmbedded?: boolean
+  walletFirst?: boolean
+  walletListWidth?: number
+  keepSplitOpen?: boolean
+  walletListVariant?: "default" | "connectedFirst"
+  accountFilter?: (account: Account) => boolean
+  accountPanel?: { content: ReactNode; onBack: () => void }
+  customSource?: { title: string; content: ReactNode }
+  onBack?: () => void
   page: Web3ConnectModalPage
   setPage: (page: Web3ConnectModalPage) => void
   neckwork: NeckworkClient

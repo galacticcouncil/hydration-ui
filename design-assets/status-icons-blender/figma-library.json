@@ -1,0 +1,131 @@
+{
+  "fileKey": "wN5pnsm2FPVoCrxFNEAlYl",
+  "pageId": "34:2",
+  "componentSetId": "442:28153",
+  "componentSetName": "icons/3d",
+  "assets": [
+    {
+      "variant": "review",
+      "componentId": "10242:491",
+      "artworkId": "10242:492",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/review-1024.png",
+      "sourceSha256": "d73f6139077e876f6dde0122dd6d55b9d0dd3bf18371a9cf1431af6cc32b9fa8",
+      "imageHash": "a72169a1669a93fad7742f2a06e5330f4b7fd094",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10242-491",
+      "id": "review"
+    },
+    {
+      "variant": "waiting",
+      "componentId": "10242:493",
+      "artworkId": "10242:494",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/waiting-1024.png",
+      "sourceSha256": "0464631872c98a659b6a988452362a390b0881a85769ef79c7557626d39d7701",
+      "imageHash": "3086f764b08e69348da7a463f2a9f1523aed3eb8",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10242-493",
+      "id": "waiting"
+    },
+    {
+      "variant": "reviewPrevious",
+      "componentId": "10243:478",
+      "artworkId": "10243:479",
+      "sourcePng": "design-assets/status-icons-blender/revisions/before-library-search-shape/document-1024.png",
+      "sourceSha256": "14891107ba7794bfdfb020f5d512f4f56f9e9251690cd93d17de00cdf639f59b",
+      "imageHash": "9bdf5222d55cbaa1f6bbbcc5eb154f6e4709643b",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10243-478"
+    },
+    {
+      "id": "deposit-empty",
+      "variant": "depositEmpty",
+      "componentId": "10292:477",
+      "artworkId": "10292:478",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/deposit-empty-1024.png",
+      "sourceSha256": "bee1ee2d753b44c17a0aeec6154ced1d2ff4dfcc76452b4b81fd167b131c65ce",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10292-477",
+      "imageHash": "87939afa109fc0ea8ad2e44a175e3e21ede9c6f6"
+    },
+    {
+      "id": "tracked-wallets",
+      "variant": "trackedWalletGlasses",
+      "componentId": "10292:479",
+      "artworkId": "10292:480",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/tracked-wallets-1024.png",
+      "sourceSha256": "c914186091c24a9079b235193af6b4414f4228f506897f0f60b44d8db89d8adf",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10292-479",
+      "imageHash": "cf32257c7a0befd1ab11b1ee9f4b1c2940ca9b98"
+    },
+    {
+      "id": "bank",
+      "variant": "bank",
+      "componentId": "10292:481",
+      "artworkId": "10292:482",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/bank-1024.png",
+      "sourceSha256": "d9e7a54512ac3b78fbcfbca5d8cd36ff683e79ab8e9d9f91d64a10207c458497",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10292-481",
+      "imageHash": "9639c3132a9d0c65113a28eeee436e28b1d6d89e"
+    },
+    {
+      "id": "citrus-press",
+      "variant": "citrusPress",
+      "componentId": "10292:483",
+      "artworkId": "10292:484",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/citrus-press-1024.png",
+      "sourceSha256": "613030bc39907b9bec00cf383a99f2b82656e5f7158c7fb92a033e5c4bff8585",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10292-483",
+      "imageHash": "6a332acb73942a0fea2dd2bc0bf3cfcd0e1c76e6"
+    },
+    {
+      "id": "pearl-shell",
+      "variant": "pearlShell",
+      "componentId": "10292:485",
+      "artworkId": "10292:486",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/pearl-shell-1024.png",
+      "sourceSha256": "1c4811a0a3020e21ed3977cb913fabf41e6425f04c43638bd0ac48f069426367",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10292-485",
+      "imageHash": "4c7ab1d8d2999e99d7dc92124f2fba3b2f726055"
+    },
+    {
+      "id": "individual",
+      "variant": "individualBeachChair",
+      "componentId": "10356:510",
+      "artworkId": "10356:511",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/individual-1024.png",
+      "sourceSha256": "87b8d828db5174d8c814796e86fb2df2c8093bce3f2f1c604e04d348cc769578",
+      "imageHash": "72d74db9ab4d144c7383dcd050484541a7357474",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10356-510"
+    },
+    {
+      "id": "business",
+      "variant": "businessKiosk",
+      "componentId": "10356:512",
+      "artworkId": "10356:513",
+      "sourcePng": "apps/main/public/static/previews/status-icons-blender/library/masters/business-1024.png",
+      "sourceSha256": "1852b1ca520a7ad00814eb4dd2cbe20b7bb05d1b8a10a0cc17d0154a7475e72b",
+      "imageHash": "076cb75bf85e0bc070f4186ac752140e2221acc4",
+      "figmaUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10356-512"
+    }
+  ],
+  "updated": "2026-10-31",
+  "showcaseId": "10293:477",
+  "showcaseUrl": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=10293-477",
+  "validation": {
+    "selectedIcons": 9,
+    "totalFamilyVariants": 24,
+    "transparentFit": true,
+    "visualCheck": "Figma bank choice screen and usage sheet visually checked; 48px linked card icons, no clipping."
+  },
+  "walletRedesign": {
+    "localComponents": {
+      "individual": "11530:83827",
+      "business": "11530:83829"
+    },
+    "choiceInstances": [
+      "11488:80964",
+      "11488:80972"
+    ],
+    "note": "New library keys unavailable for cross-file import until published; local component counterparts use identical approved PNGs.",
+    "accountCardComponents": {
+      "individual": "11531:83834",
+      "business": "11531:83863"
+    }
+  }
+}

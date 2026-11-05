@@ -9,6 +9,7 @@ import {
   ModalBody,
   ModalContentDivider,
   ModalHeader,
+  Stack,
   Text,
   Toggle,
 } from "@galacticcouncil/ui/components"
@@ -26,6 +27,8 @@ import { useTranslation } from "react-i18next"
 
 import { useCrossChainWallet, xcmTransferQuery } from "@/api/xcm"
 import { AssetLogo } from "@/components/AssetLogo"
+import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
+import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import { useSubmitCexWithdraw } from "@/modules/onramp/withdraw/hooks/useSubmitCexWithdraw"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
@@ -35,11 +38,15 @@ import { toDecimal } from "@/utils/formatting"
 export type WithdrawTransferProps = {
   onTransferSuccess: () => void
   onBack: () => void
+  closable?: boolean
+  onSourceAccountChange?: () => void
 }
 
 export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
   onTransferSuccess,
   onBack,
+  closable = false,
+  onSourceAccountChange,
 }) => {
   const { t } = useTranslation(["onramp", "common", "xcm", "wallet"])
   const { account } = useAccount()
@@ -111,128 +118,143 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
     ? !!destChain && isEvmParachain(destChain)
     : true
 
+  const Header = closable ? SOnrampStepHeader : ModalHeader
+  const content = (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(
+          (values) => transfer && submitTx([values, transfer]),
+        )}
+      >
+        <Controller
+          name="srcAmount"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <AssetInput
+              isDisabled={!isAccountAllowed}
+              label={t("common:asset")}
+              value={field.value}
+              asset={
+                assetMeta
+                  ? {
+                      symbol: assetMeta.symbol,
+                      icon: <AssetLogo id={asset?.assetId ?? ""} />,
+                    }
+                  : null
+              }
+              onChange={field.onChange}
+              isLoading={isLoadingTransfer}
+              amountError={fieldState.error?.message}
+              balance={{
+                label: t("common:balance"),
+                value: t("common:number", {
+                  value: toDecimal(transferData.balance, transferData.decimals),
+                }),
+                onMax: () =>
+                  field.onChange(
+                    toDecimal(transferData.max, transferData.decimals),
+                  ),
+                isMaxDisabled: !(Number(transferData.max) > 0),
+              }}
+            />
+          )}
+        />
+        <ModalContentDivider my="xl" />
+        <Controller
+          name="destAddress"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Flex direction="column" gap="m">
+              <FormLabel asChild>
+                <label htmlFor={field.name}>
+                  {t("wallet:transfer.modal.address.label")}
+                </label>
+              </FormLabel>
+              <AccountInput
+                id={field.name}
+                value={field.value}
+                onChange={field.onChange}
+                placeholder={t("withdraw.transfer.destination.placeholder")}
+                isError={!!fieldState.error}
+              />
+              {fieldState.error && (
+                <FormError>{fieldState.error?.message}</FormError>
+              )}
+            </Flex>
+          )}
+        />
+        <ModalContentDivider sx={{ my: "xl" }} />
+        {isAccountAllowed ? (
+          <Alert
+            variant="warning"
+            description={t("withdraw.disclaimer.cex.title", {
+              cex: t(`cex.${cexId}.title`),
+              symbol: asset?.data.asset.originSymbol,
+            })}
+            action={
+              <Flex as="label" gap="base" align="center">
+                <Toggle
+                  size="large"
+                  checked={disclaimerAccepted}
+                  onCheckedChange={setDisclaimerAccepted}
+                />
+                <Text fs="p4" lh={1.3} fw={600}>
+                  {t("withdraw.disclaimer.cex.description", {
+                    cex: t(`cex.${cexId}.title`),
+                    symbol: asset?.data.asset.originSymbol,
+                  })}
+                </Text>
+              </Flex>
+            }
+          />
+        ) : (
+          <Alert
+            variant="error"
+            description={t("withdraw.cex.account.evmError", {
+              symbol: asset?.data.asset.originSymbol,
+            })}
+          />
+        )}
+        <ModalContentDivider sx={{ my: "xl" }} />
+        <LoadingButton
+          type="submit"
+          size="large"
+          variant="primary"
+          width="100%"
+          disabled={!isAccountAllowed || !disclaimerAccepted}
+          isLoading={isLoadingTransfer || isPending}
+        >
+          {t("withdraw.transfer.button")}
+        </LoadingButton>
+      </form>
+    </FormProvider>
+  )
+
   return (
     <>
-      <ModalHeader
+      <Header
         title={t("withdraw.cex.transfer.title", {
           cex: t(`cex.${cexId}.title`),
         })}
         onBack={onBack}
         align="center"
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
-        <FormProvider {...form}>
-          <form
-            onSubmit={form.handleSubmit(
-              (values) => transfer && submitTx([values, transfer]),
-            )}
-          >
-            <Controller
-              name="srcAmount"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <AssetInput
-                  isDisabled={!isAccountAllowed}
-                  label={t("common:asset")}
-                  value={field.value}
-                  asset={
-                    assetMeta
-                      ? {
-                          symbol: assetMeta.symbol,
-                          icon: <AssetLogo id={asset?.assetId ?? ""} />,
-                        }
-                      : null
-                  }
-                  onChange={field.onChange}
-                  isLoading={isLoadingTransfer}
-                  amountError={fieldState.error?.message}
-                  balance={{
-                    label: t("common:balance"),
-                    value: t("common:number", {
-                      value: toDecimal(
-                        transferData.balance,
-                        transferData.decimals,
-                      ),
-                    }),
-                    onMax: () =>
-                      field.onChange(
-                        toDecimal(transferData.max, transferData.decimals),
-                      ),
-                    isMaxDisabled: !(Number(transferData.max) > 0),
-                  }}
-                />
-              )}
-            />
-            <ModalContentDivider my="xl" />
-            <Controller
-              name="destAddress"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Flex direction="column" gap="m">
-                  <FormLabel asChild>
-                    <label htmlFor={field.name}>
-                      {t("wallet:transfer.modal.address.label")}
-                    </label>
-                  </FormLabel>
-                  <AccountInput
-                    id={field.name}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={t("withdraw.transfer.destination.placeholder")}
-                    isError={!!fieldState.error}
-                  />
-                  {fieldState.error && (
-                    <FormError>{fieldState.error?.message}</FormError>
-                  )}
-                </Flex>
-              )}
-            />
-            <ModalContentDivider sx={{ my: "xl" }} />
-            {isAccountAllowed ? (
-              <Alert
-                variant="warning"
-                description={t("withdraw.disclaimer.cex.title", {
-                  cex: t(`cex.${cexId}.title`),
-                  symbol: asset?.data.asset.originSymbol,
-                })}
-                action={
-                  <Flex as="label" gap="base" align="center">
-                    <Toggle
-                      size="large"
-                      checked={disclaimerAccepted}
-                      onCheckedChange={setDisclaimerAccepted}
-                    />
-                    <Text fs="p4" lh={1.3} fw={600}>
-                      {t("withdraw.disclaimer.cex.description", {
-                        cex: t(`cex.${cexId}.title`),
-                        symbol: asset?.data.asset.originSymbol,
-                      })}
-                    </Text>
-                  </Flex>
-                }
+        {onSourceAccountChange && account && (
+          <>
+            <Stack gap="s" mb="l">
+              <Text fs="p5">{t("common:from")}</Text>
+              <DepositAccountButton
+                name={account.name}
+                address={account.displayAddress}
+                onClick={onSourceAccountChange}
               />
-            ) : (
-              <Alert
-                variant="error"
-                description={t("withdraw.cex.account.evmError", {
-                  symbol: asset?.data.asset.originSymbol,
-                })}
-              />
-            )}
-            <ModalContentDivider sx={{ my: "xl" }} />
-            <LoadingButton
-              type="submit"
-              size="large"
-              variant="primary"
-              width="100%"
-              disabled={!isAccountAllowed || !disclaimerAccepted}
-              isLoading={isLoadingTransfer || isPending}
-            >
-              {t("withdraw.transfer.button")}
-            </LoadingButton>
-          </form>
-        </FormProvider>
+            </Stack>
+            <ModalContentDivider mb="l" />
+          </>
+        )}
+        {content}
       </ModalBody>
     </>
   )

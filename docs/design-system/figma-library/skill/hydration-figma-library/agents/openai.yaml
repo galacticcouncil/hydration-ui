@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hydration Figma Library"
+  short_description: "Find Hydration components, variants and design tokens"
+  default_prompt: "Use $hydration-figma-library to find the existing Hydration components and tokens for this UI."

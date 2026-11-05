@@ -1,0 +1,25 @@
+{
+  "scene": "03 - Review Inbox",
+  "blend": "review-inbox-candidate.blend",
+  "render": "review-inbox-1024.png",
+  "sourceStudio": "../status-icons.blend",
+  "sourceStudioSha256": "325b25c7ab5dad1a27e9695db5d009cefad82cbf3042e8399e977ef0c3abc46a",
+  "sourceUnchanged": true,
+  "reference": "reference-selected.png",
+  "palette": [
+    "PALETTE - Native Royal Blue",
+    "PALETTE - Native Orchid Violet",
+    "PALETTE - Pale Ivory Mint"
+  ],
+  "resolution": 1024,
+  "samples": 128,
+  "geometry": "Real editable hollow tray, rounded ivory document, full capsule line and domed circular status dot",
+  "runtimeReplacement": false,
+  "canonicalAppendRequired": false,
+  "canonicalSource": "../status-icons.blend",
+  "canonicalSourceSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+  "canonicalAppendVerification": "append-verification.json",
+  "canonicalRender": "../clock-review/render-provenance.json",
+  "textLines": 2,
+  "latestUpdate": "../clock-review/verification.json"
+}

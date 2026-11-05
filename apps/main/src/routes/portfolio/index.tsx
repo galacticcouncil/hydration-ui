@@ -9,6 +9,10 @@ import { PortfolioOverviewPage } from "@/modules/portfolio/overview/PortfolioOve
 import { PortfolioOverviewSkeleton } from "@/modules/portfolio/overview/PortfolioOverviewSkeleton"
 
 const searchSchema = z.object({
+  depositStatus: z
+    .enum(["all", "pending", "completed", "attention"])
+    .catch("all")
+    .default("all"),
   category: z
     .enum(["assets", "liquidity", "bonds"])
     .catch("assets")

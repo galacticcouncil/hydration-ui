@@ -1,0 +1,128 @@
+{
+  "blender": "5.2.2 LTS",
+  "source": "design-assets/hourglass-blender/hourglass.blend",
+  "render": "design-assets/hourglass-blender/hourglass-1024.png",
+  "resolution": 1024,
+  "samples": 192,
+  "device": "CPU",
+  "objects": [
+    {
+      "name": "Base - Circular Blue Disc",
+      "type": "MESH"
+    },
+    {
+      "name": "Top - Circular Blue Disc",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 01 - Lavender Post",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 01 - Lower Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 01 - Upper Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 02 - Lavender Post",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 02 - Lower Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 02 - Upper Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 03 - Lavender Post",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 03 - Lower Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Support 03 - Upper Collar",
+      "type": "MESH"
+    },
+    {
+      "name": "Vessel - Rotational Glass Bulbs",
+      "type": "MESH"
+    },
+    {
+      "name": "Sand - Lower Ivory Mound",
+      "type": "MESH"
+    },
+    {
+      "name": "Camera - Three Quarter Soft Studio",
+      "type": "CAMERA"
+    },
+    {
+      "name": "Key - Large Softbox Upper Left",
+      "type": "LIGHT"
+    },
+    {
+      "name": "Fill - Broad Cool Front",
+      "type": "LIGHT"
+    },
+    {
+      "name": "Rim - Subtle Rear",
+      "type": "LIGHT"
+    }
+  ],
+  "geometry": {
+    "capRadius": 1.02,
+    "capDepth": 0.36,
+    "capBevel": 0.07,
+    "postRadius": 0.14,
+    "postDepth": 1.7631999999999999,
+    "collarRadius": 0.18,
+    "collarDepth": 0.16
+  },
+  "palette": {
+    "frame": "#4168C4",
+    "supports": "#A58DC9",
+    "sand": "#DCDDBA"
+  },
+  "lighting": {
+    "keyWatts": 600,
+    "fillWatts": 150,
+    "rimWatts": 75,
+    "keySize": 5
+  },
+  "camera": {
+    "type": "ORTHO",
+    "scale": 3.450000047683716,
+    "location": [
+      -3.5999999046325684,
+      -8.0,
+      0.550000011920929
+    ],
+    "target": [
+      0.0,
+      0.0,
+      1.5499999523162842
+    ],
+    "rollDegrees": 5.5
+  },
+  "proportions": {
+    "openHeightScale": 0.76,
+    "totalHeight": 2.4984000000000006
+  },
+  "compositor": {
+    "node": "Hue Saturation Value",
+    "saturation": 1.1,
+    "hue": 0.5,
+    "value": 1.0
+  },
+  "glass": {
+    "ior": 1.45,
+    "roughness": 0.085,
+    "wallThickness": 0.028
+  }
+}

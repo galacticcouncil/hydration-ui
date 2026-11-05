@@ -1,3 +1,5 @@
+import { AccountOverrideProvider } from "@galacticcouncil/web3-connect"
+
 import { useIntentToasts } from "@/modules/transactions/hooks/useIntentToasts"
 import { useProcessTransactionToasts } from "@/modules/transactions/hooks/useProcessTransactionToasts"
 import { ReviewMultiTransaction } from "@/modules/transactions/review/ReviewMultiTransaction"
@@ -20,17 +22,24 @@ export const TransactionManager = () => {
       {transactions.map((transaction) => {
         if (isMultiTransaction(transaction)) {
           return (
-            <ReviewMultiTransaction
+            <AccountOverrideProvider
               key={transaction.id}
-              transaction={transaction}
-            />
+              value={transaction.signingAccount}
+            >
+              <ReviewMultiTransaction transaction={transaction} />
+            </AccountOverrideProvider>
           )
         }
 
         return (
-          <TransactionProvider key={transaction.id} transaction={transaction}>
-            <ReviewTransaction />
-          </TransactionProvider>
+          <AccountOverrideProvider
+            key={transaction.id}
+            value={transaction.signingAccount}
+          >
+            <TransactionProvider transaction={transaction}>
+              <ReviewTransaction />
+            </TransactionProvider>
+          </AccountOverrideProvider>
         )
       })}
     </>

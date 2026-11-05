@@ -1,4 +1,13 @@
-import { AccountInput, Flex, Label, Text } from "@galacticcouncil/ui/components"
+import { BookOpen } from "@galacticcouncil/ui/assets/icons"
+import {
+  AccountInput,
+  Button,
+  Flex,
+  InputSuggestionsInputProps,
+  Label,
+  Text,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useId } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,6 +18,9 @@ import i18n from "@/i18n"
 export type AddressBookProps = {
   readonly address: string
   readonly error?: string
+  readonly headerAction?: React.ReactNode
+  readonly contactsVariant?: "button" | "icon"
+  readonly inputProps?: InputSuggestionsInputProps
   readonly onAddressChange: (address: string) => void
   readonly onOpenMyContacts: () => void
 }
@@ -16,6 +28,9 @@ export type AddressBookProps = {
 export const AddressBook: FC<AddressBookProps> = ({
   address,
   error,
+  headerAction,
+  contactsVariant = "button",
+  inputProps,
   onAddressChange,
   onOpenMyContacts,
 }) => {
@@ -35,14 +50,38 @@ export const AddressBook: FC<AddressBookProps> = ({
           >
             {t("addressBook.destinationAddress")}
           </Label>
-          <AddressBookButton onClick={onOpenMyContacts} />
+          {headerAction ??
+            (contactsVariant === "button" && (
+              <AddressBookButton onClick={onOpenMyContacts} />
+            ))}
         </Flex>
         <AccountInput
+          {...inputProps}
           id={id}
           value={address}
           onChange={onAddressChange}
           placeholder={t("addressBook.placeholder")}
           isError={!!error}
+          autoComplete={inputProps ? "off" : undefined}
+          endAdornment={
+            contactsVariant === "icon" ? (
+              <Tooltip
+                text={t("addressBook.myContacts")}
+                size="small"
+                delayDuration={0}
+                side="bottom"
+                asChild
+              >
+                <Button
+                  icon={BookOpen}
+                  variant="ghost"
+                  type="button"
+                  aria-label={t("addressBook.myContacts")}
+                  onClick={onOpenMyContacts}
+                />
+              </Tooltip>
+            ) : undefined
+          }
         />
       </Flex>
       {error && (

@@ -1,3 +1,4 @@
+export * from "./accountSigner"
 export * from "./errors"
 export * from "./ethereum"
 export * from "./identity"

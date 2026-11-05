@@ -1,0 +1,42 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/tracked-wallets-blender/angles-blue/d-frosted/d-frosted.blend",
+  "sourceSha256": "502d578b5bbf8be73965f3503b1a97dba34192e9f08808cb2f40c5562c4a7354",
+  "sourceUnchanged": true,
+  "camera": "CAMERA D - Three-quarter right",
+  "glassRoughness": 0.26,
+  "transparentGlassRoughnessThreshold": 0.5,
+  "render": "angles-blue/d-frosted/adaptive/d-adaptive-1024.png",
+  "blend": "angles-blue/d-frosted/adaptive/d-adaptive.blend",
+  "previewBackgrounds": {
+    "dark": "#0D1525",
+    "light": "#ffffff"
+  },
+  "lensSampleRGBA": [
+    104,
+    113,
+    124,
+    46
+  ],
+  "transparentPixels": 104136,
+  "renderSha256": "c914186091c24a9079b235193af6b4414f4228f506897f0f60b44d8db89d8adf",
+  "selectedAngle": "D",
+  "blendSha256": "aa22ad1d41d04e5fa4416347e8ddb48162437e06ad4a1e2270d6ff9d96f1ba57",
+  "appAsset": "packages/ui/src/assets/images/TrackedWalletGlasses.webp",
+  "appAssetSha256": "9d4e577f9c588a7e31f1dd70b0bb0d353ab1065f04b29138e27912cdd0589473",
+  "appAssetBytes": 30542,
+  "appAssetSize": [
+    512,
+    512
+  ],
+  "consumer": "apps/main/src/modules/portfolio/tracked/TrackedWallets.tsx",
+  "surfaces": [
+    "overview",
+    "tracked wallets"
+  ],
+  "lensSampleRGBA512": [
+    106,
+    116,
+    126,
+    45
+  ]
+}

@@ -28,6 +28,7 @@ type Props = FlexProps &
     readonly renderItem?: (item: TabItem) => React.ReactNode
     readonly horizontalEdgeOffset?: ScrollAreaProps["horizontalEdgeOffset"]
     readonly scrollable?: boolean
+    readonly hideScrollbar?: ScrollAreaProps["hideScrollbar"]
   }
 
 export const TabMenu: FC<Props> = ({
@@ -40,6 +41,7 @@ export const TabMenu: FC<Props> = ({
   ignoreCurrentSearch,
   horizontalEdgeOffset,
   scrollable = true,
+  hideScrollbar,
   ...props
 }) => {
   const menu = (
@@ -67,6 +69,7 @@ export const TabMenu: FC<Props> = ({
     <ScrollArea
       orientation="horizontal"
       horizontalEdgeOffset={horizontalEdgeOffset}
+      hideScrollbar={hideScrollbar}
     >
       {menu}
     </ScrollArea>

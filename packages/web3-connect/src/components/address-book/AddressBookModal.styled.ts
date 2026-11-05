@@ -10,6 +10,7 @@ export const SAddressBookModalBody = styled(ModalBody, {
     display: flex;
     flex-direction: column;
     gap: ${theme.space.xl};
+    padding-top: ${theme.space.m};
     padding-bottom: 0;
 
     ${isMobile &&

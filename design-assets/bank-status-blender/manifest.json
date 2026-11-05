@@ -1,0 +1,66 @@
+{
+  "sourceBlend": "a4-upward/bank-a4-upward.blend",
+  "sourceBlendSha256": "ffa4549e2da6614643de917fc15020285b9bb5bce6b7cb3142cc4e9454d7b7e9",
+  "sourceUnchanged": true,
+  "selectedOption": "A4 upward, turned 6 degrees right",
+  "previousVersion": "revisions/before-selected-a4",
+  "geometrySha256": "2c5d9957e2b5f1d041eddff09eb3ba4d05dca652c13c8007f852cd3b4319e406",
+  "geometryPreserved": true,
+  "previousCamera": {
+    "location": [
+      3.799999952316284,
+      -8.0,
+      0.44999998807907104
+    ],
+    "quaternion": [
+      0.6421710252761841,
+      0.7344948649406433,
+      0.12890149652957916,
+      0.17753297090530396
+    ]
+  },
+  "camera": {
+    "location": [
+      4.615410804748535,
+      -7.558967113494873,
+      0.44999998807907104
+    ],
+    "quaternion": [
+      0.631999671459198,
+      0.726742148399353,
+      0.1671653538942337,
+      0.2108982801437378
+    ],
+    "target": [
+      0.0,
+      0.0,
+      1.4500000476837158
+    ],
+    "rollDegrees": 5.5,
+    "rightwardTurnDegrees": 6,
+    "orthoScale": 4.150000095367432
+  },
+  "blend": "bank-status.blend",
+  "render": "bank-status-1024.png",
+  "scene": "Bank Status - At Your Bank",
+  "resolution": 1024,
+  "samples": 128,
+  "palette": [
+    "PALETTE - Native Royal Blue",
+    "PALETTE - Native Orchid Violet",
+    "PALETTE - Pale Ivory Mint"
+  ],
+  "usage": "Bank withdrawal tracking: At your bank",
+  "appExport": "packages/ui/src/assets/images/Bank3D.webp",
+  "renderSha256": "d9e7a54512ac3b78fbcfbca5d8cd36ff683e79ab8e9d9f91d64a10207c458497",
+  "blendSha256": "1ab6e8ec0eeb12f02cb3f3244ebbbe94cfb9a6ff09dd80ef9b042e33bcd38545",
+  "appAssetSha256": "f878044b8b6b1b75174161f12e552f6bb69955e267c5b8351e77026a5407a11c",
+  "appAssetBytes": 32330,
+  "appAssetSize": [
+    512,
+    512
+  ],
+  "appAssetMode": "RGBA",
+  "reopenedSourceRenderVerified": true,
+  "galleryExportMatchesRuntime": true
+}

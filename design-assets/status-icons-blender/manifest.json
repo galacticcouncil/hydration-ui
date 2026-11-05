@@ -1,0 +1,179 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/status-icons.blend",
+  "blender": "5.2.2 LTS",
+  "resolution": 1024,
+  "samples": 600,
+  "scenes": [
+    "01 - Hourglass",
+    "02 - Review Document",
+    "03 - Review Inbox",
+    "04 - Review Document Clock"
+  ],
+  "sharedStudio": "STUDIO - Shared Softboxes",
+  "sharedWorld": "WORLD - Shared Cool Studio",
+  "packedReferences": [
+    "Casette.webp",
+    "ChartError.webp",
+    "NoPositions.png",
+    "Design-Library-Search-3D.png",
+    "reference-selected.png",
+    "reference-curved-document.png",
+    "reference-clock.png"
+  ],
+  "renders": {
+    "hourglass": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/hourglass-1024.png",
+    "document": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/document-1024.png",
+    "inbox": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-1024.png",
+    "documentClock": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/clock-review/document-clock-1024.png"
+  },
+  "historicalProceduralMetadata": {
+    "palette": {
+      "blue": "#4966D4",
+      "violet": "#D17FEA",
+      "ivory": "#DCDDBA"
+    },
+    "gradeSaturation": 1.04,
+    "fold": {
+      "type": "SIMPLE_DEFORM",
+      "method": "BEND",
+      "axis": "X",
+      "angleDegrees": 130,
+      "solidifyThickness": 0.05,
+      "creaseOrigin": [
+        0.30000001192092896,
+        -0.11999999731779099,
+        2.119999885559082
+      ],
+      "creaseDiagonalDegrees": 55,
+      "oneContinuousPage": true,
+      "baseVertices": 9153
+    },
+    "textStrokes": {
+      "geometry": "capsules",
+      "count": 3,
+      "radius": 0.09,
+      "bevelModifier": false,
+      "followsPageCurvature": true
+    },
+    "magnifier": {
+      "reference": "https://www.figma.com/design/wN5pnsm2FPVoCrxFNEAlYl/Design-Library?node-id=442-28153",
+      "rim": "Circular tubular torus, no flat annulus face or bevel modifier",
+      "outerRadius": 0.72,
+      "innerRadius": 0.51,
+      "tubeRadius": 0.105,
+      "handle": "Round lathed handle, gently wider toward hemispherical end",
+      "handleRootRadius": 0.1,
+      "handleEndRadius": 0.15,
+      "handleReach": 1.46,
+      "lens": "True biconvex optical glass, spherical faces, visible text refraction",
+      "lensMaterial": {
+        "baseColor": "#D6E8FF",
+        "transmission": 1.0,
+        "roughness": 0.08,
+        "IOR": 1.5,
+        "absorptionDensity": 0.2
+      },
+      "lensDepth": 0.22,
+      "center": [
+        0.17,
+        -0.52,
+        1.46
+      ],
+      "pageAndStudioPreserved": true,
+      "handleAngleDegrees": 51,
+      "handleVisibleLength": 0.74
+    },
+    "authority": "Historical builder parameters only; manual saved Blender source takes precedence."
+  },
+  "sourceAuthority": "preserved-live-user-scenes-with-inbox-appended",
+  "sourceSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+  "sourceBytes": 3912515,
+  "sourceMtime": "2026-10-22T10:48:17.674427",
+  "sourceFileSavedByRender": false,
+  "renderedAt": "2026-10-21T19:48:36.932549+00:00",
+  "documentRenderProvenance": {
+    "source": "/Users/samborek/.codex/worktrees/deposit-wallet-v2/hydration-ui copy/design-assets/status-icons-blender/status-icons.blend",
+    "sourceSha256": "325b25c7ab5dad1a27e9695db5d009cefad82cbf3042e8399e977ef0c3abc46a",
+    "frozenInput": "/private/tmp/hydration-user-edit-render-20261021/user-saved-status-icons.blend",
+    "sourceFileSavedByRender": false,
+    "scene": "02 - Review Document",
+    "savedSettings": {
+      "engine": "CYCLES",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "resolutionPercentage": 100,
+      "samples": 600,
+      "imageFormat": "PNG",
+      "imageMode": "RGBA",
+      "imageDepth": "16",
+      "filmTransparent": true,
+      "device": "GPU"
+    },
+    "renderSettings": {
+      "engine": "CYCLES",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "samples": 600,
+      "format": "PNG",
+      "mode": "RGBA",
+      "depth": 16,
+      "device": "GPU"
+    },
+    "camera": "CAMERA - Review Document",
+    "cameraMatrix": [
+      [
+        0.9354352951049805,
+        -0.12548579275608063,
+        -0.3304755985736847,
+        -2.799999952316284
+      ],
+      [
+        -0.34040820598602295,
+        -0.06772076338529587,
+        -0.9378361105918884,
+        -8.399999618530273
+      ],
+      [
+        0.09530509263277054,
+        0.9897816181182861,
+        -0.10606478899717331,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "exposure": 0.3499999940395355,
+    "viewTransform": "AgX",
+    "look": "AgX - Medium High Contrast",
+    "startedAt": "2026-10-21T19:42:20.105367+00:00",
+    "sceneEdits": "Only in-memory output dimensions, minimum sample count, image format and output path. No geometry, camera, materials, light or grade changes.",
+    "completedAt": "2026-10-21T19:48:36.932549+00:00",
+    "render": "/Users/samborek/.codex/worktrees/deposit-wallet-v2/hydration-ui copy/design-assets/status-icons-blender/document-1024.png",
+    "renderSha256": "d73f6139077e876f6dde0122dd6d55b9d0dd3bf18371a9cf1431af6cc32b9fa8"
+  },
+  "inboxRenderProvenance": {
+    "scene": "03 - Review Inbox",
+    "render": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-1024.png",
+    "resolution": [
+      1024,
+      1024
+    ],
+    "samples": 128,
+    "engine": "CYCLES",
+    "sha256": "453b73fc40e17e49df3f70b08e4c790e0c6329020d575b5c917f5fce973d6e55",
+    "clockGeometry": [],
+    "preview512": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/inbox-review/review-inbox-512.png",
+    "sourceSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358"
+  },
+  "inboxAppendVerification": "inbox-review/append-verification.json",
+  "clockVariantProvenance": "clock-review/render-provenance.json",
+  "clockVariantPreservation": "clock-review/verification.json"
+}

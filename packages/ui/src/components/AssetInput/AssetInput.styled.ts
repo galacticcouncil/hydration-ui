@@ -16,8 +16,11 @@ const truncate = css`
   text-overflow: ellipsis;
 `
 
-export const SRoot = styled.div<{ isAmountHidden: boolean }>(
-  ({ theme, isAmountHidden }) => css`
+export const SRoot = styled.div<{
+  isAmountHidden: boolean
+  isSelectorStacked: boolean
+}>(
+  ({ theme, isAmountHidden, isSelectorStacked }) => css`
     display: grid;
     column-gap: ${theme.space.m};
     min-width: 0;
@@ -27,6 +30,22 @@ export const SRoot = styled.div<{ isAmountHidden: boolean }>(
     grid-template-areas: ${isAmountHidden
       ? `"header header" ". ." ". sub"`
       : `"header header" "asset amount" "asset sub"`};
+
+    ${isSelectorStacked &&
+    css`
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: ${isAmountHidden
+        ? "auto auto auto"
+        : `auto auto auto ${SUBLINE_ROW_HEIGHT}`};
+      grid-template-areas: ${isAmountHidden
+        ? `"header" "asset" "sub"`
+        : `"header" "asset" "amount" "sub"`};
+
+      & > [data-asset-input-amount] {
+        height: ${AMOUNT_ROW_HEIGHT};
+        margin-top: ${theme.space.m};
+      }
+    `}
   `,
 )
 
@@ -76,20 +95,29 @@ export const SBalanceText = styled.div(
   `,
 )
 
-export const SAssetGroup = styled.div<{ isFullWidth: boolean }>(
-  ({ theme, isFullWidth }) => css`
+export const SAssetGroup = styled.div<{
+  isFullWidth: boolean
+  isStacked: boolean
+}>(
+  ({ theme, isFullWidth, isStacked }) => css`
     align-self: center;
     justify-self: start;
-    ${isFullWidth
+    ${isStacked
       ? css`
-          grid-row: 2 / 4;
-          grid-column: 1 / -1;
+          grid-area: asset;
           justify-self: stretch;
           width: 100%;
         `
-      : css`
-          grid-area: asset;
-        `}
+      : isFullWidth
+        ? css`
+            grid-row: 2 / 4;
+            grid-column: 1 / -1;
+            justify-self: stretch;
+            width: 100%;
+          `
+        : css`
+            grid-area: asset;
+          `}
 
     display: flex;
     align-items: center;

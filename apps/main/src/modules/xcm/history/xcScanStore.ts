@@ -12,3 +12,22 @@ export const xcScanHttpClient = new OcelloidsHttpClient(apiUrl, apiKey)
 export const xcScanSseClient = new OcelloidsSseClient(apiUrl)
 
 export const xcStore = new XcStore(xcScanHttpClient, xcScanSseClient)
+
+export async function queryXcScanMetadata(
+  body: object,
+  signal?: AbortSignal,
+): Promise<unknown> {
+  const response = await fetch(`${apiUrl}/query/steward`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+    signal,
+  })
+  if (!response.ok) {
+    throw new Error(`XCScan metadata unavailable: ${response.status}`)
+  }
+  return response.json()
+}

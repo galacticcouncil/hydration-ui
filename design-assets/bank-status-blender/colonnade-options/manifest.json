@@ -1,0 +1,27 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/bank-status-blender/bank-status.blend",
+  "sourceSha256": "77fd568d5d16f2af5872aec74dcd28a3c86e74deb9a6182e75636c5554a606b9",
+  "sourceUnchanged": true,
+  "options": [
+    {
+      "option": "A-front-back-right",
+      "blend": "A-front-back-right.blend",
+      "render": "A-front-back-right.png"
+    },
+    {
+      "option": "B-front-back-left",
+      "blend": "B-front-back-left.blend",
+      "render": "B-front-back-left.png"
+    },
+    {
+      "option": "C-perimeter-right",
+      "blend": "C-perimeter-right.blend",
+      "render": "C-perimeter-right.png"
+    },
+    {
+      "option": "D-perimeter-left",
+      "blend": "D-perimeter-left.blend",
+      "render": "D-perimeter-left.png"
+    }
+  ]
+}

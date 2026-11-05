@@ -36,10 +36,17 @@ export const useWeb3EagerEnable = () => {
   })
 
   useEffect(() => {
-    if (!providersRequested) return
+    if (!providersRequested || hasTriedEagerEnable.current) return
 
     const state = useWeb3Connect.getState()
-    const { providers } = state
+    state.normalizeProviders()
+    const { providers } = useWeb3Connect.getState()
+    for (const { type } of state.providers) {
+      if (!providers.some((provider) => provider.type === type)) {
+        abandonEnable(type)
+        getWallet(type)?.disconnect()
+      }
+    }
 
     if (providers.length > 0) {
       eagerEnable()

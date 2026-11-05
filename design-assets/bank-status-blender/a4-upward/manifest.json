@@ -1,0 +1,45 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/bank-status-blender/hourglass-angle-options/A4-soft-right.blend",
+  "sourceSha256": "4b149d65b8e0439fdfa120644cd12f5180a2a5820d4ae9e51eee92369d079f59",
+  "sourceUnchanged": true,
+  "geometrySha256": "2c5d9957e2b5f1d041eddff09eb3ba4d05dca652c13c8007f852cd3b4319e406",
+  "geometryPreserved": true,
+  "previousCamera": {
+    "location": [
+      3.799999952316284,
+      -8.0,
+      2.6500000953674316
+    ],
+    "quaternion": [
+      0.7258545160293579,
+      0.6480230689048767,
+      0.11372597515583038,
+      0.20066788792610168
+    ]
+  },
+  "camera": {
+    "location": [
+      3.799999952316284,
+      -8.0,
+      0.44999998807907104
+    ],
+    "quaternion": [
+      0.6421710252761841,
+      0.7344948649406433,
+      0.12890149652957916,
+      0.17753297090530396
+    ],
+    "target": [
+      0.0,
+      0.0,
+      1.4500000476837158
+    ],
+    "rollDegrees": 5.5,
+    "orthoScale": 4.150000095367432
+  },
+  "changes": "A4 azimuth and 5.5 degree roll preserved; eye lowered for upward pitch matching hourglass. Geometry, materials and studio unchanged.",
+  "blend": "bank-a4-upward.blend",
+  "render": "bank-a4-upward-1024.png",
+  "resolution": 1024,
+  "samples": 128
+}

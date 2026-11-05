@@ -1,0 +1,18 @@
+{
+  "blend": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/deposit-empty-lounger-blender/status-icons-with-deposit-lounger.blend",
+  "render": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/deposit-empty-lounger-blender/deposit-lounger-1024.png",
+  "scene": "05 - Empty Deposits - Poolside Lounger",
+  "resolution": 1024,
+  "samples": 192,
+  "sourceUnchanged": true,
+  "sourceStudioSha256": "ffd01b6fdb696fc0010453c03a7d450dbc196bafae1b6a7a8d4356a6daa2e358",
+  "selectedConcept": 3,
+  "parts": 38,
+  "allScenes": [
+    "01 - Hourglass",
+    "02 - Review Document",
+    "03 - Review Inbox",
+    "04 - Review Document Clock",
+    "05 - Empty Deposits - Poolside Lounger"
+  ]
+}

@@ -1,7 +1,7 @@
-import { CircleCheck } from "@galacticcouncil/ui/assets/icons"
+import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatus.webp"
 import {
   Button,
-  Icon,
+  Image,
   ModalBody,
   Stack,
   Text,
@@ -35,11 +35,12 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
   return (
     <ModalBody>
       <Stack gap="s">
-        <Icon
-          size="2xl"
-          component={CircleCheck}
-          color={getToken("accents.success.emphasis")}
-          sx={{ mx: "auto", my: "m" }}
+        <Image
+          src={SuccessStatus}
+          alt=""
+          aria-hidden
+          lazy={false}
+          sx={{ size: "3xl", objectFit: "contain", mx: "auto", my: "m" }}
         />
         <Text fs="p2" lh={1.3} fw={600} align="center">
           {t("deposit.success.title")}

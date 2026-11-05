@@ -10,6 +10,7 @@ export type StepButtonProps = {
   description: string
   icon?: ComponentType
   onClick: () => void
+  hasFooter?: boolean
 }
 
 export const StepButton: React.FC<StepButtonProps> = ({
@@ -17,27 +18,29 @@ export const StepButton: React.FC<StepButtonProps> = ({
   description,
   icon: IconComponent,
   onClick,
+  hasFooter = false,
 }) => {
   return (
-    <SStepButton as="button" onClick={onClick}>
+    <SStepButton as="button" onClick={onClick} hasFooter={hasFooter}>
       {IconComponent && (
         <Icon
-          size="lg"
-          mr="xl"
+          size={["l", "lg"]}
           component={IconComponent}
           color={getToken("textButtons.small.rest")}
+          sx={{ flexShrink: 0 }}
         />
       )}
-      <Stack>
-        <Text fs="p3" fw={600}>
+      <Stack gap="s" minWidth={0}>
+        <Text fs={["p3", "p2"]} fw={600} lh={1.2}>
           {title}
         </Text>
-        <Text fs="p4" color={getToken("text.low")}>
+        <Text fs={["p5", "p4"]} lh={1.3} color={getToken("text.low")}>
           {description}
         </Text>
       </Stack>
       <Icon
         size="m"
+        sx={{ flexShrink: 0 }}
         ml="auto"
         component={ArrowRight}
         color={getToken("textButtons.small.rest")}

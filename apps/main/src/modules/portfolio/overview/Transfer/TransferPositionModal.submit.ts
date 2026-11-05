@@ -4,6 +4,7 @@ import {
   safeConvertSS58toH160,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
+import { useAccount, useAccountOverride } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { isNumber } from "remeda"
@@ -23,6 +24,8 @@ export const useSubmitTransferPosition = ({ onClose, onSuccess }: Props) => {
   const { t } = useTranslation("wallet")
   const { createTransaction } = useTransactionsStore()
   const { isErc20 } = useAssets()
+  const { account } = useAccount()
+  const accountOverride = useAccountOverride()
 
   const rpc = useRpcProvider()
   const { papi } = rpc
@@ -46,6 +49,7 @@ export const useSubmitTransferPosition = ({ onClose, onSuccess }: Props) => {
 
       return createTransaction(
         {
+          signingAccount: accountOverride ? (account ?? undefined) : undefined,
           withExtraGas: isErc20(asset),
           tx: papi.tx.Currencies.transfer({
             currency_id: Number(asset.id),

@@ -18,6 +18,7 @@ const shouldForwardProp = (prop: string) =>
   prop !== "animationDurationMs" &&
   prop !== "contentWidth" &&
   prop !== "hasTopContent" &&
+  prop !== "hasBottomContent" &&
   prop !== "noPadding" &&
   prop !== "isBlurred" &&
   prop !== "centered"
@@ -89,9 +90,10 @@ export const SModalContent = styled(Content, {
 })<{
   contentWidth?: string
   hasTopContent?: boolean
+  hasBottomContent?: boolean
   centered?: boolean
 }>(
-  ({ theme, contentWidth, hasTopContent, centered }) => css`
+  ({ theme, contentWidth, hasTopContent, hasBottomContent, centered }) => css`
     --modal-content-padding: ${theme.space.xl};
     --modal-content-inset: calc(var(--modal-content-padding) * -1);
     --modal-content-width: ${contentWidth ?? theme.sizes["6xl"]};
@@ -104,7 +106,7 @@ export const SModalContent = styled(Content, {
     width: 100%;
     height: 100dvh;
 
-    & > div > :not([hidden]) ~ :not([hidden]) {
+    & > [data-modal-paper] > :not([hidden]) ~ :not([hidden]) {
       border-top: 1px solid ${theme.details.separators};
     }
 
@@ -118,6 +120,14 @@ export const SModalContent = styled(Content, {
       animation: ${theme.animations.fadeOutBottom};
       animation-duration: var(--modal-animation-duration);
     }
+
+    ${hasBottomContent &&
+    css`
+      ${mq("max-xs")} {
+        display: flex;
+        flex-direction: column;
+      }
+    `}
 
     ${mq("sm")} {
       position: relative;
@@ -136,8 +146,10 @@ export const SModalContent = styled(Content, {
       @media (prefers-reduced-motion: no-preference) {
         &[data-settled] {
           transition:
-            width 320ms ${theme.easings.outExpo},
-            max-width 320ms ${theme.easings.outExpo};
+            width var(--modal-resize-duration, 320ms)
+              var(--modal-resize-easing, ${theme.easings.outExpo}),
+            max-width var(--modal-resize-duration, 320ms)
+              var(--modal-resize-easing, ${theme.easings.outExpo});
         }
       }
 
@@ -158,7 +170,9 @@ export const SModalContent = styled(Content, {
   `,
 )
 
-export const SModalPaper = styled(Paper)`
+export const SModalPaper = styled(Paper, { shouldForwardProp })<{
+  hasBottomContent?: boolean
+}>`
   display: flex;
   flex-direction: column;
 
@@ -167,10 +181,21 @@ export const SModalPaper = styled(Paper)`
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {
-    height: calc(100% - var(--modal-top-content-height));
+    height: ${({ hasBottomContent }) =>
+      hasBottomContent
+        ? "auto"
+        : "calc(100% - var(--modal-top-content-height))"};
     border: 0;
     border-radius: 0;
     overflow-y: auto;
+
+    ${({ hasBottomContent }) =>
+      hasBottomContent &&
+      css`
+        flex: 1;
+        min-height: 0;
+        padding-bottom: 0;
+      `}
   }
 `
 
@@ -202,7 +227,8 @@ export const SModalHeaderButton = styled(Button)<{
   cursor: pointer;
 
   position: absolute;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   ${({ align, theme }) => `${align}: -${theme.space.base}`};
 `
 
@@ -267,6 +293,7 @@ export const SModalTopContent = styled(Box)`
 
   padding-inline: var(--modal-content-padding);
   height: var(--modal-top-content-height);
+  flex-shrink: 0;
 
   ${mq("max-xs")} {
     border-bottom: 1px solid ${({ theme }) => theme.details.separators};

@@ -27,18 +27,29 @@ import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { DepositConfig, OnrampScreen } from "@/modules/onramp/types"
 import { useAssets } from "@/providers/assetsProvider"
 
-export const PendingDeposit: React.FC<DepositConfig> = ({
+type PendingDepositProps = DepositConfig & {
+  onContinue?: () => void
+}
+
+export const PendingDeposit: React.FC<PendingDepositProps> = ({
   id,
   cexId,
   asset,
   amount,
+  onContinue,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const { getAsset } = useAssets()
-  const { setAsset, paginateTo, setAmount, setFinishedDeposit } =
+  const { setAsset, setCexId, paginateTo, setAmount, setFinishedDeposit } =
     useOnrampStore(
       useShallow(
-        pick(["setAsset", "paginateTo", "setAmount", "setFinishedDeposit"]),
+        pick([
+          "setAsset",
+          "setCexId",
+          "paginateTo",
+          "setAmount",
+          "setFinishedDeposit",
+        ]),
       ),
     )
 
@@ -49,8 +60,10 @@ export const PendingDeposit: React.FC<DepositConfig> = ({
 
   const handleContinue = () => {
     setAsset(asset)
+    setCexId(cexId)
     paginateTo(OnrampScreen.DepositTransfer)
     setAmount(amount)
+    onContinue?.()
   }
 
   const handleDelete = () => {

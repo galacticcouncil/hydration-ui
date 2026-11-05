@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portfolio deposits · Desktop and mobile</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #070b15; color: #f5f6fa; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 28px; }
+      header { max-width: 1880px; margin: 0 auto 24px; }
+      h1 { font-size: 24px; font-weight: 500; margin: 0 0 8px; }
+      p { margin: 0; color: #aab0be; font-size: 14px; line-height: 1.5; }
+      .views { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 24px; max-width: 1880px; margin: auto; align-items: start; }
+      .view { min-width: 0; }
+      .label { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 14px; }
+      .label span { color: #aab0be; }
+      a { color: #b7d9fa; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .viewport { width: 100%; position: relative; overflow: hidden; background: #070b15; border: 1px solid #293040; border-radius: 14px; }
+      iframe { display: block; border: 0; transform-origin: top left; background: #070b15; }
+      .hint { margin: 14px auto 0; max-width: 1880px; font-size: 12px; }
+      @media (max-width: 1040px) {
+        body { padding: 20px; }
+        .views { grid-template-columns: minmax(0, 1fr); }
+        .mobile { width: min(390px, 100%); }
+      }
+      @media (max-width: 480px) { body { padding: 14px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Portfolio · Deposits</h1>
+      <p>The live deposits-history page at two viewport sizes. It uses your current wallet session.</p>
+    </header>
+    <main class="views">
+      <section class="view desktop" aria-label="Desktop preview">
+        <div class="label">
+          <div>Desktop <span>1440 × 1000</span></div>
+          <a href="/portfolio/deposits?depositStatus=all" target="_blank" rel="noopener">Open page ↗</a>
+        </div>
+        <div class="viewport" data-width="1440" data-height="1000">
+          <iframe title="Desktop deposits history" width="1440" height="1000" src="/portfolio/deposits?depositStatus=all"></iframe>
+        </div>
+      </section>
+      <section class="view mobile" aria-label="Mobile preview">
+        <div class="label"><div>Mobile <span>390 × 844</span></div></div>
+        <div class="viewport" data-width="390" data-height="844">
+          <iframe title="Mobile deposits history" width="390" height="844" src="/portfolio/deposits?depositStatus=all"></iframe>
+        </div>
+      </section>
+    </main>
+    <p class="hint">Both views are interactive and scrollable. If your wallet is disconnected, connect it to see its past transfers. No sample history is added.</p>
+    <script>
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const viewport = entry.target;
+          const width = Number(viewport.dataset.width);
+          const height = Number(viewport.dataset.height);
+          const scale = viewport.clientWidth / width;
+          viewport.style.height = `${height * scale}px`;
+          viewport.querySelector('iframe').style.transform = `scale(${scale})`;
+        }
+      });
+      document.querySelectorAll('.viewport').forEach((viewport) => observer.observe(viewport));
+    </script>
+  </body>
+</html>

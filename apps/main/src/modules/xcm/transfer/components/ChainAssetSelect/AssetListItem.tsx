@@ -5,8 +5,10 @@ import {
   Icon,
   Skeleton,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import {
   AnyChain,
   Asset,
@@ -14,9 +16,11 @@ import {
   AssetRoute,
 } from "@galacticcouncil/xc-core"
 import Big from "big.js"
+import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { isBigInt } from "remeda"
 
+import { ChainLogo } from "@/components/ChainLogo"
 import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetBridgeTags"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/bridge"
@@ -34,6 +38,10 @@ export type AssetListItemProps = {
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
+  showChainLogo?: boolean
+  showSourceChain?: boolean
+  symbolBadge?: ReactNode
+  trailingElement?: ReactNode
   onClick: () => void
 }
 
@@ -45,6 +53,10 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   balance,
   balanceDisplay,
   chain,
+  showChainLogo = true,
+  showSourceChain = false,
+  symbolBadge,
+  trailingElement,
   isLoading,
   isSelected,
   onClick,
@@ -54,53 +66,84 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
       <Flex align="start" gap="base">
-        {chain && <XAssetLogo asset={asset} chain={chain} />}
+        {chain && (
+          <XAssetLogo
+            asset={asset}
+            chain={chain}
+            showChainLogo={showChainLogo}
+          />
+        )}
 
         <Text truncate as="div">
-          <AssetLabel symbol={symbol} name={name} />
+          {showSourceChain && chain ? (
+            <Tooltip text={chain.name} size="small" asChild>
+              <Flex>
+                <AssetLabel
+                  symbol={symbol}
+                  name={name}
+                  badge={
+                    <ChainLogo
+                      ecosystem={chain.ecosystem}
+                      chainId={getChainId(chain)}
+                      size="extra-small"
+                      alt={chain.name}
+                    />
+                  }
+                />
+              </Flex>
+            </Tooltip>
+          ) : (
+            <AssetLabel symbol={symbol} name={name} badge={symbolBadge} />
+          )}
           {route && isBridgeAssetRoute(route) && (
             <AssetBridgeTags route={route} />
           )}
         </Text>
       </Flex>
-      <Text
-        fs="p4"
-        fw={500}
-        as="div"
-        color={
-          isBigInt(balance?.amount) && balance.amount > 0n
-            ? getToken("text.high")
-            : getToken("text.low")
-        }
-      >
-        {isLoading ? (
-          <Skeleton width={60} />
-        ) : balance ? (
-          <Flex direction="column" align="flex-end">
-            <Text fs="p5" lh={1} fw={600}>
-              {t("number", {
-                value: toDecimal(balance.amount, balance.decimals),
-                symbol: asset?.originSymbol,
-              })}
-            </Text>
-            {Big(balanceDisplay ?? "0").gt(0) && (
-              <Text fs="p6" color={getToken("text.low")}>
-                {t("currency", {
-                  value: balanceDisplay,
-                })}
-              </Text>
-            )}
-          </Flex>
+      <Flex align="center" gap="base" flexShrink={0}>
+        {trailingElement !== undefined ? (
+          trailingElement
         ) : (
-          <Icon
-            as="span"
-            display="inline-flex"
-            color={getToken("text.low")}
-            component={Minus}
-            size="m"
-          />
+          <Text
+            fs="p4"
+            fw={500}
+            as="div"
+            color={
+              isBigInt(balance?.amount) && balance.amount > 0n
+                ? getToken("text.high")
+                : getToken("text.low")
+            }
+          >
+            {isLoading ? (
+              <Skeleton width={60} />
+            ) : balance ? (
+              <Flex direction="column" align="flex-end">
+                <Text fs="p5" lh={1} fw={600}>
+                  {t("number", {
+                    value: toDecimal(balance.amount, balance.decimals),
+                    symbol: asset?.originSymbol,
+                  })}
+                </Text>
+                {Big(balanceDisplay ?? "0").gt(0) && (
+                  <Text fs="p6" color={getToken("text.low")}>
+                    {t("currency", {
+                      value: balanceDisplay,
+                    })}
+                  </Text>
+                )}
+              </Flex>
+            ) : (
+              <Icon
+                as="span"
+                display="inline-flex"
+                color={getToken("text.low")}
+                component={Minus}
+                size="m"
+              />
+            )}
+          </Text>
         )}
-      </Text>
+      </Flex>
     </SAssetListItem>
   )
 }

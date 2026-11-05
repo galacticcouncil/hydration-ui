@@ -8,6 +8,7 @@ import { Link } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 
+import { InlineCountBadge } from "@/components/InlineCountBadge"
 import { TabItem } from "@/components/TabMenu/TabMenu"
 import { TabMenuBadge } from "@/components/TabMenu/TabMenuBadge"
 
@@ -15,6 +16,7 @@ export type Props = {
   readonly item: TabItem
   readonly size?: ButtonSize
   readonly badge?: number | string
+  readonly badgePlacement?: "corner" | "inline"
   readonly variant?: ButtonVariant
   readonly activeVariant?: ButtonVariant
   readonly className?: string
@@ -25,6 +27,7 @@ export const TabMenuItem: FC<Props> = ({
   item,
   size,
   badge,
+  badgePlacement = "corner",
   activeVariant = "secondary",
   variant = "muted",
   className,
@@ -80,7 +83,12 @@ export const TabMenuItem: FC<Props> = ({
       >
         {IconComponent && <Icon size="s" component={IconComponent} />}
         {title}
-        {badge && <TabMenuBadge>{badge}</TabMenuBadge>}
+        {badge &&
+          (badgePlacement === "inline" ? (
+            <InlineCountBadge data-placement="inline">{badge}</InlineCountBadge>
+          ) : (
+            <TabMenuBadge data-tab-menu-badge>{badge}</TabMenuBadge>
+          ))}
       </Link>
     </Button>
   )

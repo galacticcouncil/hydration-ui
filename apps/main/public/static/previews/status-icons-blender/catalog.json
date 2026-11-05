@@ -1,0 +1,264 @@
+{
+  "entries": [
+    {
+      "id": "deposit-empty",
+      "title": "No deposits",
+      "category": "empty",
+      "source": "packages/ui/src/assets/images/DepositEmptyLounger.webp",
+      "url": "assets/DepositEmptyLounger.webp?v=abcb42200653",
+      "sha256": "abcb42200653e5454da15e05c1c938732e2a45e37f06b7771a4be6c3559c75e9",
+      "usedIn": [
+        "Portfolio \u2192 Deposits \u00b7 No transfer history",
+        "Portfolio \u2192 Overview \u2192 Deposits \u00b7 No transfer history"
+      ],
+      "consumers": [
+        "apps/main/src/modules/portfolio/deposits/PortfolioTransferHistory.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/deposit-empty.webp",
+        "master": "library/masters/deposit-empty-1024.png",
+        "blender": "library/blender/deposit-lounger.blend"
+      }
+    },
+    {
+      "id": "tracked-wallets",
+      "title": "Tracked wallets",
+      "category": "empty",
+      "source": "packages/ui/src/assets/images/TrackedWalletGlasses.webp",
+      "url": "assets/TrackedWalletGlasses.webp?v=9d4e577f9c58",
+      "sha256": "9d4e577f9c588a7e31f1dd70b0bb0d353ab1065f04b29138e27912cdd0589473",
+      "usedIn": [
+        "Portfolio \u2192 Overview \u2192 Tracked wallets \u00b7 No saved addresses",
+        "Portfolio \u2192 Tracked wallets \u00b7 Empty state"
+      ],
+      "consumers": [
+        "apps/main/src/modules/portfolio/tracked/TrackedWallets.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/tracked-wallets.webp",
+        "master": "library/masters/tracked-wallets-1024.png",
+        "blender": "library/blender/tracked-wallet-glasses.blend"
+      }
+    },
+    {
+      "id": "waiting",
+      "title": "Waiting",
+      "category": "status",
+      "source": "packages/ui/src/assets/images/Waiting3D.webp",
+      "url": "assets/Waiting3D.webp?v=7b63359c309d",
+      "sha256": "7b63359c309d39e6ed620035965f08bbf16948a4f57a5cfb05116843b553c3e4",
+      "usedIn": [
+        "Bank deposit \u00b7 Awaiting transfer or processing",
+        "Bank withdrawal \u00b7 Pending or processing"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankTransferStatusIllustration.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/waiting.webp",
+        "master": "library/masters/waiting-1024.png",
+        "blender": "library/blender/status-icons.blend"
+      }
+    },
+    {
+      "id": "review",
+      "title": "Provider review",
+      "category": "status",
+      "source": "packages/ui/src/assets/images/Review3D.webp",
+      "url": "assets/Review3D.webp?v=3c5b71cde8ae",
+      "sha256": "3c5b71cde8aefad8f16ba9c7bbf3503d51590aea2c956eb0fcf56e1cd0124509",
+      "usedIn": [
+        "Bank deposit \u00b7 Provider setup and Bridge handoff"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankProviderHandoff.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/review.webp",
+        "master": "library/masters/review-1024.png",
+        "blender": "library/blender/status-icons.blend"
+      }
+    },
+    {
+      "id": "review-clock",
+      "title": "In review",
+      "category": "status",
+      "source": "packages/ui/src/assets/images/ReviewClock3D.webp",
+      "url": "assets/ReviewClock3D.webp?v=93a16e30062e",
+      "sha256": "93a16e30062e0a2f8272200c01917050254b6a428d56be10d6b20dda0a6133f0",
+      "usedIn": [
+        "Bank deposit \u00b7 Verification in review"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankProviderHandoff.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/review-clock.webp",
+        "master": "library/masters/review-clock-1024.png",
+        "blender": "library/blender/status-icons.blend"
+      }
+    },
+    {
+      "id": "bank",
+      "title": "At your bank",
+      "category": "status",
+      "source": "packages/ui/src/assets/images/Bank3D.webp",
+      "url": "assets/Bank3D.webp?v=f878044b8b6b",
+      "sha256": "f878044b8b6b1b75174161f12e552f6bb69955e267c5b8351e77026a5407a11c",
+      "usedIn": [
+        "Bank withdrawal \u2192 Tracking \u00b7 At your bank"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankTransferStatusIllustration.tsx"
+      ],
+      "previewSize": 96,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/bank.webp",
+        "master": "library/masters/bank-1024.png",
+        "blender": "library/blender/bank.blend"
+      }
+    },
+    {
+      "id": "individual",
+      "title": "Individual",
+      "category": "account",
+      "source": "packages/ui/src/assets/images/IndividualBeachChair3D.webp",
+      "url": "assets/IndividualBeachChair3D.webp?v=9bdbc6e04008",
+      "sha256": "9bdbc6e040086d31bbfec4921ac96a7a334b16ca74e5d3fbefa20232ad241fe9",
+      "usedIn": [
+        "Bank deposit \u2192 Setup \u00b7 Individual account"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankDepositV3.tsx"
+      ],
+      "previewSize": 48,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/individual.webp",
+        "master": "library/masters/individual-1024.png",
+        "blender": "library/blender/account-types.blend"
+      }
+    },
+    {
+      "id": "business",
+      "title": "Business",
+      "category": "account",
+      "source": "packages/ui/src/assets/images/BusinessKiosk3D.webp",
+      "url": "assets/BusinessKiosk3D.webp?v=e2d2c83ae244",
+      "sha256": "e2d2c83ae244411c5037984cb79249b8fbf2ec937deb953983132dfa774685b9",
+      "usedIn": [
+        "Bank deposit \u2192 Setup \u00b7 Business account"
+      ],
+      "consumers": [
+        "apps/main/src/modules/ramp/BankDepositV3.tsx"
+      ],
+      "previewSize": 48,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/business.webp",
+        "master": "library/masters/business-1024.png",
+        "blender": "library/blender/account-types.blend"
+      }
+    },
+    {
+      "id": "pearl-shell",
+      "title": "Pearl shell",
+      "category": "design",
+      "source": "apps/main/public/static/previews/status-icons-blender/library/exports/pearl-shell.webp",
+      "url": "assets/PearlShell3D.webp?v=5beb22f2f7d2",
+      "sha256": "5beb22f2f7d2675dc0ad96adb2dd4549d8db01abd1f4d6935fd90bd377703a4b",
+      "usedIn": [
+        "Portfolio \u2192 Dashboard \u00b7 Header illustration (Figma)"
+      ],
+      "consumers": [],
+      "previewSize": 96,
+      "status": "Used in design",
+      "designUrl": "https://www.figma.com/design/wIqkDdWO0X27AdfLIAduxR/Wallet-Redesign?node-id=10943-1586",
+      "downloads": {
+        "export": "library/exports/pearl-shell.webp",
+        "master": "library/masters/pearl-shell-1024.png",
+        "blender": "library/blender/pearl-shell.blend"
+      }
+    },
+    {
+      "id": "citrus-press",
+      "title": "Citrus press",
+      "category": "ready",
+      "source": "apps/main/public/static/previews/status-icons-blender/library/exports/citrus-press.webp",
+      "url": "assets/CitrusPress3D.webp?v=5c77c5098ddf",
+      "sha256": "5c77c5098ddf670c4b82e3880a0f1974e4702c0024449ca7c7daa6b56ce72c68",
+      "usedIn": [
+        "Available for future use \u00b7 not yet assigned to a screen"
+      ],
+      "consumers": [],
+      "previewSize": 96,
+      "status": "Ready to use",
+      "downloads": {
+        "export": "library/exports/citrus-press.webp",
+        "master": "library/masters/citrus-press-1024.png",
+        "blender": "library/blender/citrus-press.blend"
+      }
+    },
+    {
+      "id": "usd",
+      "title": "USD",
+      "category": "currency",
+      "source": "packages/ui/src/assets/icons/FiatUsd.svg",
+      "url": "assets/FiatUsd.svg?v=39340f8095e8",
+      "sha256": "39340f8095e8812c15a85bb8ddabe213b654a2f63df9187982e77fb0c051c5e3",
+      "usedIn": [
+        "Bank deposit \u2192 Amount \u00b7 Currency selector",
+        "Bank withdrawal \u2192 Estimated receive \u00b7 Currency selector"
+      ],
+      "consumers": [
+        "apps/main/src/modules/portfolio/deposits/PortfolioTransferHistory.columns.tsx",
+        "apps/main/src/modules/portfolio/deposits/PortfolioBankDepositDetail.tsx",
+        "apps/main/src/modules/ramp/BankDepositAmount.tsx",
+        "apps/main/src/modules/ramp/BankDeposit.tsx",
+        "apps/main/src/modules/ramp/BankDepositV3Summary.tsx",
+        "apps/main/src/modules/ramp/BankWithdrawReceiveAmount.tsx"
+      ],
+      "previewSize": 24,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/usd.svg"
+      }
+    },
+    {
+      "id": "eur",
+      "title": "EUR",
+      "category": "currency",
+      "source": "packages/ui/src/assets/icons/FiatEur.svg",
+      "url": "assets/FiatEur.svg?v=97b18189803b",
+      "sha256": "97b18189803b341836646f0b8d90e577a81410b29c39c02a1291d9cb31f37012",
+      "usedIn": [
+        "Bank deposit \u2192 Amount \u00b7 Currency selector",
+        "Bank withdrawal \u2192 Estimated receive \u00b7 Currency selector"
+      ],
+      "consumers": [
+        "apps/main/src/modules/portfolio/deposits/PortfolioTransferHistory.columns.tsx",
+        "apps/main/src/modules/portfolio/deposits/PortfolioBankDepositDetail.tsx",
+        "apps/main/src/modules/ramp/BankDepositAmount.tsx",
+        "apps/main/src/modules/ramp/BankDeposit.tsx",
+        "apps/main/src/modules/ramp/BankDepositV3Summary.tsx",
+        "apps/main/src/modules/ramp/BankWithdrawReceiveAmount.tsx"
+      ],
+      "previewSize": 24,
+      "status": "In use",
+      "downloads": {
+        "export": "library/exports/eur.svg"
+      }
+    }
+  ]
+}

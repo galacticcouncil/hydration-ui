@@ -25,5 +25,13 @@ Web app for the Hydration parachain. `apps/main` is the one deployable (a React 
 
 ## Read when
 
+- Building Hydration UI or Figma elements: `docs/design-system/figma-library/README.md` maps the complete Design Library, exact component/variable/style keys, real variants, and code counterparts. Start with its pattern lookup; verify live changes against the dated catalog.
 - Writing a kind of file that is new to you here (a query, a form, a translation), or reviewing a diff: `CODING_STANDARDS.md` shows how each is written, with an example file per rule.
 - Needing protocol mechanics (Omnipool, products, tokenomics): fetch `https://raw.githubusercontent.com/galacticcouncil/hydration/main/CLAUDE.md`, an index of reference documents.
+
+## Shared project context
+
+- This standalone checkout is `/Users/Shared/HydrationProjects/hydration-ui`. Historical copies remain at their original locations.
+- Start project-history lookups with `../hydration-context/CURRENT-PROJECT.md`, then `../hydration-context/memory/MEMORY.md`. Recheck dated facts before reuse.
+- Portable Hydration skills and approved reference assets are in `../hydration-context/skills/`. Use the relevant SKILL.md for icon rendering or Figma component work. These are local snapshots; the installed Codex skills remain under `~/.codex/skills`.
+- Keep sibling context and session-history files outside the application repository.

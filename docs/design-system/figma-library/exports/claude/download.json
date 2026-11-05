@@ -1,0 +1,12 @@
+{
+  "url": "https://duke-countries-evening-based.trycloudflare.com/static/downloads/hydration-figma-library-complete.zip",
+  "artifact": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/apps/main/public/static/downloads/hydration-figma-library-complete.zip",
+  "bytes": 1662766,
+  "sha256": "81521b172dcfa09619a3c7d4318eb5e17eb6ec38baeb5da82d3ec9d0568aa487",
+  "files": 50,
+  "serverPid": 11237,
+  "tunnelPid": 11238,
+  "port": 5197,
+  "serverLog": "/private/tmp/hydration-wallet-preview-20261022/vite.log",
+  "tunnelLog": "/private/tmp/hydration-wallet-preview-20261022/tunnel.log"
+}

@@ -44,6 +44,14 @@ export const SHeader = styled.header(
       [data-intersect="explorer"] {
         display: block;
       }
+
+      &:has([data-claim-attention="true"]) {
+        column-gap: clamp(
+          ${theme.space.base},
+          calc(100vw - ${theme.breakpoints.at(-1)}),
+          ${theme.space.xxxl}
+        );
+      }
     }
   `,
 )

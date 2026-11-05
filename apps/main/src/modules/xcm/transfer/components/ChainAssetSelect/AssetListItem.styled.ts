@@ -19,6 +19,7 @@ export const SAssetListItem = styled(Flex, {
       ? theme.buttons.secondary.accent.rest
       : "transparent"};
     &:hover {
+      border-radius: ${theme.radii.m};
       background: ${theme.details.separators};
     }
   `,

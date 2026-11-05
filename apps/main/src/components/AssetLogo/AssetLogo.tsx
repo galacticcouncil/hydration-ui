@@ -32,6 +32,7 @@ type LogoMetadata = {
 type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
   isLoading?: boolean
+  showChainLogo?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [
@@ -48,6 +49,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   size = "medium",
   className,
   isLoading,
+  showChainLogo = true,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -79,7 +81,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
             key={`${data.id}-${index}`}
             alt={data.alt}
             src={data.assetSrc}
-            chainSrc={data.chainSrc}
+            chainSrc={showChainLogo ? data.chainSrc : undefined}
             decoration={data.decoration}
           />
         ))}
@@ -94,7 +96,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}
-      chainSrc={singleIconMetadata?.chainSrc}
+      chainSrc={showChainLogo ? singleIconMetadata?.chainSrc : undefined}
       size={size}
       decoration={singleIconMetadata?.decoration}
     />

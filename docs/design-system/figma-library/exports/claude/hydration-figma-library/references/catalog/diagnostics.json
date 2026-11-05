@@ -1,0 +1,2068 @@
+{
+  "errors": [],
+  "warnings": [
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "Cover - pdf",
+      "definitions": [
+        {
+          "id": "452:61050",
+          "pageName": "Misc"
+        },
+        {
+          "id": "463:61134",
+          "pageName": "Misc"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "Flow",
+      "definitions": [
+        {
+          "id": "442:41765",
+          "pageName": "Misc"
+        },
+        {
+          "id": "442:41775",
+          "pageName": "Misc"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "chipBase",
+      "definitions": [
+        {
+          "id": "793:11337",
+          "pageName": "Chips "
+        },
+        {
+          "id": "8741:12541",
+          "pageName": "Chips "
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "classic/loader",
+      "definitions": [
+        {
+          "id": "852:29152",
+          "pageName": "Icons"
+        },
+        {
+          "id": "4410:48836",
+          "pageName": "Icons"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "classic/zoom-out",
+      "definitions": [
+        {
+          "id": "852:27768",
+          "pageName": "Icons"
+        },
+        {
+          "id": "1907:57904",
+          "pageName": "Icons"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "comments",
+      "definitions": [
+        {
+          "id": "441:65806",
+          "pageName": "Misc"
+        },
+        {
+          "id": "441:65812",
+          "pageName": "Misc"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "dynamic-fee-mini-bar",
+      "definitions": [
+        {
+          "id": "441:30624",
+          "pageName": "SWAP & Charts"
+        },
+        {
+          "id": "5528:76281",
+          "pageName": "SWAP & Charts"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "external",
+      "definitions": [
+        {
+          "id": "8883:161",
+          "pageName": "🔗 Content links"
+        },
+        {
+          "id": "8882:22057",
+          "pageName": "Icons"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "input/transactions/primary",
+      "definitions": [
+        {
+          "id": "441:18175",
+          "pageName": "Input controls "
+        },
+        {
+          "id": "3882:29674",
+          "pageName": "Input controls "
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "nav-bar",
+      "definitions": [
+        {
+          "id": "444:33617",
+          "pageName": "Input controls "
+        },
+        {
+          "id": "441:65383",
+          "pageName": "Asset icons"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "networkStatus",
+      "definitions": [
+        {
+          "id": "4453:9930",
+          "pageName": "Misc"
+        },
+        {
+          "id": "5328:36675",
+          "pageName": "Settings"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "notifBanner",
+      "definitions": [
+        {
+          "id": "6353:895",
+          "pageName": "Notifications"
+        },
+        {
+          "id": "7010:32274",
+          "pageName": "Campaigns & more"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "notifications",
+      "definitions": [
+        {
+          "id": "181:6984",
+          "pageName": "Logos"
+        },
+        {
+          "id": "2066:26928",
+          "pageName": "Notifications"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "panel",
+      "definitions": [
+        {
+          "id": "4784:74808",
+          "pageName": "Modals & panels"
+        },
+        {
+          "id": "441:31592",
+          "pageName": "SWAP & Charts"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "popup-actions",
+      "definitions": [
+        {
+          "id": "444:31541",
+          "pageName": "Navigation"
+        },
+        {
+          "id": "796:26176",
+          "pageName": "Navigation"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "progress",
+      "definitions": [
+        {
+          "id": "3314:24353",
+          "pageName": "Navigation"
+        },
+        {
+          "id": "5899:8237",
+          "pageName": "Onboarding"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "rounded/close-clean",
+      "definitions": [
+        {
+          "id": "441:87519",
+          "pageName": "Modals & panels"
+        },
+        {
+          "id": "441:87531",
+          "pageName": "Modals & panels"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "rpcDetails",
+      "definitions": [
+        {
+          "id": "4453:9975",
+          "pageName": "Misc"
+        },
+        {
+          "id": "5328:36720",
+          "pageName": "Settings"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "rpcSelector/desktop",
+      "definitions": [
+        {
+          "id": "4453:9845",
+          "pageName": "Misc"
+        },
+        {
+          "id": "5328:36579",
+          "pageName": "Settings"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "table/sorting",
+      "definitions": [
+        {
+          "id": "2364:20959",
+          "pageName": "Input controls "
+        },
+        {
+          "id": "756:59856",
+          "pageName": "Lists"
+        }
+      ]
+    },
+    {
+      "code": "duplicate-name",
+      "message": "Use node IDs or keys to disambiguate this family name",
+      "name": "transactions/modals",
+      "definitions": [
+        {
+          "id": "441:87606",
+          "pageName": "Modals & panels"
+        },
+        {
+          "id": "441:87698",
+          "pageName": "Modals & panels"
+        }
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:11d14bd4b650dc14a0d6ab1f4beef914bb22d77a/39734:76",
+      "sources": [
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:177:4155",
+      "sources": [
+        "3995:38626",
+        "3995:38627",
+        "3995:38633",
+        "3995:38640",
+        "5727:23462",
+        "5727:23577",
+        "6691:9179"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:177:4156",
+      "sources": [
+        "795:26010",
+        "795:26011",
+        "795:26014",
+        "795:26017"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:177:4157",
+      "sources": [
+        "2750:62171",
+        "441:30730",
+        "441:30731",
+        "441:31062",
+        "441:31063",
+        "441:31592",
+        "5727:23462",
+        "6359:9597"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:1ec48686ef974d60b47f265203729701bbeac5a9/36896:108",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:227:7709",
+      "sources": [
+        "2036:22963",
+        "2370:33730",
+        "452:35431",
+        "452:35432",
+        "452:61050",
+        "463:61134",
+        "5305:26919",
+        "6366:28686",
+        "6366:28687",
+        "6366:28688",
+        "7144:24023",
+        "793:11337",
+        "793:11338",
+        "793:11340",
+        "793:11342",
+        "793:11344",
+        "793:11346",
+        "795:26106",
+        "8415:33660",
+        "8741:12541",
+        "8741:12542",
+        "8741:12544",
+        "8741:12547",
+        "8741:12550",
+        "8741:12552",
+        "8741:12554",
+        "8741:12556",
+        "8741:12558",
+        "8741:12560",
+        "8741:12588",
+        "8741:12591",
+        "8742:13869",
+        "8742:13892",
+        "8742:13896"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:267:7358",
+      "sources": [
+        "441:30730",
+        "441:30731",
+        "441:31592"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7288",
+      "sources": [
+        "442:41765"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7289",
+      "sources": [
+        "442:41765",
+        "444:31306"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7291",
+      "sources": [
+        "442:41775"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7292",
+      "sources": [
+        "442:41775"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7294",
+      "sources": [
+        "3397:13544",
+        "441:31062"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7296",
+      "sources": [
+        "3397:13544",
+        "441:31062"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7297",
+      "sources": [
+        "793:8599",
+        "793:8600",
+        "793:8604",
+        "793:8608"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7298",
+      "sources": [
+        "441:29812",
+        "6883:12164",
+        "793:8599",
+        "793:8600",
+        "793:8604",
+        "793:8608",
+        "8523:42878",
+        "9688:18504"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7303",
+      "sources": [
+        "441:29812",
+        "441:30015",
+        "6883:12164",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7304",
+      "sources": [
+        "441:29812",
+        "6883:12164",
+        "793:8599",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7343",
+      "sources": [
+        "2370:33730",
+        "3995:38626"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:294:7344",
+      "sources": [
+        "3995:38626",
+        "5727:23462",
+        "6366:28687"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:305:7272",
+      "sources": [
+        "2690:28927",
+        "2690:28928",
+        "4399:36120"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:305:7273",
+      "sources": [
+        "2690:28927",
+        "2690:28928",
+        "2690:28941",
+        "441:29741",
+        "441:30015",
+        "5094:28395",
+        "5094:28396",
+        "754:40661",
+        "793:8599",
+        "793:8600",
+        "793:8604",
+        "793:8608",
+        "796:28511"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:306:7274",
+      "sources": [
+        "2122:26523",
+        "441:29741",
+        "754:40661",
+        "795:26010",
+        "795:26011",
+        "795:26014",
+        "795:26017"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:307:7275",
+      "sources": [
+        "441:65821"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:30e92e678ef79e1ef5817313699b4bf91cd63abf/55872:231",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:317:7279",
+      "sources": [
+        "3145:18465",
+        "795:26010",
+        "795:26011",
+        "795:26014",
+        "795:26017"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:330a8c9183954e35b2c85fb700de05bc24398017/739:740",
+      "sources": [
+        "3314:24353"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:332:7280",
+      "sources": [
+        "796:28487"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:37f08955c095544b7e170792cce33d4d240fbffe/1192:1294",
+      "sources": [
+        "5737:23037"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:3d6d58acf9d16da5dde91fcbf48334923f18b43c/55872:197",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:3ed921d2900ff67509cfbdac4890e21cd480366b/36623:758",
+      "sources": [
+        "3882:29674",
+        "441:18175",
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:3fd465f28fe6d1756064730c3ca92b273d7348b7/36896:16",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:41e16e03abf1726659cb95c85c846e88aa281b95/55872:260",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:4384160f949071c84083b578732fa703a77799fa/39734:74",
+      "sources": [
+        "2215:38934",
+        "2222:40727",
+        "2321:41039",
+        "4967:36868",
+        "5328:36579",
+        "5328:36664",
+        "5328:36675",
+        "5899:8207",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:488481cbce41895a20c013102f0bf7d1ebe82746/39734:186",
+      "sources": [
+        "2215:38934",
+        "2222:40727",
+        "2321:41039",
+        "5328:36664"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:59c1d4179ee9f6b5c8c783a4b8cc3fdedf382ee2/39734:196",
+      "sources": [
+        "2215:38934",
+        "2222:40727",
+        "2321:41039"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:5b6fc2b7a19f33e98fc5b39d2f965a2aa69f4821/39734:184",
+      "sources": [
+        "5899:8207"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:655b528a692f80be0cb2cd4ac5ae80138ec8ccdd/36623:208",
+      "sources": [
+        "2215:38893",
+        "2215:38894",
+        "2690:27638",
+        "2690:27706",
+        "4672:32250"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:6a2a4ab1bc419a53d9eafc63c4b7c91f4f978225/502:119",
+      "sources": [
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:7af586ee69235ee54c8e7d19e704d108a8962074/55872:163",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:9394a896f25f4ea8e2f4508c58f549bc95a7272e/221:1129",
+      "sources": [
+        "441:21437"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:958a7774a071b22e05dd03d35066eb793fba27e5/70:566",
+      "sources": [
+        "2322:41186"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:b091012e24717a5ab7a55362738103e05032cea2/41863:2",
+      "sources": [
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:b514d211e6f72c7b0610f3491d85e99c697b4258/55872:95",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:bcba60db7a3c31d2c8b3a69be5442d1fce9ff2e9/155:29",
+      "sources": [
+        "3145:18465",
+        "441:30015",
+        "441:30440",
+        "441:87277",
+        "6300:10745",
+        "6883:12164",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:c5a365fa13b10d6432d07f6c772106f9fbf35484/36623:204",
+      "sources": [
+        "441:87367"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:c8d03fb3d157520d716e8f023c0775c09c2e5fb3/39734:188",
+      "sources": [
+        "4967:36868",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:cbf9df73175e5e84360ef2066a9f6711d94f69bf/2393:1439",
+      "sources": [
+        "2066:26928"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:db332113413910d6cbaa167d706308b70a3b4f22/177:1112",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:e02ba3bb5b07bad9370a73a1996a4eaa88a5291c/3443:2",
+      "sources": [
+        "2113:25302"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:e8ae166fee3e9719bab19705ec049c76459b3dc1/36623:200",
+      "sources": [
+        "441:18232",
+        "441:29812",
+        "545:121376"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:eb1cede4e847911130c6e9f241609570d1485b67/39734:192",
+      "sources": [
+        "4967:36868",
+        "5328:36579",
+        "5899:8207",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:f3a8d864f957db815ad9a557b9b2ea5fb98c3ac6/265:978",
+      "sources": [
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-variable-binding",
+      "message": "Bound variable is absent from local foundations; external resolution was not tested",
+      "targetId": "VariableID:ff215b5ae6bc867c16b625870d9ffcdc1ac0d5d1/70:544",
+      "sources": [
+        "2322:41186",
+        "3397:13544",
+        "3397:13551",
+        "3397:13554",
+        "441:30946",
+        "441:31062"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:031abfb2a280d18f59e67786861066df76a3efc8,7564:1",
+      "sources": [
+        "756:59790"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:045012338f6461677ea15fcd097217c66c863968,12946:332",
+      "sources": [
+        "441:30730"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:0675c904305a9b800de8e3b6d9edb16dd9a9d246,9872:36",
+      "sources": [
+        "181:7187",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:06e6124eac47a88e026ffc927dcae1483e611080,4178:38",
+      "sources": [
+        "442:41765",
+        "4453:9975",
+        "4967:36868",
+        "5328:36720"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:0d4fc47873ca446ac63d8ffeddb15548705a6aa5,1196:2083",
+      "sources": [
+        "2690:28927"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:0f3a55c377c44fbcc6b243d43e5719765b3fc420,239:2786",
+      "sources": [
+        "2560:12584",
+        "3882:29674",
+        "441:18175",
+        "441:29812",
+        "441:30015",
+        "441:30946",
+        "441:31062",
+        "6359:9597"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:101382d0d72bebf050bc68162c0df0dfdfdafbb2,239:2968",
+      "sources": [
+        "441:29741",
+        "441:29812",
+        "441:30015",
+        "441:30278",
+        "441:30678"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:159db50f47fa719f83770e3939c332a1de55d5fd,9632:32",
+      "sources": [
+        "441:87554"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:19d396d6e37801201e4bd6a919eae095c1e3f24b,12946:364",
+      "sources": [
+        "3174:32704"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:1a2b21dd182f24bf634d9eab5f823d82ca353f47,9878:86",
+      "sources": [
+        "181:7187"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:1bf1a3b1546ce871f55046434c417213f769e81b,40269:103",
+      "sources": [
+        "5899:8207"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:1dcb77316dffc835a8292e2911980f619a6432a5,239:2982",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:1dd1206bfca8f15c8c9ab14732de9fb531c45a15,9368:102",
+      "sources": [
+        "2222:40727",
+        "2321:41039",
+        "2700:54482",
+        "4670:31772"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:20e827c4d364a1db6c53481f5def5c3d81f8e760,12448:76",
+      "sources": [
+        "4453:9975",
+        "5328:36720"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:244da9165a6358ba47cd366d21924d45a1c2368b,51:6",
+      "sources": [
+        "432:7354"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:262e583701110d29c2845e1698d245ce0f5c2eb9,239:2986",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:2d504b6fbd6b31741c565b4e36d97fb46d0dce9a,40269:43",
+      "sources": [
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:30d4782fe5610c85eb1d5ebee931bf3b2ac2b303,71:60",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:33668fc60d52cec481c8bf692fee7e4bbe81dc57,9878:83",
+      "sources": [
+        "181:6984",
+        "181:7187",
+        "4849:22442",
+        "4981:35477",
+        "6883:12164",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:34f335248740e367a81132d5ac8547ac8ec748d1,14907:6",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:3524f9a55c0b8d84c3ca00ad2cd070c4938cf07a,31223:1",
+      "sources": [
+        "441:30824",
+        "441:30825",
+        "441:87515",
+        "441:87523",
+        "441:87538",
+        "441:87542"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:3929fa79bda36cc45b9f8b5ed7699035bc636ed0,55872:271",
+      "sources": [
+        "173:252118"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:3b8988c7e31daa52170bd4cc99c1356421fface4,9641:93",
+      "sources": [
+        "441:87257",
+        "441:87262",
+        "441:87269"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:3c2993395e26c16256475a99c1669160afdc16cb,9878:84",
+      "sources": [
+        "181:7187",
+        "442:41777",
+        "444:31306"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:3f65de6d9d66d5047f240476b91ac6233289a599,16638:3",
+      "sources": [
+        "181:7773"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:427bc0089cfd2cccb9c699034689f8c24b29b09c,9878:82",
+      "sources": [
+        "441:30658",
+        "4888:36427"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:456779919c180ea70b7d83b1b0be6df1b02c311b,3649:18",
+      "sources": [
+        "2690:28941",
+        "441:87554"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:4567c36ace28cf85bb842c3ceb9f22cb9ed6cf2f,239:2984",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:47654be12be9875a266b3aed735a797f676d225f,9642:118",
+      "sources": [
+        "181:7066",
+        "181:7647",
+        "181:7701",
+        "2215:37678",
+        "2222:40727",
+        "2222:40786",
+        "2222:40787",
+        "2222:40793",
+        "2222:40795",
+        "2222:40806",
+        "2222:40844",
+        "3886:31998",
+        "441:86966",
+        "441:87277",
+        "4849:22442",
+        "4981:35477",
+        "6883:12164",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:49868913723dd4c68237f4083947148794c2bc0b,8929:145",
+      "sources": [
+        "441:18317"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:4b41028a3cce4026e140552f183498bb6d695c40,12946:285",
+      "sources": [
+        "2215:38934",
+        "2217:39710",
+        "2217:39711",
+        "2217:39719",
+        "2217:39745",
+        "2217:39787",
+        "2217:39809",
+        "4670:31772",
+        "8882:22011",
+        "9674:18820"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:503f1aa26f8208cf130b70109e7ea0e6e950e8c2,239:2969",
+      "sources": [
+        "4452:1249"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:52a2154b6822b71d12e8a2d688b0f00d80e14501,10014:21",
+      "sources": [
+        "2690:28927",
+        "2690:28928",
+        "2690:28941",
+        "2700:54482",
+        "441:87253",
+        "441:87257",
+        "441:87262",
+        "441:87269",
+        "442:18421",
+        "4453:9845",
+        "4670:31772",
+        "5328:36579"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:535f96d972a439cf7e382a7e7d8b07cfb4087d40,9872:33",
+      "sources": [
+        "181:7187",
+        "441:87361",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:5474da2422d43796583a291c44b23c145ee5b184,12946:393",
+      "sources": [
+        "5899:8230"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:54aeec62943fbe448d6cd1861e1cae01449ffd68,12946:334",
+      "sources": [
+        "441:87215",
+        "441:87232",
+        "4453:9845",
+        "4453:9846",
+        "4453:9866",
+        "4453:9888",
+        "4453:9909",
+        "4458:15345",
+        "5328:36579",
+        "5328:36580",
+        "5328:36600",
+        "5328:36622",
+        "5328:36643",
+        "5366:37281",
+        "5369:37460",
+        "5369:37601",
+        "545:122397"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:54f2d7aef456e6ac6f79ee41313f628c554b2ab3,426:3",
+      "sources": [
+        "2690:28927"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:555abac2a1c4b9527e392a7218d853244d13491f,239:2977",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:591846748270c461be5894d3a26fbc3bd3f01353,12946:275",
+      "sources": [
+        "441:87450",
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:5c35facb1b3d433a019cfefbd3bbc028cb12443d,9872:38",
+      "sources": [
+        "181:6984",
+        "181:7187"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:5fea8dc600cd23e744f5bc4de7aafb03e535343e,9642:119",
+      "sources": [
+        "181:7187",
+        "441:30519",
+        "441:87208",
+        "5899:8207"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:60d63652a94cc5761c97fd48b02bf2bc719aa734,12946:274",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:62555203f0e7d84c81f62786cdd6f0b904a81740,2:2",
+      "sources": [
+        "5727:23462"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:69eb221b09dc2b738747525bf8e609ffb721de23,239:2936",
+      "sources": [
+        "6359:9597"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:6b120c506c32756e0145673f9a0f34af55fe27d8,12946:389",
+      "sources": [
+        "441:87554"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:6fe91daec2f01f1853eaae0de96af2b35bc654fa,1196:2084",
+      "sources": [
+        "2523:34305"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:70f320c12a7f655e4a9f7bca4f6c669dfff5b895,239:2965",
+      "sources": [
+        "3397:13544",
+        "441:29741",
+        "441:29812",
+        "441:30015",
+        "441:30278",
+        "441:30678",
+        "441:30946",
+        "441:31062",
+        "4452:1249"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:75604e6264cdc6c7093a325be7854519efd51c64,4169:1",
+      "sources": [
+        "545:122397"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:7597c68c553c80f6f91316118b1351537397182e,40269:95",
+      "sources": [
+        "5328:36664"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:798342e4bfa54f0d792faa817ac7a0abad74bab7,9632:30",
+      "sources": [
+        "181:7647"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:7c0ab2e1264ccc0a77e070b8cfb800677ab4c1f0,17797:4",
+      "sources": [
+        "441:30730",
+        "441:87450",
+        "4453:9975",
+        "5328:36720"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:7edf961f09c3175675a0047cf70e9ea90cfe078c,239:3002",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:80a146cd404201d047307eff7af60014281309f8,40269:110",
+      "sources": [
+        "4967:36868",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8599ce04925609ce33a280ad8be2dd127162e9bd,9872:37",
+      "sources": [
+        "181:6984",
+        "181:7187",
+        "2215:38934",
+        "2222:40918",
+        "2364:20959",
+        "2690:28927",
+        "441:30519",
+        "441:87208",
+        "6353:895",
+        "756:59856"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:86884716e16d67f608baa1018ab75f2e081ac837,17797:3",
+      "sources": [
+        "2217:39819"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:86de20bc7c5367a83495d9d7460ce32ad62296bf,239:2946",
+      "sources": [
+        "441:18175",
+        "441:29741",
+        "441:29812",
+        "441:30015",
+        "441:30278",
+        "441:30678"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8a367f6f8cdc9cb0f531d0db7573804c86158359,9880:129",
+      "sources": [
+        "181:6984"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8d3a4b3511fdcef653844b0edfab37414d917c6a,9656:27",
+      "sources": [
+        "2217:39770"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8d3bedf0ac27ec18caea2d0f34d736c08b5fdc30,16827:1",
+      "sources": [
+        "441:30831",
+        "441:86963",
+        "441:86966"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8ea8c2578c97a417df3b67427455c9feb9cb9728,12946:294",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:8ece4ad8d50c75907b6a8eab50553121207f70ea,9642:121",
+      "sources": [
+        "181:7145",
+        "2370:33730",
+        "2690:28927",
+        "3145:18465",
+        "441:18517",
+        "441:30015",
+        "441:30440",
+        "441:65383",
+        "444:33617",
+        "4453:9845",
+        "5008:64328",
+        "5328:36579",
+        "5899:8153",
+        "5899:8207",
+        "6353:895",
+        "6784:24139",
+        "6883:12164",
+        "8523:42878"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:907466822906e0f6259b68273348ec32e009700f,12946:385",
+      "sources": [
+        "181:7755",
+        "181:7756",
+        "181:7760",
+        "441:87372",
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:9100ddf51df6c6eaa9d4e608cd9dbe4e70a0c22f,9910:6",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:942f4161badd0e037c7b0c9a310498817d50958f,239:2976",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:947c3f44a1b74fca7d51079f83aaece6bcc7c5bc,38660:47",
+      "sources": [
+        "3882:29674",
+        "441:18175",
+        "4453:9888",
+        "4458:15345",
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:95ffab83e963f07ebb5e7c5bb0a3b6bdbe1a948d,504:0",
+      "sources": [
+        "756:59790"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:96d0fd34bbcb08558cf6223571fdc039b6ec806f,239:2960",
+      "sources": [
+        "6359:9597"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:96d1f8ca246242fc019949ddb8c9cda4a0ff3640,12946:356",
+      "sources": [
+        "441:30668",
+        "444:31541",
+        "796:26176"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:a673defb9a3e2d5c5c54302cea34ac2556df9dbf,38659:9",
+      "sources": [
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:a8791f6f257c74164e0bce1a9e10ca46b3e571d7,9872:39",
+      "sources": [
+        "2690:29704",
+        "441:86966",
+        "441:87277",
+        "4453:9845",
+        "4849:22442",
+        "5328:36579"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:ab735845060503a97f8229c3f852802420803887,9878:85",
+      "sources": [
+        "756:59790"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:ae6ebc623e52c1835b4728663356f7eeeca022b6,40269:123",
+      "sources": [
+        "2215:38934",
+        "2222:40727",
+        "2321:41039"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:b1b60a9273ea6fb6de511c48c2f3e7c8bc6bd39b,12946:268",
+      "sources": [
+        "4453:9930",
+        "5328:36675"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:b5c337ae431c9e87d3de13f39271a1e8a8109a15,38659:1",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:ba39fefaba0ef1ceedca1b6d9b4366ab262380f2,1196:2167",
+      "sources": [
+        "2690:28927"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:c218c0d45900fad6669561cb361fb6c5816eb65d,38659:3",
+      "sources": [
+        "441:65821",
+        "5328:36664"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:c3780835d5fcf5dbf5d375aaa807ff96cc8957ce,12946:418",
+      "sources": [
+        "2370:33730"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:c4ace756e1eb7eeb9f40ccd1bb540b83ff113f3e,12946:269",
+      "sources": [
+        "4453:9930"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:d082e8f279656659abc1f3216a44644df1666d54,12946:291",
+      "sources": [
+        "441:87450",
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:d27aec0d62753b0deae01764730491ed151a01dc,9910:7",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:da4273b88dc48f91f8cf31f89c12ef2e9e2c9372,12507:44",
+      "sources": [
+        "441:87367"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:da4ec03d67719e86b9080d106655d3029cd06f30,12563:2",
+      "sources": [
+        "181:7647",
+        "2690:28927",
+        "2690:29704",
+        "441:65607",
+        "441:86966",
+        "441:87277",
+        "441:87361",
+        "4849:22442"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:da8843af8b9056472b482e792192667f1669b87b,12946:403",
+      "sources": [
+        "4967:36868"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:db35429ce2070ef2008d584d75ed2012a474703e,107:106",
+      "sources": [
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:db36c04f6cb1acf888d95cc8c404df839ae712da,1196:2085",
+      "sources": [
+        "4452:1249"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:db36c04f6cb1acf888d95cc8c404df839ae712da,431:320",
+      "sources": [
+        "2364:20959"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:db36c04f6cb1acf888d95cc8c404df839ae712da,736:431",
+      "sources": [
+        "2113:25302"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:dbd74aa45a38735080bc6319df6254ef1e980f89,12946:348",
+      "sources": [
+        "181:7647",
+        "6353:895"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:dbee2efd511447888ba53dfd33eea408c8632ad1,113:2",
+      "sources": [
+        "442:41777",
+        "444:31306"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:decbcde27c3960e15dee78de15d01c1cf9533791,1655:13",
+      "sources": [
+        "4888:36427"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e12e794af9b6591ea1de7ffe74666235d597ac20,12946:363",
+      "sources": [
+        "4453:9975",
+        "5328:36720",
+        "5899:8207"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e43ed11d75e0cef9af3fbb1e2a1de6713d005612,12946:293",
+      "sources": [
+        "5899:8153"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e58e5ee9c0a480fb3abd6535765128491eb4a4e2,239:2979",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e72e32e8b79eb2bea8f780ea4968a4feaa17345a,9656:29",
+      "sources": [
+        "441:87367",
+        "441:87450"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e826e0da23302902d2f4ae90acee7e5592ae514d,239:2961",
+      "sources": [
+        "441:30946",
+        "441:31062",
+        "6359:9597"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:e9b1e4ed16e3dacb1832467372b55e6f0be29742,239:2953",
+      "sources": [
+        "441:29741",
+        "441:29812",
+        "441:30015",
+        "441:30278",
+        "441:30946",
+        "441:31062"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:ea7e2e33dee982becfa81de762f1a5ba123a8a88,239:2955",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:eb6f4bce322c402767fb3836bbf9ea696b466fd5,9875:81",
+      "sources": [
+        "441:65806"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:f3dfb9a2ddeb5f5696393d5bb9c091b9d71b01f3,239:2988",
+      "sources": [
+        "441:29812",
+        "441:30015"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:f74e9c5d8ad5c1137f604309c61de98d0b944a45,14907:4",
+      "sources": [
+        "181:7766"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:f91fce5c662bfd05a3428c694c9b0dbbddfcf455,8929:147",
+      "sources": [
+        "441:18317"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:f93c0ad9f1d046b0d76f307d8b2f4b5c03d87fc8,38659:4",
+      "sources": [
+        "442:18449",
+        "442:18484",
+        "442:18485",
+        "442:18491",
+        "5677:21911"
+      ]
+    },
+    {
+      "code": "external-style-reference",
+      "message": "Referenced style is absent from local foundations; external resolution was not tested",
+      "targetId": "S:fb049fe6388b0152124816bc6da760bac783f518,12946:460",
+      "sources": [
+        "5899:8230"
+      ]
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "34:2824",
+      "key": "859fd5d455c3beb533e89194d3e4304daa45b711",
+      "name": "checkmark_alt",
+      "remote": false,
+      "instanceId": "795:26012",
+      "instanceName": "checkmark_alt",
+      "fromId": "795:26010",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "34:3721",
+      "key": "50863f2d74164d52ab60f9b87d340bc56db9fd98",
+      "name": "search",
+      "remote": false,
+      "instanceId": "830:35554",
+      "instanceName": "Search icon",
+      "fromId": "830:35557",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:21780",
+      "key": "6d8b1e6f2dcdcb735aa4faa3627d1599f3f19423",
+      "name": "mainTabs/small/Default/Off",
+      "remote": false,
+      "instanceId": "3145:18473",
+      "instanceName": "mainTabs/small",
+      "fromId": "3145:18465",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:21780",
+      "key": "6d8b1e6f2dcdcb735aa4faa3627d1599f3f19423",
+      "name": "mainTabs/small/Default/Off",
+      "remote": false,
+      "instanceId": "3145:18474",
+      "instanceName": "mainTabs/small",
+      "fromId": "3145:18465",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "2215:39575",
+      "key": "d88cce3b3584fdb83476d0904085ee79ef4e892d",
+      "name": "variant=very-short",
+      "remote": false,
+      "ownerId": "2215:39574",
+      "ownerKey": "ff403f6f37ebd8a8fccbede2dff89c418fec8d70",
+      "ownerName": "address/variants",
+      "instanceId": "2215:39592",
+      "instanceName": "address/variants",
+      "fromId": "2215:37678",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "201:72",
+      "key": "082f425752afc3ec2102a6f1dfe0c78443356062",
+      "name": "smashed-can",
+      "remote": false,
+      "instanceId": "441:87203",
+      "instanceName": "smashed-can",
+      "fromId": "441:87200",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:87587",
+      "key": "daa3ba16d39821711e93d7f5dc20568d2b6847d1",
+      "name": "header/close",
+      "remote": false,
+      "instanceId": "441:87295",
+      "instanceName": "header",
+      "fromId": "441:87277",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:30456",
+      "key": "e1f3d79033345d128b1450649e59866075c3d3a8",
+      "name": "sliderTabs/small",
+      "remote": false,
+      "instanceId": "441:87306",
+      "instanceName": "Frame 6975",
+      "fromId": "441:87277",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:30456",
+      "key": "e1f3d79033345d128b1450649e59866075c3d3a8",
+      "name": "sliderTabs/small",
+      "remote": false,
+      "instanceId": "441:87316",
+      "instanceName": "Frame 6975",
+      "fromId": "441:87277",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "441:21782",
+      "key": "a515b73e298eefc48d6a0fe6732a77617a0dca12",
+      "name": "button-icons/small-dropdown-down",
+      "remote": false,
+      "instanceId": "441:30738",
+      "instanceName": "Dropdown Icon",
+      "fromId": "441:30730",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    },
+    {
+      "code": "unresolved-dependency",
+      "message": "Representative definition has a dependency absent from inventory",
+      "id": "6920:14333",
+      "key": "528a1570ced9dcd1f8a5406608b6993685cac265",
+      "name": "chipBase/red",
+      "remote": false,
+      "instanceId": "7144:24020",
+      "instanceName": "chipBase",
+      "fromId": "7144:24023",
+      "inspection": "representative-definition",
+      "resolution": "unresolved",
+      "importVerified": false
+    }
+  ],
+  "counts": {
+    "pages": 27,
+    "componentSets": 194,
+    "standaloneComponents": 1636,
+    "families": 1830,
+    "variants": 1017,
+    "definitions": 2847,
+    "collections": 3,
+    "variables": 464,
+    "styles": {
+      "text": 55,
+      "paint": 0,
+      "effect": 12,
+      "grid": 0
+    },
+    "dependencyEdges": 815
+  },
+  "valid": true
+}

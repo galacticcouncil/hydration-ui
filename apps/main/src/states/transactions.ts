@@ -1,5 +1,6 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
 import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import type { Account } from "@galacticcouncil/web3-connect"
 import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
@@ -10,6 +11,8 @@ import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
 
+import i18n from "@/i18n"
+import { DEMO_WALLET_ENABLED } from "@/modules/onramp/demo/demoWallet.config"
 import {
   AnyTransaction,
   TxBestBlocksStateResult,
@@ -50,6 +53,7 @@ export type TExecutedAmount = {
 }
 
 export type TransactionCommon = {
+  signingAccount?: Account
   title?: string
   description?: string
   fee?: TransactionFee
@@ -92,7 +96,7 @@ type MultiTransactionConfig = (
   beforeNext?: () => Promise<void>
 }
 
-interface MultiTransactionInput {
+interface MultiTransactionInput extends TransactionCommon {
   tx: MultiTransactionConfig[]
 }
 
@@ -304,6 +308,9 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
         const newTransaction: Transaction = {
           id: uuid(),
           ...transaction,
+          ...(DEMO_WALLET_ENABLED
+            ? { initialError: i18n.t("onramp:demoWallet.noSigning") }
+            : {}),
           meta,
           onSubmitted: (txHash) => {
             options?.onSubmitted?.(txHash)

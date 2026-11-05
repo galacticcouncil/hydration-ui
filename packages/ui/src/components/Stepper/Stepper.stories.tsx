@@ -80,3 +80,36 @@ export const Compact: Story = {
     compact: true,
   },
 }
+
+const InteractiveTemplate = (
+  args: React.ComponentPropsWithoutRef<typeof Stepper>,
+) => {
+  const [activeStepIndex, setActiveStepIndex] = useState(0)
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Stepper
+        {...args}
+        activeStepIndex={activeStepIndex}
+        onStepClick={setActiveStepIndex}
+      />
+    </TooltipProvider>
+  )
+}
+
+export const InteractiveCompact: Story = {
+  render: InteractiveTemplate,
+  args: {
+    steps: ["Requested", "On the way", "At your bank"],
+    activeStepIndex: 0,
+    compact: true,
+  },
+}
+
+export const InteractiveExpanded: Story = {
+  render: InteractiveTemplate,
+  args: {
+    ...InteractiveCompact.args,
+    compact: false,
+  },
+}

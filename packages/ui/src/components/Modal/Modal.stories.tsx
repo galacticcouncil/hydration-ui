@@ -145,6 +145,20 @@ export const WithTopContent: Story = {
   },
 }
 
+export const WithBottomContent: Story = {
+  render: WithHeaderAndFooterTemplate,
+  args: {
+    variant: "popup",
+    bottomContent: (
+      <Flex justify="center" pt="m" pb="l">
+        <Button size="small" variant="secondary">
+          Outside the modal surface
+        </Button>
+      </Flex>
+    ),
+  },
+}
+
 export const WithCustomHeader: Story = {
   render: WithCustomHeaderTemplate,
 }

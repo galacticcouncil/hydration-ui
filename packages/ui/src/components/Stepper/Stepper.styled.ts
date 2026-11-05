@@ -2,10 +2,12 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 
 import { Box } from "@/components/Box"
+import { ButtonTransparent } from "@/components/Button"
 import { Flex } from "@/components/Flex"
 import { StepState } from "@/components/Stepper"
 import { Text } from "@/components/Text"
 import { mq } from "@/theme"
+import { pxToRem } from "@/utils"
 
 export const SStepperContainer = styled(Box)`
   margin: 0 auto;
@@ -17,6 +19,23 @@ export const SStepContainer = styled(Box)`
   flex-direction: column;
   align-items: center;
   gap: ${({ theme }) => theme.space.xs};
+`
+
+export const SStepButton = styled(ButtonTransparent)`
+  position: relative;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: ${({ theme }) => theme.space.xs};
+  min-width: ${pxToRem(32)};
+  min-height: ${pxToRem(32)};
+  color: ${({ theme }) => theme.buttons.primary.medium.rest};
+  border-radius: ${({ theme }) => theme.radii.full};
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: ${({ theme }) => theme.details.separators};
+    }
+  }
 `
 
 export const SStepLabel = styled(Text)(
@@ -48,11 +67,13 @@ export const SExpandedStepperLayout = styled(Box)(
       position: relative;
     }
 
-    & > div:first-of-type > p {
+    & > div:first-of-type > p,
+    & > button:first-of-type > span:last-child:not(:only-child) {
       left: ${!maxWidth || maxWidth === "100%" ? "0" : "auto"};
     }
 
-    & > div:last-of-type > p {
+    & > div:last-of-type > p,
+    & > button:last-of-type > span:last-child:not(:only-child) {
       right: ${!maxWidth || maxWidth === "100%" ? "0" : "auto"};
     }
 

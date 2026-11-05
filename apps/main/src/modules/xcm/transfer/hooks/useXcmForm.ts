@@ -12,7 +12,7 @@ import {
 import { useXcmQueryParams } from "@/modules/xcm/transfer/hooks/useXcmQueryParams"
 import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
 
-type UseXcmFormOptions = {
+export type UseXcmFormOptions = {
   syncWithQueryParams?: boolean
   defaultValues?: Partial<XcmFormValues>
 }
@@ -34,6 +34,7 @@ const resolveXcmFormDefaults = ({
   }
 
   const sourceOnlyPreset =
+    !defaultValues &&
     !!parsedQueryParams?.srcChain &&
     parsedQueryParams.destChain === undefined &&
     parsedQueryParams.destAsset === undefined

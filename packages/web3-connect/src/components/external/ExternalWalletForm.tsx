@@ -32,8 +32,9 @@ import { ExternalWalletOption } from "@/components/external/ExternalWalletOption
 import { useRecentExternalWallets } from "@/components/external/RecentExternalWallets.store"
 import { WalletProviderType } from "@/config/providers"
 import { WalletMode } from "@/config/wallet"
+import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useWeb3Connect, useWeb3Enable } from "@/hooks"
-import { toStoredAccount } from "@/utils"
+import { toAccount, toStoredAccount } from "@/utils"
 import { addressToPublicKey } from "@/utils/publicKey"
 import { getWalletModeByAddress } from "@/utils/wallet"
 import { ExternalWallet, getWallet } from "@/wallets"
@@ -65,6 +66,7 @@ const toRecentEntry = (address: string, known: Address[]): Address | null => {
 
 const useExternalWalletConnection = () => {
   const { enable } = useWeb3Enable()
+  const { isPage, onAccountSelect } = useWeb3ConnectContext()
   const { setAccount, toggle } = useWeb3Connect(
     useShallow(pick(["setAccount", "toggle"])),
   )
@@ -84,11 +86,15 @@ const useExternalWalletConnection = () => {
       if (!account) return false
 
       addRecent(normalizedAddress)
-      setAccount(toStoredAccount(account))
-      toggle()
+      if (isPage) {
+        onAccountSelect(toAccount(toStoredAccount(account)))
+      } else {
+        setAccount(toStoredAccount(account))
+        toggle()
+      }
       return true
     },
-    [addRecent, enable, setAccount, toggle, wallet],
+    [addRecent, enable, setAccount, toggle, wallet, isPage, onAccountSelect],
   )
 
   return { connectExternalWallet }

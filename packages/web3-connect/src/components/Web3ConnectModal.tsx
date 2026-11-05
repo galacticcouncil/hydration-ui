@@ -48,6 +48,7 @@ type ControlledProps = {
   readonly papi: TypedApi<typeof hydration>
   readonly open: boolean
   readonly mode: WalletMode
+  readonly accountFilter?: (account: Account) => boolean
   readonly meta?: Web3ConnectModalMeta
   readonly onOpenChange: (open: boolean) => void
   readonly onAccountSelect: (account: Account) => void
@@ -61,11 +62,37 @@ type UncontrolledProps = {
 type Props = ControlledProps | UncontrolledProps
 
 type Web3ConnectModalContentProps = Props & {
+  readonly isPage?: boolean
+  readonly isEmbedded?: boolean
+  readonly walletFirst?: boolean
+  readonly walletListWidth?: number
+  keepSplitOpen?: boolean
+  readonly walletListVariant?: Web3ConnectContextType["walletListVariant"]
+  readonly accountFilter?: (account: Account) => boolean
+  readonly accountPanel?: Web3ConnectContextType["accountPanel"]
+  readonly customSource?: Web3ConnectContextType["customSource"]
+  readonly onBack?: () => void
   readonly setModalContentWidth: (width: string) => void
 }
 
-const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
-  const { neckwork, papi, setModalContentWidth } = props
+export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
+  props,
+) => {
+  const {
+    neckwork,
+    papi,
+    setModalContentWidth,
+    isPage,
+    isEmbedded,
+    keepSplitOpen,
+    walletFirst,
+    walletListWidth,
+    walletListVariant,
+    onBack,
+    accountFilter,
+    customSource,
+    accountPanel,
+  } = props
 
   const isControlled =
     "open" in props &&
@@ -97,6 +124,16 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
   const context = useMemo<Web3ConnectContextType>(
     () => ({
       isControlled,
+      isPage,
+      isEmbedded,
+      keepSplitOpen,
+      walletFirst,
+      walletListWidth,
+      walletListVariant,
+      accountFilter,
+      customSource,
+      accountPanel,
+      onBack,
       page,
       setPage,
       neckwork,
@@ -112,6 +149,16 @@ const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (props) => {
       neckwork,
       onAccountSelect,
       isControlled,
+      isPage,
+      isEmbedded,
+      keepSplitOpen,
+      walletFirst,
+      walletListWidth,
+      walletListVariant,
+      accountFilter,
+      customSource,
+      accountPanel,
+      onBack,
       mode,
       meta,
       papi,

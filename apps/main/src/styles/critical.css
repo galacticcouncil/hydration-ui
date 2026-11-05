@@ -1,3 +1,11 @@
+html:root {
+  scrollbar-width: none;
+}
+
+html:root::-webkit-scrollbar {
+  display: none;
+}
+
 html.dark body {
   background: #030816;
   color: #fff;

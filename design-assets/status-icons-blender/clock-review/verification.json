@@ -1,0 +1,16 @@
+{
+  "source": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/revisions/before-inbox-lines-and-clock-2026-10-22/status-icons.blend",
+  "sourceSha256": "2adc99f2f7d1032d1615111f8451d66b0b01466373cfec6b1cb7c6d79f4b4217",
+  "output": "/Users/samborek/Documents/AntigravityTests/hydration-ui copy/.worktrees/deposit-wallet-v2/design-assets/status-icons-blender/status-icons.blend",
+  "preservedScenes": [
+    "01 - Hourglass",
+    "02 - Review Document"
+  ],
+  "preservedObjects": 39,
+  "beforeDigest": "abad1b8dccf8847da05d4ba03833019f96d0ba18be5007a63f65ba2c91b7787e",
+  "reopenedDigest": "abad1b8dccf8847da05d4ba03833019f96d0ba18be5007a63f65ba2c91b7787e",
+  "priorDataUnchanged": true,
+  "inboxBlueLines": 2,
+  "newScene": "04 - Review Document Clock",
+  "nativePaletteAndLighting": true
+}

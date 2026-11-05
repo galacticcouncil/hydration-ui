@@ -7,6 +7,7 @@ import { LINKS } from "@/config/navigation"
 import { Content, ContentContainer } from "@/modules/layout/components/Content"
 import { useSubNav } from "@/modules/layout/hooks/useSubNav"
 import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
+import { PortfolioTabMenu } from "@/modules/portfolio/deposits/PortfolioTabMenu"
 
 type Props = {
   readonly actions?: ReactNode
@@ -16,6 +17,7 @@ type Props = {
 export const SubNavBar: FC<Props> = ({ actions, ignoreCurrentSearch }) => {
   const isMatch = useMatchRoute()
   const isLiquidityPage = !!isMatch({ to: LINKS.liquidity })
+  const isPortfolioPage = !!isMatch({ to: LINKS.portfolio, fuzzy: true })
 
   const { items: subNav, hasSubNav } = useSubNav()
 
@@ -38,6 +40,11 @@ export const SubNavBar: FC<Props> = ({ actions, ignoreCurrentSearch }) => {
             {hasSubNav &&
               (isLiquidityPage ? (
                 <LiquidityTabMenu
+                  items={subNav}
+                  ignoreCurrentSearch={ignoreCurrentSearch}
+                />
+              ) : isPortfolioPage ? (
+                <PortfolioTabMenu
                   items={subNav}
                   ignoreCurrentSearch={ignoreCurrentSearch}
                 />
