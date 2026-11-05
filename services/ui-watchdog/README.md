@@ -57,7 +57,11 @@ routes from the build's route tree, referral/deep paths and query variants sampl
 routing behavior; they cannot attest every hosting rule or country/cookie split.
 
 Rendered checks visit the configured routes in random order and exercise link
-navigation. Body jobs finish before navigation or page closure. Service workers
+navigation. Body jobs finish before navigation or page closure. Netlify's bot
+check (a 403 proof-of-work page, frequent on Tor exits) is passed like a visitor
+would: the reloaded page is verified as usual and the challenge is listed under
+`challenges`; its inline script is Netlify's and is not hashed. A challenge that
+never completes is a failure. Service workers
 are disabled in these contexts. Built service-worker files are covered only if
 present in the reference inventory: an unreferenced rogue `/sw.js`, an existing
 visitor's cache, wallet-only interactions and runtime data are not comprehensively

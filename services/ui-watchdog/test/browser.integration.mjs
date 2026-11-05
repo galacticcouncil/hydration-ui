@@ -652,3 +652,103 @@ test(
     assert.deepEqual(result.issues, [])
   },
 )
+
+// netlify answers some sessions (tor exits) with a 403 proof-of-work page that
+// posts /.netlify/submit-challenge and reloads into the real page
+const challengePage = (extra = "") =>
+  `<!doctype html><title>app</title><p>We are verifying your connection. Security by <a href=https://www.netlify.com/security/>Netlify</a></p>${extra}<script>fetch("\\/.netlify\\/submit-challenge",{method:"POST"}).then(()=>location.reload())</script>`
+
+function challengeHandler({ pass = true, page = challengePage() } = {}) {
+  return (req, res, p) => {
+    if (req.url === "/.netlify/submit-challenge") {
+      res.writeHead(200, pass ? { "set-cookie": "nf=passed; Path=/" } : {})
+      res.end("{}")
+      return true
+    }
+    if (req.url === "/evil.js") {
+      res.writeHead(200, { "content-type": "application/javascript" })
+      res.end("window.drained = true")
+      return true
+    }
+    if (p !== "/index.html" || /nf=passed/.test(req.headers.cookie || ""))
+      return false
+    res.writeHead(403, { server: "Netlify", "content-type": "text/html" })
+    res.end(page)
+    return true
+  }
+}
+
+test(
+  "a Netlify challenge is passed and the real page behind it is verified",
+  { timeout: 30000 },
+  async (t) => {
+    const f = await browserFixture(t, challengeHandler())
+    const result = await probeBrowser(f.c, f.reference, f.root, f.options)
+    assert.deepEqual(result.issues, [])
+    assert.deepEqual(result.challenges, ["/"])
+    assert(
+      result.documents.some(
+        (d) => d.sha256 === f.root && d.matchedSha === f.reference.sha,
+      ),
+      "the reloaded document must be hashed against the reference",
+    )
+  },
+)
+
+test(
+  "a Netlify challenge that never completes is still a failure",
+  { timeout: 30000 },
+  async (t) => {
+    const f = await browserFixture(t, challengeHandler({ pass: false }))
+    const result = await probeBrowser(f.c, f.reference, f.root, f.options)
+    assert(
+      result.issues.some(
+        (i) =>
+          i.kind === "browser-error" &&
+          /Netlify challenge did not complete/.test(i.message),
+      ),
+      JSON.stringify(result.issues),
+    )
+  },
+)
+
+test(
+  "a 403 that is not Netlify's challenge is still a failed fetch",
+  { timeout: 60000 },
+  async (t) => {
+    const f = await browserFixture(t, (req, res, p) => {
+      if (p !== "/index.html") return false
+      res.writeHead(403, { server: "Netlify", "content-type": "text/html" })
+      res.end("<!doctype html><p>Forbidden</p>")
+      return true
+    })
+    const result = await probeBrowser(f.c, f.reference, f.root, f.options)
+    assert(
+      result.issues.some(
+        (i) => i.kind === "fetch-failed" && i.message === "HTTP 403",
+      ),
+      JSON.stringify(result.issues),
+    )
+    assert.deepEqual(result.challenges, [])
+  },
+)
+
+test(
+  "a challenge page cannot load unapproved same-origin scripts unnoticed",
+  { timeout: 30000 },
+  async (t) => {
+    const f = await browserFixture(
+      t,
+      challengeHandler({
+        page: challengePage('<script src="/evil.js"></script>'),
+      }),
+    )
+    const result = await probeBrowser(f.c, f.reference, f.root, f.options)
+    assert(
+      result.issues.some(
+        (i) => i.kind === "unexpected-resource" && i.path === "/evil.js",
+      ),
+      JSON.stringify(result.issues),
+    )
+  },
+)
