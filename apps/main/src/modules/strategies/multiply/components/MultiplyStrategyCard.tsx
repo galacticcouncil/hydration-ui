@@ -3,65 +3,53 @@ import { useTranslation } from "react-i18next"
 import { ReserveApyProvider } from "@/modules/money-market/apy/ReserveApyProvider"
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
-import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
-import { useMultiplyPairMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
-import { useAssets } from "@/providers/assetsProvider"
+import { MultiplyLogo } from "@/modules/strategies/multiply/components/MultiplyLogo"
+import { useMultiplyPairsMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 
-type MultiplyStrategyCardProps = {
-  pair: MultiplyPair
+const best = (values: (number | null | undefined)[]) => {
+  const known = values.filter((v): v is number => v !== null && v !== undefined)
+  return known.length ? Math.max(...known) : null
 }
 
-const MultiplyStrategyCardContent: React.FC<MultiplyStrategyCardProps> = ({
-  pair,
-}) => {
+const MultiplyStrategyCardContent: React.FC = () => {
   const { t } = useTranslation(["strategies", "common"])
-  const { getAssetWithFallback } = useAssets()
-  const { data, isLoading } = useMultiplyPairMetrics(pair)
+  const pairs = useMultiplyPairsMetrics()
 
-  const collateral = getAssetWithFallback(pair.collateralAssetId).symbol
-  const debt = getAssetWithFallback(pair.debtAssetId).symbol
-  const maxLeverage = t("cards.multiply.leverage", {
-    value: data?.maxLeverage ?? 0,
-  })
+  const isLoading = pairs.some((p) => p.isLoading)
+  const maxApy = best(pairs.map((p) => p.data?.maxNetApy))
+  const maxLeverage = best(pairs.map((p) => p.data?.maxLeverage))
 
   return (
     <StrategyCard
-      logoId={pair.collateralAssetId}
-      title={t("cards.multiply.title", { collateral, debt })}
+      logo={<MultiplyLogo size={56} />}
+      title={t("multiply.name")}
       stats={[
         {
-          label: t("cards.multiply.maxApy"),
+          label: t("cards.multiply.upToApy"),
           value:
-            data && data.maxNetApy !== null
-              ? t("common:percent", { value: data.maxNetApy * 100 })
+            maxApy !== null
+              ? t("common:percent", { value: maxApy * 100 })
               : "-",
-          isLoading,
+          isLoading: maxApy === null && isLoading,
         },
         {
-          label: t("cards.multiply.maxLeverage"),
-          value: data ? maxLeverage : "-",
-          isLoading: !data && isLoading,
+          label: t("cards.multiply.upToLeverage"),
+          value:
+            maxLeverage !== null
+              ? t("cards.multiply.leverage", { value: maxLeverage })
+              : "-",
+          isLoading: maxLeverage === null && isLoading,
         },
       ]}
-      badges={[
-        StrategyBadgeType.Leverage,
-        ...(data?.unavailableReason ? [StrategyBadgeType.Unavailable] : []),
-      ]}
-      description={t("cards.multiply.description", {
-        collateral,
-        debt,
-        max: data ? data.maxLeverage.toFixed(1) : "-",
-      })}
-      link="/strategies/multiply/$pairId"
-      linkParams={{ pairId: pair.slug }}
+      badges={[StrategyBadgeType.Leverage]}
+      description={t("cards.multiply.description")}
+      link="/strategies/multiply"
     />
   )
 }
 
-export const MultiplyStrategyCard: React.FC<MultiplyStrategyCardProps> = ({
-  pair,
-}) => (
+export const MultiplyStrategyCard: React.FC = () => (
   <ReserveApyProvider>
-    <MultiplyStrategyCardContent pair={pair} />
+    <MultiplyStrategyCardContent />
   </ReserveApyProvider>
 )

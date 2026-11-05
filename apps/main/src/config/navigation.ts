@@ -72,7 +72,7 @@ export const LINKS = {
   strategiesBil: "/strategies/bil-vault",
   strategiesJuicer: "/strategies/juicer",
   strategiesHollarBonds: "/strategies/hollar-bonds",
-  strategiesMultiply: "/strategies/multiply/$pairId",
+  strategiesMultiply: "/strategies/multiply",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -175,8 +175,6 @@ export const NAVIGATION: NavigationItem[] = [
       {
         key: "strategiesMultiply",
         to: LINKS.strategiesMultiply,
-        // ponytail: the only pair; list the pairs here when there are more
-        params: { pairId: "prime-hollar" },
         icon: GoalIcon,
       },
     ],

@@ -12,6 +12,8 @@ const reserve = {
   availableDebtCeilingUsd: "0",
   borrowCap: "0",
   totalDebt: "0",
+  supplyCap: "0",
+  totalLiquidity: "0",
 }
 
 const prime = {
@@ -63,6 +65,18 @@ describe("getMultiplyUnavailableReason", () => {
     ).toBe("borrowCap")
     expect(
       getMultiplyUnavailableReason(prime, { ...hollar, totalDebt: "100" }),
+    ).toBeNull()
+  })
+
+  it("flags a reached collateral supply cap, and ignores an uncapped reserve", () => {
+    expect(
+      getMultiplyUnavailableReason(
+        { ...prime, supplyCap: "100", totalLiquidity: "100" },
+        hollar,
+      ),
+    ).toBe("supplyCap")
+    expect(
+      getMultiplyUnavailableReason({ ...prime, totalLiquidity: "100" }, hollar),
     ).toBeNull()
   })
 })
