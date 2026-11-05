@@ -173,6 +173,21 @@ export async function deadline(
   }
 }
 
+export async function responseBody(response, timeoutMs) {
+  return deadline(
+    (async () => {
+      // chromium can return partial decoded bytes after a failed transfer.
+      const bytes = await response.body()
+      const failure = response.request().failure()
+      if (failure)
+        throw new Error(`Browser response failed: ${failure.errorText}`)
+      await response.finished()
+      return bytes
+    })(),
+    timeoutMs,
+  )
+}
+
 const blankPage =
   '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body></body></html>'
 
@@ -215,7 +230,7 @@ async function readResponse(response, { timeoutMs, maxBytes }) {
   const headers = headersOf(await response.headersArray())
   if (Number(headers.get("content-length")) > maxBytes)
     throw new Error("Response exceeds size limit")
-  const bytes = await deadline(response.body(), timeoutMs)
+  const bytes = await responseBody(response, timeoutMs)
   if (bytes.length > maxBytes) throw new Error("Response exceeds size limit")
   return { status: response.status(), headers, bytes }
 }
@@ -298,7 +313,8 @@ export async function chromeTransport(
   try {
     const context = await browser.newContext({ serviceWorkers: "block" })
     const blanks = new WeakSet(),
-      pages = new Map()
+      pages = new Map(),
+      requested = new Set()
     await chromeRoutes(context, async (route) => {
       const r = route.request(),
         blank = blanks.has(r.frame().page())
@@ -314,12 +330,12 @@ export async function chromeTransport(
       return continueChrome(route)
     })
     // one blank page per referer path, so requests carry that route's referer.
-    const blankAt = (path) => {
+    const blankAt = (path, fresh = false) => {
       const url = new URL(path, c.target)
       if (url.origin !== new URL(c.target).origin)
         throw new Error("Referer must be on the target origin")
       const key = url.pathname + url.search
-      if (!pages.has(key)) {
+      if (fresh || !pages.has(key)) {
         const pending = (async () => {
           const page = await chromePage(context, c)
           blanks.add(page)
@@ -329,6 +345,7 @@ export async function chromeTransport(
           await page.goto(url.href)
           return page
         })()
+        if (fresh) return pending
         pages.set(key, pending)
         pending.catch(() => pages.delete(key))
       }
@@ -349,22 +366,29 @@ export async function chromeTransport(
         /\.[a-z0-9]+$/i.test(url.pathname) &&
         !/\.html?$/.test(url.pathname)
       ) {
-        const page = await blankAt(referer)
-        if (/\/favicon\.ico$/.test(url.pathname)) {
-          const reading = cdpResponse(page, url.href, limits)
-          try {
-            await requestFrom(page, url)
-            return await reading.done
-          } finally {
-            reading.off()
+        // a failed module remains in the page's module map, even on retry.
+        const fresh = requested.has(url.href)
+        requested.add(url.href)
+        const page = await blankAt(referer, fresh)
+        try {
+          if (/\/favicon\.ico$/.test(url.pathname)) {
+            const reading = cdpResponse(page, url.href, limits)
+            try {
+              await requestFrom(page, url)
+              return await reading.done
+            } finally {
+              reading.off()
+            }
           }
+          const waiting = page.waitForResponse((r) => r.url() === url.href, {
+            timeout: timeoutMs,
+          })
+          waiting.catch(() => {})
+          await requestFrom(page, url)
+          return await readResponse(await waiting, limits)
+        } finally {
+          if (fresh) await page.close()
         }
-        const waiting = page.waitForResponse((r) => r.url() === url.href, {
-          timeout: timeoutMs,
-        })
-        waiting.catch(() => {})
-        await requestFrom(page, url)
-        return await readResponse(await waiting, limits)
       }
       const page = await chromePage(context, c)
       try {
