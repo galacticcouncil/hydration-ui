@@ -1,5 +1,5 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY, neckwork } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, SizedHex } from "polkadot-api"
 import { first, isBigInt, isNumber, isObjectType } from "remeda"

@@ -1,7 +1,26 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
+import { z } from "zod/v4"
 
-import { LINKS } from "@/config/navigation"
+import { getPageMeta } from "@/config/navigation"
+import { MoneyMarketDashboard } from "@/modules/money-market/dashboard/MoneyMarketDashboard"
+import { MoneyMarketDashboardSkeleton } from "@/modules/money-market/MoneyMarketSkeletons"
+
+const searchSchema = z.object({
+  supplyCategory: z
+    .enum(["stable", "dot", "eth", "btc", "sol", "other"])
+    .optional()
+    .catch(undefined),
+})
 
 export const Route = createFileRoute("/borrow/")({
-  component: () => Navigate({ to: LINKS.borrowDashboard }),
+  component: MoneyMarketDashboard,
+  pendingComponent: MoneyMarketDashboardSkeleton,
+  validateSearch: searchSchema,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("borrowDashboard", i18n.t),
+  }),
 })

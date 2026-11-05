@@ -1,5 +1,5 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { tx } from "@galacticcouncil/sdk-next"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"

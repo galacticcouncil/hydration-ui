@@ -1,45 +1,45 @@
 import {
-  ComputedUserReserveData,
-  ExtendedFormattedUser,
-  getAssetCapData,
-  useProtocolActionToasts,
-} from "@galacticcouncil/money-market/hooks"
-import { queryKeysFactory } from "@galacticcouncil/money-market/ui-config"
-import { CustomToastAction } from "@galacticcouncil/money-market/ui-config"
+  buildSetUsageAsCollateral,
+  buildSupply,
+  hasBlocker,
+} from "@galacticcouncil/money-market/core"
 import {
-  getAssetCollateralType,
-  isShowIsolationWarning,
-} from "@galacticcouncil/money-market/utils"
-import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
+  moneyMarketKeys,
+  useAccountSummary,
+  useMoneyMarket,
+  useSupplyAssessment,
+} from "@galacticcouncil/money-market/react"
+import type { ActionPlan } from "@galacticcouncil/money-market/types"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import Big from "big.js"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { first, isNullish } from "remeda"
+import { Address, parseUnits } from "viem"
 import z from "zod"
 
-import { healthFactorQuery } from "@/api/aave"
 import { TAssetData, TErc20AToken } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
-import {
-  lendingPoolAddressProvider,
-  useBorrowAssetsApy,
-  useBorrowDisableCollateralTxs,
-  userBorrowSummaryQueryKey,
-  useSetUsageAsCollateralTx,
-} from "@/api/borrow"
+import { useBorrowAssetsApy } from "@/api/borrow"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellWithTxQuery } from "@/api/trade"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
+import {
+  fetchFeePerGas,
+  planToTransaction,
+} from "@/modules/money-market/actions/planToTransaction"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import {
   useFormMaxBalanceWithFee,
   ValidateFormMaxBalanceWithFee,
 } from "@/modules/transactions/hooks/useFormMaxBalanceWithFee"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
+import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -50,25 +50,30 @@ export type TSupplyIsolatedLiquidityFormValues = {
   asset: TAssetData
 }
 
+const isAsset = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+
 export const useSupplyIsolatedLiquidity = ({
   initialAsset,
   aToken,
-  userBorrowData,
-  userReserve,
-  onSubmitted,
   supplyAssetId,
+  asset,
+  decimals,
+  onSubmitted,
 }: {
-  supplyAssetId: string
   initialAsset: TAssetData
   aToken: TErc20AToken
-  userBorrowData: ExtendedFormattedUser
-  userReserve: ComputedUserReserveData
+  supplyAssetId: string
+  /** The reserve's underlying asset. */
+  asset: Address
+  decimals: number
   onSubmitted: () => void
 }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation("borrow")
   const rpc = useRpcProvider()
-  const { sdk, isReady } = rpc
+  const { sdk, isReady, papi, evm } = rpc
   const { account } = useAccount()
+  const { market } = useMoneyMarket()
+  const user = useUserAddress()
   const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
@@ -79,8 +84,6 @@ export const useSupplyIsolatedLiquidity = ({
     },
   } = useTradeSettings()
   const queryClient = useQueryClient()
-  const { usageAsCollateralEnabledOnUser, reserve, underlyingAsset } =
-    userReserve
 
   const { data: feeEstimationSwapTx } = useQuery({
     enabled:
@@ -101,32 +104,12 @@ export const useSupplyIsolatedLiquidity = ({
         ),
       )
 
-      const swapTx = await sdk.tx
+      return sdk.tx
         .trade(swap)
         .withSlippage(swapSlippage)
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())
-
-      const txs = [swapTx]
-
-      if (!usageAsCollateralEnabledOnUser) {
-        const disableCollateralsTxs = await getDisableCollateralsTxs()
-
-        txs.push(...(disableCollateralsTxs ?? []))
-
-        const enableCollateralTx = await getSetUsageAsCollateralTx(
-          underlyingAsset,
-          true,
-        )
-        txs.push(enableCollateralTx)
-      }
-
-      return txs.length > 1
-        ? rpc.papi.tx.Utility.batch_all({
-            calls: txs.map((tx) => tx.decodedCall),
-          })
-        : swapTx
     },
   })
 
@@ -139,8 +122,6 @@ export const useSupplyIsolatedLiquidity = ({
     validateBalance,
   })
   const getMinimumTradeAmount = useMinimumTradeAmount()
-  const getDisableCollateralsTxs = useBorrowDisableCollateralTxs()
-  const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
   const { data: assetsApy } = useBorrowAssetsApy([supplyAssetId])
 
   const apys =
@@ -148,8 +129,6 @@ export const useSupplyIsolatedLiquidity = ({
       apy: apyData.supplyApy,
       apyType: apyData.apyType,
     })) ?? []
-
-  const assetCap = getAssetCapData(reserve)
 
   const [amountIn, assetIn] = form.watch(["amount", "asset"])
 
@@ -163,114 +142,124 @@ export const useSupplyIsolatedLiquidity = ({
 
   const [debouncedAmountIn, isAmountInSynced] = useDebouncedValue(amountIn)
 
-  const collateralType = getAssetCollateralType(
-    userReserve,
-    userBorrowData.totalCollateralUSD,
-    userBorrowData.isInIsolationMode,
-    assetCap.debtCeiling.isMaxed,
-  )
-
-  const isBorrowedAssets = Big(
-    userBorrowData.totalBorrowsMarketReferenceCurrency,
-  ).gt(0)
-
-  const activeCollaterals = !usageAsCollateralEnabledOnUser
-    ? userBorrowData.userReservesData.filter(
-        (reserve) => reserve.usageAsCollateralEnabledOnUser,
-      )
-    : []
-  const isActiveColalterals = activeCollaterals.length > 0
-
-  const isBlockedByBorrowedAssets = isBorrowedAssets && isActiveColalterals
-
-  const isEnablingIsolatedModeWarning =
-    isActiveColalterals && !isBlockedByBorrowedAssets
-
-  const isolationWarning = isShowIsolationWarning(
-    userBorrowData,
-    userReserve.reserve,
-    userReserve,
-  )
-
-  const supplyCapWarning = assetCap.supplyCap.determineWarningDisplay({
-    supplyCap: assetCap.supplyCap,
-  })
-
-  const debtCeilingWarning = assetCap.debtCeiling.determineWarningDisplay({
-    debtCeiling: assetCap.debtCeiling,
-  })
-
-  const isBlockedSupply =
-    isBlockedByBorrowedAssets || !!supplyCapWarning || !!debtCeilingWarning
-
   const { data: quotedTrade, isLoading: isTradeQueryLoading } = useQuery(
     bestSellWithTxQuery(rpc, {
       assetIn: assetIn.id,
       assetOut: aToken.id,
-      amountIn: isBlockedSupply ? "0" : debouncedAmountIn,
+      amountIn: isAaveSupply ? "0" : debouncedAmountIn,
       slippage: swapSlippage,
       address: account?.address ?? "",
     }),
   )
 
-  const trade = isAmountInSynced ? quotedTrade : undefined
-  const isTradeLoading = isTradeQueryLoading || !isAmountInSynced
+  const trade = isAmountInSynced && !isAaveSupply ? quotedTrade : undefined
+  const isTradeLoading =
+    !isAmountInSynced || (!isAaveSupply && isTradeQueryLoading)
 
-  const minReceiveAmount =
-    (isAaveSupply
-      ? trade?.swap.amountOut
-      : getMinimumTradeAmount(trade?.swap)?.toString()) ?? "0"
-  const minReceiveAmountShifted = scaleHuman(minReceiveAmount, aToken.decimals)
+  const minReceiveAmountShifted = isAaveSupply
+    ? debouncedAmountIn || "0"
+    : scaleHuman(
+        getMinimumTradeAmount(trade?.swap)?.toString() ?? "0",
+        aToken.decimals,
+      )
 
-  const { data: healthFactor, isPlaceholderData: isHealthFactorStale } =
-    useQuery(
-      healthFactorQuery(rpc, {
-        address: account?.address ?? "",
-        fromAsset: assetIn,
-        fromAmount: debouncedAmountIn,
-        toAsset: isBlockedSupply ? null : aToken,
-        toAmount: minReceiveAmountShifted,
-      }),
-    )
-
-  const isHealthFactorLoading =
-    !isBlockedSupply && (isTradeLoading || isHealthFactorStale)
-
-  const toasts = useProtocolActionToasts(CustomToastAction.supplyIsolated, {
-    value: t("currency", {
-      value: minReceiveAmountShifted,
-      symbol: aToken.symbol,
-    }),
+  const assessment = useSupplyAssessment({
+    user,
+    asset,
+    amount: minReceiveAmountShifted,
   })
+  const findings = assessment.data?.findings ?? []
+  const isBlockedSupply = hasBlocker(findings)
+  const current = useAccountSummary(user)
+
+  const isAssessing = !!user && (assessment.isPending || current.isPending)
+
+  const projectedPosition = assessment.data?.projection.positions.find((p) =>
+    isAsset(p.underlyingAsset, asset),
+  )
+  const currentPosition = current.data?.positions.find((p) =>
+    isAsset(p.underlyingAsset, asset),
+  )
+  const enablesCollateral =
+    !!projectedPosition?.usageAsCollateralEnabledOnUser &&
+    !currentPosition?.usageAsCollateralEnabledOnUser
 
   const onSubmit = async () => {
-    if (!trade?.tx) throw new Error("Trade not found")
-    const txs = [trade.tx]
+    if (!user) throw new Error("EVM address not found")
 
-    if (!usageAsCollateralEnabledOnUser) {
-      const disableCollateralsTxs = await getDisableCollateralsTxs()
+    const isolationJoin = assessment.data?.isolationJoin
+    const feePerGas = await fetchFeePerGas(evm)
+    const toPapiTx = (plan: ActionPlan) => {
+      const tx = planToTransaction(plan, { papi, from: user, feePerGas })
 
-      txs.push(...(disableCollateralsTxs ?? []))
+      if (isEvmCall(tx)) {
+        return papi.tx.Dispatcher.dispatch_evm_call({
+          call: transformEvmCallToPapiTx(papi, tx).decodedCall,
+        })
+      }
+      if (isPapiTransaction(tx)) return tx
 
-      const enableCollateralTx = await getSetUsageAsCollateralTx(
-        underlyingAsset,
-        true,
+      throw new Error("Invalid supply transaction")
+    }
+
+    const txs = []
+
+    if (isAaveSupply) {
+      txs.push(
+        toPapiTx(
+          buildSupply({
+            market,
+            asset,
+            amount: parseUnits(amountIn, decimals),
+            onBehalfOf: user,
+            isolationJoin,
+          }),
+        ),
       )
-      txs.push(enableCollateralTx)
+    } else {
+      if (!trade?.tx) throw new Error("Trade not found")
+      txs.push(trade.tx)
+
+      // The router supplies on the user's behalf, so turning the asset into
+      // collateral (and the other collateral off) follows as plain pool calls.
+      if (enablesCollateral) {
+        txs.push(
+          toPapiTx([
+            ...(isolationJoin?.disableCollateral ?? []).flatMap((collateral) =>
+              buildSetUsageAsCollateral({
+                market,
+                asset: collateral,
+                useAsCollateral: false,
+              }),
+            ),
+            ...buildSetUsageAsCollateral({
+              market,
+              asset,
+              useAsCollateral: true,
+            }),
+          ]),
+        )
+      }
+    }
+
+    const toastParams = {
+      amount: minReceiveAmountShifted,
+      symbol: aToken.symbol,
     }
 
     await createBatch({
       txs,
-      transaction: { toasts },
+      transaction: {
+        toasts: {
+          submitted: t("supply.toast.submitted", toastParams),
+          success: t("supply.toast.success", toastParams),
+        },
+      },
       options: {
         onSubmitted,
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
           queryClient.invalidateQueries({
-            queryKey: userBorrowSummaryQueryKey(
-              safeConvertAnyToH160(account?.address ?? ""),
-              lendingPoolAddressProvider,
-            ),
+            queryKey: moneyMarketKeys.market(market.market),
           })
         },
       },
@@ -281,14 +270,11 @@ export const useSupplyIsolatedLiquidity = ({
     form,
     maxBalance,
     onSubmit,
-    collateralType,
-    healthFactor,
-    isHealthFactorLoading,
-    isolationWarning,
-    supplyCapWarning,
-    debtCeilingWarning,
-    isBlockedByBorrowedAssets,
-    isEnablingIsolatedModeWarning,
+    findings,
+    isAssessing,
+    currentHealthFactor: current.data?.account.healthFactor,
+    projectedHealthFactor: assessment.data?.projection.account.healthFactor,
+    isCollateral: !!projectedPosition?.usageAsCollateralEnabledOnUser,
     isBlockedSupply,
     minReceiveAmountShifted,
     apys,
@@ -297,6 +283,7 @@ export const useSupplyIsolatedLiquidity = ({
     isAaveSupply,
     isTradeLoading,
     swap: trade?.swap,
+    hasTradeAmount: Number(amountIn) > 0,
   }
 }
 

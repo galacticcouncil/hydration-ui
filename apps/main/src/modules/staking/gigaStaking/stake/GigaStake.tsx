@@ -1,5 +1,6 @@
-import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
-import { STHDX_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { markets } from "@galacticcouncil/money-market/core"
+import { useReserveSummaries } from "@galacticcouncil/money-market/react"
+import type { ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
   Box,
   LoadingButton,
@@ -7,6 +8,7 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
+import { STHDX_ASSET_ID } from "@galacticcouncil/utils"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
@@ -15,11 +17,6 @@ import { useTranslation } from "react-i18next"
 
 import { useNativeTokenLocks } from "@/api/balances"
 import { useAccountBalances } from "@/api/balances"
-import {
-  borrowReservesQuery,
-  gigaLendingPoolAddressProvider,
-  useBorrowPoolDataContract,
-} from "@/api/borrow"
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useGigaStake } from "@/modules/staking/gigaStaking/stake/GigaStake.utils"
@@ -28,7 +25,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 export type GigaStakeProps = {
   minStake: bigint
-  hdxReserve: ComputedReserveData
+  hdxReserve: ReserveSummary
 }
 
 export const GigaStake = ({ loading }: { loading?: boolean }) => {
@@ -37,18 +34,12 @@ export const GigaStake = ({ loading }: { loading?: boolean }) => {
   const { isBalanceLoading } = useAccountBalances()
   const { isLoading: isLocksLoading } = useNativeTokenLocks()
 
-  const { data: gigaPoolReserves } = useQuery(
-    borrowReservesQuery(
-      rpc,
-      gigaLendingPoolAddressProvider,
-      useBorrowPoolDataContract(),
-      null,
-    ),
-  )
+  const { data: gigaPoolReserves } = useReserveSummaries(markets.gigahdx_v3)
 
-  const hdxReserve = gigaPoolReserves?.formattedReserves.find(
+  const hdxReserve = gigaPoolReserves?.find(
     (reserve) =>
-      reserve.underlyingAsset === getAddressFromAssetId(STHDX_ASSET_ID),
+      reserve.underlyingAsset.toLowerCase() ===
+      getAddressFromAssetId(STHDX_ASSET_ID).toLowerCase(),
   )
 
   if (

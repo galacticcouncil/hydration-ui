@@ -4,6 +4,7 @@ import { mq } from "@galacticcouncil/ui/theme"
 
 import {
   FULL_HEADER_BREAKPOINT,
+  HEADER_HEIGHT,
   TOP_NAVBAR_BREAKPOINT,
 } from "@/modules/layout/constants"
 
@@ -19,7 +20,7 @@ export const SHeader = styled.header(
     align-items: center;
     gap: ${theme.space.m};
 
-    height: 3.375rem;
+    height: ${HEADER_HEIGHT};
 
     width: 100%;
     padding: 0 var(--layout-gutter);

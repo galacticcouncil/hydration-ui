@@ -106,6 +106,15 @@ export const useValidateFormMaxBalance = () => {
     )
 }
 
+export const maxDecimals = (decimals: number) =>
+  z.refine<string>(
+    (value) => {
+      const [, fraction = ""] = value.trim().split(".")
+      return fraction.replace(/0+$/, "").length <= decimals
+    },
+    { error: i18n.t("error.maxDecimals", { decimals }) },
+  )
+
 const existentialDepositError = i18n.t("error.existentialDeposit")
 
 const validateExistentialDeposit = (

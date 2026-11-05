@@ -23,6 +23,8 @@ export type ValueStatsProps = {
   readonly font?: ValueStatsFont
   readonly wrap?: ResponsiveStyleValue<boolean>
   readonly size?: ValueStatsSize
+  /** Keeps the value's `sm` and up font size on mobile too. */
+  readonly fixedSize?: boolean
   readonly label?: string
   readonly customLabel?: ReactNode
   readonly value?: string
@@ -40,6 +42,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   font = "primary",
   wrap,
   size,
+  fixedSize,
   label,
   customLabel,
   value,
@@ -88,12 +91,12 @@ export const ValueStats: FC<ValueStatsProps> = ({
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (
-          <SValueStatsValue font={font} size={size}>
+          <SValueStatsValue font={font} size={size} fixedSize={fixedSize}>
             <Skeleton width={120} height="100%" />
           </SValueStatsValue>
         ) : (
           (customValue ?? (
-            <SValueStatsValue font={font} size={size}>
+            <SValueStatsValue font={font} size={size} fixedSize={fixedSize}>
               {value}
             </SValueStatsValue>
           ))

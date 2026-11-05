@@ -1,6 +1,6 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
 import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
@@ -16,7 +16,7 @@ import {
 } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
-import { estimateGasLimit } from "@/api/borrow"
+import { estimateGasLimit } from "@/api/evm"
 import { calculateSlippage } from "@/api/utils/slippage"
 import {
   BIL_DEPOSIT_ZAP_ABI,

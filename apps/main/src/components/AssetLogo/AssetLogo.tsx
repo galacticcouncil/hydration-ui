@@ -1,10 +1,10 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   AssetLogo as AssetLogoPrimitive,
   AssetLogoDecoration,
   AssetLogoProps as AssetLogoPrimitiveProps,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import {
   BIL_ERC20_ID,
   GDOT_ERC20_ID,

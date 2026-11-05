@@ -12,12 +12,16 @@ import {
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 
 // The claim checks are pure; stub the ui and money-market modules so their
-// graphs aren't loaded. assets.ts reads the GHO address when it loads.
+// graphs aren't loaded. assets.ts reads the Hollar address when it loads.
 vi.mock("@galacticcouncil/ui/assets/icons", () => ({}))
 vi.mock("@galacticcouncil/ui/components", () => ({}))
-vi.mock("@galacticcouncil/money-market/ui-config", () => ({
-  AaveV3HydrationMainnet: {
-    GHO_TOKEN_ADDRESS: "0x0000000000000000000000000000000000000000",
+vi.mock("@galacticcouncil/money-market/core", () => ({
+  markets: {
+    hydration_v3: {
+      addresses: {
+        HOLLAR_TOKEN: "0x0000000000000000000000000000000000000000",
+      },
+    },
   },
 }))
 

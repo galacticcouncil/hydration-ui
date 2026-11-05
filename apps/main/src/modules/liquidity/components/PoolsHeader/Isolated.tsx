@@ -59,6 +59,7 @@ export const Isolated = () => {
         })}
         isLoading={isLoading}
         size="medium"
+        fixedSize
         wrap
       />
       <PoolsHeaderSeparator />
@@ -67,6 +68,7 @@ export const Isolated = () => {
         value={t("common:currency.compact", { value: totals.volume })}
         isLoading={isLoading}
         size="medium"
+        fixedSize
         wrap
       />
     </>

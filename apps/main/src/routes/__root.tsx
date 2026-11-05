@@ -13,6 +13,7 @@ import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { MoneyMarketRootProvider } from "@/modules/money-market/MoneyMarketRootProvider"
 import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
@@ -87,21 +88,23 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <TutorialProvider>
-            <MultisigProvider>
-              <AssetRegistryGate>
-                <MainLayout />
-                <Services />
-                <Footer />
-                <AppUpdateBanner />
-                {!hasTopNavbar && (
-                  <Suspense>
-                    <MobileTabBar />
-                  </Suspense>
-                )}
-              </AssetRegistryGate>
-            </MultisigProvider>
-          </TutorialProvider>
+          <MoneyMarketRootProvider>
+            <TutorialProvider>
+              <MultisigProvider>
+                <AssetRegistryGate>
+                  <MainLayout />
+                  <Services />
+                  <Footer />
+                  <AppUpdateBanner />
+                  {!hasTopNavbar && (
+                    <Suspense>
+                      <MobileTabBar />
+                    </Suspense>
+                  )}
+                </AssetRegistryGate>
+              </MultisigProvider>
+            </TutorialProvider>
+          </MoneyMarketRootProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && (

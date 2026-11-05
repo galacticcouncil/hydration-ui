@@ -164,7 +164,7 @@ export const StrategyDetailsCard = () => {
         </Summary>
         <Summary withTrailingSeparator justify="flex-start">
           <SummaryRow
-            label={t("borrow:maxLTV")}
+            label={t("borrow:summary.maxLtv")}
             content={
               <Text fs="p4" lh={1.5}>
                 {t("common:percent", {

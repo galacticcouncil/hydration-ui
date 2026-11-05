@@ -1,8 +1,9 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
+import { useAccountSummary } from "@galacticcouncil/money-market/react"
 import {
   Alert,
   Box,
+  CollapsibleContent,
+  CollapsibleRoot,
   Flex,
   LoadingButton,
   ModalBody,
@@ -11,6 +12,7 @@ import {
   ModalHeader,
   Skeleton,
   Summary,
+  SummaryRow,
   Text,
   Toggle,
   ToggleGroup,
@@ -28,6 +30,7 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
 import { useBorrowAssetsApy } from "@/api/borrow"
@@ -36,6 +39,7 @@ import { spotPriceQuery } from "@/api/spotPrice"
 import { useStableSwapTradability } from "@/api/stableswap"
 import { Trade } from "@/api/trade"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { TradeFee } from "@/components/TradeFee/TradeFee"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
@@ -58,6 +62,8 @@ import {
   TStablepoolDetails,
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
@@ -181,11 +187,18 @@ export const AddStablepoolLiquidityForm = ({
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
 
   const { control, watch, formState, setValue } = form
-  const [split, selectedAssetId, option] = watch([
+  const [split, selectedAssetId, option, watchedFields] = watch([
     "split",
     "selectedAssetId",
     "option",
+    "activeFields",
   ])
+
+  // Open once there is a quote to show; stay open while a new amount re-quotes.
+  // Outside the money market the trade rows stay open as before.
+  const hasAmount = watchedFields.some((field) => Number(field.amount) > 0)
+  const isTradeOpen =
+    !erc20Id || (hasAmount && (split || !!swap || isTradeLoading))
 
   const { fields: activeFields } = useFieldArray({
     control,
@@ -377,6 +390,8 @@ export const AddStablepoolLiquidityForm = ({
           option={option}
           poolShare={poolShare}
           swap={swap}
+          isTradeOpen={isTradeOpen}
+          isTradeLoading={isTradeLoading}
         />
 
         {customErrors?.cap ? (
@@ -415,17 +430,19 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
       </ModalBody>
       <ModalFooter sx={{ pt: 0 }}>
-        <LoadingButton
-          type="submit"
-          size="large"
-          width="100%"
-          isLoading={isTradeLoading}
-          disabled={isSubmitDisabled}
-        >
-          {isJoinFarms
-            ? t("liquidity.add.modal.submitAndjoinFarms")
-            : (title ?? t("liquidity.add.modal.submit"))}
-        </LoadingButton>
+        <AuthorizedAction size="large" width="100%">
+          <LoadingButton
+            type="submit"
+            size="large"
+            width="100%"
+            isLoading={isTradeLoading}
+            disabled={isSubmitDisabled}
+          >
+            {isJoinFarms
+              ? t("liquidity.add.modal.submitAndjoinFarms")
+              : (title ?? t("liquidity.add.modal.submit"))}
+          </LoadingButton>
+        </AuthorizedAction>
       </ModalFooter>
     </form>
   )
@@ -442,6 +459,8 @@ const AddStablepoolLiquiditySummary = ({
   option,
   poolShare,
   swap,
+  isTradeOpen,
+  isTradeLoading,
 }: {
   farms: Farm[]
   minReceiveAmount: string
@@ -453,8 +472,12 @@ const AddStablepoolLiquiditySummary = ({
   option: TAddStablepoolLiquidityOption
   poolShare?: string
   swap?: Trade
+  isTradeOpen: boolean
+  isTradeLoading: boolean
 }) => {
   const rpc = useRpcProvider()
+  const user = useUserAddress()
+  const accountSummary = useAccountSummary(user)
   const { getAssetWithFallback, getErc20AToken } = useAssets()
   const { t } = useTranslation(["liquidity", "common", "trade"])
 
@@ -485,71 +508,81 @@ const AddStablepoolLiquiditySummary = ({
   }
 
   return (
-    <Summary
-      separator={<ModalContentDivider />}
-      rows={[
-        {
-          label: t("common:minimumReceived"),
-          content: t("common:currency", {
-            value: minReceiveAmount,
-            symbol: erc20Meta?.symbol ?? poolMeta.symbol,
-          }),
-        },
-        {
-          label: t("common:tradeLimit"),
-          content: <TradeLimit key={limitType} type={limitType} />,
-        },
-        ...(swap && erc20Meta
-          ? [
-              {
-                label: t("trade:market.summary.estTradeFees"),
-                content: (
-                  <TradeFee
-                    swap={swap}
-                    receiveAsset={erc20Meta}
-                    isLoading={false}
-                  />
-                ),
-              },
-            ]
-          : []),
-        {
-          label: t("common:yield"),
-          content: (
+    <>
+      <Summary separator={<ModalContentDivider />}>
+        <SummaryRow
+          label={t("common:yield")}
+          content={
             <AddLiquidityYield
               stablepoolId={poolMeta.id}
               omnipoolId={option === "omnipool" ? poolMeta.id : undefined}
               farms={farms}
               borrowApyData={borrowApyData}
             />
-          ),
-        },
-        ...(selectedAssetId
-          ? [
-              {
-                label: t("common:price"),
-                content: isPriceLoading ? (
-                  <Skeleton width={50} height="100%" />
-                ) : (
-                  t("liquidity.remove.stablepool.modal.price", {
-                    poolSymbol: erc20Meta?.symbol ?? poolMeta.symbol,
-                    value: spotPriceData?.spotPrice,
-                    symbol: getAssetWithFallback(selectedAssetId).symbol,
-                  })
-                ),
-              },
-            ]
-          : []),
-        ...(erc20Id && healthFactor
-          ? [
-              {
-                label: t("common:healthFactor"),
-                content: <HealthFactorChange {...healthFactor} fontSize="p5" />,
-              },
-            ]
-          : []),
-      ]}
-    />
+          }
+        />
+        {erc20Id && user && (
+          <SummaryRow
+            label={t("common:healthFactor")}
+            content={
+              <HealthFactorChange
+                current={
+                  healthFactor?.current ??
+                  accountSummary.data?.account.healthFactor
+                }
+                projected={healthFactor?.future}
+              />
+            }
+          />
+        )}
+      </Summary>
+      <CollapsibleRoot open={isTradeOpen}>
+        <CollapsibleContent>
+          <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+            <SummaryRow
+              label={t("common:minimumReceived")}
+              loading={isTradeLoading}
+              content={t("common:currency", {
+                value: minReceiveAmount,
+                symbol: erc20Meta?.symbol ?? poolMeta.symbol,
+              })}
+            />
+            {selectedAssetId && (
+              <SummaryRow
+                label={t("common:price")}
+                content={
+                  isPriceLoading ? (
+                    <Skeleton width={50} height="100%" />
+                  ) : (
+                    t("liquidity.remove.stablepool.modal.price", {
+                      poolSymbol: erc20Meta?.symbol ?? poolMeta.symbol,
+                      value: spotPriceData?.spotPrice,
+                      symbol: getAssetWithFallback(selectedAssetId).symbol,
+                    })
+                  )
+                }
+              />
+            )}
+            <SummaryRow
+              label={t("common:tradeLimit")}
+              content={<TradeLimit key={limitType} type={limitType} />}
+            />
+            {selectedAssetId && erc20Meta && (swap || isTradeLoading) && (
+              <SummaryRow
+                label={t("trade:market.summary.estTradeFees")}
+                content={
+                  <TradeFee
+                    swap={swap}
+                    receiveAsset={erc20Meta}
+                    isLoading={isTradeLoading}
+                  />
+                }
+              />
+            )}
+          </Summary>
+        </CollapsibleContent>
+      </CollapsibleRoot>
+    </>
   )
 }
 

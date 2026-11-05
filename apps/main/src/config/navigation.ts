@@ -56,13 +56,12 @@ export const LINKS = {
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
-  borrowDashboard: "/borrow/dashboard",
+  borrowDashboard: "/borrow",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsTreasury: "/stats/treasury",
-  statsMoneyMarket: "/stats/money-market",
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
@@ -143,10 +142,14 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "borrow",
     to: LINKS.borrow,
-    defaultChild: LINKS.borrowDashboard,
     icon: BanknoteIcon,
     children: [
-      { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
+      {
+        key: "borrowDashboard",
+        to: LINKS.borrowDashboard,
+        exact: true,
+        icon: ChartPieIcon,
+      },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
     ],
@@ -222,7 +225,6 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       // { key: "statsOverview", to: LINKS.statsOverview },
       // { key: "statsTreasury", to: LINKS.statsTreasury },
-      // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
       // { key: "statsHollar", to: LINKS.statsHollar },
       // { key: "statsAmm", to: LINKS.statsAmm },
       { key: "statsFees", to: LINKS.statsFees },
@@ -360,10 +362,6 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     statsTreasury: {
       title: t("navigation.statsTreasury.title"),
-      description: "",
-    },
-    statsMoneyMarket: {
-      title: t("navigation.statsMoneyMarket.title"),
       description: "",
     },
     statsHollar: {
