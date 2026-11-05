@@ -43,8 +43,8 @@ export const DepositFlowLayout: FC<DepositFlowLayoutProps> = ({
       options={
         showAssetsAlternative
           ? [
-              { value: "steps", label: "V2" },
               { value: "split", label: "V2 alt" },
+              { value: "steps", label: "V2" },
             ]
           : [
               { value: "current", label: t("deposit.flowSwitcher.current") },

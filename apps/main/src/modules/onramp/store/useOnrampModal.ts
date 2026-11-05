@@ -107,7 +107,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       walletFirstAsset: null,
     })
   },
-  depositAssetsLayout: "steps",
+  depositAssetsLayout: "split",
   walletFirstFlow: "current",
   depositToHydration: false,
   depositRecoveryId: null,
