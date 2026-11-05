@@ -21,6 +21,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import {
   getAssetIdFromAddress,
   MONEY_MARKET_STRATEGY_ASSETS,
+  VDOT_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Link } from "@tanstack/react-router"
@@ -207,7 +208,8 @@ export const useSupplyAssetsTableColumns = (
                 if (
                   assetId &&
                   (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) ||
-                    isIsolated) &&
+                    assetId === VDOT_ASSET_ID ||
+                    (isIsolated && !isBaseAssetType)) &&
                   aTokenId &&
                   onSupplyClick
                 ) {
@@ -255,7 +257,8 @@ export const useSupplyAssetsTableColumns = (
 
                 if (
                   assetId &&
-                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) ||
+                    assetId === VDOT_ASSET_ID) &&
                   aTokenId &&
                   onSupplyClick
                 ) {
@@ -313,9 +316,10 @@ const getIsSupplyDisabled = (reserve: DashboardReserve) => {
   const { supplyCap } = getAssetCapData(reserve)
   const isMaxCapReached = supplyCap.isMaxed
 
-  const isWalletBalanceRequired = !MONEY_MARKET_STRATEGY_ASSETS.includes(
-    getAssetIdFromAddress(reserve.underlyingAsset),
-  )
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
+  // vDOT can also be minted from DOT inside its supply modal
+  const isWalletBalanceRequired =
+    !MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) && assetId !== VDOT_ASSET_ID
 
   const hasNoBalance = isWalletBalanceRequired
     ? Number(walletBalance ?? 0) <= 0
