@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  formatDestChainAddress,
+  HYDRATION_CHAIN_KEY,
+} from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 
@@ -16,13 +19,21 @@ import { getWithdrawSelectionFormValues } from "./WithdrawOnchainAsset.utils"
 type WithdrawOnchainAssetProps = { unsupportedSelection?: boolean }
 
 export const WithdrawOnchainAsset: FC<WithdrawOnchainAssetProps> = () => {
-  const { reset, watch, getValues } = useFormContext<XcmFormValues>()
+  const { reset, watch, getValues, setValue } = useFormContext<XcmFormValues>()
   const destinationChain = watch("destChain")
   const config = useCrossChainConfigService()
   const flow = useOnrampModal((state) => state.withdrawFlow)
   const selection = useOnrampModal((state) => state.withdrawSelection)
   const back = () => useOnrampModal.getState().setModal("withdraw")
   const select = (selection: WithdrawAssetSelection) => {
+    const chain = config.chains.get(selection.destinationChainKey)
+    if (selection.recipient && chain) {
+      setValue(
+        "destAddress",
+        formatDestChainAddress(selection.recipient.address, chain),
+      )
+      setValue("destAccount", selection.recipient.account ?? null)
+    }
     const previous = getValues()
     if (
       flow !== "current" &&

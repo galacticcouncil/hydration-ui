@@ -1,4 +1,7 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  formatDestChainAddress,
+  HYDRATION_CHAIN_KEY,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { FC } from "react"
 
@@ -50,8 +53,14 @@ export const WithdrawOnchain: FC<WithdrawOnchainProps> = ({
           srcAsset: selectedAsset ?? null,
           destChain: destinationChain ?? null,
           destAsset: destinationAsset ?? null,
-          destAddress: "",
-          destAccount: null,
+          destAddress:
+            selectedRoute?.recipient && destinationChain
+              ? formatDestChainAddress(
+                  selectedRoute.recipient.address,
+                  destinationChain,
+                )
+              : "",
+          destAccount: selectedRoute?.recipient?.account ?? null,
           srcAmount: "",
           destAmount: "",
         },

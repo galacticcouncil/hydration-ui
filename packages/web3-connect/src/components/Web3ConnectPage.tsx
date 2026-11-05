@@ -22,6 +22,7 @@ type Web3ConnectPageProps = {
   customSource?: { title: string; content: ReactNode }
   layout?: "page" | "split"
   walletFirst?: boolean
+  walletListWidth?: number
   keepSplitOpen?: boolean
   walletListVariant?: Web3ConnectContextType["walletListVariant"]
   onContentWidthChange?: (width: string) => void

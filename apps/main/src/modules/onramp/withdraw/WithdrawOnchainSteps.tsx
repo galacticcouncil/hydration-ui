@@ -53,13 +53,18 @@ export const WithdrawOnchainSteps: FC<WithdrawOnchainStepsProps> = ({
       paginateTo(OnrampScreen.WithdrawOnchainAsset)
   }, [page, hasRoute, paginateTo])
 
+  useEffect(() => {
+    if (page !== OnrampScreen.WithdrawOnchainWallet) return
+    return () => setWalletContentWidth(null)
+  }, [page, setWalletContentWidth])
+
   if (page === OnrampScreen.WithdrawOnchainWallet)
     return (
       <Web3ConnectPage
         layout={isWalletFirstWithdrawFlow(flow) ? "split" : "page"}
         walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
         onContentWidthChange={
-          flow === "current" ? setWalletContentWidth : undefined
+          isWalletFirstWithdrawFlow(flow) ? setWalletContentWidth : undefined
         }
         neckwork={neckworkClient}
         papi={papi}

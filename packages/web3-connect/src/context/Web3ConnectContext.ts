@@ -15,6 +15,7 @@ export type Web3ConnectContextType = {
   isPage?: boolean
   isEmbedded?: boolean
   walletFirst?: boolean
+  walletListWidth?: number
   keepSplitOpen?: boolean
   walletListVariant?: "default" | "connectedFirst"
   accountFilter?: (account: Account) => boolean

@@ -10,6 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getChainId, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +24,9 @@ import { useWithdrawDestinationOptions } from "@/modules/onramp/withdraw/hooks/u
 import {
   WithdrawAssetSelection,
   WithdrawDestinationOption,
+  WithdrawRecipient,
 } from "@/modules/onramp/withdraw/WithdrawAssetSelect.utils"
+import { getWithdrawRecipientRoutes } from "@/modules/onramp/withdraw/WithdrawRecipient.utils"
 import { useAssets } from "@/providers/assetsProvider"
 
 type WithdrawRouteSelectProps = {
@@ -32,6 +35,7 @@ type WithdrawRouteSelectProps = {
   initialSelection?: WithdrawAssetSelection | null
   guided?: boolean
   destinationChainKey?: string | null
+  recipient?: WithdrawRecipient
   sourceAssetKey?: string
 }
 
@@ -42,17 +46,26 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   guided = false,
   sourceAssetKey,
   destinationChainKey,
+  recipient,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const allOptions = useWithdrawDestinationOptions()
+  const { account: source } = useAccount()
   const options = useMemo(
     () =>
-      allOptions.filter(
+      (recipient
+        ? getWithdrawRecipientRoutes(
+            allOptions,
+            recipient,
+            source?.rawAddress ?? "",
+          )
+        : allOptions
+      ).filter(
         (option) =>
           !destinationChainKey ||
           option.destinationChainKey === destinationChainKey,
       ),
-    [allOptions, destinationChainKey],
+    [allOptions, destinationChainKey, recipient, source?.rawAddress],
   )
   const { getAsset } = useAssets()
   const [assetKey, setAssetKey] = useState(
@@ -75,9 +88,7 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       }))
       .sort((a, b) => a.asset.originSymbol.localeCompare(b.asset.originSymbol))
   }, [options])
-  const selected = groups.find(
-    ({ asset, routes }) => asset.key === assetKey && routes.length > 1,
-  )
+  const selected = groups.find(({ asset }) => asset.key === assetKey)
   const selectingDestinationAsset =
     !!selected &&
     new Set(selected.routes.map((route) => route.destinationChainKey)).size ===
@@ -122,6 +133,7 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
       />
       <DepositScrollBody contained>
         <Stack
+          data-onramp-step-body
           gap="l"
           justify="flex-start"
           data-onramp-step={

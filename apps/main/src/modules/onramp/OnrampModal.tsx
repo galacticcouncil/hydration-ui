@@ -72,16 +72,21 @@ export const OnrampModal = () => {
     isOnchain
   const isSplitWalletConnection =
     isWithdrawOnchain &&
-    withdrawFlow === "current" &&
-    withdrawPage === OnrampScreen.WithdrawOnchainWallet
+    ((isWalletFirstWithdrawFlow(withdrawFlow) &&
+      withdrawPage === OnrampScreen.WithdrawOnchainWallet) ||
+      !!walletContentWidth)
   const contentWidth =
-    isOnchain || (isWithdrawOnchain && withdrawFlow === "connected")
-      ? 650
-      : isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)
-        ? 520
-        : isTransferFlow
-          ? 600
-          : 520
+    isWithdrawOnchain &&
+    withdrawFlow === "connected" &&
+    withdrawPage === OnrampScreen.WithdrawOnchainAsset
+      ? 520
+      : isOnchain || (isWithdrawOnchain && withdrawFlow === "connected")
+        ? 650
+        : isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)
+          ? 520
+          : isTransferFlow
+            ? 600
+            : 520
   const disableInteractOutside = isOnchain || isWithdraw
 
   useEffect(

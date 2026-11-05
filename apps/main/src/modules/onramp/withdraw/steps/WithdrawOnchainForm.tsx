@@ -132,7 +132,7 @@ export const WithdrawOnchainForm: FC = () => {
   const [isRecipientOpen, setIsRecipientOpen] = useState(false)
   const [isChangingRecipient, setIsChangingRecipient] = useState(false)
   const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(
-    flow === "connected",
+    flow === "connected" && !destAddress,
   )
   const [isRouteOpen, setIsRouteOpen] = useState(false)
   const [recipientInput, setRecipientInput] = useState(destAddress)

@@ -1,10 +1,14 @@
+import type { Account } from "@galacticcouncil/web3-connect"
 import type { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
+
+export type WithdrawRecipient = { address: string; account?: Account }
 
 export type WithdrawAssetSelection = {
   assetId: string
   sourceAssetKey: string
   destinationChainKey: string
   destinationAssetKey: string
+  recipient?: WithdrawRecipient
 }
 
 export type WithdrawDestinationRoute = {

@@ -58,6 +58,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type Props = {
   readonly assetId?: string
   readonly header?: ReactNode | ((pending: boolean) => ReactNode)
+  readonly defaultAddress?: string
   readonly defaultRecipient?: Account | null
   readonly sourceAccount?: Account
   readonly lockAsset?: boolean
@@ -72,6 +73,7 @@ export const TransferPositionModal: FC<Props> = ({
   assetId,
   header,
   defaultRecipient,
+  defaultAddress,
   sourceAccount,
   lockAsset = false,
   onAssetClick,
@@ -92,7 +94,7 @@ export const TransferPositionModal: FC<Props> = ({
   }, [onPendingChange, transferPosition.isPending])
   const { form, getMaxBalance } = useTransferPosition({
     assetId,
-    defaultAddress: defaultRecipient?.rawAddress,
+    defaultAddress: defaultAddress ?? defaultRecipient?.rawAddress,
   })
   const isSourceCurrent =
     !sourceAccount ||

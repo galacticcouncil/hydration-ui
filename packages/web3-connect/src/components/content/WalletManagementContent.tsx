@@ -136,6 +136,7 @@ export const WalletManagementContent = () => {
     isEmbedded,
     keepSplitOpen,
     walletFirst,
+    walletListWidth,
     walletListVariant,
     accountFilter: filterPageAccount,
     customSource,
@@ -412,11 +413,17 @@ export const WalletManagementContent = () => {
    */
   useLayoutEffect(() => {
     setModalContentWidth(
-      walletFirst || !isDesktop || showAccountPanel
+      !isDesktop || showAccountPanel
         ? pxToRem(650)
-        : pxToRem(452),
+        : pxToRem(walletFirst ? (walletListWidth ?? 650) : 452),
     )
-  }, [isDesktop, setModalContentWidth, showAccountPanel, walletFirst])
+  }, [
+    isDesktop,
+    setModalContentWidth,
+    showAccountPanel,
+    walletFirst,
+    walletListWidth,
+  ])
 
   const excludedConnectedProviders = prioritizeConnectedWallets
     ? connectedProviderTypes

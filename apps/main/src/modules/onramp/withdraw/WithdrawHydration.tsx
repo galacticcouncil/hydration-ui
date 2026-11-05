@@ -135,6 +135,8 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
         <TransferPositionModal
           key={`${source.provider}:${source.address}:${assetId}`}
           assetId={assetId}
+          defaultRecipient={selectedRoute?.recipient?.account}
+          defaultAddress={selectedRoute?.recipient?.address}
           lockAsset={flow === "simple"}
           showTransferSummary
           sourceAccount={source}
