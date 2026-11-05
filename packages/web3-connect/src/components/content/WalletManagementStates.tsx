@@ -1,4 +1,11 @@
-import { Box, Flex, Icon, Spinner, Text } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Spinner,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { ChevronRight, Download, Wallet as WalletIcon } from "lucide-react"
 import type { ComponentType } from "react"
@@ -232,6 +239,7 @@ export const WalletChainSelectState: React.FC<{
 }
 
 export const WalletAccountsEmptyState: React.FC<{
+  readonly onChooseWallet?: () => void
   readonly source?: { readonly title: string; readonly logo?: string }
   readonly filteredEmpty?: {
     title: string
@@ -239,7 +247,7 @@ export const WalletAccountsEmptyState: React.FC<{
     loading?: boolean
     content?: React.ReactNode
   }
-}> = ({ source, filteredEmpty }) => {
+}> = ({ source, filteredEmpty, onChooseWallet }) => {
   const { t } = useTranslation()
 
   if (filteredEmpty?.content && !filteredEmpty.loading) {
@@ -254,6 +262,8 @@ export const WalletAccountsEmptyState: React.FC<{
       gap="base"
       borderRadius="m"
       bg={getToken("surfaces.containers.dim.dimOnBg")}
+      flex={1}
+      width="100%"
       sx={{ minHeight: pxToRem(260) }}
     >
       {filteredEmpty ? (
@@ -274,6 +284,11 @@ export const WalletAccountsEmptyState: React.FC<{
           >
             {filteredEmpty.description}
           </Text>
+          {!filteredEmpty.loading && onChooseWallet && (
+            <Button onClick={onChooseWallet}>
+              {t("account.chooseAnotherWallet")}
+            </Button>
+          )}
         </>
       ) : (
         <>

@@ -1,16 +1,18 @@
-import { Box, Stack, Stepper, Text } from "@galacticcouncil/ui/components"
+import { Box, Flex, Stack, Stepper, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { getChainId, HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import {
   useAccount,
   useWeb3Connect,
   WalletMode,
   Web3ConnectPage,
 } from "@galacticcouncil/web3-connect"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { neckworkClient } from "@/api/neckwork"
+import { ChainLogo } from "@/components/ChainLogo"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { useDepositAccounts } from "@/modules/onramp/deposit/hooks/useDepositAccounts"
 import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
@@ -22,6 +24,7 @@ import {
   canUseWithdrawAccount,
   selectWithdrawSourceAccount,
 } from "@/modules/onramp/withdraw/WithdrawOnchain.utils"
+import { WithdrawRecipientSelect } from "@/modules/onramp/withdraw/WithdrawRecipientSelect"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
 import { ChainAssetSelectButton } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelectButton"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -29,7 +32,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type WithdrawHydrationProps = { assetId: string }
 
 export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
-  const { t } = useTranslation(["onramp", "wallet"])
+  const { t } = useTranslation(["onramp", "wallet", "common"])
   const { account } = useAccount()
   const { papi } = useRpcProvider()
   const connected = useDepositAccounts()
@@ -37,6 +40,9 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
   const setModal = useOnrampModal((state) => state.setModal)
   const flow = useOnrampModal((state) => state.withdrawFlow)
   const pending = useOnrampModal((state) => state.withdrawPending)
+  const setWalletContentWidth = useOnrampModal(
+    (state) => state.setWalletContentWidth,
+  )
   const selectedRoute = useOnrampModal((state) => state.withdrawSelection)
   const selectWithdrawAsset = useOnrampModal(
     (state) => state.selectWithdrawAsset,
@@ -44,11 +50,16 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
   const options = useWithdrawDestinationOptions()
   const [choosingWallet, setChoosingWallet] = useState(false)
   const [choosingRoute, setChoosingRoute] = useState(false)
+  const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)!
   const source = selectWithdrawSourceAccount(account, connected)
   const sourceCurrent =
     source &&
     account?.provider === source.provider &&
     account.address === source.address
+  useEffect(() => {
+    if (!choosingWallet && sourceCurrent) return
+    return () => setWalletContentWidth(null)
+  }, [choosingWallet, sourceCurrent, setWalletContentWidth])
   const localRoute = options.find(
     (option) =>
       option.assetId === assetId &&
@@ -87,6 +98,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
       sourceAssetKey: option.sourceAssetKey,
       destinationChainKey: option.destinationChainKey,
       destinationAssetKey: option.destinationAssetKey,
+      recipient: selectedRoute?.recipient,
     })
   }
 
@@ -94,6 +106,7 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
     <Web3ConnectPage
       layout={flow === "connected" ? "split" : "page"}
       walletListVariant={flow === "connected" ? "connectedFirst" : "default"}
+      onContentWidthChange={setWalletContentWidth}
       neckwork={neckworkClient}
       papi={papi}
       mode={WalletMode.SubstrateEVM}
@@ -124,8 +137,12 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
     <>
       {choosingRoute ? (
         <WithdrawRouteSelect
+          editing
+          destinationChainKey={HYDRATION_CHAIN_KEY}
           initialSelection={selectedRoute}
-          onBack={() => setChoosingRoute(false)}
+          onBack={() => {
+            setChoosingRoute(false)
+          }}
           onSelect={selectRoute}
         />
       ) : choosingWallet ? (
@@ -139,9 +156,47 @@ export const WithdrawHydration: FC<WithdrawHydrationProps> = ({ assetId }) => {
           defaultAddress={selectedRoute?.recipient?.address}
           lockAsset={flow === "simple"}
           showTransferSummary
+          inlineAssetSelection
           sourceAccount={source}
           onPendingChange={reportPending}
-          onAssetClick={flow === "simple" ? chooseRoute : back}
+          onRecipientWidthChange={setWalletContentWidth}
+          assetLabel={
+            <Flex as="span" align="center" gap="s">
+              {t("common:to")}
+              <ChainLogo
+                ecosystem={hydration.ecosystem}
+                chainId={getChainId(hydration)}
+                size="extra-small"
+                alt={hydration.name}
+              />
+              <Text fs="p5" fw={500} color={getToken("text.high")}>
+                {hydration.name}
+              </Text>
+            </Flex>
+          }
+          renderDestinationPicker={({ assetId, onBack, onSelect }) => {
+            const route = options.find((option) => option.assetId === assetId)
+            if (!route) return null
+            return (
+              <WithdrawRecipientSelect
+                startInSplit
+                sourceAssetKey={route.sourceAssetKey}
+                onBack={onBack}
+                onSelect={(selection) => {
+                  if (!selection.recipient) return
+                  if (selection.destinationChainKey === HYDRATION_CHAIN_KEY) {
+                    onSelect(
+                      selection.recipient.address,
+                      selection.recipient.account,
+                    )
+                  } else {
+                    selectWithdrawAsset(selection)
+                  }
+                }}
+              />
+            )
+          }}
+          onAssetClick={chooseRoute}
           header={(pending) => (
             <SOnrampStepHeader
               align="center"

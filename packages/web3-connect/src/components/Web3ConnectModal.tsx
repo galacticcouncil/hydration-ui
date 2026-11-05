@@ -69,6 +69,7 @@ type Web3ConnectModalContentProps = Props & {
   keepSplitOpen?: boolean
   readonly walletListVariant?: Web3ConnectContextType["walletListVariant"]
   readonly accountFilter?: (account: Account) => boolean
+  readonly accountPanel?: Web3ConnectContextType["accountPanel"]
   readonly customSource?: Web3ConnectContextType["customSource"]
   readonly onBack?: () => void
   readonly setModalContentWidth: (width: string) => void
@@ -90,6 +91,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
     onBack,
     accountFilter,
     customSource,
+    accountPanel,
   } = props
 
   const isControlled =
@@ -130,6 +132,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
       walletListVariant,
       accountFilter,
       customSource,
+      accountPanel,
       onBack,
       page,
       setPage,
@@ -154,6 +157,7 @@ export const Web3ConnectModalContent: FC<Web3ConnectModalContentProps> = (
       walletListVariant,
       accountFilter,
       customSource,
+      accountPanel,
       onBack,
       mode,
       meta,

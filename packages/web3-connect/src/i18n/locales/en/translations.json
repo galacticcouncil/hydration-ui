@@ -2,6 +2,7 @@
   "show": "Show",
   "hide": "Hide",
   "back": "Back",
+  "account.chooseAnotherWallet": "Choose another wallet",
   "button.connect": "Connect Wallet",
   "button.selectAccount": "Select Account",
   "button.multisig.signingAs": "Signing as",

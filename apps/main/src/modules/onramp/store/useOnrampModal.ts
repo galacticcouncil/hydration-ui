@@ -147,6 +147,7 @@ export const useOnrampModal = create<OnrampModalState>((set, get) => ({
       withdrawAssetId: assetId,
       withdrawSelection: typeof selection === "string" ? null : selection,
       withdrawPage: OnrampScreen.WithdrawOnchainForm,
+      walletContentWidth: null,
     })
   },
   setWithdrawAssetId: (withdrawAssetId) =>

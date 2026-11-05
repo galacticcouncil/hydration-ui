@@ -75,18 +75,13 @@ export const OnrampModal = () => {
     ((isWalletFirstWithdrawFlow(withdrawFlow) &&
       withdrawPage === OnrampScreen.WithdrawOnchainWallet) ||
       !!walletContentWidth)
-  const contentWidth =
-    isWithdrawOnchain &&
-    withdrawFlow === "connected" &&
-    withdrawPage === OnrampScreen.WithdrawOnchainAsset
-      ? 520
-      : isOnchain || (isWithdrawOnchain && withdrawFlow === "connected")
-        ? 650
-        : isWithdrawTransfer && !isWalletFirstWithdrawFlow(withdrawFlow)
-          ? 520
-          : isTransferFlow
-            ? 600
-            : 520
+  const contentWidth = isWithdrawTransfer
+    ? 520
+    : isOnchain
+      ? 650
+      : isTransferFlow
+        ? 600
+        : 520
   const disableInteractOutside = isOnchain || isWithdraw
 
   useEffect(
@@ -122,7 +117,7 @@ export const OnrampModal = () => {
           loadingTitle={t(isWithdraw ? "withdraw" : "deposit")}
           contentWidth={
             isSplitWalletConnection
-              ? (walletContentWidth ?? pxToRem(650))
+              ? (walletContentWidth ?? pxToRem(520))
               : pxToRem(contentWidth)
           }
           hasFlowSwitcher={

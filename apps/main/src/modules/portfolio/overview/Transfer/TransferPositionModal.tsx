@@ -44,8 +44,10 @@ import { useTranslation } from "react-i18next"
 
 import { healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { neckworkClient } from "@/api/neckwork"
+import { AssetSelectModalContent } from "@/components/AssetSelectModal"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { DepositAccountButton } from "@/modules/onramp/deposit/components/DepositAccountButton"
 import {
   TransferPositionFormValues,
   useTransferPosition,
@@ -63,7 +65,15 @@ type Props = {
   readonly sourceAccount?: Account
   readonly lockAsset?: boolean
   readonly onAssetClick?: () => void
+  readonly inlineAssetSelection?: boolean
+  readonly assetLabel?: ReactNode
   readonly onPendingChange?: (pending: boolean) => void
+  readonly renderDestinationPicker?: (props: {
+    assetId: string
+    onBack: () => void
+    onSelect: (address: string, account?: Account) => void
+  }) => ReactNode
+  readonly onRecipientWidthChange?: (width: string | null) => void
   readonly showTransferSummary?: boolean
   readonly onBack?: () => void
   readonly onClose: () => void
@@ -77,7 +87,11 @@ export const TransferPositionModal: FC<Props> = ({
   sourceAccount,
   lockAsset = false,
   onAssetClick,
+  inlineAssetSelection = false,
+  assetLabel,
   onPendingChange,
+  onRecipientWidthChange,
+  renderDestinationPicker,
   showTransferSummary = false,
   onBack,
   onClose,
@@ -103,7 +117,12 @@ export const TransferPositionModal: FC<Props> = ({
   const shouldValidate = form.formState.isSubmitted
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
+  const [isAssetSelectionOpen, setIsAssetSelectionOpen] = useState(false)
   const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(false)
+  useEffect(() => {
+    if (!isRecipientWalletOpen) return
+    return () => onRecipientWidthChange?.(null)
+  }, [isRecipientWalletOpen, onRecipientWidthChange])
   const [connectedRecipient, setConnectedRecipient] = useState<Account | null>(
     defaultRecipient ?? null,
   )
@@ -186,11 +205,56 @@ export const TransferPositionModal: FC<Props> = ({
     ? cexDisclaimerAccepted
     : true
 
+  if (isAssetSelectionOpen)
+    return (
+      <>
+        <ModalHeader
+          title={t("common:selectAsset")}
+          align="center"
+          sx={{ py: "m" }}
+          onBack={() => setIsAssetSelectionOpen(false)}
+          closable
+        />
+        <Box
+          sx={{
+            minHeight: 0,
+            overflowY: "auto",
+            maxHeight: "min(500px, 65dvh)",
+          }}
+        >
+          <AssetSelectModalContent
+            searchInputVariant="standalone"
+            height={450}
+            assets={tradable}
+            selectedAssetId={asset?.id}
+            onSelect={(selected) => {
+              form.setValue("asset", selected)
+              form.setValue("amount", "")
+              setIsAssetSelectionOpen(false)
+            }}
+          />
+        </Box>
+      </>
+    )
+
+  if (isRecipientWalletOpen && renderDestinationPicker && asset)
+    return renderDestinationPicker({
+      assetId: asset.id,
+      onBack: () => setIsRecipientWalletOpen(false),
+      onSelect: (address, account) => {
+        form.setValue("address", address, { shouldValidate: true })
+        setConnectedRecipient(account ?? null)
+        setIsRecipientWalletOpen(false)
+      },
+    })
+
   if (isRecipientWalletOpen)
     return (
       <Web3ConnectPage
         layout="split"
         walletFirst
+        walletListWidth={520}
+        onContentWidthChange={onRecipientWidthChange}
         onBack={() => setIsRecipientWalletOpen(false)}
         neckwork={neckworkClient}
         papi={rpc.papi}
@@ -201,6 +265,10 @@ export const TransferPositionModal: FC<Props> = ({
             chain: "Hydration",
           }),
           closable: true,
+          filteredAccountsEmpty: {
+            title: t("transfer.recipient.empty.title"),
+            description: t("transfer.recipient.empty.description"),
+          },
         }}
         accountFilter={(recipient) => isEligibleRecipient(recipient.rawAddress)}
         onAccountSelect={(recipient) => {
@@ -269,70 +337,91 @@ export const TransferPositionModal: FC<Props> = ({
           <ModalContentDivider />
           <Box py="l" width="100%">
             <AssetSelectFormField<TransferPositionFormValues>
-              label={t("transfer.modal.asset.label")}
+              label={assetLabel ?? t("transfer.modal.asset.label")}
               assetFieldName="asset"
               amountFieldName="amount"
               balance={{ value: getMaxBalance(asset) }}
               assets={tradable}
               disabledAssetSelector={lockAsset}
-              onAssetClick={onAssetClick}
+              onAssetClick={
+                inlineAssetSelection
+                  ? () => setIsAssetSelectionOpen(true)
+                  : onAssetClick
+              }
             />
           </Box>
           <ModalContentDivider />
-          <InputSuggestions
-            open={suggestions.length > 0 ? undefined : false}
-            anchor={(inputProps) => (
-              <AddressBookFormField<TransferPositionFormValues>
-                fieldName="address"
-                inputProps={inputProps}
-                contactsVariant="icon"
-                headerAction={
-                  <Button
-                    type="button"
-                    size="micro"
-                    uppercase
-                    variant="secondary"
-                    outline
-                    disabled={transferPosition.isPending}
-                    onClick={() => setIsRecipientWalletOpen(true)}
-                  >
-                    {t(
-                      recipientAccount
-                        ? "common:change"
-                        : "common:connectWallet",
-                    )}
-                  </Button>
+          {renderDestinationPicker &&
+          address &&
+          isEligibleRecipient(address) ? (
+            <Box py="l">
+              <DepositAccountButton
+                active
+                name={
+                  recipientAccount?.name ||
+                  t("transfer.recipient.customAddress")
                 }
-                onOpenMyContacts={() => setIsMyContactsOpen(true)}
+                address={address}
+                disabled={transferPosition.isPending}
+                onChange={() => setIsRecipientWalletOpen(true)}
               />
-            )}
-          >
-            {suggestions.map((entry) => (
-              <InputSuggestionsOption
-                key={entry.publicKey}
-                onSelect={() => {
-                  form.setValue("address", entry.address, {
-                    shouldValidate: true,
-                    shouldTouch: true,
-                  })
-                  setConnectedRecipient(null)
-                  touchAddress(entry.address)
-                }}
-              >
-                <AccountAvatar address={entry.address} size={32} />
-                <Flex direction="column" flex={1} minWidth={0}>
-                  {entry.name && (
-                    <Text fs="p4" fw={500}>
-                      {entry.name}
-                    </Text>
-                  )}
-                  <TextMiddleTruncate fs="p5" color="text.medium">
-                    {entry.address}
-                  </TextMiddleTruncate>
-                </Flex>
-              </InputSuggestionsOption>
-            ))}
-          </InputSuggestions>
+            </Box>
+          ) : (
+            <InputSuggestions
+              open={suggestions.length > 0 ? undefined : false}
+              anchor={(inputProps) => (
+                <AddressBookFormField<TransferPositionFormValues>
+                  fieldName="address"
+                  inputProps={inputProps}
+                  contactsVariant="icon"
+                  headerAction={
+                    <Button
+                      type="button"
+                      size="micro"
+                      uppercase
+                      variant="secondary"
+                      outline
+                      disabled={transferPosition.isPending}
+                      onClick={() => setIsRecipientWalletOpen(true)}
+                    >
+                      {t(
+                        recipientAccount
+                          ? "common:change"
+                          : "common:connectWallet",
+                      )}
+                    </Button>
+                  }
+                  onOpenMyContacts={() => setIsMyContactsOpen(true)}
+                />
+              )}
+            >
+              {suggestions.map((entry) => (
+                <InputSuggestionsOption
+                  key={entry.publicKey}
+                  onSelect={() => {
+                    form.setValue("address", entry.address, {
+                      shouldValidate: true,
+                      shouldTouch: true,
+                    })
+                    setConnectedRecipient(null)
+                    touchAddress(entry.address)
+                  }}
+                >
+                  <AccountAvatar address={entry.address} size={32} />
+                  <Flex direction="column" flex={1} minWidth={0}>
+                    {entry.name && (
+                      <Text fs="p4" fw={500}>
+                        {entry.name}
+                      </Text>
+                    )}
+                    <TextMiddleTruncate fs="p5" color="text.medium">
+                      {entry.address}
+                    </TextMiddleTruncate>
+                  </Flex>
+                </InputSuggestionsOption>
+              ))}
+            </InputSuggestions>
+          )}
 
           {healthFactor?.isSignificantChange && (
             <Summary separator={<ModalContentDivider />} withLeadingSeparator>

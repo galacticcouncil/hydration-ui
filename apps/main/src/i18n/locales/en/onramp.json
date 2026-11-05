@@ -432,7 +432,7 @@
   "withdraw.guided.step.withdraw": "Withdraw",
   "withdraw.guided.asset.heading": "What would you like to withdraw?",
   "withdraw.guided.network.title": "Choose a network",
-  "withdraw.guided.network.heading": "Where should {{symbol}} arrive?",
+  "withdraw.guided.network.heading": "Which chain should {{symbol}} arrive on?",
   "withdraw.guided.network.description": "Choose a supported destination network.",
   "withdraw.quick.title": "Quick withdraw",
   "withdraw.quick.description": "Choose an asset and destination network, then enter an amount and address.",

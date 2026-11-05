@@ -59,6 +59,7 @@ export type Web3ConnectModalMeta = {
   title?: string
   description?: string
   hideAccountFilters?: boolean
+  groupAccountsByWallet?: boolean
   disconnectedWalletsContent?: ReactNode
   filteredAccountsEmpty?: {
     title: string

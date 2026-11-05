@@ -124,5 +124,8 @@
   "transfer.modal.onSuccess": "Sent {{ amount, currency }} to {{address}}",
   "transfer.modal.onError": "Failed to send {{ amount, currency }} to {{address}}",
   "transfer.error.validAddress": "The address is incorrect. Please review it and try again.",
-  "transfer.error.notSame": "Sending and receiving address cannot be the same."
+  "transfer.error.notSame": "Sending and receiving address cannot be the same.",
+  "transfer.recipient.customAddress": "Custom address",
+  "transfer.recipient.empty.title": "Choose a different receiving account",
+  "transfer.recipient.empty.description": "Only accounts that can receive on Hydration are shown. Your source account is hidden because you cannot send to the same account on the same chain. Choose another wallet, or add or switch accounts in your wallet extension."
 }

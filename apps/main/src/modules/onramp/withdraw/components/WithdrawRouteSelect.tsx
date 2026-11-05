@@ -37,6 +37,8 @@ type WithdrawRouteSelectProps = {
   destinationChainKey?: string | null
   recipient?: WithdrawRecipient
   sourceAssetKey?: string
+  editing?: boolean
+  embedded?: boolean
 }
 
 export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
@@ -47,6 +49,8 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   sourceAssetKey,
   destinationChainKey,
   recipient,
+  editing = false,
+  embedded = false,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
   const allOptions = useWithdrawDestinationOptions()
@@ -69,7 +73,9 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   )
   const { getAsset } = useAssets()
   const [assetKey, setAssetKey] = useState(
-    sourceAssetKey ?? initialSelection?.sourceAssetKey ?? null,
+    sourceAssetKey ??
+      (editing ? null : initialSelection?.sourceAssetKey) ??
+      null,
   )
   const [search, setSearch] = useState("")
   const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
@@ -91,6 +97,7 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
   const selected = groups.find(({ asset }) => asset.key === assetKey)
   const selectingDestinationAsset =
     !!selected &&
+    selected.routes.length > 1 &&
     new Set(selected.routes.map((route) => route.destinationChainKey)).size ===
       1
   const query = search.trim().toLowerCase()
@@ -107,7 +114,7 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
         .includes(query),
     ) ?? []
   const back = () => {
-    if (sourceAssetKey) {
+    if (sourceAssetKey || editing) {
       onBack()
       return
     }
@@ -119,18 +126,29 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
 
   return (
     <>
-      <SOnrampStepHeader
-        title={t(
-          selectingDestinationAsset
-            ? "common:selectAsset"
-            : selected
-              ? "withdraw.guided.network.title"
-              : "withdraw.onchain.asset.title",
-        )}
-        align="center"
-        closable
-        onBack={back}
-      />
+      {embedded ? (
+        <Button
+          variant="muted"
+          size="small"
+          onClick={back}
+          sx={{ alignSelf: "flex-start" }}
+        >
+          {t("common:back")}
+        </Button>
+      ) : (
+        <SOnrampStepHeader
+          title={t(
+            selectingDestinationAsset
+              ? "common:selectAsset"
+              : selected
+                ? "withdraw.guided.network.title"
+                : "withdraw.onchain.asset.title",
+          )}
+          align="center"
+          closable
+          onBack={back}
+        />
+      )}
       <DepositScrollBody contained>
         <Stack
           data-onramp-step-body
@@ -160,7 +178,15 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
             />
           )}
           <Stack gap="s" justify="flex-start">
-            <Text as="h3" fs="h7" fw={500} font="primary">
+            <Text
+              as="h3"
+              fs="h7"
+              fw={500}
+              font="primary"
+              align={
+                selected && !selectingDestinationAsset ? "center" : undefined
+              }
+            >
               {selectingDestinationAsset
                 ? t("common:selectAsset")
                 : selected
@@ -169,33 +195,29 @@ export const WithdrawRouteSelect: FC<WithdrawRouteSelectProps> = ({
                     })
                   : t("withdraw.guided.asset.heading")}
             </Text>
-            <Text fs="p4" color={getToken("text.medium")}>
-              {selectingDestinationAsset
-                ? t("deposit.v3.amount.receiveTo", {
-                    chain: selected.routes[0]!.destinationChain.name,
-                  })
-                : t(
-                    selected
-                      ? "withdraw.guided.network.description"
-                      : "withdraw.entry.description",
-                  )}
-            </Text>
+            {(!selected || selectingDestinationAsset) && (
+              <Text fs="p4" color={getToken("text.medium")}>
+                {selectingDestinationAsset
+                  ? t("deposit.v3.amount.receiveTo", {
+                      chain: selected.routes[0]!.destinationChain.name,
+                    })
+                  : t(
+                      selected
+                        ? "withdraw.guided.network.description"
+                        : "withdraw.entry.description",
+                    )}
+              </Text>
+            )}
           </Stack>
-          <Input
-            iconStart={Search}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={t(
-              selected && !selectingDestinationAsset
-                ? "common:search.placeholder.chains"
-                : "common:search.placeholder.assets",
-            )}
-            aria-label={t(
-              selected && !selectingDestinationAsset
-                ? "common:search.placeholder.chains"
-                : "common:search.placeholder.assets",
-            )}
-          />
+          {(!selected || selectingDestinationAsset) && (
+            <Input
+              iconStart={Search}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t("common:search.placeholder.assets")}
+              aria-label={t("common:search.placeholder.assets")}
+            />
+          )}
           <Stack gap="s" justify="flex-start">
             {selected
               ? routes.map((option) =>

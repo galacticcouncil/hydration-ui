@@ -12,6 +12,8 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
+  formatDestChainAddress,
+  getChainId,
   HYDRATION_CHAIN_KEY,
   isAddressValidOnChain,
 } from "@galacticcouncil/utils"
@@ -34,6 +36,7 @@ import {
   useCrossChainConfigService,
   useHydrationAssetId,
 } from "@/api/xcm"
+import { ChainLogo } from "@/components/ChainLogo"
 import { OnrampAssetAmount } from "@/modules/onramp/components/OnrampAssetAmount"
 import { SOnrampStepHeader } from "@/modules/onramp/components/OnrampStepHeader.styled"
 import { OnrampTransferSummary } from "@/modules/onramp/components/OnrampTransferSummary"
@@ -43,8 +46,10 @@ import { useOnrampModal } from "@/modules/onramp/store/useOnrampModal"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawRouteSelect } from "@/modules/onramp/withdraw/components/WithdrawRouteSelect"
 import { WithdrawSourceAccount } from "@/modules/onramp/withdraw/components/WithdrawSourceAccount"
+import { useWithdrawDestinationOptions } from "@/modules/onramp/withdraw/hooks/useWithdrawDestinationOptions"
 import { WithdrawDestinationOption } from "@/modules/onramp/withdraw/WithdrawAssetSelect.utils"
 import { canUseWithdrawAccount } from "@/modules/onramp/withdraw/WithdrawOnchain.utils"
+import { WithdrawRecipientSelect } from "@/modules/onramp/withdraw/WithdrawRecipientSelect"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -67,6 +72,8 @@ export const WithdrawOnchainForm: FC = () => {
   const { t } = useTranslation(["onramp", "common"])
   const { account } = useAccount()
   const connected = useDepositAccounts()
+  const destinationOptions = useWithdrawDestinationOptions()
+  const [isDestinationFlowOpen, setIsDestinationFlowOpen] = useState(false)
   const savedAddresses = useAddresses()
   const touchAddress = useAddressStore((state) => state.touch)
   const paginateTo = useOnrampModal((state) => state.paginateWithdraw)
@@ -129,6 +136,7 @@ export const WithdrawOnchainForm: FC = () => {
     return () => useOnrampModal.setState({ withdrawPending: false })
   }, [submit.isPending])
 
+  const [isEditingDestination, setIsEditingDestination] = useState(false)
   const [isRecipientOpen, setIsRecipientOpen] = useState(false)
   const [isChangingRecipient, setIsChangingRecipient] = useState(false)
   const [isRecipientWalletOpen, setIsRecipientWalletOpen] = useState(
@@ -165,6 +173,9 @@ export const WithdrawOnchainForm: FC = () => {
       sourceAssetKey: option.sourceAssetKey,
       destinationChainKey: option.destinationChainKey,
       destinationAssetKey: option.destinationAssetKey,
+      recipient: destAddress
+        ? { address: destAddress, account: destAccount ?? undefined }
+        : undefined,
     }
 
     if (option.destinationChainKey === HYDRATION_CHAIN_KEY) {
@@ -219,12 +230,65 @@ export const WithdrawOnchainForm: FC = () => {
     ),
   ).slice(0, 3)
 
+  if (isDestinationFlowOpen && srcAsset)
+    return (
+      <WithdrawRecipientSelect
+        startInSplit
+        initialRecipient={
+          destAddress && !isEditingDestination
+            ? { address: destAddress, account: destAccount ?? undefined }
+            : undefined
+        }
+        sourceAssetKey={srcAsset.key}
+        onBack={() => {
+          setIsDestinationFlowOpen(false)
+          setIsEditingDestination(false)
+        }}
+        onSelect={(selection) => {
+          const option = destinationOptions.find(
+            (option) =>
+              option.sourceAssetKey === selection.sourceAssetKey &&
+              option.destinationChainKey === selection.destinationChainKey &&
+              option.destinationAssetKey === selection.destinationAssetKey,
+          )
+          if (!option || !srcChain || !selection.recipient) return
+          if (selection.destinationChainKey !== HYDRATION_CHAIN_KEY) {
+            const next = getWithdrawSelectionFormValues(getValues(), {
+              sourceChain: srcChain,
+              sourceAsset: option.sourceAsset,
+              destinationChain: option.destinationChain,
+              destinationAsset: option.destinationAsset,
+            })
+            const address = formatDestChainAddress(
+              selection.recipient.address,
+              option.destinationChain,
+            )
+            reset({
+              ...next,
+              destAddress: address,
+              destAccount: selection.recipient.account ?? null,
+            })
+            setRecipientInput(address)
+          }
+          useOnrampModal.getState().selectWithdrawAsset(selection)
+          setIsDestinationFlowOpen(false)
+          setIsEditingDestination(false)
+        }}
+      />
+    )
+
   if (isRouteOpen)
     return (
       <WithdrawRouteSelect
+        editing
+        destinationChainKey={destChain?.key}
         initialSelection={selectedRoute}
-        onBack={() => setIsRouteOpen(false)}
-        onSelect={selectRoute}
+        onBack={() => {
+          setIsRouteOpen(false)
+        }}
+        onSelect={(option) => {
+          selectRoute(option)
+        }}
       />
     )
 
@@ -279,7 +343,7 @@ export const WithdrawOnchainForm: FC = () => {
           submit.isPending
             ? undefined
             : flow === "connected"
-              ? () => setIsRecipientWalletOpen(true)
+              ? () => setIsDestinationFlowOpen(true)
               : back
         }
         closable
@@ -351,7 +415,7 @@ export const WithdrawOnchainForm: FC = () => {
           selection={
             srcChain && srcAsset ? { chain: srcChain, asset: srcAsset } : null
           }
-          onAssetClick={flow === "simple" ? undefined : back}
+          onAssetClick={flow === "simple" ? undefined : chooseRoute}
           amountProps={{
             fieldName: "srcAmount",
             balance: sourceBalances?.get(srcAsset?.key ?? ""),
@@ -368,61 +432,90 @@ export const WithdrawOnchainForm: FC = () => {
           }}
         />
         <Separator />
-        <Stack px={["l", "xl"]} gap="0" justify="flex-start">
-          <InputSuggestions
-            open={suggestions.length > 0 ? undefined : false}
-            anchor={(inputProps) => (
-              <AddressBook
-                inputProps={inputProps}
-                address={recipientInput}
-                onAddressChange={updateRecipient}
-                onOpenMyContacts={() => setIsRecipientOpen(true)}
-                contactsVariant="icon"
-                headerAction={
-                  destinationMode !== WalletMode.Default ? (
-                    <ConnectButton
-                      walletProvider={destAccount?.provider}
-                      address={destAccount?.rawAddress}
-                      placeholder={t("common:connectWallet")}
-                      onClick={() => {
-                        setIsChangingRecipient(true)
-                        setIsRecipientWalletOpen(true)
-                      }}
-                    />
-                  ) : undefined
-                }
-                error={
-                  recipientInput && !isRecipientValid
-                    ? t("common:error.validAddressOnChain", {
-                        chain: destChain?.name,
-                      })
-                    : undefined
-                }
+        <Stack px={["l", "xl"]} pt={["m", "l"]} gap="0" justify="flex-start">
+          {destChain && (
+            <Flex align="center" gap="s">
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("common:to")}
+              </Text>
+              <ChainLogo
+                ecosystem={destChain.ecosystem}
+                chainId={getChainId(destChain)}
+                size="extra-small"
+                alt={destChain.name}
               />
-            )}
-          >
-            {suggestions.map((entry) => (
-              <InputSuggestionsOption
-                key={entry.publicKey}
-                onSelect={() => {
-                  updateRecipient(entry.address)
-                  touchAddress(entry.address)
-                }}
-              >
-                <AccountAvatar address={entry.address} size={32} />
-                <Flex direction="column" flex={1} minWidth={0}>
-                  {entry.name && (
-                    <Text fs="p4" fw={500}>
-                      {entry.name}
-                    </Text>
-                  )}
-                  <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
-                    {entry.address}
-                  </TextMiddleTruncate>
-                </Flex>
-              </InputSuggestionsOption>
-            ))}
-          </InputSuggestions>
+              <Text fs="p5" fw={500} color={getToken("text.high")}>
+                {destChain.name}
+              </Text>
+            </Flex>
+          )}
+          {destAddress && isRecipientValid ? (
+            <DepositAccountButton
+              active
+              name={destAccount?.name || t("deposit.onchain.customAddress")}
+              address={destAddress}
+              disabled={submit.isPending}
+              onChange={() => {
+                setIsEditingDestination(true)
+                setIsDestinationFlowOpen(true)
+              }}
+            />
+          ) : (
+            <InputSuggestions
+              open={suggestions.length > 0 ? undefined : false}
+              anchor={(inputProps) => (
+                <AddressBook
+                  inputProps={inputProps}
+                  address={recipientInput}
+                  onAddressChange={updateRecipient}
+                  onOpenMyContacts={() => setIsRecipientOpen(true)}
+                  contactsVariant="icon"
+                  headerAction={
+                    destinationMode !== WalletMode.Default ? (
+                      <ConnectButton
+                        walletProvider={destAccount?.provider}
+                        address={destAccount?.rawAddress}
+                        placeholder={t("common:connectWallet")}
+                        onClick={() => {
+                          setIsChangingRecipient(true)
+                          setIsRecipientWalletOpen(true)
+                        }}
+                      />
+                    ) : undefined
+                  }
+                  error={
+                    recipientInput && !isRecipientValid
+                      ? t("common:error.validAddressOnChain", {
+                          chain: destChain?.name,
+                        })
+                      : undefined
+                  }
+                />
+              )}
+            >
+              {suggestions.map((entry) => (
+                <InputSuggestionsOption
+                  key={entry.publicKey}
+                  onSelect={() => {
+                    updateRecipient(entry.address)
+                    touchAddress(entry.address)
+                  }}
+                >
+                  <AccountAvatar address={entry.address} size={32} />
+                  <Flex direction="column" flex={1} minWidth={0}>
+                    {entry.name && (
+                      <Text fs="p4" fw={500}>
+                        {entry.name}
+                      </Text>
+                    )}
+                    <TextMiddleTruncate fs="p5" color={getToken("text.medium")}>
+                      {entry.address}
+                    </TextMiddleTruncate>
+                  </Flex>
+                </InputSuggestionsOption>
+              ))}
+            </InputSuggestions>
+          )}
         </Stack>
         <OnrampTransferSummary />
         <Separator />

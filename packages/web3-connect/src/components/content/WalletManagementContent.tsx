@@ -140,6 +140,7 @@ export const WalletManagementContent = () => {
     walletListVariant,
     accountFilter: filterPageAccount,
     customSource,
+    accountPanel,
     onBack,
   } = useWeb3ConnectContext()
   const prioritizeConnectedWallets = walletListVariant === "connectedFirst"
@@ -182,7 +183,11 @@ export const WalletManagementContent = () => {
   )
   // Global pickers open the selected account; embedded flows start with sources.
   const [showAccounts, setShowAccounts] = useState(
-    !walletFirst && !prioritizeConnectedWallets && !isPage && !!currentAccount,
+    !!accountPanel ||
+      (!walletFirst &&
+        !prioritizeConnectedWallets &&
+        !isPage &&
+        !!currentAccount),
   )
   const [isCustomSourceSelected, setIsCustomSourceSelected] = useState(false)
   const [walletSearchValue, setWalletSearchValue] = useState("")
@@ -224,11 +229,15 @@ export const WalletManagementContent = () => {
    * provider above deliberately does not go through it: it must not switch
    * columns on its own.
    */
-  const selectSource = useCallback((source: WalletSourceId) => {
-    setSelectedSource(source)
-    setIsCustomSourceSelected(false)
-    setShowAccounts(true)
-  }, [])
+  const selectSource = useCallback(
+    (source: WalletSourceId) => {
+      accountPanel?.onBack()
+      setSelectedSource(source)
+      setIsCustomSourceSelected(false)
+      setShowAccounts(true)
+    },
+    [accountPanel],
+  )
 
   useDebounce(() => setWalletSearch(walletSearchValue), 100, [
     walletSearchValue,
@@ -904,6 +913,7 @@ export const WalletManagementContent = () => {
                       active={isCustomSourceSelected}
                       onClick={() => {
                         selectSource("all")
+                        accountPanel?.onBack()
                         setIsCustomSourceSelected(true)
                         setShowAccounts(true)
                       }}
@@ -1132,7 +1142,9 @@ export const WalletManagementContent = () => {
             isPage={isPage}
             mobileHidden={!isAccountsView}
           >
-            {!isPanelOpened ? null : isCustomSourceSelected && customSource ? (
+            {!isPanelOpened ? null : accountPanel ? (
+              <SRightColumn>{accountPanel.content}</SRightColumn>
+            ) : isCustomSourceSelected && customSource ? (
               <SRightColumn>{customSource.content}</SRightColumn>
             ) : isMultisigSelected ? (
               <SRightColumn>
@@ -1333,6 +1345,11 @@ export const WalletManagementContent = () => {
                       sx={{ overflowY: "auto" }}
                     >
                       <WalletAccountsEmptyState
+                        onChooseWallet={
+                          selectedSource !== "all"
+                            ? () => selectSource("all")
+                            : undefined
+                        }
                         source={emptyStateWallet}
                         filteredEmpty={
                           accountSearch
@@ -1344,7 +1361,8 @@ export const WalletManagementContent = () => {
                   ) : (
                     <ScrollArea>
                       <SScrollAreaContent direction="column" gap="xl">
-                        {selectedSource === "all" ? (
+                        {selectedSource === "all" ||
+                        meta?.groupAccountsByWallet ? (
                           groupedAccounts.map((group) => (
                             <WalletAccountSection
                               key={group.provider}

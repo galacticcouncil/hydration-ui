@@ -19,6 +19,7 @@ export type Web3ConnectContextType = {
   keepSplitOpen?: boolean
   walletListVariant?: "default" | "connectedFirst"
   accountFilter?: (account: Account) => boolean
+  accountPanel?: { content: ReactNode; onBack: () => void }
   customSource?: { title: string; content: ReactNode }
   onBack?: () => void
   page: Web3ConnectModalPage

@@ -19,6 +19,7 @@ type Web3ConnectPageProps = {
   mode: WalletMode
   meta?: Web3ConnectModalMeta
   accountFilter?: (account: Account) => boolean
+  accountPanel?: Web3ConnectContextType["accountPanel"]
   customSource?: { title: string; content: ReactNode }
   layout?: "page" | "split"
   walletFirst?: boolean

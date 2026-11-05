@@ -195,7 +195,12 @@ export const AddressBookModal: FC<Props> = ({
     <>
       {header ??
         (onBack && (
-          <ModalHeader title={selectTitle} align={align} onBack={onBack} />
+          <ModalHeader
+            title={selectTitle}
+            align={align}
+            onBack={onBack}
+            sx={{ py: "m" }}
+          />
         ))}
       <SAddressBookModalBody scrollable={false} isMobile={isMobile}>
         <SAddressBookModalControls>
