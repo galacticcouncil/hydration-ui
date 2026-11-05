@@ -169,79 +169,88 @@ export async function observe(
     { length: Math.min(4, candidates.length) },
     () => candidates.splice(randomInt(candidates.length), 1)[0],
   )
-  const deadline = Date.now() + 120000
+  const budget = c.auditBudgetMs || 120000,
+    deadline = Date.now() + budget
   if (resources.quick.length > 32 && !ref)
     result.issues.push({
       kind: "resource-limit",
       path: "/",
       message: "Untrusted page exceeds probe limit",
     })
-  await mapLimit(paths, c.concurrency, async (file) => {
+  const retry = []
+  let skipped = 0
+  const check = async (file, last) => {
     if (!file.startsWith("/") || file.startsWith("//")) return
     if (Date.now() > deadline) {
-      result.issues.push({
-        kind: "fetch-failed",
-        path: file,
-        message: "Complete scan exceeded time budget",
-      })
+      skipped++
       return
     }
+    let actual
     try {
-      const actual = await siteFile(
+      actual = await siteFile(
         c,
         file,
         named.has(file) || !referers.length
           ? "/"
           : referers[randomInt(referers.length)],
       )
-      result.observed[file] = {
-        sha256: actual.sha256,
-        size: actual.size,
-        type: actual.type,
-      }
-      const expected = ref?.files[file]
-      result.issues.push(
-        ...headerIssues(file, actual.headers, ref?.headers || c.headerPolicy),
-      )
-      if (!expected || expected.sha256 !== actual.sha256)
-        if (result.evidence.length < 32)
-          result.evidence.push(evidence(file, actual, ref?.sha))
-      if (ref && !expected)
-        result.issues.push({ kind: "unexpected-resource", path: file })
-      else if (
-        expected &&
-        (expected.sha256 !== actual.sha256 || expected.size !== actual.size)
-      ) {
-        result.issues.push({
-          kind: "hash-mismatch",
-          path: file,
-          expected: expected.sha256,
-          actual: actual.sha256,
-          referenceSha: ref.sha,
-          trustedDocument:
-            actual.type.includes("text/html") &&
-            references.some(
-              (r) => r.files["/index.html"].sha256 === actual.sha256,
-            ),
-        })
-      }
-      if (
-        /\.m?js(?:\?|$)/.test(file) &&
-        !/(?:java|ecma)script/.test(actual.type)
-      )
-        result.issues.push({
-          kind: "content-type",
-          path: file,
-          message: "JavaScript has incorrect MIME type",
-        })
     } catch (e) {
+      // one retry absorbs a transient 403 or timeout on a single exit
+      if (!last) retry.push(file)
+      else
+        result.issues.push({
+          kind: "fetch-failed",
+          path: file,
+          message: safeError(e),
+        })
+      return
+    }
+    result.observed[file] = {
+      sha256: actual.sha256,
+      size: actual.size,
+      type: actual.type,
+    }
+    const expected = ref?.files[file]
+    result.issues.push(
+      ...headerIssues(file, actual.headers, ref?.headers || c.headerPolicy),
+    )
+    if (!expected || expected.sha256 !== actual.sha256)
+      if (result.evidence.length < 32)
+        result.evidence.push(evidence(file, actual, ref?.sha))
+    if (ref && !expected)
+      result.issues.push({ kind: "unexpected-resource", path: file })
+    else if (
+      expected &&
+      (expected.sha256 !== actual.sha256 || expected.size !== actual.size)
+    ) {
       result.issues.push({
-        kind: "fetch-failed",
+        kind: "hash-mismatch",
         path: file,
-        message: safeError(e),
+        expected: expected.sha256,
+        actual: actual.sha256,
+        referenceSha: ref.sha,
+        trustedDocument:
+          actual.type.includes("text/html") &&
+          references.some(
+            (r) => r.files["/index.html"].sha256 === actual.sha256,
+          ),
       })
     }
-  })
+    if (/\.m?js(?:\?|$)/.test(file) && !/(?:java|ecma)script/.test(actual.type))
+      result.issues.push({
+        kind: "content-type",
+        path: file,
+        message: "JavaScript has incorrect MIME type",
+      })
+  }
+  await mapLimit(paths, c.concurrency, (file) => check(file, false))
+  await mapLimit(retry, c.concurrency, (file) => check(file, true))
+  if (skipped)
+    result.issues.push({
+      kind: "audit-incomplete",
+      path: "/",
+      message: `Scan budget of ${budget / 1000} s ran out with ${skipped} of ${paths.length} files unchecked`,
+    })
   if (ref) {
     for (const file of resources.all)
       if (!ref.files[file])

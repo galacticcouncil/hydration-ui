@@ -127,14 +127,17 @@ alerts instead of silently discarding evidence, and clears once older commits ar
 HTML/entry probes run about every 30 seconds after completion, rendered checks every
 five minutes and full audits every **15 minutes**, with 20% scheduling jitter.
 New references/changes invalidate checks immediately. Full audits have a two-minute
-scheduling budget plus request deadlines. Jobs of one kind do not overlap. These
+scan budget (four for proxied observers, `AUDIT_BUDGET_SECONDS`) plus request
+deadlines. A failed fetch is retried once; files left when the budget runs out are
+one `audit-incomplete` issue. Jobs of one kind do not overlap. These
 are sampling intervals, not promises of maximum detection latency. Compression and
 the longer full-audit interval reduce synthetic traffic. `FULL_AUDIT_SECONDS=300`
 restores five-minute full audits at higher traffic cost.
 
 Integrity incidents have stable keys independent of attacker-controlled hashes.
 One critical notification opens an incident; changing bytes/observers do not page
-again while it remains open. Only **critical** events can mention Discord users.
+again while it remains open. A posted error or critical is always followed by its
+all-clear. Only **critical** events can mention Discord users.
 Transient failures, egress outages and ordinary releases do not mention anyone.
 Content events are throttled per observer; routine freshness changes remain in
 history rather than generating a Discord stream. Releases include a compare link

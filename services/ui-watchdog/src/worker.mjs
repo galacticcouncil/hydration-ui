@@ -19,8 +19,9 @@ export function serveObserver(
 ) {
   c = { ...c, siteRequest: siteTransport(c) }
   const browserConfig = c
-  const pool = new BrowserPool(() =>
-    launchChrome(browserConfig, executablePath),
+  const pool = new BrowserPool(
+    () => launchChrome(browserConfig, executablePath),
+    { timeoutMs: Math.max(240000, (c.auditBudgetMs || 120000) + 150000) },
   )
   c = { ...c, browserPool: pool }
   const busy = new Set()

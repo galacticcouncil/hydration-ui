@@ -7,6 +7,15 @@ const fresh = (at, now, age) =>
   Number.isFinite(Date.parse(at)) &&
   now - Date.parse(at) <= age &&
   Date.parse(at) <= now + 30000
+const integrityFirst = (issues) =>
+  issues
+    .map((f, i) => [f, i])
+    .sort(
+      ([a, i], [b, j]) =>
+        Number(integrityKinds.has(b.kind)) -
+          Number(integrityKinds.has(a.kind)) || i - j,
+    )
+    .map(([f]) => f)
 const withoutBodies = (r) =>
   r && { ...r, observed: undefined, responses: undefined, evidence: undefined }
 
@@ -372,7 +381,7 @@ export class ObserverGroup {
             s,
             "/observe",
             { references: selected, trustedRoots, full: true },
-            240000,
+            480000,
           )
           this.record(s, s.audit, "audit")
         } catch (e) {
@@ -549,16 +558,17 @@ export class ObserverGroup {
     })
     const findings = [...combined.findings, ...retrospective]
     for (const o of observers)
-      for (const r of [o.probe, o.audit, o.browser]) {
-        if (r)
-          findings.push(
-            ...(r?.issues || []).map((f) => ({ ...f, observer: o.id })),
-          )
-      }
+      findings.push(
+        ...integrityFirst(
+          [o.probe, o.audit, o.browser].flatMap((r) =>
+            (r?.issues || []).map((f) => ({ ...f, observer: o.id })),
+          ),
+        ).slice(0, 30),
+      )
     const primary = observers[0]
     return {
       ...combined,
-      findings: findings.slice(0, 100),
+      findings: integrityFirst(findings).slice(0, 100),
       observers: observers.map((o) => ({
         ...o,
         probe: withoutBodies(o.probe),
