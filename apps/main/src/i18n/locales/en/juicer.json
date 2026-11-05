@@ -23,8 +23,6 @@
   "strategy.capacityLeft": "{{ pct }} left",
   "strategy.full": "Vault is full",
   "strategy.upToApy": "Up to estimated APY",
-  "strategy.loopLeverage": "Leverage",
-  "strategy.loopLeverageValue": "{{ value, number(maximumFractionDigits: 2) }}x",
   "strategy.riskProfile": "Risk profile",
   "strategy.risk.low": "Low",
   "strategy.col.asset": "Asset",

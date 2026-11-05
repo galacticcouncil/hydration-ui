@@ -9,8 +9,8 @@
   "badge.rwa": "RWA",
   "badge.partnership": "Partnership",
   "badge.fixedYield": "Fixed Yield",
-  "badge.leverage": "Leverage",
-  "badge.oneToOneExposure": "1:1 Exposure",
+  "badge.autoCompound": "Auto-compound",
+  "badge.lowRisk": "Low risk",
   "badge.juicerVault": "Juicer vault",
 
   "cards.bil.title": "Brazilian Invoice Loans",

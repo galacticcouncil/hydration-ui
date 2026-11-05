@@ -13,7 +13,7 @@ export const StrategyHeader: FC = () => {
       logo={<JuicerStrategyLogo size="large" />}
       title={t("strategy.name")}
       subtitle={t("common:navigation.strategiesJuicer.description")}
-      badges={[StrategyBadgeType.Leverage, StrategyBadgeType.OneToOneExposure]}
+      badges={[StrategyBadgeType.AutoCompound, StrategyBadgeType.LowRisk]}
     />
   )
 }

@@ -5,16 +5,16 @@ export enum StrategyBadgeType {
   FixedYield = "fixedYield",
   Partnership = "partnership",
   RWA = "rwa",
-  Leverage = "leverage",
-  OneToOneExposure = "oneToOneExposure",
+  AutoCompound = "autoCompound",
+  LowRisk = "lowRisk",
 }
 
 const variantConfig: Record<StrategyBadgeType, ChipProps["variant"]> = {
   [StrategyBadgeType.FixedYield]: "blue",
   [StrategyBadgeType.Partnership]: "green",
   [StrategyBadgeType.RWA]: "purple",
-  [StrategyBadgeType.Leverage]: "amber",
-  [StrategyBadgeType.OneToOneExposure]: "cyan",
+  [StrategyBadgeType.AutoCompound]: "cyan",
+  [StrategyBadgeType.LowRisk]: "lime",
 }
 
 type StrategyBadgeProps = Omit<ChipProps, "variant" | "children"> & {
