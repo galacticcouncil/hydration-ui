@@ -33,3 +33,21 @@ yarn-error.log*
 .claude
 # agent task tracking
 TODO.md
+
+# Local design sources belong in the sibling hydration-icons workspace.
+/design-assets/
+/docs/icon-generation/
+*.blend
+*.blend[0-9]*
+__pycache__/
+*.tsbuildinfo
+
+# Local agent state and memories are not application source.
+/.openbot/
+/openbot/
+/.codex/
+/memories/
+/memory/
+/MEMORY.md
+/rollout_summaries/
+/skill-updates/

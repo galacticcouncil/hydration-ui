@@ -62,3 +62,9 @@ Open a PR against `master`. CI (`.github/workflows/ci.yml`) runs `yarn build` an
 ## Issue reporting
 
 For bugs or unexpected behaviour, open an issue at <https://github.com/galacticcouncil/hydration-ui/issues>.
+
+## Local design and agent files
+
+Keep editable icon projects, Blender backups, render experiments, and OpenBot icon packages outside this repository in the sibling `hydration-icons/` workspace. The 2026-11-06 archive is `hydration-icons/hydration-ui-sources-2026-11-06/`, relative to the parent projects folder. Production icon exports remain in `packages/ui/src/assets/`.
+
+Local agent memories and session history belong in sibling context workspaces, not in application commits. Repository development instructions (`AGENTS.md`, `CLAUDE.md`, and `CODING_STANDARDS.md`) remain part of the project.
