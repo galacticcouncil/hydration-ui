@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { ERC20_ABI } from "@/modules/strategies/bil/config/abi"
 import {
   type BatchEvmCall,
@@ -36,6 +37,7 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
   const { t } = useTranslation("strategies")
   const { evm } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
   return useMutation({
@@ -49,7 +51,7 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
         throw new Error("VITE_LOOPER_FACTORY_ADDRESS is not configured")
       }
 
-      const collateral = getAssetWithFallback(pair.collateralAssetId)
+      const collateral = display(pair.collateralAssetId)
       const debt = getAssetWithFallback(pair.debtAssetId)
       const aCollateral = getAssetWithFallback(
         pair.aCollateralAssetId.toString(),
@@ -124,7 +126,7 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
       const toastValues = {
         amount,
         symbol: collateral.symbol,
-        leverage: leverage.toFixed(1),
+        leverage,
       }
 
       // ponytail: no pre-sign dry-run yet; a batch can't be eth_call'ed with its

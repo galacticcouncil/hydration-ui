@@ -1,11 +1,11 @@
 import { AnimatedValue, Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
   PROGRESS_MOVE_MS,
   SFill,
-  SProgress,
   STrack,
 } from "@/modules/strategies/multiply/components/MultiplyProgress.styled"
 
@@ -25,7 +25,12 @@ export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
   const { t } = useTranslation(["strategies", "common"])
 
   return (
-    <SProgress>
+    <Flex
+      direction="column"
+      gap="xs"
+      width={pxToRem(160)}
+      color={getToken("tags.soft.blue.foreground")}
+    >
       <Flex justify="space-between" align="baseline" gap="m">
         <Text fs="p6" fw={500} whiteSpace="nowrap">
           {label}{" "}
@@ -57,6 +62,6 @@ export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
       >
         <SFill style={{ width: width(progress) }} />
       </STrack>
-    </SProgress>
+    </Flex>
   )
 }

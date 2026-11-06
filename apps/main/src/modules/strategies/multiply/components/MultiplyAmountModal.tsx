@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { TAsset } from "@/providers/assetsProvider"
+import { type AssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 type MultiplyAmountModalProps = {
@@ -31,7 +31,7 @@ type MultiplyAmountModalProps = {
   maxNote?: string
   // rendered below the input, from the amount being entered
   summary?: (amount: string, isMax: boolean) => React.ReactNode
-  asset: TAsset
+  asset: AssetDisplay
   // human units
   max: string
   maxLabel: string
@@ -92,7 +92,7 @@ export const MultiplyAmountModal: React.FC<MultiplyAmountModalProps> = ({
                   label={cta}
                   asset={{
                     symbol: asset.symbol,
-                    icon: <AssetLogo id={asset.id} />,
+                    icon: <AssetLogo id={asset.logoId} />,
                   }}
                   value={field.value}
                   onChange={field.onChange}

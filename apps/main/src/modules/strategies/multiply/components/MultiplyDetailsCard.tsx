@@ -1,13 +1,17 @@
 import {
   Box,
+  Button,
   CardTable,
   DataTable,
+  Flex,
+  Icon,
   Paper,
   Separator,
   TableContainer,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -17,10 +21,12 @@ import {
 
 type MultiplyDetailsCardProps = {
   pairs: MultiplyPairRow[]
+  onCustomLoop: () => void
 }
 
 export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
   pairs,
+  onCustomLoop,
 }) => {
   const { t } = useTranslation("strategies")
   const { gte } = useBreakpoints()
@@ -30,11 +36,15 @@ export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
 
   return (
     <Paper>
-      <Box p="l">
+      <Flex p="l" align="center" justify="space-between" gap="m">
         <Text as="h2" font="primary" fs="base" fw={500}>
           {t("multiply.details.title")}
         </Text>
-      </Box>
+        <Button size="small" variant="secondary" onClick={onCustomLoop}>
+          <Icon size="s" component={Plus} />
+          {t("multiply.custom.cta")}
+        </Button>
+      </Flex>
       <Separator />
       {gte("xl") ? (
         <TableContainer borderRadius="xl">

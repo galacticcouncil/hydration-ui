@@ -69,6 +69,20 @@ export const WithMultipleAssets: Story = {
   ),
 }
 
+export const Collapsed: Story = {
+  render: () => (
+    <Stack gap="xl">
+      {[2, 3, 4].map((count) => (
+        <MultipleAssetLogoWrapper key={count} size="large" collapsed>
+          {[HDX_SRC, AAVE_SRC, ETH_SRC, USDT_SRC].slice(0, count).map((src) => (
+            <AssetLogo key={src} src={src} chainSrc={ETH_SRC} />
+          ))}
+        </MultipleAssetLogoWrapper>
+      ))}
+    </Stack>
+  ),
+}
+
 export const WithAtokenDecoration: Story = {
   render: (args) => (
     <Stack gap="xl">

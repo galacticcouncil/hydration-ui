@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { ERC20_ABI } from "@/modules/strategies/bil/config/abi"
 import {
   type BatchEvmCall,
@@ -23,7 +24,6 @@ import {
 } from "@/modules/strategies/multiply/config/pairs"
 import { type MultiplyPosition } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
 import { isRungExpired } from "@/modules/strategies/multiply/utils/status"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const INVALIDATE = [[MULTIPLY_QUERY_KEY_PREFIX]]
@@ -45,10 +45,10 @@ const positionCall = (
 export const useMultiplyPositionWrites = (pair: MultiplyPair) => {
   const { t } = useTranslation("strategies")
   const { evm, papi } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
   const { evmAddress, submitBatch } = useVaultEvmCall()
 
-  const collateral = getAssetWithFallback(pair.collateralAssetId)
+  const collateral = display(pair.collateralAssetId)
   const submit = (
     calls: BatchEvmCall[],
     toasts: { submitted: string; success: string },
