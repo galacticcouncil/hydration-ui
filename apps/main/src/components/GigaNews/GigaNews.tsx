@@ -1,6 +1,6 @@
 import { Close, Flame } from "@galacticcouncil/ui/assets/icons"
 import { Icon, MorphLabel, PromoteBanner } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import { useLocation, useNavigate } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +12,11 @@ import {
 } from "@/components/GigaNews/GigaNews.styled"
 import { gigaNewsToggleAction } from "@/components/GigaNews/GigaNews.utils"
 import { useIsOverlayOpen } from "@/hooks/useIsOverlayOpen"
-import { useBannersStore, useEnabledBanners } from "@/states/banners"
+import {
+  bannerConfig,
+  useBannersStore,
+  useEnabledBanners,
+} from "@/states/banners"
 
 export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
@@ -30,6 +34,14 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  // visiting a banner's target page counts as seeing the news
+  useEffect(() => {
+    bannerConfig
+      .filter((banner) => banner.to && pathname.startsWith(banner.to))
+      .forEach((banner) => close(banner.id))
+  }, [pathname, close])
 
   const visibleBanners = enabledBanners.filter(
     (banner) => !closedGigaNewsIds.includes(banner.id),

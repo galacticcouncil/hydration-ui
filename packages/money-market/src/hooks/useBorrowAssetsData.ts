@@ -14,11 +14,18 @@ import {
   getMaxAmountAvailableToBorrow,
   getMaxGhoMintAmount,
 } from "@/utils/getMaxAmountAvailableToBorrow"
+import { GHO_SUPPORTED_MARKETS } from "@/utils/ghoUtilities"
 
 export const useBorrowAssetsData = () => {
   const { currentMarket } = useProtocolDataContext()
-  const { user, reserves, marketReferencePriceInUsd, ghoReserveData, loading } =
-    useAppDataContext()
+  const {
+    user,
+    reserves,
+    marketReferencePriceInUsd,
+    ghoReserveData,
+    ghoLoadingData,
+    loading,
+  } = useAppDataContext()
   const displayGho = useRootStore((store) => store.displayGho)
   const account = useRootStore((store) => store.account)
 
@@ -94,7 +101,9 @@ export const useBorrowAssetsData = () => {
 
   return {
     data: sortedReserves,
-    isLoading: loading,
+    isLoading:
+      loading ||
+      (GHO_SUPPORTED_MARKETS.includes(currentMarket) && ghoLoadingData),
   }
 }
 
