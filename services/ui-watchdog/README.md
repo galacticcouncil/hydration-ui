@@ -121,23 +121,28 @@ become a critical incident even if the live app has since recovered, and are
 posted as `retrospective_mismatch` even while another incident is open. Expiry is
 critical. Missing/failed runs have their own error state. A known asset mismatch
 or executable/header-policy violation never receives this grace. Pending metadata
-is capped at 20,000 samples; overflow alerts instead of silently discarding evidence.
+is capped at 20,000 samples and kept for the last three production commits; overflow
+alerts instead of silently discarding evidence, and clears once older commits are trimmed.
 
 HTML/entry probes run about every 30 seconds after completion, rendered checks every
 five minutes and full audits every **15 minutes**, with 20% scheduling jitter.
 New references/changes invalidate checks immediately. Full audits have a two-minute
-scheduling budget plus request deadlines. Jobs of one kind do not overlap. These
+scan budget (four for proxied observers, `AUDIT_BUDGET_SECONDS`) plus request
+deadlines. A failed fetch is retried once; files left when the budget runs out are
+one `audit-incomplete` issue. Jobs of one kind do not overlap. These
 are sampling intervals, not promises of maximum detection latency. Compression and
 the longer full-audit interval reduce synthetic traffic. `FULL_AUDIT_SECONDS=300`
 restores five-minute full audits at higher traffic cost.
 
 Integrity incidents have stable keys independent of attacker-controlled hashes.
 One critical notification opens an incident; changing bytes/observers do not page
-again while it remains open. Only **critical** events can mention Discord users.
+again while it remains open. A posted error or critical is always followed by its
+all-clear. Only **critical** events can mention Discord users.
 Transient failures, egress outages and ordinary releases do not mention anyone.
 Content events are throttled per observer; routine freshness changes remain in
 history rather than generating a Discord stream. Releases include a compare link
-and escaped commit titles. Verified operation emits a daily heartbeat.
+and escaped commit titles. Verified operation records a daily heartbeat in history;
+it is not posted to Discord.
 
 The outbox prioritizes critical events, stops permanently on Discord 400/401/403/404
 or after 12 failed attempts, and has a 1,000-pending-event cap. Failed deliveries
@@ -187,7 +192,7 @@ monitor. The watchdog sends an HTTPS GET approximately every minute only after a
 successful persistence cycle, with credentials/references present and no terminal
 Discord delivery failure. Configure that provider to alert after missed heartbeats
 (e.g. five minutes). No external monitor is enabled until an operator supplies the
-URL. Daily Discord heartbeats alone cannot detect a dead process or broken webhook.
+URL. Discord alone cannot detect a dead process or broken webhook.
 
 Set `DASHBOARD_TOKEN` (or `_FILE`): dashboard, status, history and evidence endpoints
 require HTTP Basic auth (any username, token as password) or `Authorization: Bearer`.

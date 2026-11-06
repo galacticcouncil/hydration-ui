@@ -21,9 +21,9 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
 }) => {
   const { t } = useTranslation(["strategies"])
 
-  const redeemMutation = useRequestRedeem()
-  const redeemRawMutation = useRequestRedeemRaw()
-  const instantRedeemMutation = useInstantRedeem()
+  const redeemMutation = useRequestRedeem({ onSuccess: onClose })
+  const redeemRawMutation = useRequestRedeemRaw({ onSuccess: onClose })
+  const instantRedeemMutation = useInstantRedeem({ onSuccess: onClose })
 
   const isPending =
     redeemMutation.isPending ||
@@ -43,11 +43,9 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
         onRequestRedeem={(amount) => {
           if (withdrawSource === "raw") redeemRawMutation.mutate(amount)
           else redeemMutation.mutate(amount)
-          onClose()
         }}
         onInstantRedeem={(amount) => {
           instantRedeemMutation.mutate(amount)
-          onClose()
         }}
         isPending={isPending}
       />

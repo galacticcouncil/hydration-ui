@@ -28,6 +28,7 @@ import { PercentageButton } from "./PercentageButton"
 export type AssetInputAsset = {
   symbol: string
   icon: ReactNode
+  badge?: ReactNode
 }
 
 export type AssetInputBalance = {
@@ -155,8 +156,12 @@ export const AssetInput = ({
               const formattedValue = e.target.value
                 .replace(/\s+/g, "")
                 .replace(/,/g, ".")
+                .replace(/^\./, "0.")
 
-              if (!isNaN(Number(formattedValue))) {
+              if (
+                formattedValue === "" ||
+                /^-?(?:\d+\.?\d*|\.\d+)$/.test(formattedValue)
+              ) {
                 onChange?.(formattedValue)
               }
             }}
@@ -261,6 +266,7 @@ export const AssetButton = ({
         <>
           {asset.icon}
           {asset.symbol}
+          {asset.badge}
         </>
       ) : (
         selectAssetLabel

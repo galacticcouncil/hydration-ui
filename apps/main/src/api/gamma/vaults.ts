@@ -6,13 +6,19 @@
  * - Live tier (`useVaultSnapshots`): vault totals, positions, band and the
  *   pool's slot0 / reserves, read in ONE round so status, price and TVL all
  *   describe the same moment.
+ * - Deposit snapshot (`useVaultDepositSnapshot`): the live tier again, but
+ *   re-read every block while a deposit form is open, so the amounts it shows
+ *   are at most a block behind the chain.
  * - Deposit checks (`useVaultDepositChecks`): TWAP guard and caps. Only a
  *   deposit needs them, so only the deposit form reads them, fresh.
  *
  * Query keys are private to this module: after a vault tx, pass
  * `vaultTxInvalidation(pool)` to the transaction.
  */
-import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
+import {
+  QUERY_KEY_BLOCK_PREFIX,
+  safeConvertAnyToH160,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
@@ -272,6 +278,23 @@ const readVaultLive = async (
   }
 }
 
+const readVaultSnapshot = async (
+  evm: PublicClient,
+  queryClient: QueryClient,
+  pool: V3PoolBase,
+): Promise<VaultSnapshot> => {
+  const identity = await queryClient.ensureQueryData(
+    vaultIdentityQuery(evm, pool),
+  )
+
+  const [poolLive, vault] = await Promise.all([
+    readPoolLive(evm, pool),
+    identity ? readVaultLive(evm, pool, identity) : null,
+  ])
+
+  return { pool: poolLive, vault }
+}
+
 const vaultSnapshotQuery = (
   evm: PublicClient,
   queryClient: QueryClient,
@@ -279,21 +302,29 @@ const vaultSnapshotQuery = (
 ) =>
   queryOptions<VaultSnapshot>({
     queryKey: ["vault", pool.address, "live"],
-    queryFn: async () => {
-      const identity = await queryClient.ensureQueryData(
-        vaultIdentityQuery(evm, pool),
-      )
-
-      const [poolLive, vault] = await Promise.all([
-        readPoolLive(evm, pool),
-        identity ? readVaultLive(evm, pool, identity) : null,
-      ])
-
-      return { pool: poolLive, vault }
-    },
+    queryFn: () => readVaultSnapshot(evm, queryClient, pool),
     staleTime: 30_000,
     refetchInterval: 60_000,
   })
+
+/**
+ * The open deposit form's snapshot, refetched every block. Starts from the
+ * table's snapshot so the form opens filled, then reads its own.
+ */
+export const useVaultDepositSnapshot = (pool: V3PoolBase) => {
+  const { evm } = useRpcProvider()
+  const queryClient = useQueryClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "vault", pool.address, "deposit"],
+    queryFn: () => readVaultSnapshot(evm, queryClient, pool),
+    initialData: () =>
+      queryClient.getQueryData(
+        vaultSnapshotQuery(evm, queryClient, pool).queryKey,
+      ),
+    initialDataUpdatedAt: 0,
+  })
+}
 
 /** Per-pool snapshot, in the order the pools were given. */
 export const useVaultSnapshots = (pools: V3PoolBase[]) => {

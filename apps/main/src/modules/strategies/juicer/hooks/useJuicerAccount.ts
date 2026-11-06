@@ -1,0 +1,401 @@
+import { useQueries, useQuery } from "@tanstack/react-query"
+import { type Hex } from "viem"
+
+import {
+  JUICER_VAULTS,
+  type JuicerVaultConfig,
+} from "@/modules/strategies/juicer/config/vaults"
+import { baseRateQuery } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
+import { exitBacklogQuery } from "@/modules/strategies/juicer/hooks/useExitBacklog"
+import { exitHeadroomQuery } from "@/modules/strategies/juicer/hooks/useExitHeadroom"
+import { useJuicerVaults } from "@/modules/strategies/juicer/hooks/useJuicerVaults"
+import {
+  projectQueue,
+  type QueueEntry,
+  vaultQueueQuery,
+} from "@/modules/strategies/juicer/hooks/useRedemptionQueue"
+import { vaultSettleLogsQuery } from "@/modules/strategies/juicer/hooks/useSettlePace"
+import {
+  subLoopQuery,
+  vaultBalancesQuery,
+} from "@/modules/strategies/juicer/hooks/useVaultReads"
+import {
+  type WithdrawalState,
+  withdrawalState,
+} from "@/modules/strategies/juicer/utils/accounting"
+import { type HarvestStatus } from "@/modules/strategies/juicer/utils/harvestStatus"
+import {
+  claimableInSeconds,
+  type ExitBacklog,
+  type LoopDeployment,
+  notStartedUnwind,
+  reserveCoversExit,
+  type SettleLog,
+} from "@/modules/strategies/juicer/utils/withdrawalEta"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+export type JuicerPosition = {
+  vault: JuicerVaultConfig
+  /** includes funded earnings */
+  shares: number
+  sharesExact: string
+  assetValue: number
+  usdValue: number
+  /** current accrual rate: strategy APY x deployed fraction, 0 while paused */
+  apy: number | null
+  /** the vault's deployed share, which every holder earns at */
+  deployedFraction: number | null
+  accrualPaused: boolean
+  /** collateral earned but not harvested, outside the balance; null if unread */
+  pendingYield: number | null
+  /** the vault's collateral asset still sitting in the wallet */
+  collateralBalance: number
+  harvestStatus: HarvestStatus | null
+}
+
+export type WithdrawalRowState = WithdrawalState
+
+export type JuicerWithdrawalRow = {
+  /** `${vaultAddress}:${requestId}` — requestId is only unique per vault. */
+  id: string
+  requestId: number
+  vault: JuicerVaultConfig
+  amountShares: number
+  /** Full collateral entitlement, estimated until the unwind starts. */
+  estEth: number
+  estUsd: number
+  /** the whole withdrawal, the same from request to the last claim */
+  totalEth: number
+  totalUsd: number
+  /** already claimed from an open request; 0 once it is closed */
+  claimedEth: number
+  isEstimate?: boolean
+  state: WithdrawalRowState
+  collateralOwed?: number
+  collateralSettled?: number
+  settledSoFar?: number
+  /**
+   * until the whole withdrawal is claimable: the keeper's exit backlog, which
+   * every started withdrawal shares; null while unknown, stalled or done
+   */
+  claimableInSeconds: number | null
+  /** the reserve can't cover the strategy shortfall up to this exit */
+  reserveShort: boolean
+  eligibleAt: number
+  mainDebt: Hex
+  surplusHollar: number
+  sourcePending: boolean
+}
+
+export const withdrawalRowId = (vaultAddress: string, requestId: number) =>
+  `${vaultAddress}:${requestId}`
+
+/**
+ * One withdrawal row from a queue entry. Pays out the measured settlement when
+ * there is one. Funding deficits delay payment without reducing the claim.
+ */
+export const buildWithdrawalRow = ({
+  vault,
+  entry,
+  exchangeRate,
+  price,
+  baseRate = 1,
+  backlog = null,
+  notStartedHollar = 0,
+  ahead = 0,
+  ownUnwind,
+  deployment,
+  shortfall,
+  now = 0,
+}: {
+  vault: JuicerVaultConfig
+  entry: QueueEntry
+  exchangeRate: number
+  price: number
+  /** collateral -> display-asset spot (GETH -> ETH); 1 when they coincide */
+  baseRate?: number
+  backlog?: ExitBacklog | null
+  /** equity of requested withdrawals not yet started, every vault */
+  notStartedHollar?: number
+  /** collateral still to settle for earlier requests in this vault */
+  ahead?: number
+  /**
+   * HOLLAR the loop's unwind still frees for this request: the ledger's
+   * remainder once started, projected for its start (0 from headroom); its
+   * Main debt stands in without either
+   */
+  ownUnwind?: number
+  /** the keeper's deployment into the loop around this request's start */
+  deployment?: LoopDeployment
+  shortfall?: Omit<Parameters<typeof reserveCoversExit>[0], "collateral">
+  /** wall clock, ms: the live countdown flips on it, so the estimate must too */
+  now?: number
+}): JuicerWithdrawalRow => {
+  const settledSoFar = entry.claimedCollateral + entry.collateralSettled
+  const state = withdrawalState({
+    active: entry.active,
+    started: entry.started,
+    eligibleAt: entry.eligibleAt,
+    now: entry.observedAt,
+    complete: entry.complete,
+    settledAmount: settledSoFar,
+  })
+  // collateral entitlement, minus earlier partial claims while the request is
+  // open; USD prices the collateral, display amounts are converted to the
+  // vault's display asset below
+  const estCollateral = entry.started
+    ? entry.collateralOwed - (entry.active ? entry.claimedCollateral : 0)
+    : entry.shares * exchangeRate
+
+  const totalCollateral = entry.started
+    ? entry.collateralOwed
+    : entry.shares * exchangeRate
+
+  // collateral units: owed minus settled once started, the shares' current
+  // value before
+  const remainingCollateral = entry.started
+    ? entry.collateralOwed - settledSoFar
+    : entry.shares * exchangeRate
+  const open = entry.active && remainingCollateral > 0
+  const claimableIn = open
+    ? claimableInSeconds({
+        backlog,
+        notStartedHollar,
+        ownHollar:
+          ownUnwind ??
+          remainingCollateral * (shortfall?.debtPerCollateral ?? 0),
+        // a lagging node serves an older block: never count cooldown the
+        // wall clock already shows as over
+        cooldownLeftSeconds:
+          (entry.eligibleAt - Math.max(entry.observedAt, now)) / 1000,
+        started: entry.started,
+        waitsOnUnwind: entry.waitsOnUnwind,
+        deployment,
+      })
+    : null
+  const reserveShort =
+    open &&
+    !!shortfall &&
+    !reserveCoversExit({
+      ...shortfall,
+      collateral: ahead + remainingCollateral,
+    })
+
+  return {
+    id: withdrawalRowId(vault.vaultAddress, entry.requestId),
+    requestId: entry.requestId,
+    vault,
+    amountShares: entry.shares,
+    estEth: estCollateral * baseRate,
+    estUsd: estCollateral * price,
+    totalEth: totalCollateral * baseRate,
+    totalUsd: totalCollateral * price,
+    claimedEth: (entry.active ? entry.claimedCollateral : 0) * baseRate,
+    isEstimate: !entry.started,
+    state,
+    collateralOwed: entry.collateralOwed * baseRate,
+    collateralSettled: entry.collateralSettled * baseRate,
+    settledSoFar: settledSoFar * baseRate,
+    claimableInSeconds: reserveShort ? null : claimableIn,
+    reserveShort,
+    eligibleAt: entry.eligibleAt,
+    mainDebt: entry.mainDebt,
+    surplusHollar: entry.surplusHollar,
+    sourcePending: entry.sourcePending,
+  }
+}
+
+/** HOLLAR of Main debt per collateral unit; HOLLAR is priced at $1 */
+export const debtPerCollateral = (
+  mainDebtUsd: number | null | undefined,
+  totalCollateral: number | undefined,
+) =>
+  typeof mainDebtUsd === "number" && totalCollateral
+    ? mainDebtUsd / totalCollateral
+    : null
+
+/**
+ * Newest request first across every vault. Request ids count per vault, so
+ * they only break ties; the time the unwind may start orders the rest.
+ */
+export const sortWithdrawalRows = <
+  T extends Pick<JuicerWithdrawalRow, "requestId" | "eligibleAt">,
+>(
+  rows: T[],
+): T[] =>
+  [...rows].sort(
+    (a, b) => b.eligibleAt - a.eligibleAt || b.requestId - a.requestId,
+  )
+
+/** The block of a request's latest non-empty tranche; null before its first. */
+const lastTrancheBlock = (
+  logs: SettleLog[] | undefined,
+  requestId: number,
+): bigint | null =>
+  (logs ?? [])
+    .filter((l) => l.requestId === requestId && l.collateral > 0)
+    .reduce<
+      bigint | null
+    >((last, l) => (last === null || l.blockNumber > last ? l.blockNumber : last), null)
+
+/** The user's positions and withdrawal rows across every vault. */
+export const useJuicerAccount = (evmAddress: Hex | undefined) => {
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const { vaults: markets } = useJuicerVaults()
+
+  const decimalsOf = (vault: JuicerVaultConfig) =>
+    getAssetWithFallback(vault.assetId).decimals
+
+  const balanceQueries = useQueries({
+    queries: JUICER_VAULTS.map((vault) =>
+      vaultBalancesQuery(rpc, vault, decimalsOf(vault), evmAddress),
+    ),
+  })
+  const queueQueries = useQueries({
+    queries: JUICER_VAULTS.map((vault) =>
+      vaultQueueQuery(rpc, vault, decimalsOf(vault), evmAddress),
+    ),
+  })
+  const headroomQueries = useQueries({
+    queries: JUICER_VAULTS.map((vault) => exitHeadroomQuery(rpc, vault)),
+  })
+  // each waiting request judged as the keeper will start it
+  const projectedQueues = JUICER_VAULTS.map((vault, i) => {
+    const data = queueQueries[i]?.data
+    return data
+      ? projectQueue(data, headroomQueries[i]?.data, decimalsOf(vault))
+      : undefined
+  })
+  const userQueues = projectedQueues.map((q) =>
+    (q?.queue ?? []).filter((entry) => entry.isUser),
+  )
+  // the scan is heavy (up to 100k blocks of getLogs) and only prices closed
+  // withdrawals in a base asset, so it runs only for a wallet that has one
+  const settleLogQueries = useQueries({
+    queries: JUICER_VAULTS.map((vault, i) => ({
+      ...vaultSettleLogsQuery(rpc, vault, decimalsOf(vault)),
+      enabled:
+        rpc.isReady &&
+        !!vault.baseAssetId &&
+        userQueues[i]!.some((entry) => !entry.active),
+    })),
+  })
+  // a closed withdrawal keeps the ETH value it settled at, not today's rate:
+  // the oracle as of its last tranche (unknown past the scan window)
+  const closedRates = JUICER_VAULTS.flatMap((vault, i) =>
+    vault.baseAssetId
+      ? userQueues[i]!.filter((entry) => !entry.active).flatMap((entry) => {
+          const block = lastTrancheBlock(
+            settleLogQueries[i]?.data?.logs,
+            entry.requestId,
+          )
+          return block === null ? [] : [{ vault, entry, block }]
+        })
+      : [],
+  )
+  const closedRateQueries = useQueries({
+    queries: closedRates.map(({ vault, block }) =>
+      baseRateQuery(rpc, vault, block),
+    ),
+  })
+  const closedRateOf = (vault: JuicerVaultConfig, requestId: number) => {
+    const index = closedRates.findIndex(
+      (c) =>
+        c.vault.vaultAddress === vault.vaultAddress &&
+        c.entry.requestId === requestId,
+    )
+    const rate = closedRateQueries[index]?.data
+    return rate ? Number(rate) : null
+  }
+  const { data: subLoop } = useQuery(subLoopQuery(rpc))
+  const { data: backlog } = useQuery(exitBacklogQuery(rpc))
+  const debtPerCollateralOf = (i: number) =>
+    debtPerCollateral(markets[i]?.stats?.mainDebtUsd, markets[i]?.stats?.tvl)
+  const notStartedHollar = notStartedUnwind(
+    JUICER_VAULTS.map((_, i) => ({
+      queued: projectedQueues[i]?.queued ?? [],
+      debtPerCollateral: debtPerCollateralOf(i),
+    })),
+  )
+
+  if (!evmAddress) {
+    return { positions: [], withdrawals: [], isLoading: false, isError: false }
+  }
+
+  const positions = JUICER_VAULTS.flatMap<JuicerPosition>((vault, i) => {
+    const shares = balanceQueries[i]?.data?.shares ?? 0
+    const pendingYield = balanceQueries[i]?.data?.pendingYield ?? null
+    if (shares <= 0 && !((pendingYield ?? 0) > 0)) return []
+    const market = markets[i]
+    const assetValue = balanceQueries[i]?.data?.assetValue ?? 0
+    // user-facing amounts leave this hook in the vault's display asset
+    // (GETH balances show as ETH); USD prices the raw collateral value
+    const baseRate = market?.baseRate ? Number(market.baseRate) : 1
+    return [
+      {
+        vault,
+        shares,
+        sharesExact: balanceQueries[i]?.data?.sharesExact ?? "0",
+        pendingYield: pendingYield === null ? null : pendingYield * baseRate,
+        collateralBalance: balanceQueries[i]?.data?.eth ?? 0,
+        harvestStatus:
+          rpc.isReady && !balanceQueries[i]?.isError
+            ? (balanceQueries[i]?.data?.harvestStatus ?? null)
+            : null,
+        assetValue: assetValue * baseRate,
+        usdValue: assetValue * (market?.price ?? 0),
+        apy: market?.runRateApy ?? null,
+        deployedFraction: market?.deployedFraction ?? null,
+        accrualPaused: market?.accrualPaused ?? false,
+      },
+    ]
+  }).sort((a, b) => b.usdValue - a.usdValue)
+
+  const withdrawals = sortWithdrawalRows(
+    JUICER_VAULTS.flatMap((vault, i) => {
+      const market = markets[i]
+      const queued = projectedQueues[i]?.queued ?? []
+      const stats = market?.stats
+      const shortfall = {
+        carry: subLoop?.negativeCarry ?? null,
+        reserveHollar: stats?.protocolReserveHollar ?? null,
+        debtPerCollateral: debtPerCollateralOf(i),
+      }
+      return (userQueues[i] ?? []).map((entry) =>
+        buildWithdrawalRow({
+          vault,
+          entry,
+          exchangeRate: market?.stats?.exchangeRate ?? 1,
+          price: market?.price ?? 0,
+          baseRate:
+            (!entry.active && closedRateOf(vault, entry.requestId)) ||
+            (market?.baseRate ? Number(market.baseRate) : 1),
+          backlog: backlog ?? null,
+          notStartedHollar,
+          ahead: queued
+            .filter((q) => q.requestId < entry.requestId)
+            .reduce((sum, q) => sum + q.remaining, 0),
+          ownUnwind: queued.find((q) => q.requestId === entry.requestId)
+            ?.unwind,
+          deployment: queued.find((q) => q.requestId === entry.requestId)
+            ?.deployment,
+          shortfall,
+          now: Date.now(),
+        }),
+      )
+    }),
+  )
+
+  return {
+    positions,
+    withdrawals,
+    isError:
+      balanceQueries.some((q) => q.isError) ||
+      queueQueries.some((q) => q.isError),
+    isLoading:
+      balanceQueries.some((q) => q.isLoading) ||
+      queueQueries.some((q) => q.isLoading),
+  }
+}

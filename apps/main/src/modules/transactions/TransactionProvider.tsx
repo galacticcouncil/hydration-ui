@@ -87,7 +87,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
-  const { isFork } = useRpcProvider()
+  const { isFork, isReady } = useRpcProvider()
   const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
@@ -111,7 +111,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const hasRendered = useAfterFirstRender()
 
-  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
+  const {
+    data: fee,
+    isLoading: isLoadingFeeEstimate,
+    isError: isFeeEstimateError,
+  } = useEstimateFee(
     hasRendered &&
       !hasInitialError &&
       transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
@@ -190,6 +194,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const tip = useTransactionTip(state.tip, state.tipAssetId)
 
   const signAndSubmit = () => {
+    // A reorg re-reports the result, and finality reports it again. The app
+    // hears the first result once (a stepper must not advance twice); the
+    // toast follows every change, so a success re-executed as a failure shows.
+    let first: "success" | "error" | null = null
+    let last: "success" | "error" | null = null
     signAndSubmitMutation.mutate({
       chainKey: transaction.meta.srcChainKey,
       signerFeeAsset: transaction.signerFeeAsset,
@@ -221,6 +230,12 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         }
       },
       onSuccess: (event) => {
+        last = "success"
+        if (first) {
+          toasts.onSuccess?.(event)
+          return
+        }
+        first = "success"
         dispatch(doSetStatus("success"))
         transaction.onSuccess?.(event)
         transaction.invalidateQueries?.forEach((queryKey) =>
@@ -236,6 +251,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         removePendingTransaction(transaction.id)
       },
       onError: (message) => {
+        const changed = last !== "error"
+        last = "error"
+        if (first) {
+          if (changed) toasts.onError?.(message)
+          return
+        }
+        first = "error"
         dispatch(doSetError(message))
         removePendingTransaction(transaction.id)
         transaction.onError?.(message)
@@ -253,6 +275,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const isLoading =
     !hasRendered ||
+    (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
+      // a failed estimate must not block submit; it leaves the fee unknown
+      (!isReady || (!hasInitialError && !fee && !isFeeEstimateError))) ||
     isLoadingNonce ||
     isLoadingFeeEstimate ||
     isLoadingPaymentInfo

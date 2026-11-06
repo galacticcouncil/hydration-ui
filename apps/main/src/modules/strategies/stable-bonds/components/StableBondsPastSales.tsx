@@ -1,9 +1,9 @@
 import {
   Box,
+  Card,
+  CardHeader,
+  CardTitle,
   DataTable,
-  Paper,
-  SectionHeader,
-  Separator,
   TableContainer,
   TableRowAction,
   Text,
@@ -86,19 +86,13 @@ export const StableBondsPastSales: React.FC<StableBondsPastSalesProps> = ({
   const columns = useColumns()
 
   return (
-    <Paper>
-      <Box p="xl">
-        <SectionHeader
-          title={t("bonds.pastSales.title")}
-          as="h2"
-          noTopPadding
-          hasDescription
-        />
-      </Box>
-      <Separator />
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("bonds.pastSales.title")}</CardTitle>
+      </CardHeader>
       <TableContainer borderRadius="xl">
         <DataTable data={bonds} columns={columns} />
       </TableContainer>
-    </Paper>
+    </Card>
   )
 }

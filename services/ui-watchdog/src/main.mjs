@@ -1,6 +1,7 @@
 import { setTimeout as sleep } from "node:timers/promises"
 import {
   incidentFingerprint,
+  isRecovery,
   shouldNotify,
   dailyHeartbeatDue,
 } from "./policy.mjs"
@@ -32,6 +33,7 @@ if (["browser", "observer"].includes(c.role)) {
   let source = store.get("source"),
     sourceError = null,
     sourceChecked = 0
+  if (source?.sha) store.trimPending(source.sha)
   let referenceStatus = {
     state: c.token ? "pending" : "unconfigured",
     message: c.token
@@ -46,12 +48,9 @@ if (["browser", "observer"].includes(c.role)) {
     const notify =
       severity === "critical" ||
       severity === "error" ||
-      [
-        "production_changed",
-        "deployment_verified",
-        "daily_heartbeat",
-        "external_origin",
-      ].includes(kind) ||
+      ["production_changed", "deployment_verified", "external_origin"].includes(
+        kind,
+      ) ||
       data.recovery
     store.event(kind, severity, data, Boolean(c.webhook && notify))
     console.log(
@@ -114,6 +113,11 @@ if (["browser", "observer"].includes(c.role)) {
     pollSeconds: c.pollSeconds,
     references: referenceStatus,
     sourceError,
+    evidence: {
+      pending: store.pendingCount(),
+      overflow: Boolean(store.get("evidenceOverflow")),
+      retrospective: (store.get("retrospectiveIssues", []) || []).length,
+    },
     notifications: {
       configured: Boolean(c.webhook),
       ...store.notifications(),
@@ -145,6 +149,7 @@ if (["browser", "observer"].includes(c.role)) {
         source = { sha, firstSeen: Date.now() }
         referenceStatus = { state: c.token ? "pending" : "unconfigured", sha }
         store.set("source", source)
+        store.trimPending(sha)
         const changelog = previous
           ? await github.compare(previous, sha).catch(() => null)
           : null
@@ -265,14 +270,11 @@ if (["browser", "observer"].includes(c.role)) {
           severity,
           {
             ...assessment,
-            recovery:
-              recovered &&
-              [
-                "integrity_alert",
-                "degraded",
-                "down",
-                "watchdog_error",
-              ].includes(lastNotice.state),
+            recovery: isRecovery(
+              recovered,
+              lastNotice.state,
+              store.get("alerted", false),
+            ),
             sha: currentSha,
             expectedSha: source?.sha,
             findings,
@@ -289,6 +291,9 @@ if (["browser", "observer"].includes(c.role)) {
           at: Date.now(),
           state: assessment.state,
         })
+        // a warning between an error and the all-clear must not swallow the all-clear
+        if (["critical", "error"].includes(severity)) store.set("alerted", true)
+        else if (recovered) store.set("alerted", false)
       }
       if (assessment.state === "integrity_alert")
         store.set("retrospectiveIssues", [])

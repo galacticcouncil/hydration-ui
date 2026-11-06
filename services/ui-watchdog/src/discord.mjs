@@ -3,6 +3,20 @@ import { request, safeError } from "./util.mjs"
 export const escapeMarkdown = (value) =>
   String(value).replace(/([\\[\]()_*~`<>@])/g, "\\$1")
 
+// counts per observer and kind, so one noisy check reads as one line
+function summarize(findings = []) {
+  const groups = new Map()
+  for (const f of findings) {
+    const key = `${f.observer || (f.observers || []).join("/") || "all"}: ${f.kind}${f.message ? ` (${String(f.message).slice(0, 80)})` : ""}`
+    groups.set(key, (groups.get(key) || 0) + 1)
+  }
+  return [...groups]
+    .slice(0, 8)
+    .map(([key, n]) => escapeMarkdown(`${n}× ${key}`))
+    .join("\n")
+    .slice(0, 1024)
+}
+
 export function payload(event, c) {
   const mention = event.severity === "critical" ? c.mention || "" : ""
   const users = [...mention.matchAll(/<@!?(\d+)>/g)].map((x) => x[1])
@@ -72,10 +86,13 @@ export function payload(event, c) {
                 },
               ]
             : []),
+          ...(event.data.findings?.length
+            ? [{ name: "Findings", value: summarize(event.data.findings) }]
+            : []),
           ...(event.data.paths
             ? [
                 {
-                  name: "Changed paths",
+                  name: "Paths",
                   value:
                     event.data.paths
                       .slice(0, 12)

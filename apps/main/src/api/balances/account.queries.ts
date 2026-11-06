@@ -44,7 +44,7 @@ export const useAccountBalanceFilter = (): AccountBalanceFilter | null => {
 }
 
 export const accountBalancesQuery = (
-  { isReady, sdk }: TProviderContext,
+  { isReady, sdk, papi }: TProviderContext,
   address: string,
   filter: AccountBalanceFilter | null,
 ) =>
@@ -58,7 +58,7 @@ export const accountBalancesQuery = (
     queryFn: streamedQuery<AssetBalance[], BalanceRecord>({
       streamFn: ({ signal }) =>
         toAsyncIterable(
-          watchFilteredAccountBalances(sdk, address, filter!),
+          watchFilteredAccountBalances({ sdk, papi }, address, filter!),
           signal,
         ),
       reducer: mergeBalances,
