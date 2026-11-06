@@ -33,6 +33,8 @@ type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
   isLoading?: boolean
   hideChain?: boolean
+  /** merge each asset's logos (e.g. a pool's members) into one split circle */
+  collapsed?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [
@@ -50,6 +52,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   className,
   isLoading,
   hideChain = false,
+  collapsed,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -67,6 +70,23 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
     return <AssetLogoPrimitive size={size} isLoading />
   }
 
+  // a list of assets: merge each asset's logos into one circle, keep the list
+  if (collapsed && Array.isArray(id) && id.length > 1) {
+    return (
+      <MultipleAssetLogoWrapper size={size}>
+        {id.map((assetId, index) => (
+          <AssetLogo
+            key={`${assetId}-${index}`}
+            id={assetId}
+            size={size}
+            hideChain={hideChain}
+            collapsed
+          />
+        ))}
+      </MultipleAssetLogoWrapper>
+    )
+  }
+
   if (logoMetadata.length > 1) {
     const isATokenPool = logoMetadata.every(
       (data) => data.decoration === "atoken",
@@ -75,6 +95,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       <MultipleAssetLogoWrapper
         size={size}
         decoration={isATokenPool ? "atoken" : "none"}
+        collapsed={collapsed}
       >
         {logoMetadata.map((data, index) => (
           <AssetLogoPrimitive
@@ -96,7 +117,9 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}
-      chainSrc={hideChain ? undefined : singleIconMetadata?.chainSrc}
+      chainSrc={
+        hideChain || collapsed ? undefined : singleIconMetadata?.chainSrc
+      }
       size={size}
       decoration={singleIconMetadata?.decoration}
     />

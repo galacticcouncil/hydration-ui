@@ -5,6 +5,7 @@ import {
   getEntryCost,
   getExitCost,
   getIntentFloors,
+  getMaxDeposit,
   getMaxLeverage,
   getSliderMaxLeverage,
   getWithdrawDebtRepay,
@@ -61,7 +62,7 @@ describe("projectMultiplyPosition", () => {
 })
 
 describe("estimateRampRungs", () => {
-  // the research table: LT 80% / minHf 1.15, floors at 1% of the deposit
+  // expected rung counts at LT 80% / minHf 1.15, floored at 1% of the deposit
   it.each([
     [1.5, 4],
     [2, 6],
@@ -160,5 +161,38 @@ describe("getExitCost", () => {
     expect(
       getExitCost({ sold: 1, quotedOut: 2, collateralPriceInDebt: 1 }),
     ).toBe(-1)
+  })
+})
+
+describe("getMaxDeposit", () => {
+  const base = {
+    leverage: 3,
+    collateralPriceUsd: 2,
+    debtPriceUsd: 1,
+    supplyRoom: null,
+    debtRoom: null,
+    ceilingRoomUsd: null,
+  }
+
+  it("is uncapped without rooms", () => {
+    expect(getMaxDeposit(base)).toBeNull()
+  })
+
+  it("takes the tightest of supply, debt and ceiling room", () => {
+    // supply: 300 / 3 = 100; debt: 200 * 1 / (2 * 2) = 50; ceiling: 80 / 4 = 20
+    expect(getMaxDeposit({ ...base, supplyRoom: 300 })).toBe(100)
+    expect(getMaxDeposit({ ...base, supplyRoom: 300, debtRoom: 200 })).toBe(50)
+    expect(
+      getMaxDeposit({
+        ...base,
+        supplyRoom: 300,
+        debtRoom: 200,
+        ceilingRoomUsd: 80,
+      }),
+    ).toBe(20)
+  })
+
+  it("never goes negative", () => {
+    expect(getMaxDeposit({ ...base, supplyRoom: -5 })).toBe(0)
   })
 })

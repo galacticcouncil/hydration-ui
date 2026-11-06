@@ -26,6 +26,7 @@ import { formatUnits } from "viem"
 import { useAccountBalances } from "@/api/balances/account.hooks"
 import { AssetLogo } from "@/components/AssetLogo"
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { MultiplyAmountModal } from "@/modules/strategies/multiply/components/MultiplyAmountModal"
 import { MultiplyDepositSummary } from "@/modules/strategies/multiply/components/MultiplyDepositSummary"
 import { type MultiplyPairRow } from "@/modules/strategies/multiply/components/MultiplyPairs.columns"
@@ -36,6 +37,7 @@ import {
   STAT_COLUMN_WIDTH,
 } from "@/modules/strategies/multiply/components/MultiplyPositionsCard.styled"
 import { MultiplyProgress } from "@/modules/strategies/multiply/components/MultiplyProgress"
+import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
 import { MultiplyWithdrawSummary } from "@/modules/strategies/multiply/components/MultiplyWithdrawSummary"
 import { Ladder, Stall } from "@/modules/strategies/multiply/config/abi"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
@@ -51,7 +53,6 @@ import {
   isRungExpired,
   type MultiplyPositionStatus,
 } from "@/modules/strategies/multiply/utils/status"
-import { useAssets } from "@/providers/assetsProvider"
 
 const WAD_DECIMALS = 18
 // Aave reports uint256.max when there is no debt.
@@ -138,7 +139,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
 }) => {
   const { t } = useTranslation(["strategies", "common"])
   const writes = useMultiplyPositionWrites(pair)
-  const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
   const { getTransferableBalance } = useAccountBalances()
   const [openIds, setOpenIds] = useState<Set<bigint>>(new Set())
   const [modal, setModal] = useState<{
@@ -146,9 +147,9 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
     position: MultiplyPosition
   } | null>(null)
 
-  const collateral = getAssetWithFallback(pair.collateralAssetId)
-  const debt = getAssetWithFallback(pair.debtAssetId)
-  const feeAsset = getAssetWithFallback(pair.feeAssetId)
+  const collateral = display(pair.collateralAssetId)
+  const debt = display(pair.debtAssetId)
+  const feeAsset = display(pair.feeAssetId)
 
   const amount = (value: bigint) => formatUnits(value, collateral.decimals)
   const leverage = (wad: bigint) => Number(formatUnits(wad, WAD_DECIMALS))
@@ -207,7 +208,8 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
         const statusChip =
           progress !== null ? (
             <MultiplyProgress
-              // a ramp climbs to target, a close comes down to 1×: a new ladder starts a new bar instead of counting from the other's percent
+              // a ramp climbs to target and a close falls to 1×, so a new
+              // ladder starts a fresh bar instead of counting from the old one
               key={status}
               label={t(`multiply.status.${status}`)}
               progress={progress}
@@ -260,6 +262,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                     <AssetLogo
                       id={[pair.collateralAssetId, pair.debtAssetId]}
                       size="medium"
+                      collapsed
                     />
                   }
                   symbol={
@@ -316,14 +319,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                       {stat(
                         t("multiply.open.netApy"),
                         netApy !== null ? (
-                          <Text
-                            as="span"
-                            color={
-                              netApy > 0
-                                ? getToken("accents.success.emphasis")
-                                : undefined
-                            }
-                          >
+                          <Text as="span" color={apyColor(netApy)}>
                             {t("common:percent", { value: netApy * 100 })}
                           </Text>
                         ) : (
@@ -392,8 +388,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                 <Grid
                   columnWidth={STAT_COLUMN_WIDTH}
                   repeat="fill"
-                  columnGap="l"
-                  rowGap="l"
+                  gap="l"
                   p="l"
                 >
                   {stat(

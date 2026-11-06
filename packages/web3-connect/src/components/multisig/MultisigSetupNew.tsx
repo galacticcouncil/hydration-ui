@@ -1,4 +1,9 @@
-import { Collapsible, Separator, Stack } from "@galacticcouncil/ui/components"
+import {
+  Collapsible,
+  Separator,
+  Stack,
+  WizardStep,
+} from "@galacticcouncil/ui/components"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { useMemo, useState } from "react"
 import { useFieldArray, useFormContext } from "react-hook-form"
@@ -6,7 +11,6 @@ import { useTranslation } from "react-i18next"
 
 import { NameStep } from "@/components/multisig/components/NameStep"
 import { SignersStep } from "@/components/multisig/components/SignersStep"
-import { StepTrigger } from "@/components/multisig/components/StepTrigger"
 import { SummaryStep } from "@/components/multisig/components/SummaryStep"
 import { ThresholdStep } from "@/components/multisig/components/ThresholdStep"
 import {
@@ -167,7 +171,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
     <Stack>
       <Collapsible
         trigger={
-          <StepTrigger
+          <WizardStep
             stepNumber={1}
             state={getStepState("signers")}
             title={t("multisig.setup.signersLabel")}
@@ -203,7 +207,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
 
       <Collapsible
         trigger={
-          <StepTrigger
+          <WizardStep
             stepNumber={2}
             state={getStepState("threshold")}
             title={t("multisig.setup.thresholdLabel")}
@@ -237,7 +241,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
 
       <Collapsible
         trigger={
-          <StepTrigger
+          <WizardStep
             stepNumber={3}
             state={getStepState("name")}
             title={t("multisig.setup.nameLabel")}
@@ -262,7 +266,7 @@ export const MultisigSetupNew: React.FC<Props> = ({
 
       <Collapsible
         trigger={
-          <StepTrigger
+          <WizardStep
             stepNumber={4}
             state={getStepState("summary")}
             title={t("multisig.setup.new.step.summary")}
