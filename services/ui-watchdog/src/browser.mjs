@@ -5,6 +5,7 @@ import {
   deadline,
   continueChrome,
   chromeRoutes,
+  responseBody,
 } from "./chrome.mjs"
 import { evidence, headerIssues, sampledRoutes } from "./policy.mjs"
 import { sha256, safeError, timestamp } from "./util.mjs"
@@ -280,7 +281,7 @@ export async function probeBrowser(
             })
           if ((!expected && !executable) || response.status() !== 200) return
           try {
-            const body = await response.body(),
+            const body = await responseBody(response, c.timeoutMs || 30000),
               hash = sha256(body)
             if (body.length > 32 * 1024 * 1024)
               throw new Error("Browser response exceeds size limit")
