@@ -2,10 +2,10 @@ import { type Hex } from "viem"
 
 // On redeploy, update SUBLOOP_ADDRESS, VAULT_DEPLOY_BLOCK, and vaultAddress in
 // vaults.ts. POOL_ADDRESS, HOLLAR_ADDRESS, and PRIME_ADDRESS are mainnet addresses.
-export const SUBLOOP_ADDRESS: Hex = "0x40cca3da6cead6dada9e9ffc4c06e9039791876a"
+export const SUBLOOP_ADDRESS: Hex = "0x2df1d70f413b5edd16bb794791117948a7436a45"
 
 // The vault proxy's deploy block. Too low wastes time; too high truncates history.
-export const VAULT_DEPLOY_BLOCK = 244n
+export const VAULT_DEPLOY_BLOCK = 16_630_310n
 
 export const EVM_CALL_GAS = 2_000_000n
 // a deposit uses ~1.55M gas

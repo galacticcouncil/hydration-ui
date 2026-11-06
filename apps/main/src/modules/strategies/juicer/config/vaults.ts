@@ -30,7 +30,7 @@ export interface JuicerVaultConfig {
 export const JUICER_VAULTS: JuicerVaultConfig[] = [
   {
     assetId: GETH_ASSET_ID,
-    vaultAddress: "0xa64e418978482d5de91717cf6c77e1f40105f2ab",
+    vaultAddress: "0x98db179d65b8abc53946bd89b3433a4fd3bfb60c",
     shareAssetId: "5551",
     shareSymbol: "jETH",
     shareName: "Juicer ETH",
