@@ -12,7 +12,8 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { useTheme } from "@galacticcouncil/ui/theme"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { BIL_ASSET_ID, BIL_ERC20_ID } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
@@ -28,7 +29,12 @@ import {
   useMyJuicerPositions,
 } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
-import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import {
+  JUICER_VAULTS,
+  juicerPositionId,
+  vaultByPositionId,
+  vaultByShareAssetId,
+} from "@/modules/strategies/juicer/config/vaults"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -309,9 +315,7 @@ export const StrategyPositionCta: FC<StrategyPositionCtaProps> = ({
         assetId={position.assetId}
         // the position's assetId is its display asset (ETH), not the
         // collateral, so name the vault rather than look it up by asset
-        vault={JUICER_VAULTS.find(
-          (v) => position.id === `juicer:${v.vaultAddress}`,
-        )}
+        vault={vaultByPositionId(position.id)}
         mobile={mobile}
         isExistingPosition
       />
@@ -322,9 +326,9 @@ export const StrategyPositionCta: FC<StrategyPositionCtaProps> = ({
 }
 
 const JuicerShareAssetCta = ({ assetId }: { assetId: string }) => {
-  const vault = JUICER_VAULTS.find((v) => v.shareAssetId === assetId)
+  const vault = vaultByShareAssetId(assetId)
   const position = useMyJuicerPositions().data.find(
-    (position) => position.id === `juicer:${vault?.vaultAddress}`,
+    (position) => !!vault && position.id === juicerPositionId(vault),
   )
 
   // A ready claim is promoted on the strategy row, not on the share token.
@@ -390,26 +394,33 @@ export const StrategyPositionActions: FC<StrategyPositionActionsProps> = ({
 
 const AssetSkeletonCell = () => (
   <Flex align="center" gap="base">
-    <Skeleton circle width="2rem" height="2rem" />
+    <Skeleton circle width={pxToRem(32)} height={pxToRem(32)} />
     <Flex direction="column" gap="xs">
-      <Skeleton width="7rem" height="1rem" />
-      <Skeleton width="4rem" height="0.875rem" />
+      <Skeleton width={pxToRem(112)} height={pxToRem(16)} />
+      <Skeleton width={pxToRem(64)} height={pxToRem(14)} />
     </Flex>
   </Flex>
 )
 
 const AmountSkeletonCell = () => (
   <Flex direction="column" gap="xs">
-    <Skeleton width="6rem" height="1rem" />
-    <Skeleton width="4rem" height="0.875rem" />
+    <Skeleton width={pxToRem(96)} height={pxToRem(16)} />
+    <Skeleton width={pxToRem(64)} height={pxToRem(14)} />
   </Flex>
 )
 
-const ActionSkeletonCell = () => (
-  <Flex justify="flex-end">
-    <Skeleton width="5rem" height="1.875rem" borderRadius="9999px" />
-  </Flex>
-)
+const ActionSkeletonCell = () => {
+  const { themeProps } = useTheme()
+  return (
+    <Flex justify="flex-end">
+      <Skeleton
+        width={pxToRem(80)}
+        height={pxToRem(30)}
+        borderRadius={themeProps.radii.full}
+      />
+    </Flex>
+  )
+}
 
 export const useMyStrategiesColumns = (
   onDetails?: (position: StrategyPosition) => void,

@@ -7,7 +7,10 @@ import {
   myAssetsSorter,
 } from "@/modules/portfolio/overview/MyAssets/MyAssetsTable.utils"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
-import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import {
+  JUICER_VAULTS,
+  juicerPositionId,
+} from "@/modules/strategies/juicer/config/vaults"
 
 export const mergePortfolioAssets = (
   assets: MyAsset[],
@@ -21,7 +24,7 @@ export const mergePortfolioAssets = (
         // match by position id: assetId is the DISPLAY asset (ETH or GETH,
         // denomination-dependent), never a reliable vault key
         const vault = JUICER_VAULTS.find(
-          (vault) => position.id === `juicer:${vault.vaultAddress}`,
+          (vault) => position.id === juicerPositionId(vault),
         )
         return vault ? [vault.shareAssetId] : []
       }

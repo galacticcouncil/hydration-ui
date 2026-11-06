@@ -5,19 +5,8 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { refine, z } from "zod/v4"
 
-import i18n from "@/i18n"
 import { isExactAmount } from "@/modules/strategies/juicer/utils/amount"
 import { positive, required } from "@/utils/validators"
-
-export type WithdrawFormValues = {
-  amount: string
-  acknowledged: boolean
-}
-
-const defaultValues: WithdrawFormValues = {
-  amount: "",
-  acknowledged: false,
-}
 
 type UseWithdrawFormParams = {
   /** withdrawable balance in the UNDERLYING asset (shares x exchange rate) */
@@ -27,7 +16,7 @@ type UseWithdrawFormParams = {
   decimals: number
 }
 
-export const useWithdrawForm = ({
+const useWithdrawSchema = ({
   maxBalance,
   minRedeem,
   symbol,
@@ -35,7 +24,7 @@ export const useWithdrawForm = ({
 }: UseWithdrawFormParams) => {
   const { t } = useTranslation(["juicer", "common"])
 
-  const schema = z.object({
+  return z.object({
     amount: required
       .pipe(positive)
       .check(
@@ -60,9 +49,21 @@ export const useWithdrawForm = ({
         }),
       ),
     acknowledged: z.boolean().refine((value) => value, {
-      error: i18n.t("error.required"),
+      error: t("common:error.required"),
     }),
   })
+}
+
+export type WithdrawFormValues = z.infer<ReturnType<typeof useWithdrawSchema>>
+
+const defaultValues: WithdrawFormValues = {
+  amount: "",
+  acknowledged: false,
+}
+
+export const useWithdrawForm = (params: UseWithdrawFormParams) => {
+  const { maxBalance, minRedeem, decimals } = params
+  const schema = useWithdrawSchema(params)
 
   const form = useForm<WithdrawFormValues>({
     defaultValues,

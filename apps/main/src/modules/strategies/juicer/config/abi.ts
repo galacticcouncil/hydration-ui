@@ -105,13 +105,6 @@ export const VAULT_ABI = [
   },
   {
     type: "function",
-    name: "convertToShares",
-    inputs: [{ name: "assets", type: "uint256" }],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "paused",
     inputs: [],
     outputs: [{ name: "", type: "bool" }],
@@ -303,14 +296,6 @@ export const SUBLOOP_ABI = [
   {
     type: "function",
     name: "equityOf",
-    inputs: [{ name: "vault", type: "address" }],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
-  // Zero while a request is still short means the unwind stalled.
-  {
-    type: "function",
-    name: "pendingUnwindOf",
     inputs: [{ name: "vault", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",

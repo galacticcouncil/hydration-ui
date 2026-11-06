@@ -7,6 +7,7 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
+  queryOptions,
   useMutation,
   useMutationState,
   useQuery,
@@ -65,7 +66,7 @@ import { prepareWithdrawalClaim } from "@/modules/strategies/juicer/utils/withdr
 import { type AnyPapiTx } from "@/modules/transactions/types"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   type TransactionCommon,
@@ -362,31 +363,40 @@ export function useDeposit(
  * behind. A reference, not a worst case: a smaller trade can take another route,
  * which the review's fee check catches. Approval is always included.
  */
-export function useDepositReferenceTx(
-  deposit: JuicerDepositOption,
-  balance: string,
-  enabled: boolean,
-) {
-  const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const { evmAddress, buildBatch } = useVaultEvmCall()
+export const depositReferenceTxQuery = (
+  rpc: TProviderContext,
+  {
+    deposit,
+    balance,
+    address,
+    evmAddress,
+    payDecimals,
+    collateralDecimals,
+    slippage,
+    buildBatch,
+    enabled,
+  }: {
+    deposit: JuicerDepositOption
+    balance: string
+    address: string
+    evmAddress: Hex
+    payDecimals: number
+    collateralDecimals: number
+    slippage: number
+    buildBatch: ReturnType<typeof useVaultEvmCall>["buildBatch"]
+    enabled: boolean
+  },
+) => {
   const { vault, assetId } = deposit
   const { vaultAddress } = vault
-  const address = useAccount().account?.address ?? ""
-  const payDecimals = getAssetWithFallback(assetId).decimals
-  const collateralDecimals = getAssetWithFallback(vault.assetId).decimals
-  // a whole-balance sell builds as sell_all, which rejects a zero slippage
-  const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
-
-  return useQuery({
-    queryKey: [
-      ...juicerQueryKeys.vault(vaultAddress),
-      "deposit-reference",
+  return queryOptions({
+    queryKey: juicerQueryKeys.depositReference(
+      vaultAddress,
       address,
       assetId,
       balance,
       slippage,
-    ],
+    ),
     enabled: enabled && rpc.isReady && !!address && Big(balance || "0").gt(0),
     queryFn: async () => {
       const input = (amount: bigint) => ({
@@ -442,6 +452,33 @@ export function useDepositReferenceTx(
       )
     },
   })
+}
+
+export function useDepositReferenceTx(
+  deposit: JuicerDepositOption,
+  balance: string,
+  enabled: boolean,
+) {
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const { evmAddress, buildBatch } = useVaultEvmCall()
+  const address = useAccount().account?.address ?? ""
+  // a whole-balance sell builds as sell_all, which rejects a zero slippage
+  const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
+
+  return useQuery(
+    depositReferenceTxQuery(rpc, {
+      deposit,
+      balance,
+      address,
+      evmAddress,
+      payDecimals: getAssetWithFallback(deposit.assetId).decimals,
+      collateralDecimals: getAssetWithFallback(deposit.vault.assetId).decimals,
+      slippage,
+      buildBatch,
+      enabled,
+    }),
+  )
 }
 
 export type RedeemVariables = {

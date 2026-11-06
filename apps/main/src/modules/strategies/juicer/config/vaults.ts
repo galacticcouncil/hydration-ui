@@ -41,7 +41,19 @@ export const JUICER_VAULTS: JuicerVaultConfig[] = [
   },
 ]
 
-export const JUICER_RISK_PROFILE = "low"
+/** Id of a vault's position row in the portfolio. */
+export const juicerPositionId = (vault: JuicerVaultConfig): string =>
+  `juicer:${vault.vaultAddress}`
+
+export const vaultByPositionId = (
+  positionId: string | undefined,
+): JuicerVaultConfig | undefined =>
+  JUICER_VAULTS.find((vault) => juicerPositionId(vault) === positionId)
+
+export const vaultByShareAssetId = (
+  assetId: string,
+): JuicerVaultConfig | undefined =>
+  JUICER_VAULTS.find((vault) => vault.shareAssetId === assetId)
 
 /**
  * The identity the collateral is shown under: a pool-share collateral wears

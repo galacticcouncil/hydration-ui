@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  headroomExitFits,
   type HeadroomState,
   type PendingExit,
   projectHeadroomExits,
@@ -9,6 +8,10 @@ import {
 
 const settles = (s: HeadroomState, exits: PendingExit[]) =>
   projectHeadroomExits(s, exits).map((e) => e.viaHeadroom)
+
+// a single exit starting now settles from headroom
+const headroomExitFits = (s: HeadroomState, collateral: bigint) =>
+  settles(s, [{ collateral, startsIn: 0 }])[0]
 
 const unit = 10n ** 18n
 const base = 10n ** 8n
@@ -37,7 +40,7 @@ const STATE: HeadroomState = {
   protocolReserve: 1_000n * unit,
 }
 
-describe("headroomExitFits", () => {
+describe("a single exit", () => {
   it("settles an exit the LTV headroom absorbs", () => {
     // after 2 leave: 50% LTV on 8 of 10 collateral is 62.5%, under 68%
     expect(headroomExitFits(STATE, 2n * unit)).toBe(true)

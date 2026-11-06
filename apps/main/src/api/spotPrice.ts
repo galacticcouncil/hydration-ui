@@ -27,7 +27,7 @@ import {
   useBorrowPoolDataContract,
 } from "@/api/borrow"
 import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
-import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import { vaultByShareAssetId } from "@/modules/strategies/juicer/config/vaults"
 import { sharePrice } from "@/modules/strategies/juicer/utils/accounting"
 import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -148,7 +148,7 @@ const getDisplayPrice = async (
   stableCoinId: string,
 ) => {
   const vault = featureFlags.juicerEnabled
-    ? JUICER_VAULTS.find((vault) => vault.shareAssetId === assetId)
+    ? vaultByShareAssetId(assetId)
     : undefined
   const price = await getSpotPrice(
     sdk.api.router,

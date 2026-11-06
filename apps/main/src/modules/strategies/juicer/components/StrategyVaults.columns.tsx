@@ -10,6 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -26,7 +27,9 @@ const columnHelper = createColumnHelper<JuicerVaultMarket>()
 
 /** collateral amounts shown to the user, converted to the display asset */
 const toDisplay = (market: JuicerVaultMarket, value: number | string) =>
-  Number(value) * (market.baseRate ? Number(market.baseRate) : 1)
+  Big(value)
+    .times(market.baseRate || 1)
+    .toString()
 
 export const useStrategyVaultColumns = (
   onDeposit: (vault: JuicerVaultConfig) => void,

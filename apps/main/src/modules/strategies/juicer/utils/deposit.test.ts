@@ -9,7 +9,6 @@ import {
 import { describe, expect, it, vi } from "vitest"
 
 import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
-import { DEPOSIT_MIN_GAS } from "@/modules/strategies/juicer/config/constants"
 import { type Papi } from "@/providers/rpcProvider"
 
 import {
@@ -287,6 +286,9 @@ describe("Sell limit of a trade call", () => {
       expect(readSellLimit(call)).toBeNull()
   })
 })
+
+// a deposit uses ~1.55M gas
+const DEPOSIT_MIN_GAS = 1_700_000n
 
 it("encodes the batched deposit for the swapped amount with a gas limit above the floor", () => {
   const call = encodeDeposit({ ...args, amount: 2n * unit })

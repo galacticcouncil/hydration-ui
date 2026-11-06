@@ -8,7 +8,10 @@ import {
   useUserBalances,
   useVaultStats,
 } from "@/modules/strategies/bil/hooks/useVaultReads"
-import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import {
+  JUICER_VAULTS,
+  juicerPositionId,
+} from "@/modules/strategies/juicer/config/vaults"
 import { useVaultDisplayAsset } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
 import {
   type JuicerWithdrawalRow,
@@ -133,7 +136,7 @@ export const useMyJuicerPositions = () => {
 
     return [
       {
-        id: `juicer:${vault.vaultAddress}`,
+        id: juicerPositionId(vault),
         strategy: "juicer",
         assetId: asset.id,
         symbol: asset.symbol,

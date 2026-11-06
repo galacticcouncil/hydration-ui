@@ -119,17 +119,6 @@ const headroomOpen = (
 }
 
 /**
- * Whether an exit of `collateral` starting now would settle from the vault's
- * LTV headroom instead of waiting for the loop's unwind, as
- * CompoundLogic._fromHeadroom decides it. The exit's own reward and fee
- * slices are left out, so it is an estimate.
- */
-export const headroomExitFits = (
-  s: HeadroomState,
-  collateral: bigint,
-): boolean => quoteExit(s, collateral)?.headroom ?? false
-
-/**
  * The vault after an exit starts. A headroom exit leaves its loop slice and
  * Main debt with the holders who stay, unwinding only a surplus over that debt
  * (or handing a shortfall to the reserve); any other exit unwinds its slice

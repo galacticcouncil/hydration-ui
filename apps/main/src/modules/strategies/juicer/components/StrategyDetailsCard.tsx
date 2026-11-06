@@ -17,10 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import { DepositModal } from "@/modules/strategies/juicer/components/DepositModal"
 import { useStrategyVaultColumns } from "@/modules/strategies/juicer/components/StrategyVaults.columns"
-import {
-  JUICER_RISK_PROFILE,
-  type JuicerVaultConfig,
-} from "@/modules/strategies/juicer/config/vaults"
+import { type JuicerVaultConfig } from "@/modules/strategies/juicer/config/vaults"
 import { useJuicerVaults } from "@/modules/strategies/juicer/hooks/useJuicerVaults"
 
 export const StrategyDetailsCard: FC = () => {
@@ -51,7 +48,7 @@ export const StrategyDetailsCard: FC = () => {
             wrap
             size="medium"
             label={t("strategy.riskProfile")}
-            value={t(`strategy.risk.${JUICER_RISK_PROFILE}`)}
+            value={t("strategy.risk.low")}
           />
         </ValueStatsGroup>
       </CardBody>

@@ -9,7 +9,6 @@ const vault = (vaultAddress: string) => [
 export const juicerQueryKeys = {
   subLoop: () => [JUICER_QUERY_KEY_PREFIX, "subloop"],
   exitBacklog: () => [JUICER_QUERY_KEY_PREFIX, "exit-backlog"],
-  claimSurplus: () => [JUICER_QUERY_KEY_PREFIX, "claim-surplus"],
   claim: () => [JUICER_QUERY_KEY_PREFIX, "claim"],
   vault,
   vaultStats: (vaultAddress: string) => [...vault(vaultAddress), "stats"],
@@ -22,10 +21,6 @@ export const juicerQueryKeys = {
   depositCapacity: (vaultAddress: string) => [
     ...vault(vaultAddress),
     "deposit-capacity",
-  ],
-  vaultLoopPosition: (vaultAddress: string) => [
-    ...vault(vaultAddress),
-    "loop-position",
   ],
   exitHeadroom: (vaultAddress: string) => [
     ...vault(vaultAddress),
@@ -44,6 +39,20 @@ export const juicerQueryKeys = {
     ...vault(vaultAddress),
     "queue",
     evmAddress,
+  ],
+  depositReference: (
+    vaultAddress: string,
+    address: string,
+    assetId: string,
+    balance: string,
+    slippage: number,
+  ) => [
+    ...vault(vaultAddress),
+    "deposit-reference",
+    address,
+    assetId,
+    balance,
+    slippage,
   ],
   claimPreview: (
     vaultAddress: string,

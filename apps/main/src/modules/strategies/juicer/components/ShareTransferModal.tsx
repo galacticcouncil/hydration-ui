@@ -26,7 +26,10 @@ import { type Hex, isAddress } from "viem"
 import { AssetLogo } from "@/components/AssetLogo"
 import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
-import { JUICER_VAULTS } from "@/modules/strategies/juicer/config/vaults"
+import {
+  JUICER_VAULTS,
+  vaultByPositionId,
+} from "@/modules/strategies/juicer/config/vaults"
 import { useBaseRates } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
 import {
   subLoopQuery,
@@ -99,9 +102,7 @@ const ShareTransferModalContent = ({
 
   // Juicer: the modal's amounts are display-asset equivalents, but what moves
   // is vault shares — convert through the share and collateral spot rates.
-  const vault = JUICER_VAULTS.find(
-    (vault) => `juicer:${vault.vaultAddress}` === selectedAsset.positionId,
-  )
+  const vault = vaultByPositionId(selectedAsset.positionId)
   const decimals = vault
     ? getAssetWithFallback(vault.assetId).decimals
     : undefined

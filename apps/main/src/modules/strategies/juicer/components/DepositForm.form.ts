@@ -8,14 +8,6 @@ import { refine, z } from "zod/v4"
 import { isExactAmount } from "@/modules/strategies/juicer/utils/amount"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
-export type DepositFormValues = {
-  amount: string
-}
-
-const defaultValues: DepositFormValues = {
-  amount: "",
-}
-
 type UseDepositFormParams = {
   maxBalance: string
   /** remaining vault capacity expressed in the asset paid with */
@@ -25,7 +17,7 @@ type UseDepositFormParams = {
   decimals: number
 }
 
-export const useDepositForm = ({
+const useDepositSchema = ({
   maxBalance,
   maxCapacity,
   symbol,
@@ -33,7 +25,7 @@ export const useDepositForm = ({
 }: UseDepositFormParams) => {
   const { t } = useTranslation(["juicer", "common"])
 
-  const schema = z.object({
+  return z.object({
     amount: required
       .pipe(positive)
       .check(
@@ -54,6 +46,17 @@ export const useDepositForm = ({
         ),
       ),
   })
+}
+
+export type DepositFormValues = z.infer<ReturnType<typeof useDepositSchema>>
+
+const defaultValues: DepositFormValues = {
+  amount: "",
+}
+
+export const useDepositForm = (params: UseDepositFormParams) => {
+  const { maxBalance, maxCapacity, decimals } = params
+  const schema = useDepositSchema(params)
 
   const form = useForm<DepositFormValues>({
     defaultValues,

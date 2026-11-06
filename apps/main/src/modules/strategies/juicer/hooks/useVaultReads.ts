@@ -332,36 +332,6 @@ export const subLoopQuery = ({ isReady, evm }: TProviderContext) =>
     refetchInterval: 30_000,
   })
 
-/**
- * SubLoop equity for this vault. equity gates withdraw; pendingUnwind signals
- * settlement that is awaiting source funds.
- */
-export const vaultLoopPositionQuery = (
-  { isReady, evm }: TProviderContext,
-  vault: JuicerVaultConfig,
-) =>
-  queryOptions({
-    queryKey: juicerQueryKeys.vaultLoopPosition(vault.vaultAddress),
-    enabled: isReady,
-    queryFn: async () => {
-      const subLoop = getContract({
-        address: SUBLOOP_ADDRESS,
-        abi: SUBLOOP_ABI,
-        client: evm,
-      })
-      const [equity, pendingUnwind] = await Promise.all([
-        safeRead("SubLoop.equityOf", () =>
-          subLoop.read.equityOf([vault.vaultAddress]),
-        ),
-        safeRead("SubLoop.pendingUnwindOf", () =>
-          subLoop.read.pendingUnwindOf([vault.vaultAddress]),
-        ),
-      ])
-      return { equity, pendingUnwind }
-    },
-    refetchInterval: 30_000,
-  })
-
 export const vaultBalancesQuery = (
   { isReady, evm }: TProviderContext,
   vault: JuicerVaultConfig,

@@ -11,7 +11,8 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { useTheme } from "@galacticcouncil/ui/theme"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
@@ -24,6 +25,7 @@ import { portfolioOverviewTabs } from "@/modules/portfolio/overview/PortfolioOve
 import { SPortfolioTableWrapper } from "@/modules/portfolio/overview/PortfolioOverview.styled"
 
 export const PortfolioOverviewSkeleton = () => {
+  const { themeProps } = useTheme()
   const { t } = useTranslation("wallet")
   const { category } = useSearch({ from: "/portfolio/" })
   const assetsColumns = useMyAssetsColumns(false)
@@ -57,9 +59,9 @@ export const PortfolioOverviewSkeleton = () => {
 
   return (
     <Flex direction="column" gap="l">
-      <Box height="2.5rem">
+      <Box height={pxToRem(40)}>
         <Text fs="h7">
-          <Skeleton width="6.5rem" height="1em" />
+          <Skeleton width={pxToRem(104)} height="1em" />
         </Text>
       </Box>
 
@@ -84,7 +86,7 @@ export const PortfolioOverviewSkeleton = () => {
                   align="left"
                   customLabel={
                     <Text fs="p6">
-                      <Skeleton width="4rem" height="1em" />
+                      <Skeleton width={pxToRem(64)} height="1em" />
                     </Text>
                   }
                   isLoading
@@ -98,9 +100,9 @@ export const PortfolioOverviewSkeleton = () => {
           {portfolioOverviewTabs.map((tab) => (
             <Skeleton
               key={tab}
-              width="4.5rem"
-              height="1.75rem"
-              borderRadius="9999px"
+              width={pxToRem(72)}
+              height={pxToRem(28)}
+              borderRadius={themeProps.radii.full}
             />
           ))}
         </Flex>

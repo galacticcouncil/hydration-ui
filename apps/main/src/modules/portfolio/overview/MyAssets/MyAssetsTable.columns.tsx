@@ -177,12 +177,12 @@ export const useMyAssetsColumns = (
       }),
       cell: ({ row }) => (
         <Amount
-          value={`${row.original.strategyPosition?.strategy === "juicer" ? "≈ " : ""}${t(
-            "common:number",
-            {
-              value: row.original.total,
-            },
-          )}`}
+          value={t(
+            row.original.strategyPosition?.strategy === "juicer"
+              ? "common:approx.number"
+              : "common:number",
+            { value: row.original.total },
+          )}
           displayValue={formatDisplayValueRef.current(
             row.original.totalDisplay,
           )}
@@ -414,12 +414,12 @@ export const useMyAssetsColumns = (
         const amount = (
           <Amount
             variant="default"
-            value={`${row.original.strategyPosition?.strategy === "juicer" ? "≈ " : ""}${t(
-              "common:number",
-              {
-                value: row.original.total,
-              },
-            )}`}
+            value={t(
+              row.original.strategyPosition?.strategy === "juicer"
+                ? "common:approx.number"
+                : "common:number",
+              { value: row.original.total },
+            )}
             displayValue={formatDisplayValueRef.current(
               row.original.totalDisplay,
             )}
