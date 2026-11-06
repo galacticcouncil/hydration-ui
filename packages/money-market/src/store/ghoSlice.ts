@@ -1,7 +1,7 @@
-import { GhoService } from "@aave/contract-helpers"
 import { GhoReserveData, GhoUserData, normalize } from "@aave/math-utils"
 import { StateCreator } from "zustand"
 
+import { GhoService } from "@/utils/ghoService"
 import { GHO_SUPPORTED_MARKETS, GHO_SYMBOL } from "@/utils/ghoUtilities"
 import { getProvider } from "@/utils/provider"
 
