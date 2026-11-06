@@ -9,6 +9,8 @@ import { LINKS } from "@/config/navigation"
 import { useAssets } from "@/providers/assetsProvider"
 import { useBannersStore } from "@/states/banners"
 
+const MAX_SYMBOLS = 5
+
 export const NewFarmsBannerWrapper = () => {
   const banner = useBannersStore((state) => state.banners["new-farms"])
   const isTimestampExpired =
@@ -43,16 +45,18 @@ export const NewFarmsBanner = () => {
 
   if (!newFarms || newFarms.length === 0) return null
 
-  const assetSymbols = isSuccess
-    ? newFarms
-        .map((assetId) => getAsset(assetId)?.symbol)
-        .filter(Boolean)
-        .join(" & ")
-    : ""
+  const symbols = isSuccess
+    ? newFarms.map((assetId) => getAsset(assetId)?.symbol).filter(Boolean)
+    : []
+  const assetSymbols = symbols.slice(0, MAX_SYMBOLS).join(", ")
 
   return (
     <BannerTop
-      message={t("banners.newFarms.title", { assetSymbols })}
+      message={
+        symbols.length > MAX_SYMBOLS
+          ? t("banners.newFarms.titleMore", { assetSymbols })
+          : t("banners.newFarms.title", { assetSymbols })
+      }
       actionLabel={t("banners.newFarms.cta")}
       onAction={() => navigate({ to: LINKS.liquidity })}
       onClose={() => setBannerVisible("new-farms", false, Date.now())}

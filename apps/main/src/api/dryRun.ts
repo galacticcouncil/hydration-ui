@@ -5,6 +5,29 @@ import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonVie
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { TProviderContext } from "@/providers/rpcProvider"
 
+type DryRunCallArgs = Parameters<
+  TProviderContext["papi"]["apis"]["DryRunApi"]["dry_run_call"]
+>
+type RuntimeCall = DryRunCallArgs[1]
+
+/** null when the call would succeed or cannot be dry-run */
+export const getDryRunError = async (
+  { papi, dryRunErrorDecoder }: TProviderContext,
+  address: string,
+  tx: AnyPapiTx,
+  options?: DryRunCallArgs[3],
+) => {
+  const result = await papi.apis.DryRunApi.dry_run_call(
+    { type: "system", value: { type: "Signed", value: address } },
+    tx.decodedCall as RuntimeCall,
+    4,
+    options,
+  ).catch(() => null)
+  if (!result?.success || result.value.execution_result.success) return null
+  const { error } = result.value.execution_result.value
+  return (await dryRunErrorDecoder.parseError(error)) ?? { name: error.type }
+}
+
 export const papiDryRunErrorQuery = (
   { papi, dryRunErrorDecoder }: TProviderContext,
   address: string,

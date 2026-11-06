@@ -32,7 +32,17 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LINKS, swapTabLink } from "@/config/navigation"
 import { AssetDetailStaking } from "@/modules/portfolio/overview/MyAssets/AssetDetailStaking"
 import { DepositToHydrationTableAction } from "@/modules/portfolio/overview/MyAssets/DepositToHydrationAction"
+import { JuicerAssetCta } from "@/modules/portfolio/overview/MyAssets/JuicerAssetCta"
+import {
+  isStrategyShareAsset,
+  StrategyPositionActions,
+  StrategyPositionLabel,
+  StrategyShareAssetCta,
+  StrategyShareAssetLabel,
+} from "@/modules/portfolio/overview/MyStrategies/MyStrategies.columns"
+import { StrategyPosition } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { TransferPositionModal } from "@/modules/portfolio/overview/Transfer/TransferPositionModal"
+import { ShareTransferModal } from "@/modules/strategies/propeller/components/ShareTransferModal"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"
@@ -54,6 +64,8 @@ export type MyAsset = TAssetData & {
   readonly transferable: string
   readonly transferableDisplay: string | undefined
   readonly canStake: boolean
+  readonly strategyPosition?: StrategyPosition
+  readonly strategyTransferableKnown?: boolean
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
@@ -102,6 +114,7 @@ export const useMyAssetsColumns = (
   isEmpty: boolean,
   isReadOnly = false,
   showDepositAction = true,
+  strategyPositions: StrategyPosition[] = [],
 ) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile, isLaptop, isTablet, isLargeDesktop } = useBreakpoints()
@@ -125,6 +138,9 @@ export const useMyAssetsColumns = (
   const formatDisplayValueRef = useRef(formatDisplayValue)
   formatDisplayValueRef.current = formatDisplayValue
 
+  const strategyPositionsRef = useRef(strategyPositions)
+  strategyPositionsRef.current = strategyPositions
+
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       id: MyAssetsTableColumn.Asset,
@@ -137,9 +153,14 @@ export const useMyAssetsColumns = (
         select: (row) => row.original.symbol,
         compare: naturally,
       }),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} />
-      },
+      cell: ({ row }) =>
+        row.original.strategyPosition ? (
+          <StrategyPositionLabel position={row.original.strategyPosition} />
+        ) : isStrategyShareAsset(row.original.id) ? (
+          <StrategyShareAssetLabel assetId={row.original.id} />
+        ) : (
+          <AssetLabelFull asset={row.original} />
+        ),
     })
 
     const totalColumn = columnHelper.accessor("totalDisplay", {
@@ -156,9 +177,12 @@ export const useMyAssetsColumns = (
       }),
       cell: ({ row }) => (
         <Amount
-          value={t("common:number", {
-            value: row.original.total,
-          })}
+          value={`${row.original.strategyPosition?.strategy === "juicer" ? "≈ " : ""}${t(
+            "common:number",
+            {
+              value: row.original.total,
+            },
+          )}`}
           displayValue={formatDisplayValueRef.current(
             row.original.totalDisplay,
           )}
@@ -180,9 +204,14 @@ export const useMyAssetsColumns = (
       }),
       cell: ({ row }) => (
         <Amount
-          value={t("common:number", {
-            value: row.original.transferable,
-          })}
+          value={
+            row.original.strategyPosition &&
+            !row.original.strategyTransferableKnown
+              ? "—"
+              : t("common:number", {
+                  value: row.original.transferable,
+                })
+          }
           displayValue={formatDisplayValueRef.current(
             row.original.transferableDisplay,
           )}
@@ -214,6 +243,35 @@ export const useMyAssetsColumns = (
           )
         }
 
+        const position = row.original.strategyPosition
+        if (position) {
+          return (
+            <>
+              <StrategyPositionActions
+                position={position}
+                onTransfer={() => setModal("transfer")}
+              />
+              {modal === "transfer" && (
+                <ShareTransferModal
+                  positions={strategyPositionsRef.current}
+                  positionId={position.id}
+                  symbol={position.symbol}
+                  balance={
+                    position.strategy === "juicer"
+                      ? position.underlyingAmount
+                      : position.shareAmount
+                  }
+                  shareBalance={position.shareAmount}
+                  isJuicer={position.strategy === "juicer"}
+                  assetId={position.assetId}
+                  open
+                  onClose={() => setModal(null)}
+                />
+              )}
+            </>
+          )
+        }
+
         return (
           <Flex
             gap={isLargeDesktop ? "base" : "s"}
@@ -223,7 +281,9 @@ export const useMyAssetsColumns = (
             {row.original.id === NATIVE_ASSET_ID && (
               <>
                 {isLargeDesktop ? (
-                  <AssetDetailStaking asset={row.original} />
+                  <Flex mr="auto">
+                    <AssetDetailStaking asset={row.original} />
+                  </Flex>
                 ) : null}
                 <DataTableExpandTrigger>
                   <TableRowAction variant="accent">
@@ -235,6 +295,10 @@ export const useMyAssetsColumns = (
                 </DataTableExpandTrigger>
               </>
             )}
+            {isLargeDesktop && isStrategyShareAsset(row.original.id) && (
+              <StrategyShareAssetCta assetId={row.original.id} />
+            )}
+            {isLargeDesktop && <JuicerAssetCta assetId={row.original.id} />}
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
             </TableRowAction>
@@ -322,9 +386,14 @@ export const useMyAssetsColumns = (
       meta: {
         skeletonCell: AssetSkeletonCell,
       },
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original} withName={false} />
-      },
+      cell: ({ row }) =>
+        row.original.strategyPosition ? (
+          <StrategyPositionLabel position={row.original.strategyPosition} />
+        ) : isStrategyShareAsset(row.original.id) ? (
+          <StrategyShareAssetLabel assetId={row.original.id} />
+        ) : (
+          <AssetLabelFull asset={row.original} withName={false} />
+        ),
     })
 
     const totalColumnMobile = columnHelper.accessor("totalDisplay", {
@@ -345,9 +414,12 @@ export const useMyAssetsColumns = (
         const amount = (
           <Amount
             variant="default"
-            value={t("common:number", {
-              value: row.original.total,
-            })}
+            value={`${row.original.strategyPosition?.strategy === "juicer" ? "≈ " : ""}${t(
+              "common:number",
+              {
+                value: row.original.total,
+              },
+            )}`}
             displayValue={formatDisplayValueRef.current(
               row.original.totalDisplay,
             )}

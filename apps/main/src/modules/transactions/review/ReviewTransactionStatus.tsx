@@ -57,7 +57,7 @@ const ErrorCopyButton = () => {
 
 export const ReviewTransactionStatus = () => {
   const { t } = useTranslation()
-  const { isIdle, status, reset, error } = useTransaction()
+  const { isIdle, status, reset, error, errorMessage } = useTransaction()
 
   if (isIdle) {
     return null
@@ -66,6 +66,7 @@ export const ReviewTransactionStatus = () => {
   return (
     <TransactionStatus
       status={status}
+      errorDescription={errorMessage}
       errorActions={
         <>
           <Button
