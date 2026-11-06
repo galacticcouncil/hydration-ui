@@ -95,6 +95,8 @@ export const PortfolioSummary: FC = memo(() => {
   )
 
   const isClaimableRewardsLoading = rewards.isLoading || referralPriceLoading
+  const showBorrow = isBorrowLoading || (!!borrow && !Big(borrow).eq(0))
+  const showSupply = isBorrowLoading || (!!supply && !Big(supply).eq(0))
 
   const stats: Array<{
     label: string
@@ -113,18 +115,26 @@ export const PortfolioSummary: FC = memo(() => {
       value: t("common:currency", { value: assets }),
       isLoading: isAssetsLoading,
     },
-    {
-      label: t("myAssets.totalBorrow"),
-      value: t("common:currency", { value: borrow }),
-      isLoading: isBorrowLoading,
-      tooltip: getMarketBreakdownTooltip(borrowByMarket),
-    },
-    {
-      label: t("myAssets.totalSupply"),
-      value: t("common:currency", { value: supply || 0 }),
-      isLoading: isBorrowLoading,
-      tooltip: getMarketBreakdownTooltip(supplyByMarket),
-    },
+    ...(showBorrow
+      ? [
+          {
+            label: t("myAssets.totalBorrow"),
+            value: t("common:currency", { value: borrow }),
+            isLoading: isBorrowLoading,
+            tooltip: getMarketBreakdownTooltip(borrowByMarket),
+          },
+        ]
+      : []),
+    ...(showSupply
+      ? [
+          {
+            label: t("myAssets.totalSupply"),
+            value: t("common:currency", { value: supply }),
+            isLoading: isBorrowLoading,
+            tooltip: getMarketBreakdownTooltip(supplyByMarket),
+          },
+        ]
+      : []),
     {
       label: t("balances.header.liquidity"),
       value: t("common:currency", { value: liquidity }),
@@ -156,6 +166,7 @@ export const PortfolioSummary: FC = memo(() => {
 
   const statsContent = (
     <SPortfolioOverviewStats
+      statCount={stats.length}
       separated={!isLg}
       gap="xxl"
       direction="row"

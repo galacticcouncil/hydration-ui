@@ -8,6 +8,7 @@ import { Balance, useAccountBalancesWithPriceByAssetType } from "@/api/balances"
 import { useUserBorrowSummary, useUserGigaBorrowSummary } from "@/api/borrow"
 import { useMyIsolatedPoolsLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import { useMyVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
+import { useMyJuicerPositions } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
 import { useBilPoolPosition } from "@/modules/strategies/bil/hooks/useBilPoolPosition"
 import {
   isOmnipoolDepositPosition,
@@ -47,6 +48,13 @@ export const useWalletBalancesSectionData = () => {
   const evmAddress = useEvmAddress()
   const gigaBorrowSummary = useUserGigaBorrowSummary()
   const bilPoolPosition = useBilPoolPosition(evmAddress)
+  // Juicer withdrawals in flight: the shares sit in the vault's escrow, so no
+  // wallet balance holds them until the claim — count them as assets
+  const juicer = useMyJuicerPositions()
+  const juicerPendingUsd = juicer.data.reduce(
+    (sum, position) => sum.plus(position.pendingWithdrawalValue ?? 0),
+    Big(0),
+  )
 
   const { data: balancesWithPrice, isSettled: isBalanceSettled } =
     useAccountBalancesWithPriceByAssetType([
@@ -144,8 +152,8 @@ export const useWalletBalancesSectionData = () => {
   }
 
   return {
-    assets: assetsTotal.toString(),
-    isAssetsLoading: !isBalanceSettled,
+    assets: assetsTotal.plus(juicerPendingUsd).toString(),
+    isAssetsLoading: !isBalanceSettled || juicer.isLoading,
     liquidity: liquidityTotal.toString(),
     farms: farmingTotal.toString(),
     isLiquidityLoading:

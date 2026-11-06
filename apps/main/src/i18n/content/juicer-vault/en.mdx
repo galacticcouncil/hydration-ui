@@ -1,0 +1,29 @@
+Put the borrowing power of the asset you want to hold to work. Your deposit is supplied to Hydration's money market and you receive **vault shares**. Borrowed HOLLAR goes into a separate **PRIME looping strategy**, while you keep exposure to your deposited asset.
+
+### Principal protection
+
+Synthetic backing protects the collateral position, called Main, while the PRIME loop generates yield separately. This keeps your deposited asset outside the PRIME loop's liquidation path without giving Main additional borrowing power. You do not pair your deposit with another asset in a liquidity pool, so there is **no impermanent loss from pool rebalancing**. Its dollar value still follows the asset's price.
+
+### Automatic strategy management
+
+The strategy supplies PRIME, borrows HOLLAR and repeats within its configured limits. PRIME earns yield from real-world credit. Keepers build the position gradually, harvest earnings and rebalance as conditions change.
+
+When the PRIME loop reaches its safety threshold, keepers reduce exposure and repay debt. When collateral prices call for less Main borrowing, part of the strategy is unwound and its HOLLAR proceeds repay Main. Ordinary rebalancing does not sell your deposited collateral. These actions depend on keeper execution and available liquidity.
+
+### Earnings and fees
+
+Juicer converts harvested yield into your deposited asset. After the protocol harvest share and Main borrowing interest, the remainder compounds into your balance, with **nothing to claim**. Yield awaiting harvest is shown separately as **pending yield** and may change before conversion. Loop borrowing costs already reduce the yield available to harvest.
+
+Discounted HOLLAR borrowing is paired with a governance-configured protocol harvest share. Much of the PRIME loop's yield would otherwise pay HOLLAR interest; this pricing shifts protocol revenue into harvested collateral. Deposited principal is excluded from the harvest fee. Review the current fee and discount settings before depositing.
+
+### Withdrawals
+
+Request a full or partial withdrawal when the vault is accepting requests. **Requests cannot be cancelled.** Your shares stay invested during the cooldown. The cooldown is the earliest an unwind can begin; the collateral entitlement and debt allocation are fixed when it starts. The exit then bears its own borrowing interest.
+
+Claim available payouts **in parts** as settlement progresses. Shared withdrawal activity and liquidity affect completion time. Additional source proceeds may become claimable in HOLLAR, separately from your collateral payout.
+
+### Protection and considerations
+
+Juicer's principal-preservation policy is denominated in the asset you deposited. Synthetic backing and automatic debt management support that protection; they rely on correct configuration, reliable oracles and timely maintenance. The PRIME loop retains its own liquidation risk.
+
+If strategy losses leave a shortfall, unpaid claims remain recorded while governance supplies recovery funding. Withdrawals may take longer or be paused, and no fixed recovery deadline is promised. Principal protection is not an unconditional guarantee.
