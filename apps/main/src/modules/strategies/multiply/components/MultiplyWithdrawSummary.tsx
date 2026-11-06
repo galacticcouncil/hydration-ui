@@ -9,6 +9,7 @@ import { formatUnits } from "viem"
 
 import { bestSellQuery } from "@/api/trade"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { MultiplySwapResult } from "@/modules/strategies/multiply/components/MultiplySwapResult"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 import { type MultiplyPosition } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
@@ -16,7 +17,6 @@ import {
   getExitCost,
   getWithdrawDebtRepay,
 } from "@/modules/strategies/multiply/utils/projection"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
@@ -41,10 +41,10 @@ export const MultiplyWithdrawSummary: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation(["strategies", "common"])
   const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const collateral = getAssetWithFallback(pair.collateralAssetId)
-  const debt = getAssetWithFallback(pair.debtAssetId)
-  const feeAsset = getAssetWithFallback(pair.feeAssetId)
+  const display = useResolveAssetDisplay()
+  const collateral = display(pair.collateralAssetId)
+  const debt = display(pair.debtAssetId)
+  const feeAsset = display(pair.feeAssetId)
 
   const nav = Number(formatUnits(position.nav, collateral.decimals))
   const leverage = Number(formatUnits(position.leverage, 18))

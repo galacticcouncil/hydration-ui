@@ -1,36 +1,57 @@
+import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   AssetLabel,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Icon,
+  MenuItemLabel,
+  MenuSelectionItem,
   Skeleton,
   Text,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
-import { type useMultiplyPairsMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
-import { useAssets } from "@/providers/assetsProvider"
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
+import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
+import { isCustomLoop } from "@/modules/strategies/multiply/config/pairs"
+import { useCustomLoopsStore } from "@/modules/strategies/multiply/hooks/useCustomLoops"
+import { type MultiplyPairRow } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
+import { useMultiplyPositions } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
+import { canRemoveLoop } from "@/modules/strategies/multiply/utils/loops"
 
-export type MultiplyPairRow = ReturnType<typeof useMultiplyPairsMetrics>[number]
+export type { MultiplyPairRow }
 
 const columnHelper = createColumnHelper<MultiplyPairRow>()
 
 const AssetCell: React.FC<{ id: string }> = ({ id }) => {
-  const { getAssetWithFallback } = useAssets()
+  const asset = useResolveAssetDisplay()(id)
   return (
     <AssetLabelFullContainer>
-      <AssetLogo id={id} />
-      <AssetLabel symbol={getAssetWithFallback(id).symbol} />
+      <AssetLogo id={asset.logoId} />
+      <AssetLabel symbol={asset.symbol} />
     </AssetLabelFullContainer>
   )
 }
 
 export const useMultiplyPairColumns = () => {
   const { t } = useTranslation(["strategies", "common"])
-  const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
+  const remove = useCustomLoopsStore((st) => st.remove)
+  const { data: positions } = useMultiplyPositions()
+  const positionSlugs = useMemo(
+    () => positions?.map((p) => p.pair.slug) ?? [],
+    [positions],
+  )
 
   return useMemo(
     () => [
@@ -47,6 +68,23 @@ export const useMultiplyPairColumns = () => {
         cell: ({ row }) => <AssetCell id={row.original.pair.debtAssetId} />,
       }),
       columnHelper.display({
+        id: "risk",
+        header: t("multiply.risk.column"),
+        cell: ({ row }) => {
+          const { pair, risk, data } = row.original
+          if (!risk || !data)
+            return row.original.isLoading ? <Skeleton width={64} /> : "—"
+          return (
+            <RiskBadge
+              risk={risk}
+              collateral={display(pair.collateralAssetId).symbol}
+              debt={display(pair.debtAssetId).symbol}
+              hf={data.maxLeverageHf}
+            />
+          )
+        },
+      }),
+      columnHelper.display({
         id: "maxApy",
         header: t("cards.multiply.maxApy"),
         cell: ({ row }) => {
@@ -54,15 +92,7 @@ export const useMultiplyPairColumns = () => {
           if (apy === null && row.original.isLoading)
             return <Skeleton width={48} />
           return (
-            <Text
-              fs="p4"
-              fw={600}
-              color={getToken(
-                apy !== null && apy > 0
-                  ? "accents.success.emphasis"
-                  : "text.high",
-              )}
-            >
+            <Text fs="p4" fw={600} color={apyColor(apy)}>
               {apy === null ? "—" : t("common:percent", { value: apy * 100 })}
             </Text>
           )
@@ -92,7 +122,7 @@ export const useMultiplyPairColumns = () => {
             <Amount
               value={t("common:currency.compact", {
                 value: liquidity,
-                symbol: getAssetWithFallback(pair.debtAssetId).symbol,
+                symbol: display(pair.debtAssetId).symbol,
               })}
               displayValue={t("common:currency.compact", {
                 value: Number(liquidity) * Number(debtReserve?.priceInUsd ?? 0),
@@ -101,7 +131,49 @@ export const useMultiplyPairColumns = () => {
           )
         },
       }),
+      columnHelper.display({
+        id: "actions",
+        header: "",
+        cell: ({ row }) => {
+          const { pair } = row.original
+          if (!isCustomLoop(pair)) return null
+          const hasPosition = !canRemoveLoop(pair.slug, positionSlugs)
+          const item = (
+            <DropdownMenuItem asChild disabled={hasPosition}>
+              <MenuSelectionItem
+                variant="filterLink"
+                onClick={() =>
+                  remove({
+                    collateralAssetId: pair.collateralAssetId,
+                    debtAssetId: pair.debtAssetId,
+                  })
+                }
+              >
+                <MenuItemLabel>{t("multiply.custom.remove")}</MenuItemLabel>
+              </MenuSelectionItem>
+            </DropdownMenuItem>
+          )
+          return (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="tertiary" outline size="small" px="base">
+                  <Icon component={Ellipsis} size="m" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hasPosition ? (
+                  <Tooltip text={t("multiply.custom.removeDisabled")} asChild>
+                    <div>{item}</div>
+                  </Tooltip>
+                ) : (
+                  item
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        },
+      }),
     ],
-    [t, getAssetWithFallback],
+    [t, display, positionSlugs, remove],
   )
 }

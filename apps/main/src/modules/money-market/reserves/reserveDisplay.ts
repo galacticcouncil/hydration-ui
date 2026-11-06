@@ -4,7 +4,7 @@ import type {
 } from "@galacticcouncil/money-market/types"
 
 import {
-  isPoolShareReserve,
+  isPoolShareAsset,
   reserveAssetId,
 } from "@/modules/money-market/reserves/reserves"
 
@@ -30,25 +30,34 @@ export type ReserveDisplay = { name: string; symbol: string; logoId: string }
  * chain names it when the registry has none. A pool-share reserve whose aToken
  * the registry lacks is shown as any other reserve.
  */
-export const reserveDisplay = (
-  reserve: ReserveDisplayInput,
+export const assetDisplay = (
+  assetId: string,
   market: MarketDescriptor,
   { getAsset, getRelatedAToken }: ReserveDisplayRegistry,
-): ReserveDisplay => {
-  const assetId = reserveAssetId(reserve.underlyingAsset, market)
-  const aToken = isPoolShareReserve(reserve.underlyingAsset, market)
+): ReserveDisplay | undefined => {
+  const aToken = isPoolShareAsset(assetId, market)
     ? getRelatedAToken(assetId)
     : undefined
-
   if (aToken) {
     return { name: aToken.name, symbol: aToken.symbol, logoId: aToken.id }
   }
 
   const asset = getAsset(assetId)
+  return asset && { name: asset.name, symbol: asset.symbol, logoId: assetId }
+}
 
-  return {
-    name: asset?.name ?? reserve.name,
-    symbol: asset?.symbol ?? reserve.symbol,
-    logoId: assetId,
-  }
+/** {@link assetDisplay} for a reserve, named as the chain names it when the registry has none. */
+export const reserveDisplay = (
+  reserve: ReserveDisplayInput,
+  market: MarketDescriptor,
+  registry: ReserveDisplayRegistry,
+): ReserveDisplay => {
+  const assetId = reserveAssetId(reserve.underlyingAsset, market)
+  return (
+    assetDisplay(assetId, market, registry) ?? {
+      name: reserve.name,
+      symbol: reserve.symbol,
+      logoId: assetId,
+    }
+  )
 }

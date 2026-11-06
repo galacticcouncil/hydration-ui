@@ -11,37 +11,86 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Navigate, useNavigate, useSearch } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Markdown } from "@/components/Markdown"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { ReserveApyProvider } from "@/modules/money-market/apy/ReserveApyProvider"
+import { CustomLoopWizard } from "@/modules/strategies/multiply/components/CustomLoopWizard"
 import { MultiplyDetailsCard } from "@/modules/strategies/multiply/components/MultiplyDetailsCard"
 import { MultiplyHeader } from "@/modules/strategies/multiply/components/MultiplyHeader"
 import { MultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm"
 import { MultiplyPairSelectModal } from "@/modules/strategies/multiply/components/MultiplyPairSelectModal"
 import { MultiplyPositionsCard } from "@/modules/strategies/multiply/components/MultiplyPositionsCard"
 import {
-  getMultiplyPair,
-  MULTIPLY_PAIRS,
+  findPairByAssets,
+  isCustomLoop,
   type MultiplyPair,
 } from "@/modules/strategies/multiply/config/pairs"
-import { useMultiplyPairsMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
+import {
+  useCustomLoopsStore,
+  useMultiplyPairs,
+} from "@/modules/strategies/multiply/hooks/useCustomLoops"
+import {
+  useLoopBuilder,
+  useMultiplyPairsMetrics,
+} from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useMultiplyPositions } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
+import { getLoopsToRestore } from "@/modules/strategies/multiply/utils/loops"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const MultiplyPageContent: React.FC = () => {
   const { t } = useTranslation("strategies")
   const search = useSearch({ from: "/strategies/multiply/" })
   const navigate = useNavigate({ from: "/strategies/multiply/" })
-  const pairs = useMultiplyPairsMetrics()
+  const allPairs = useMultiplyPairs()
+  const pairs = useMultiplyPairsMetrics(allPairs)
   const { data: positions } = useMultiplyPositions()
   const [isSelectOpen, setIsSelectOpen] = useState(false)
+  const [isWizardOpen, setIsWizardOpen] = useState(false)
+  const addLoop = useCustomLoopsStore((s) => s.add)
+  const { build, isReady: isBuilderReady } = useLoopBuilder()
 
-  // an unknown or missing ?pair= falls back to the first configured pair
-  const pair = getMultiplyPair(search.pair ?? "") ?? MULTIPLY_PAIRS[0]!
+  // an unknown or missing ?pair= falls back to the first preset
+  const pair = allPairs.find((p) => p.slug === search.pair) ?? allPairs[0]!
   const selected = pairs.find((p) => p.pair.slug === pair.slug)!
+
+  const selectPair = (next: MultiplyPair) =>
+    navigate({ search: { pair: next.slug }, replace: true })
+
+  // A position on a loop missing from the list (another device, or removed)
+  // puts the loop back, so the table, selector and positions agree.
+  useEffect(() => {
+    getLoopsToRestore(
+      (positions ?? []).map((p) => p.pair),
+      allPairs,
+      isCustomLoop,
+    ).forEach(addLoop)
+  }, [positions, allPairs, addLoop])
+
+  // ?collateral=&debt= saves a valid loop and selects it; anything else falls back
+  const { collateral: linkCollateral, debt: linkDebt } = search
+  useEffect(() => {
+    if (!linkCollateral || !linkDebt || !isBuilderReady) return
+    const preset = findPairByAssets(allPairs, linkCollateral, linkDebt)
+    const built =
+      linkCollateral !== linkDebt ? build(linkCollateral, linkDebt) : null
+    if (built && !preset)
+      addLoop({ collateralAssetId: linkCollateral, debtAssetId: linkDebt })
+    navigate({
+      search: { pair: (preset ?? built)?.slug },
+      replace: true,
+    })
+  }, [
+    linkCollateral,
+    linkDebt,
+    isBuilderReady,
+    allPairs,
+    build,
+    addLoop,
+    navigate,
+  ])
 
   // below md the grid stacks into one column, so the page splits into tabs
   const { gte } = useBreakpoints()
@@ -50,9 +99,6 @@ const MultiplyPageContent: React.FC = () => {
   const hasPositions = !!positions?.length
   const showOverview = !stacked || !hasPositions || tab === "overview"
   const showPositions = !stacked || (hasPositions && tab === "positions")
-
-  const selectPair = (next: MultiplyPair) =>
-    navigate({ search: { pair: next.slug }, replace: true })
 
   return (
     <Stack gap="xxl">
@@ -80,7 +126,10 @@ const MultiplyPageContent: React.FC = () => {
 
           {showOverview && (
             <>
-              <MultiplyDetailsCard pairs={pairs} />
+              <MultiplyDetailsCard
+                pairs={pairs}
+                onCustomLoop={() => setIsWizardOpen(true)}
+              />
 
               <Paper p="xl">
                 <SectionHeader
@@ -105,10 +154,9 @@ const MultiplyPageContent: React.FC = () => {
                 key={pair.slug}
                 pair={pair}
                 metrics={selected.data}
-                collateralPriceUsd={Number(
-                  selected.collateralReserve.priceInUsd,
-                )}
-                debtPriceUsd={Number(selected.debtReserve.priceInUsd)}
+                risk={selected.risk}
+                collateralReserve={selected.collateralReserve}
+                debtReserve={selected.debtReserve}
                 onPairClick={() => setIsSelectOpen(true)}
               />
             ) : (
@@ -119,6 +167,13 @@ const MultiplyPageContent: React.FC = () => {
           </Box>
         )}
       </TwoColumnGrid>
+
+      {isWizardOpen && (
+        <CustomLoopWizard
+          onClose={() => setIsWizardOpen(false)}
+          onSelect={selectPair}
+        />
+      )}
 
       {isSelectOpen && (
         <MultiplyPairSelectModal

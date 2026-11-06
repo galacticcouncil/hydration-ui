@@ -180,3 +180,39 @@ export const getExitCost = ({
   sold > 0 && collateralPriceInDebt > 0
     ? sold - quotedOut / collateralPriceInDebt
     : 0
+
+/**
+ * The largest deposit, in collateral, the market can take at this leverage: the
+ * ramp supplies `L·E` of collateral and borrows `(L−1)·E` worth of debt. Rooms
+ * are null when uncapped; null overall when nothing caps it.
+ */
+export const getMaxDeposit = ({
+  leverage,
+  collateralPriceUsd,
+  debtPriceUsd,
+  supplyRoom,
+  debtRoom,
+  ceilingRoomUsd,
+}: {
+  leverage: number
+  collateralPriceUsd: number
+  debtPriceUsd: number
+  // collateral units
+  supplyRoom: number | null
+  // debt units
+  debtRoom: number | null
+  ceilingRoomUsd: number | null
+}) => {
+  const limits: number[] = []
+  if (supplyRoom !== null) limits.push(supplyRoom / leverage)
+
+  const borrowedUsdPerUnit = (leverage - 1) * collateralPriceUsd
+  if (borrowedUsdPerUnit > 0) {
+    if (debtRoom !== null)
+      limits.push((debtRoom * debtPriceUsd) / borrowedUsdPerUnit)
+    if (ceilingRoomUsd !== null)
+      limits.push(ceilingRoomUsd / borrowedUsdPerUnit)
+  }
+
+  return limits.length ? Math.max(0, Math.min(...limits)) : null
+}

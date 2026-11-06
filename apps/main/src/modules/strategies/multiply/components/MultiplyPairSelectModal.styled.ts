@@ -24,9 +24,14 @@ export const SPairOption = styled.button<{ selected: boolean }>(
       background: ${theme.surfaces.containers.dim.dimOnBg};
     `}
 
-    &:hover,
+    &:hover:enabled,
     &:focus-visible {
       background: ${theme.surfaces.containers.dim.dimOnBg};
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.45;
     }
   `,
 )

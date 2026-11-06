@@ -1,8 +1,10 @@
+import { useMoneyMarket } from "@galacticcouncil/money-market/react"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { chunk, range } from "remeda"
 import { type ContractFunctionName, type Hex } from "viem"
 
+import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
 import { ERC20_ABI } from "@/modules/strategies/bil/config/abi"
 import {
   type Ladder,
@@ -12,6 +14,8 @@ import {
 } from "@/modules/strategies/multiply/config/abi"
 import { MULTIPLY_QUERY_KEY_PREFIX } from "@/modules/strategies/multiply/config/constants"
 import {
+  buildCustomLoop,
+  findPairByAssets,
   LOOPER_FACTORY_ADDRESS,
   MULTIPLY_PAIRS,
   type MultiplyPair,
@@ -48,13 +52,15 @@ export type MultiplyPosition = {
 }
 
 /**
- * The connected account's open positions across the configured pairs. The factory NFT is not
+ * The connected account's open positions, on presets and custom loops alike. A
+ * position on no preset carries its loop in `params()`. The factory NFT is not
  * enumerable, so this scans `ownerOf` over every id; ownership is read live
  * because the NFT can be transferred.
  */
 export const useMultiplyPositions = () => {
   const { evm, isReady } = useRpcProvider()
   const evmAddress = useEvmAddress()
+  const { market } = useMoneyMarket()
   const factory = LOOPER_FACTORY_ADDRESS
 
   return useQuery({
@@ -114,12 +120,33 @@ export const useMultiplyPositions = () => {
             }),
           ])
 
-          const pair = MULTIPLY_PAIRS.find(
-            (p) =>
-              params.collateral.toLowerCase() === p.collateral.toLowerCase() &&
-              params.debt.toLowerCase() === p.debt.toLowerCase(),
-          )
-          if (isClosed || !pair) return null
+          if (isClosed) return null
+
+          const collateralAssetId = reserveAssetId(params.collateral, market)
+          const debtAssetId = params.debtAssetId.toString()
+          // a custom loop keeps the position's own params, not today's defaults
+          const pair: MultiplyPair = findPairByAssets(
+            MULTIPLY_PAIRS,
+            collateralAssetId,
+            debtAssetId,
+          ) ?? {
+            ...buildCustomLoop({
+              collateralAssetId,
+              debtAssetId,
+              collateral: params.collateral,
+              aCollateral: params.aCollateral,
+              debt: params.debt,
+              variableDebt: params.variableDebt,
+              aCollateralAssetId: params.aCollateralAssetId,
+              eMode: params.eMode,
+            }),
+            minHf: params.minHf,
+            stepHf: params.stepHf,
+            slippageBps: params.slippageBps,
+            feeAssetId: params.feeAssetId.toString(),
+            feeAsset: params.feeAsset,
+            feeReserve: params.feeReserve,
+          }
 
           const [
             ladder,

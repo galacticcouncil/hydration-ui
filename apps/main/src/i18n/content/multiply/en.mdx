@@ -1,15 +1,15 @@
 ### What is Multiply?
 
-Multiply supplies your collateral to the money market, borrows against it and buys more of the same collateral with what it borrows. It repeats this, step by step, until your position reaches the leverage you chose. Your yield on the collateral is multiplied, and so is your exposure to its price against the borrowed asset.
+Multiply is leverage on a single asset. The position borrows against your collateral, swaps the loan for more collateral and supplies it, until it reaches your chosen leverage. It pays while the collateral earns more than the debt costs.
 
-### How your position builds
+### Your position
 
-Each step settles through an intent, so the position builds over a minute or two instead of in one transaction. You can follow its progress under **My positions**. While a position is building or unwinding, deposits, withdrawals and closing wait until it finishes.
+Each position is its own contract, owned by whoever holds its NFT. It builds one swap at a time, so leverage climbs over a few minutes. Closing runs the swaps in reverse and pays out the rest. If a swap fails, the position pauses with your funds in it until you resume.
 
 ### Fees
 
-The swaps that build your position are paid from a small fee budget you fund when you open it. Whatever is left is returned when you close the position.
+Each swap pays a small fee from a budget you fund at opening. What's left comes back when you close.
 
 ### Risks
 
-A leveraged position can be liquidated. If the collateral's price falls far enough against the borrowed asset that the health factor drops below 1, part of the position is liquidated. The higher the leverage, the smaller the price drop it takes — check the liquidation price before you open a position.
+If the collateral falls against the borrowed asset and the health factor drops below 1, part of the position is liquidated. Higher leverage leaves less room, so check the liquidation price first.

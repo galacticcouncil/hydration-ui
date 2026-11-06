@@ -1,6 +1,6 @@
 import {
-  Box,
   Flex,
+  Grid,
   Paper,
   Separator,
   Stack,
@@ -8,17 +8,22 @@ import {
   Tooltip,
   TooltipIcon,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
+import {
+  SAmountReveal,
+  SApyText,
+} from "@/modules/strategies/multiply/components/MultiplyPositionPreview.styled"
+import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
+import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
+import { type PairRisk } from "@/modules/strategies/multiply/hooks/usePairRiskLevels"
 import { type projectMultiplyPosition } from "@/modules/strategies/multiply/utils/projection"
 
-const DURATION = "0.2s"
-
-type Asset = { id: string; symbol: string }
+export type Asset = { id: string; symbol: string; logoId: string }
 
 type MultiplyPositionPreviewProps = {
   amount: number
@@ -28,6 +33,8 @@ type MultiplyPositionPreviewProps = {
   supplyApy: number
   borrowApy: number
   projection: ReturnType<typeof projectMultiplyPosition>
+  risk: PairRisk | null
+  eModeLabel: string | null
 }
 
 export const MultiplyPositionPreview: React.FC<
@@ -40,9 +47,85 @@ export const MultiplyPositionPreview: React.FC<
   supplyApy,
   borrowApy,
   projection,
+  risk,
+  eModeLabel,
 }) => {
   const { t } = useTranslation(["strategies", "common"])
-  const isEmpty = amount <= 0
+
+  return (
+    <MultiplyAssetsCard
+      collateral={collateral}
+      debt={debt}
+      supplyApy={supplyApy}
+      borrowApy={borrowApy}
+      amounts={
+        amount > 0 ? [projection.collateral, projection.debt] : undefined
+      }
+    >
+      <PreviewRow
+        label={t("multiply.open.netApy")}
+        value={
+          <Flex align="center" gap="xs">
+            <Text fs="p5" fw={600} lh={1} color={apyColor(projection.netApy)}>
+              {t("common:percent", { value: projection.netApy * 100 })}
+            </Text>
+            <Tooltip
+              text={
+                <NetApyBreakdown
+                  leverage={leverage}
+                  collateral={collateral}
+                  debt={debt}
+                  supplyApy={supplyApy}
+                  borrowApy={borrowApy}
+                  netApy={projection.netApy}
+                />
+              }
+            >
+              <TooltipIcon size="0.75em" color={getToken("text.low")} />
+            </Tooltip>
+          </Flex>
+        }
+      />
+      <PreviewRow
+        label={t("common:healthFactor")}
+        value={
+          <Text fs="p5" fw={600} lh={1}>
+            <HealthFactorNumber value={projection.healthFactor.toString()} />
+          </Text>
+        }
+      />
+      {eModeLabel && (
+        <PreviewRow label={t("multiply.custom.eMode")} value={eModeLabel} />
+      )}
+      {risk && (
+        <PreviewRow
+          label={t("multiply.risk.column")}
+          value={
+            <RiskBadge
+              risk={risk}
+              collateral={collateral.symbol}
+              debt={debt.symbol}
+              hf={projection.healthFactor}
+              leverage={leverage}
+            />
+          }
+        />
+      )}
+    </MultiplyAssetsCard>
+  )
+}
+
+/** You supply / you borrow, then the caller's rows below a divider. */
+export const MultiplyAssetsCard: React.FC<{
+  collateral: Asset
+  debt: Asset
+  supplyApy: number
+  borrowApy: number
+  /** Collateral and debt amounts; without them only the APYs show. */
+  amounts?: [number, number]
+  children: React.ReactNode
+}> = ({ collateral, debt, supplyApy, borrowApy, amounts, children }) => {
+  const { t } = useTranslation(["strategies", "common"])
 
   return (
     <Paper p="m" shadow={false}>
@@ -51,63 +134,44 @@ export const MultiplyPositionPreview: React.FC<
           label={t("multiply.open.supply")}
           asset={collateral}
           apy={supplyApy}
-          value={projection.collateral}
-          isEmpty={isEmpty}
+          value={amounts?.[0] ?? 0}
+          isEmpty={!amounts}
         />
         <AssetRow
           label={t("multiply.open.borrow")}
           asset={debt}
           apy={borrowApy}
-          value={projection.debt}
-          isEmpty={isEmpty}
+          value={amounts?.[1] ?? 0}
+          isEmpty={!amounts}
         />
         <Separator mx="-m" />
-        <Stack gap="s">
-          <Flex justify="space-between" align="center">
-            <Text fs="p6" color={getToken("text.medium")}>
-              {t("multiply.open.netApy")}
-            </Text>
-            <Flex align="center" gap="xs">
-              <Text
-                fs="p5"
-                fw={600}
-                color={
-                  projection.netApy > 0
-                    ? getToken("accents.success.emphasis")
-                    : getToken("text.high")
-                }
-              >
-                {t("common:percent", { value: projection.netApy * 100 })}
-              </Text>
-              <Tooltip
-                text={
-                  <NetApyBreakdown
-                    leverage={leverage}
-                    collateral={collateral}
-                    debt={debt}
-                    supplyApy={supplyApy}
-                    borrowApy={borrowApy}
-                    netApy={projection.netApy}
-                  />
-                }
-              >
-                <TooltipIcon size="0.75em" color={getToken("text.low")} />
-              </Tooltip>
-            </Flex>
-          </Flex>
-          <Flex justify="space-between" align="center">
-            <Text fs="p6" color={getToken("text.medium")}>
-              {t("common:healthFactor")}
-            </Text>
-            <Text fs="p5" fw={600}>
-              <HealthFactorNumber value={projection.healthFactor.toString()} />
-            </Text>
-          </Flex>
-        </Stack>
+        <Stack gap="xs">{children}</Stack>
       </Stack>
     </Paper>
   )
 }
+
+export const PreviewRow = ({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) => (
+  // a p5 line (24px), so a row holding a badge matches the rest
+  <Flex justify="space-between" align="center" sx={{ minHeight: pxToRem(24) }}>
+    <Text fs="p6" color={getToken("text.medium")}>
+      {label}
+    </Text>
+    {typeof value === "string" ? (
+      <Text fs="p5" fw={600} lh={1} color={getToken("text.high")}>
+        {value}
+      </Text>
+    ) : (
+      value
+    )}
+  </Flex>
+)
 
 const AssetRow = ({
   label,
@@ -131,44 +195,29 @@ const AssetRow = ({
           {label}
         </Text>
         <Flex align="center" gap="s">
-          <AssetLogo id={asset.id} size="small" />
+          <AssetLogo id={asset.logoId} size="small" />
           <Text fs="p5" fw={600} color={getToken("text.high")}>
             {asset.symbol}
           </Text>
         </Flex>
       </Stack>
       <Stack align="end">
-        {/* Collapses to zero height with no amount, so the APY line sits alone. */}
-        <Box
-          display="grid"
-          sx={{
-            gridTemplateRows: isEmpty ? "0fr" : "1fr",
-            opacity: isEmpty ? 0 : 1,
-            transition: `grid-template-rows ${DURATION}, opacity ${DURATION}`,
-            "@media (prefers-reduced-motion: reduce)": { transition: "none" },
-          }}
-        >
-          <Box overflow="hidden" sx={{ minHeight: 0 }}>
-            <Text fs="p5" fw={600} color={getToken("text.high")} align="end">
-              {t("common:currency", {
-                prefix: t("common:approx.short"),
-                value,
-                symbol: asset.symbol,
-              })}
-            </Text>
-          </Box>
-        </Box>
-        <Text
+        <SAmountReveal isEmpty={isEmpty}>
+          <Text fs="p5" fw={600} color={getToken("text.high")} align="end">
+            {t("common:currency", {
+              prefix: t("common:approx.short"),
+              value,
+              symbol: asset.symbol,
+            })}
+          </Text>
+        </SAmountReveal>
+        <SApyText
           fs={isEmpty ? "p5" : "p6"}
           fw={isEmpty ? 600 : 400}
           color={isEmpty ? getToken("text.high") : getToken("text.medium")}
-          sx={{
-            transition: `font-size ${DURATION}, line-height ${DURATION}, color ${DURATION}`,
-            "@media (prefers-reduced-motion: reduce)": { transition: "none" },
-          }}
         >
           {t("multiply.open.apy", { value: apy * 100 })}
-        </Text>
+        </SApyText>
       </Stack>
     </Flex>
   )
@@ -193,10 +242,6 @@ const NetApyBreakdown = ({
   const percent = (value: number) => t("common:percent", { value: value * 100 })
   const multiplier = (value: number) =>
     t("common:number", { value, maximumFractionDigits: 2 })
-  const signColor = (value: number) =>
-    value >= 0
-      ? getToken("accents.success.emphasis")
-      : getToken("accents.danger.emphasis")
   const rows = [
     {
       asset: collateral,
@@ -216,22 +261,20 @@ const NetApyBreakdown = ({
 
   return (
     <Stack gap="s">
-      <Box
-        display="grid"
-        alignItems="center"
+      <Grid
+        columnTemplate="auto 1fr auto auto auto auto auto"
+        gap="s"
+        align="center"
+        color={getToken("text.medium")}
         sx={{
-          gridTemplateColumns: "auto 1fr auto auto auto auto auto",
-          columnGap: "s",
-          rowGap: "s",
           fontSize: "p6",
           fontVariantNumeric: "tabular-nums",
           textAlign: "end",
-          color: getToken("text.medium"),
         }}
       >
         {rows.map((row) => (
           <Fragment key={row.asset.id}>
-            <AssetLogo id={row.asset.id} size="small" />
+            <AssetLogo id={row.asset.logoId} size="small" />
             <Text fs="p6" color={getToken("text.high")} align="start">
               {row.label}
             </Text>
@@ -239,18 +282,18 @@ const NetApyBreakdown = ({
             <span>×</span>
             <span>{multiplier(row.multiplier)}</span>
             <span>=</span>
-            <Text fs="p6" fw={600} color={signColor(row.value)}>
+            <Text fs="p6" fw={600} color={apyColor(row.value)}>
               {percent(row.value)}
             </Text>
           </Fragment>
         ))}
-      </Box>
+      </Grid>
       <Separator />
       <Flex justify="space-between" gap="l">
         <Text fs="p6" fw={600}>
           {t("multiply.open.netApy")}
         </Text>
-        <Text fs="p6" fw={600} color={signColor(netApy)}>
+        <Text fs="p6" fw={600} color={apyColor(netApy)}>
           {percent(netApy)}
         </Text>
       </Flex>

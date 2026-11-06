@@ -16,16 +16,6 @@ const march = keyframes`
 // is the hue itself (the soft foreground turns near-black in light mode).
 const opaque = (color: string) => color.replace(/\/\s*[\d.]+\)$/, "/ 1)")
 
-export const SProgress = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.space.xs};
-    width: ${pxToRem(160)};
-    color: ${theme.tags.soft.blue.foreground};
-  `,
-)
-
 export const STrack = styled.div(
   ({ theme }) => css`
     position: relative;

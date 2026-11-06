@@ -64,24 +64,31 @@ type MultipleAssetLogoWrapperProps = {
   size?: LogoSize
   children: React.ReactNode
   decoration?: AssetLogoDecoration
+  /** Merge up to 4 logos into one circle, split into halves/quarters. */
+  collapsed?: boolean
 }
 
 export const MultipleAssetLogoWrapper = ({
   size = "medium",
   children,
   decoration,
+  collapsed,
 }: MultipleAssetLogoWrapperProps) => {
+  const items = Children.toArray(children)
+  const logos = collapsed ? items.slice(0, 4) : items
   return (
     <SDecorationContainer
       size={size}
-      count={Children.count(children)}
+      count={collapsed ? 1 : logos.length}
+      collapsed={collapsed ? logos.length : undefined}
       decoration={decoration}
     >
-      {Children.map(children, (child) => {
+      {logos.map((child) => {
         if (isValidElement(child)) {
           return cloneElement(child, {
             ...(child.props ?? {}),
             ...{ size },
+            ...(collapsed && { chainSrc: undefined }),
             // override child decor to "none" if decoration from parent is the same
             ...(typeof child.props === "object" &&
               child.props !== null &&

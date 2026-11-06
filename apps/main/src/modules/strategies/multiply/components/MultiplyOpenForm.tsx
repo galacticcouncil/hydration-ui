@@ -1,3 +1,4 @@
+import { type ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
   Alert,
   AssetInput,
@@ -27,6 +28,7 @@ import { bestSellQuery } from "@/api/trade"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useMultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
 import { MultiplyPositionPreview } from "@/modules/strategies/multiply/components/MultiplyPositionPreview"
 import { MultiplySwapResult } from "@/modules/strategies/multiply/components/MultiplySwapResult"
@@ -37,10 +39,13 @@ import {
 } from "@/modules/strategies/multiply/config/constants"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 import { useFactoryMaxLeverage } from "@/modules/strategies/multiply/hooks/useLooperFactory"
+import { useLoopFillCheck } from "@/modules/strategies/multiply/hooks/useLoopFills"
 import { type MultiplyPairMetrics } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useOpenMultiplyPosition } from "@/modules/strategies/multiply/hooks/useOpenMultiplyPosition"
+import { type PairRisk } from "@/modules/strategies/multiply/hooks/usePairRiskLevels"
 import {
   getEntryCost,
+  getMaxDeposit,
   projectMultiplyPosition,
 } from "@/modules/strategies/multiply/utils/projection"
 import { useAssets } from "@/providers/assetsProvider"
@@ -50,29 +55,39 @@ import { percentageOf } from "@/utils/formatting"
 type MultiplyOpenFormProps = {
   pair: MultiplyPair
   metrics: MultiplyPairMetrics
-  collateralPriceUsd: number
-  debtPriceUsd: number
+  risk: PairRisk | null
+  collateralReserve: ReserveSummary
+  debtReserve: ReserveSummary
   onPairClick: () => void
 }
+
+// what's left under a cap, or null when uncapped
+const capRoom = (cap: string, used: string) =>
+  Number(cap) > 0 ? Number(cap) - Number(used) : null
 
 export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   pair,
   metrics,
-  collateralPriceUsd,
-  debtPriceUsd,
+  risk,
+  collateralReserve,
+  debtReserve,
   onPairClick,
 }) => {
+  const collateralPriceUsd = Number(collateralReserve.priceInUsd)
+  const debtPriceUsd = Number(debtReserve.priceInUsd)
   const { t } = useTranslation(["strategies", "common"])
   const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
   const rpc = useRpcProvider()
   const { data: factoryMaxLeverage } = useFactoryMaxLeverage(pair)
   const openMutation = useOpenMultiplyPosition(pair)
 
-  const collateral = getAssetWithFallback(pair.collateralAssetId)
-  const debt = getAssetWithFallback(pair.debtAssetId)
-  const feeAsset = getAssetWithFallback(pair.feeAssetId)
+  const collateral = display(pair.collateralAssetId)
+  const debt = display(pair.debtAssetId)
+  const aCollateral = getAssetWithFallback(pair.aCollateralAssetId.toString())
+  const feeAsset = display(pair.feeAssetId)
 
   const balance = formatUnits(
     getTransferableBalance(pair.collateralAssetId),
@@ -109,7 +124,8 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   const { data: entryQuote, isLoading: isEntryQuoteLoading } = useQuery(
     bestSellQuery(rpc, {
       assetIn: pair.debtAssetId,
-      assetOut: pair.collateralAssetId,
+      // the intent asks for the aToken, so price the entry against it
+      assetOut: pair.aCollateralAssetId.toString(),
       amountIn: debouncedDebt,
     }),
   )
@@ -118,7 +134,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
         amount: Number(amount || 0),
         debt: Number(debouncedDebt),
         quotedOut: Number(
-          formatUnits(entryQuote.amountOut, collateral.decimals),
+          formatUnits(entryQuote.amountOut, aCollateral.decimals),
         ),
         collateralPriceInDebt: collateralPriceUsd / debtPriceUsd,
       })
@@ -128,10 +144,37 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     t("cards.multiply.leverage", { value })
   const feeBudget = formatUnits(pair.feeBudget, feeAsset.decimals)
 
+  const fillCheck = useLoopFillCheck(pair, projection.debtUsd, {
+    collateralPriceUsd,
+    debtPriceUsd,
+  })
+  const cantFill = fillCheck.data ? !fillCheck.data.fills : false
+
+  const debtRooms = [
+    capRoom(debtReserve.borrowCap, debtReserve.totalDebt),
+    Number(metrics.availableLiquidity),
+  ].filter((r) => r !== null)
+  const maxDeposit = getMaxDeposit({
+    leverage,
+    collateralPriceUsd,
+    debtPriceUsd,
+    supplyRoom: capRoom(
+      collateralReserve.supplyCap,
+      collateralReserve.totalLiquidity,
+    ),
+    debtRoom: debtRooms.length ? Math.min(...debtRooms) : null,
+    ceilingRoomUsd: collateralReserve.isIsolated
+      ? Number(collateralReserve.availableDebtCeilingUsd)
+      : null,
+  })
+  const overMax = maxDeposit !== null && Number(amount || 0) > maxDeposit
+
   const canSubmit =
     formState.isValid &&
     hasFeeBudget &&
     !metrics.unavailableReason &&
+    !cantFill &&
+    !overMax &&
     !openMutation.isPending
 
   const onSubmit = handleSubmit(({ amount, leverage }) =>
@@ -155,7 +198,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
                   label={t("multiply.open.deposit")}
                   asset={{
                     symbol: collateral.symbol,
-                    icon: <AssetLogo id={collateral.id} />,
+                    icon: <AssetLogo id={collateral.logoId} />,
                   }}
                   onAssetClick={onPairClick}
                   value={field.value}
@@ -221,15 +264,35 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
               debt={debt}
               supplyApy={metrics.supplyApy ?? 0}
               borrowApy={metrics.borrowApy ?? 0}
+              risk={risk}
               projection={projection}
+              eModeLabel={pair.eMode ? collateralReserve.eModeLabel : null}
             />
 
             {metrics.unavailableReason && (
               <Alert
-                variant="warning"
+                variant="error"
                 description={t(
                   `multiply.unavailable.${metrics.unavailableReason}`,
+                  { collateral: collateral.symbol, debt: debt.symbol },
                 )}
+              />
+            )}
+            {overMax && (
+              <Alert
+                variant="error"
+                description={t("multiply.open.maxAmount", {
+                  amount: maxDeposit,
+                  symbol: collateral.symbol,
+                })}
+              />
+            )}
+            {!overMax && cantFill && (
+              <Alert
+                variant="error"
+                description={t("multiply.open.cantFill", {
+                  slippage: pair.slippageBps / 100,
+                })}
               />
             )}
             {account && !hasFeeBudget && (
