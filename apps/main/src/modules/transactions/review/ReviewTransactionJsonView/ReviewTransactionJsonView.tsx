@@ -11,6 +11,7 @@ import {
   HYDRATION_CHAIN_KEY,
   useAfterFirstRender,
 } from "@galacticcouncil/utils"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
@@ -38,6 +39,7 @@ import {
 import {
   decodeReviewTx,
   hasTxCallData,
+  isMixedEvmBatch,
 } from "./ReviewTransactionJsonView.utils"
 
 type TransactionMode = "default" | "evm" | "substrate"
@@ -115,6 +117,13 @@ export const ReviewTransactionJsonView = () => {
   const isHydration = meta.srcChainKey === HYDRATION_CHAIN_KEY
   const srcChainKey = meta.srcChainKey
 
+  const hasEvmCallInBatch =
+    isHydration && isPapiTransaction(tx) && containsEvmCall(tx)
+  const isMixed = useMemo(
+    () => hasEvmCallInBatch && isMixedEvmBatch(tx),
+    [hasEvmCallInBatch, tx],
+  )
+
   const tabs: JsonContentProps[] =
     isHydration && isEvmCall(tx)
       ? [
@@ -125,12 +134,14 @@ export const ReviewTransactionJsonView = () => {
             srcChainKey,
           },
         ]
-      : isHydration && isPapiTransaction(tx) && containsEvmCall(tx)
-        ? [
-            { mode: "evm", tx, srcChainKey },
-            { mode: "substrate", tx, srcChainKey },
-          ]
-        : [{ mode: "default", tx, srcChainKey }]
+      : isMixed
+        ? [{ mode: "evm", tx, srcChainKey }]
+        : hasEvmCallInBatch
+          ? [
+              { mode: "evm", tx, srcChainKey },
+              { mode: "substrate", tx, srcChainKey },
+            ]
+          : [{ mode: "default", tx, srcChainKey }]
 
   const hasMultipleTabs = tabs.length > 1
   const defaultMode = tabs[0]?.mode ?? "default"
