@@ -25,6 +25,7 @@ import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
+  useGigaAccountBalance,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -50,7 +51,8 @@ export const GigaHDXPosition = () => {
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
+    useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isLoading } = useUserGigaBorrowSummary()
   const {
@@ -71,12 +73,18 @@ export const GigaHDXPosition = () => {
     userSummary?.healthFactor || "-1",
   )
 
-  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const { data: gigaAccountBalance, isLoading: isGigaAccountBalanceLoading } =
+    useGigaAccountBalance()
+  const gigaHdxBalanceHuman = scaleHuman(
+    gigaAccountBalance?.total ?? 0n,
+    ghdxMeta.decimals,
+  )
   const gigaHdxBalance = Big(gigaHdxBalanceHuman)
     .times(exchangeRate?.toString() || "0")
     .toString()
 
-  const [gigaHdxBalanceUsd] = useDisplayAssetPrice(native.id, gigaHdxBalance)
+  const [gigaHdxBalanceUsd, { isLoading: isGigaHdxBalanceUsdLoading }] =
+    useDisplayAssetPrice(native.id, gigaHdxBalance)
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!userSummary || !hdxReserve || !hollarReserve) return null
@@ -167,6 +175,11 @@ export const GigaHDXPosition = () => {
               displayValue: gigaHdxBalanceUsd,
               symbol: ghdxMeta.symbol,
             })}
+            isLoading={
+              isGigaAccountBalanceLoading ||
+              isExchangeRateLoading ||
+              isGigaHdxBalanceUsdLoading
+            }
             sx={{ ml: "auto", textAlign: "right" }}
           />
         </Flex>
