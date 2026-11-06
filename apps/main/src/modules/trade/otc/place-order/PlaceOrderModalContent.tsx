@@ -400,7 +400,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         <form onSubmit={form.handleSubmit((value) => submit.mutate(value))}>
           <ModalBody sx={{ p: 0 }}>
             <Box px="xl">
-              <Box py="l" width="100%">
+              <Box data-testid="otc-offer" py="l" width="100%">
                 <AssetSelectFormField<PlaceOrderFormValues>
                   assetFieldName="offerAsset"
                   amountFieldName="offerAmount"
@@ -431,7 +431,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                   <ModalContentDivider />
                 </>
               )}
-              <Box py="l" width="100%">
+              <Box data-testid="otc-buy" py="l" width="100%">
                 <AssetSelectFormField<PlaceOrderFormValues>
                   assetFieldName="buyAsset"
                   amountFieldName="buyAmount"

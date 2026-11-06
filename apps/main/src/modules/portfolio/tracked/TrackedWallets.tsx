@@ -77,7 +77,7 @@ export const TrackedWallets: FC<Props> = ({
       </Flex>
 
       {wallets.length === 0 ? (
-        <Paper overflow="hidden">
+        <Paper overflow="hidden" data-testid="tracked-wallets-empty">
           <EmptyState
             image={TrackedWalletImage}
             header={t("myAssets.tracked.empty.title")}

@@ -68,6 +68,7 @@ export const LimitSummary: FC<Props> = ({ healthFactor }) => {
       )}
       <SwapSummaryRow
         label={t("trade:limit.summary.minReceived")}
+        data-testid="limit-min-received"
         loading={isMinReceivedDisplayLoading}
         content={
           <Flex gap="s" align="center" justify="flex-end">

@@ -1,0 +1,58 @@
+name: e2e
+on:
+  pull_request:
+    branches: [production, master]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  e2e:
+    name: E2E
+    # PRs into production: every push. PRs into master: only when the `e2e` label is added.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.base_ref == 'production' && github.event.action != 'labeled') ||
+      (github.event.action == 'labeled' && github.event.label.name == 'e2e')
+    # Job-level so skipped runs (unlabeled pushes to master PRs) don't cancel a labeled run.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: yarn
+          node-version-file: ".nvmrc"
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      - run: npx e2e-web install chromium --with-deps
+      - name: Run e2e
+        run: |
+          [ -n "$OPENROUTER_API_KEY" ] || set -- --exclude-tag agentic
+          yarn test:e2e --retries 0 "$@" || yarn test:e2e --last-failed --retries 0 "$@"
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER }}
+          E2E_MODEL: ${{ vars.E2E_MODEL }}
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: .e2e/results
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            .e2e/report.json
+            .e2e/logs/
+          if-no-files-found: ignore
+          retention-days: 14

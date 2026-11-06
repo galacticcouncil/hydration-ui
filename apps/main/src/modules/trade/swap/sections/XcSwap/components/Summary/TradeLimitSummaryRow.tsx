@@ -54,7 +54,9 @@ export const TradeLimitSummaryRow: FC<Props> = ({
             }
           >
             <Flex align="center" gap="s">
-              <Text lh={1}>{t("percent", { value: tradeLimit })}</Text>
+              <Text lh={1} data-testid="trade-slippage">
+                {t("percent", { value: tradeLimit })}
+              </Text>
               {isWarning && (
                 <Tooltip
                   text={t("trade:market.summary.tradeLimit.tooltip")}

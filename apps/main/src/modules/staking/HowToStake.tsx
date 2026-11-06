@@ -19,7 +19,7 @@ export const HowToStake: FC = () => {
   const points = t("staking:howTo.points", { returnObjects: true }) as Points
 
   return (
-    <Box>
+    <Box data-testid="how-to-stake">
       <Text
         p="xl"
         font="primary"

@@ -49,6 +49,8 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     availableBridgeRoutes,
+    isLoading,
+    isLoadingCall,
     isLoadingSrcBalances,
     isLoadingDestBalances,
     isConnectedAccountValid,
@@ -165,12 +167,14 @@ export const XcmForm = () => {
 
   return (
     <form
+      data-testid="xcm-form"
+      aria-busy={isLoading || isLoadingCall}
       onSubmit={handleSubmit(
         (values) => transfer && submit.mutate([values, transfer]),
       )}
     >
       <Stack gap="s" maxWidth="6xl" mx="auto">
-        <Paper>
+        <Paper data-testid="xcm-source" aria-busy={isLoadingSrcBalances}>
           <Box p={["l", "xl"]}>
             <Text fs="h7" fw={500} align="center" font="primary">
               {t("xcm:form.title")}
@@ -245,7 +249,7 @@ export const XcmForm = () => {
           disabled={!!transfer && !transfer.reversible}
         />
 
-        <Paper>
+        <Paper data-testid="xcm-destination" aria-busy={isLoadingDestBalances}>
           <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
               <Flex

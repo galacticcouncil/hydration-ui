@@ -21,6 +21,7 @@ export type SummaryRowProps = {
   loading?: boolean
   onClick?: MouseEventHandler
   align?: FlexProps["align"]
+  "data-testid"?: string
 }
 
 export const SummaryRow = ({
@@ -32,6 +33,7 @@ export const SummaryRow = ({
   loading,
   onClick,
   align = "center",
+  "data-testid": testId,
 }: SummaryRowProps) => {
   const { isMobile } = useBreakpoints()
 
@@ -68,6 +70,7 @@ export const SummaryRow = ({
       my="base"
       className={className}
       onClick={onClick}
+      data-testid={testId}
     >
       <Flex direction="column" justify="space-between" gap="s">
         {renderLabel()}

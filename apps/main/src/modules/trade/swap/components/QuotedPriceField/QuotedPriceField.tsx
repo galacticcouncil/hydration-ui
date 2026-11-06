@@ -162,6 +162,7 @@ export const QuotedPriceField: FC<Props> = ({
             {isEditingPill ? (
               <>
                 <SPillInlineInput
+                  data-testid="limit-deviation"
                   getInputRef={pillInputRef}
                   defaultValue={lastPillValue}
                   placeholder={t("common:number", {
@@ -274,6 +275,7 @@ export const QuotedPriceField: FC<Props> = ({
             </Text>
           </Flex>
           <SPriceInput
+            data-testid="limit-price"
             variant="embedded"
             customSize="small"
             value={view.display}

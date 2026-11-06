@@ -57,6 +57,7 @@ type XcSwapContextValue = {
   readonly isDestSpotPriceLoading: boolean
   readonly onSubmit: (values: XcSwapFormValues) => void
   readonly isLoading: boolean
+  readonly isSubmitting: boolean
   readonly quoteError: Error | null
   readonly requiredWalletMode: WalletMode | null
   readonly isWalletCompatible: boolean
@@ -86,6 +87,7 @@ const XcSwapContext = createContext<XcSwapContextValue>({
   isDestSpotPriceLoading: false,
   onSubmit: () => {},
   isLoading: false,
+  isSubmitting: false,
   quoteError: null,
   requiredWalletMode: null,
   isWalletCompatible: true,
@@ -243,6 +245,7 @@ export const XcSwapProvider: React.FC<XcSwapProviderProps> = ({
         isDestSpotPriceLoading,
         onSubmit,
         isLoading: isOriginLoading || isSubmitting,
+        isSubmitting,
         quoteError,
         requiredWalletMode,
         isWalletCompatible,

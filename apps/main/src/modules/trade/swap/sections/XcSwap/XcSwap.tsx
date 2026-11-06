@@ -42,6 +42,7 @@ const XcSwapForm: React.FC = () => {
     isTwapLoading,
     isQuoteRefreshing,
     isLoading,
+    isSubmitting,
     isCrossChain,
     healthFactor,
     isHealthFactorLoading,
@@ -171,6 +172,7 @@ const XcSwapForm: React.FC = () => {
             <TradeFormSubmit
               isEnabled={canSubmit}
               isLoading={isSubmitLoading}
+              isSubmitting={isSubmitting}
               disabledLabel={disabledLabel}
             >
               {isSingleTrade ? t("swap") : t("trade:market.twap.cta")}

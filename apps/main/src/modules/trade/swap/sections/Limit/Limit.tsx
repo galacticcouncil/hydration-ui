@@ -107,6 +107,7 @@ const LimitForm: FC<LimitFormProps> = ({ maxSellBalance }) => {
               isHealthFactorLoading
             }
             isEnabled={isFormValid && isHealthFactorCheckSatisfied}
+            isSubmitting={submitLimitOrder.isPending}
             disabledLabel={disabledLabel}
           >
             {t("limit.submit")}

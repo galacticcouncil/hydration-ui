@@ -80,7 +80,11 @@ export const AssetSwitcher = ({
     <SAssetSwitcher sx={{ alignItems: "center", mx: "-xl" }}>
       <Separator />
       {onSwitchAssets && (
-        <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
+        <SSwitchContainer
+          data-testid="switch-assets"
+          onClick={switchAssets}
+          disabled={isSwitcherDisabled}
+        >
           <Icon
             size="m"
             component={ArrowDown}

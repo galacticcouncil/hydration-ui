@@ -115,7 +115,14 @@ export const FeesAndRevenue = () => {
   const isBiggerScreen = gte("md")
 
   return (
-    <Flex as={Paper} direction="column" gap="xl" p="xl">
+    <Flex
+      data-testid="fees-chart"
+      aria-busy={isLoading || isRefetching}
+      as={Paper}
+      direction="column"
+      gap="xl"
+      p="xl"
+    >
       <Flex justify="space-between" align="center">
         <ValueStats
           customValue={
@@ -132,6 +139,7 @@ export const FeesAndRevenue = () => {
               )}
               <Box
                 as="span"
+                data-testid="fees-chart-total"
                 sx={{ visibility: isLoading ? "hidden" : "visible" }}
               >
                 <AnimatedValue

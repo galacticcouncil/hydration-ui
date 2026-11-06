@@ -39,7 +39,7 @@ export const LimitFields: FC<Props> = ({
 
   return (
     <Stack>
-      <Box py="l" width="100%">
+      <Box data-testid="trade-sell" py="l" width="100%">
         <AssetSelectFormField<LimitFormValues>
           assetFieldName="sellAsset"
           amountFieldName="sellAmount"
@@ -72,7 +72,7 @@ export const LimitFields: FC<Props> = ({
 
       <LimitSwitcher />
 
-      <Box py="l" width="100%">
+      <Box data-testid="trade-buy" py="l" width="100%">
         <AssetSelectFormField<LimitFormValues>
           assetFieldName="buyAsset"
           amountFieldName="buyAmount"

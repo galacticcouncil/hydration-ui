@@ -13,7 +13,10 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "i18n": "turbo i18n",
-    "test": "turbo test"
+    "test": "turbo test",
+    "test:e2e": "e2e run",
+    "test:e2e:deterministic": "e2e run tests/deterministic",
+    "test:e2e:agentic": "e2e run tests/agentic"
   },
   "resolutions": {
     "polkadot-api": "^2.1.7",
@@ -44,6 +47,11 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@e2e-dev/github": "0.4.4",
+    "@e2e-dev/web": "0.15.4",
+    "@openrouter/ai-sdk-provider": "3.1.0",
+    "ai": "7.0.159",
+    "e2e": "0.22.0",
     "eslint": "8.57.0",
     "prettier": "3.3.3",
     "turbo": "^2.9.5",

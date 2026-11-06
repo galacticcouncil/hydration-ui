@@ -46,6 +46,7 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
       sx={{ alignItems: "flex-start" }}
       label={label}
       loading={isLoading}
+      data-testid="trade-summary-toggle"
       content={
         <Flex align="center">
           <Flex gap="s" align="center" justify="flex-end">
