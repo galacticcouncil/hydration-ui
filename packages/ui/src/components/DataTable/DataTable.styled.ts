@@ -2,6 +2,7 @@ import { css } from "@emotion/react"
 
 import { Box } from "@/components/Box"
 import { Flex } from "@/components/Flex"
+import { mq } from "@/theme"
 import { styled } from "@/utils"
 
 export const SPagination = styled(Flex)(
@@ -15,7 +16,11 @@ export const SPagination = styled(Flex)(
 )
 
 export const SCollapsible = styled(Box)(
-  () => css`
-    padding: var(--table-column-padding-x);
+  ({ theme }) => css`
+    padding: ${theme.containers.paddings.quart};
+
+    ${mq("sm")} {
+      padding: var(--table-column-padding-x);
+    }
   `,
 )

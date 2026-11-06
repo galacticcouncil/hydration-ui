@@ -9,7 +9,6 @@ export type LogoSize =
   | "medium"
   | "small"
   | "extra-small"
-
 export type LogoProps = ImageProps & { size?: LogoSize }
 
 export const Logo: React.FC<LogoProps> = ({ size = "medium", ...props }) => (
@@ -21,3 +20,5 @@ export const Logo: React.FC<LogoProps> = ({ size = "medium", ...props }) => (
     }
   />
 )
+
+export { LOGO_SIZES } from "./Logo.styled"

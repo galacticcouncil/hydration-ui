@@ -6,6 +6,7 @@ import {
 import {
   GhoService,
   Pool,
+  PoolBundle,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
@@ -59,6 +60,16 @@ export const useBorrowPoolContract = () => {
 
   return useMemo(() => {
     return new Pool(new Web3Provider(evm.transport), {
+      POOL: AaveV3HydrationMainnet.POOL,
+    })
+  }, [evm])
+}
+
+export const useBorrowPoolBundleContract = () => {
+  const { evm } = useRpcProvider()
+
+  return useMemo(() => {
+    return new PoolBundle(new Web3Provider(evm.transport), {
       POOL: AaveV3HydrationMainnet.POOL,
     })
   }, [evm])

@@ -1,0 +1,10 @@
+query PureCreatedEvents ($purePublicKey: String!) {
+  events(where: { name_eq: "Proxy.PureCreated", args_jsonContains: {pure: $purePublicKey} }) {
+  block {
+      height
+    }
+    extrinsic {
+      indexInBlock
+    }
+  }
+}

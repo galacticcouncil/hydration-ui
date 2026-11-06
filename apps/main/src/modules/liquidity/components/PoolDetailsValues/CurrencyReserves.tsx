@@ -4,8 +4,9 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import type { TReserve } from "@/api/stableswap"
 import { AssetLogo } from "@/components/AssetLogo"
-import { TReserve, TStablepoolData } from "@/modules/liquidity/Liquidity.utils"
+import { TStablepoolData } from "@/modules/liquidity/Liquidity.utils"
 
 export const CurrencyReserves = ({
   stablepoolData,
@@ -14,7 +15,7 @@ export const CurrencyReserves = ({
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
-  const { reserves, totalDisplayAmount } = stablepoolData
+  const { reserves } = stablepoolData
 
   return (
     <Flex direction="column" gap="base">
@@ -31,10 +32,7 @@ export const CurrencyReserves = ({
 
       {reserves.map((reserve, index) => (
         <Fragment key={reserve.asset_id}>
-          <CurrencyReservesRow
-            reserve={reserve}
-            totalDisplayAmount={totalDisplayAmount}
-          />
+          <CurrencyReservesRow reserve={reserve} />
           {index !== reserves.length - 1 && <Separator mx={-20} />}
         </Fragment>
       ))}
@@ -44,12 +42,10 @@ export const CurrencyReserves = ({
 
 export const CurrencyReservesRow = ({
   reserve,
-  totalDisplayAmount,
   loading,
   separator,
 }: {
   reserve: TReserve
-  totalDisplayAmount: string
   loading?: boolean
   separator?: React.ReactNode
 }) => {
@@ -71,10 +67,7 @@ export const CurrencyReservesRow = ({
             (
             {t("percent", {
               value: reserve.displayAmount
-                ? Big(reserve.displayAmount)
-                    .div(totalDisplayAmount)
-                    .times(100)
-                    .toFixed(1)
+                ? Big(reserve.proportion).times(100).toFixed(1)
                 : 0,
             })}
             )

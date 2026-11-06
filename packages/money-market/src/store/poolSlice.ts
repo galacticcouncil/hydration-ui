@@ -98,7 +98,6 @@ type ClaimRewardsActionsProps = {
 
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
-  vDotApy: string
   data: Map<number, Map<string, PoolReserve>>
   refreshPoolData: (marketData?: MarketDataType) => Promise<void>
   refreshPoolV3Data: () => Promise<void>
@@ -224,7 +223,6 @@ export const createPoolSlice: StateCreator<
   }
   return {
     data: new Map(),
-    vDotApy: "0",
     getCorrectPoolBundle() {
       const currentMarketData = get().currentMarketData
       const provider = get().jsonRpcProvider()
