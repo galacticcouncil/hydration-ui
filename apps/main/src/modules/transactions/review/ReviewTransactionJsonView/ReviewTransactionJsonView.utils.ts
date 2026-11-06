@@ -104,8 +104,35 @@ const extractEvmCalls = (json: unknown): Record<string, unknown>[] => {
   )
 }
 
+// Every EVM.call in the tree replaced by its input, other calls left in place.
+const collapseEvmCalls = (json: unknown): unknown => {
+  if (isArray(json)) return json.map(collapseEvmCalls)
+  if (!isPlainObject(json)) return json
+  if (isPlainObject(json["EVM.call"])) return json["EVM.call"].input
+
+  return mapValues(json, collapseEvmCalls)
+}
+
+// True when some batch in the tree holds a call with no EVM.call inside.
+const hasSubstrateCall = (json: unknown): boolean => {
+  if (isArray(json)) return json.some(hasSubstrateCall)
+  if (!isPlainObject(json)) return false
+
+  return Object.entries(json).some(([key, value]) =>
+    key === "calls" && isArray(value)
+      ? value.some((call) => !extractEvmCalls(call).length) ||
+        value.some(hasSubstrateCall)
+      : hasSubstrateCall(value),
+  )
+}
+
+// A batch of substrate and EVM calls gets one view: substrate calls with EVM decoded.
+export const isMixedEvmBatch = (tx: AnyTransaction) =>
+  isPapiTransaction(tx) && hasSubstrateCall(decodeTx(tx))
+
 // Review view only: decodeTx feeds the dry run too, which needs the raw input.
 // "evm" mode on an extrinsic shows just its EVM calls, like a native EVM tx.
+// A batch mixing substrate and EVM calls keeps its shape, so no call is hidden.
 export const decodeReviewTx = (
   tx: AnyTransaction,
   path?: string,
@@ -116,6 +143,7 @@ export const decodeReviewTx = (
 
   const decoded = decodeEvmInputs(json)
   if (mode !== "evm") return decoded as JsonValue
+  if (hasSubstrateCall(decoded)) return collapseEvmCalls(decoded) as JsonValue
 
   const inputs = extractEvmCalls(decoded).map(prop("input"))
   return (inputs.length === 1 ? inputs[0] : inputs) as JsonValue
