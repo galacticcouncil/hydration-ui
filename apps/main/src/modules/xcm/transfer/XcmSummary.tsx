@@ -18,6 +18,7 @@ import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransferConfigs } from "@/modules/xcm/transfer/hooks/useXcmTransferConfigs"
 import {
   isOmniRoute,
+  isPsmRoute,
   isSnowbridgeRoute,
 } from "@/modules/xcm/transfer/utils/bridge"
 import { toDecimal } from "@/utils/formatting"
@@ -53,7 +54,9 @@ export const XcmSummary = () => {
   // Omni's cut of a withdrawal to Zcash, out of what lands
   const isOmniWithdrawal =
     !!origin?.route && isOmniRoute(origin.route) && !!destChain?.isZec()
-  const isDestFeeAmountBound = isSnowbridge || isOmniWithdrawal
+  // The PSM vault's cut of a redeem, out of what lands
+  const isPsm = !!origin?.route && isPsmRoute(origin.route)
+  const isDestFeeAmountBound = isSnowbridge || isOmniWithdrawal || isPsm
 
   const { data: amountDestFee } = useQuery(
     xcmDestinationFeeQuery(
@@ -63,8 +66,8 @@ export const XcmSummary = () => {
     ),
   )
 
-  // Snowbridge V2 and Omni withdrawal fees are volume-based — read the
-  // amount-aware value from the query instead of the build-time snapshot.
+  // Snowbridge V2, Omni withdrawal and PSM redeem fees are volume-based — read
+  // the amount-aware value from the query instead of the build-time snapshot.
   const effectiveDestFee = isDestFeeAmountBound
     ? amountDestFee
     : destination?.fee
