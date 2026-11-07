@@ -27,4 +27,5 @@ export type SwapSubmitValues = {
   buyAmount: string
   type: TradeType
   isSingleTrade: boolean
+  isOrderMatch: boolean
 }
