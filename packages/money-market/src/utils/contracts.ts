@@ -1,5 +1,5 @@
+export { GhoService } from "./ghoService"
 export {
-  GhoService,
   IncentivesControllerV2,
   type IncentivesControllerV2Interface,
   Pool,

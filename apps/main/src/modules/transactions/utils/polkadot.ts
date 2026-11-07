@@ -80,6 +80,27 @@ export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
   return observeTransactionEvents(observer, options)
 }
 
+const reportResult = (
+  event: Extract<
+    TxEventOrError,
+    { type: "txBestBlocksState"; found: true } | { type: "finalized" }
+  >,
+  options: TxOptions,
+) => {
+  const isEvmError = event.events.some(
+    ({ type, value }) => type === "EVM" && value.type === "ExecutedFailed",
+  )
+  if (isEvmError) {
+    options?.onError(
+      formatTxError(event.dispatchError || "EVM execution failed"),
+    )
+  } else if (!event.ok) {
+    options?.onError(formatTxError(event.dispatchError))
+  } else {
+    options?.onSuccess(event as TxBestBlocksStateResult)
+  }
+}
+
 const observeTransactionEvents = <T extends TxEventOrError>(
   observer: Observable<T>,
   options: TxOptions,
@@ -97,22 +118,14 @@ const observeTransactionEvents = <T extends TxEventOrError>(
       sub.unsubscribe()
     }
 
+    // Reported on every best-block inclusion: after a reorg papi re-emits the
+    // tx's result from its new block, which can differ. Finality settles it.
     if (event.type === "txBestBlocksState" && event.found) {
-      const isEvmError = event.events.some(
-        ({ type, value }) => type === "EVM" && value.type === "ExecutedFailed",
-      )
-      if (isEvmError) {
-        options?.onError(
-          formatTxError(event.dispatchError || "EVM execution failed"),
-        )
-      } else if (!event.ok) {
-        options?.onError(formatTxError(event.dispatchError))
-      } else {
-        options?.onSuccess(event as TxBestBlocksStateResult)
-      }
+      reportResult(event, options)
     }
 
     if (event.type === "finalized") {
+      reportResult(event, options)
       options?.onFinalized(event as TxFinalizedResult)
       sub.unsubscribe()
     }

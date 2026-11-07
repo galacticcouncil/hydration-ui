@@ -1,5 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  isAnyEvmChain,
+  wsToHttp,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isObjectType } from "remeda"
 import {
@@ -13,6 +17,7 @@ import {
   ExecutionRevertedError,
   getContract,
   Hex,
+  http,
   parseSignature,
   PublicClient,
   TransactionReceipt,
@@ -135,12 +140,14 @@ export class EthereumSigner {
       priorityRpcUrl: options.priorityRpcUrl,
     })
 
-    const prevChainId = this.publicClient?.chain?.id
-    const newChainId = evmClient.chain.id
-
-    if (prevChainId !== newChainId) {
-      this.publicClient = evmClient.getProvider() as PublicClient
-    }
+    // A selected fork may share the mainnet chain ID. Rebuild the read client
+    // for the selected endpoint so gas, nonce and receipt reads stay on it.
+    this.publicClient = options.priorityRpcUrl
+      ? (createPublicClient({
+          chain: evmClient.chain,
+          transport: http(wsToHttp(options.priorityRpcUrl)),
+        }) as PublicClient)
+      : (evmClient.getProvider() as PublicClient)
 
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 
@@ -290,19 +297,50 @@ export class EthereumSigner {
       const receipt = await this.publicClient.waitForTransactionReceipt({
         hash: txHash,
       })
+      this.reportReceipt(receipt, options)
 
-      if (receipt.status === "reverted") {
-        options.onError(this.formatError(new ExecutionRevertedError()))
-      } else {
-        options.onSuccess(receipt)
-      }
-
-      options.onFinalized(receipt)
+      // The receipt comes from the best block, which a reorg can replace and
+      // re-execute: report again once its block is finalized. Not awaited, so
+      // callers still settle on the first receipt.
+      void this.waitForFinalReceipt(txHash).then((final) => {
+        if (final && final.status !== receipt.status)
+          this.reportReceipt(final, options)
+        options.onFinalized(final ?? receipt)
+      })
 
       return receipt
     } catch (err) {
       options.onError(this.formatError(err))
     }
+  }
+
+  private reportReceipt(
+    receipt: TransactionReceipt,
+    options: EthereumSignerOptions,
+  ) {
+    if (receipt.status === "reverted") {
+      options.onError(this.formatError(new ExecutionRevertedError()))
+    } else {
+      options.onSuccess(receipt)
+    }
+  }
+
+  /** The receipt once a finalized block holds it; null if that takes too long. */
+  private async waitForFinalReceipt(
+    hash: Hex,
+    { interval = 3_000, timeout = 180_000 } = {},
+  ): Promise<TransactionReceipt | null> {
+    const deadline = Date.now() + timeout
+    while (Date.now() < deadline) {
+      const [receipt, finalized] = await Promise.all([
+        this.publicClient.getTransactionReceipt({ hash }).catch(() => null),
+        this.publicClient.getBlock({ blockTag: "finalized" }).catch(() => null),
+      ])
+      if (receipt && finalized && finalized.number >= receipt.blockNumber)
+        return receipt
+      await new Promise((resolve) => setTimeout(resolve, interval))
+    }
+    return null
   }
 
   async signAndSubmitNative(

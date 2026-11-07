@@ -8,7 +8,7 @@ These standards describe new and changed code. Where older code differs, follow 
 
 - **One component per file, named after it.** Its siblings share the name and add a role suffix: `Name.styled.ts` for styled components, `Name.utils.ts` for helpers, `Name.form.ts` for the schema and form hook, `Name.columns.tsx` for table columns, `Name.test.ts` for tests, `NameSkeleton.tsx` for the loading placeholder. For any other role, reuse a suffix already present in the module (`apps/main/src/modules/trade/otc/place-order/`).
 - **Features live in `apps/main/src/modules/<feature>/`.** The page component is `<Name>Page.tsx`, and its route file in `apps/main/src/routes/` only mounts it and sets the page meta (`apps/main/src/routes/staking/index.tsx`).
-- **Shared code has a fixed home.** Chain, SDK and indexer access goes in `apps/main/src/api/`, components used by several modules in `apps/main/src/components/`, app-wide stores in `apps/main/src/states/`.
+- **Shared code has a fixed home.** Chain, SDK and indexer access that more than one feature reads goes in `apps/main/src/api/`, components used by several modules in `apps/main/src/components/`, app-wide stores in `apps/main/src/states/`.
 - **Imports.** `@/...` inside `apps/main`, the package name across workspaces (`@galacticcouncil/ui/components`), `./Name` for a file in the same directory.
 - **A `packages/ui` component is a directory** with `<Name>.tsx`, `<Name>.styled.ts`, `<Name>.stories.tsx` and an `index.ts` that re-exports them (`packages/ui/src/components/Button/`). A new prop or variant comes with a story that shows it.
 
@@ -37,7 +37,8 @@ These standards describe new and changed code. Where older code differs, follow 
 
 ## Data
 
-- **A query is a factory.** `nameQuery(context, args)` in `apps/main/src/api/` returns `queryOptions({ … })`; the component calls `useQuery(nameQuery(rpc, args))` with `rpc` from `useRpcProvider()` (`bestSellQuery` in `apps/main/src/api/trade.ts`).
+- **A query is a factory.** `nameQuery(context, args)` returns `queryOptions({ … })`; the component calls `useQuery(nameQuery(rpc, args))` with `rpc` from `useRpcProvider()` (`bestSellQuery` in `apps/main/src/api/trade.ts`).
+- **Where a query lives.** A query that only one feature reads (its contract ABI, deployment addresses, query keys and factories) stays inside that feature module: `config/` for the ABI and addresses, `utils/queryKeys.ts` for keys, and the factories in `hooks/` beside the hooks that call them (`apps/main/src/modules/strategies/juicer/`). Other code that shows the feature's data (a portfolio row, a price lookup) imports it from the module. Move it to `apps/main/src/api/` once it serves more than that feature.
 - **Query keys are arrays that narrow left to right**: `["trade", "bestSell", assetIn, assetOut, amountIn]`. Data that changes every block starts its key with `QUERY_KEY_BLOCK_PREFIX` from `@galacticcouncil/utils`.
 - **Asset metadata** comes from `useAssets()` in `@/providers/assetsProvider`.
 

@@ -17,7 +17,11 @@ export const DateText: React.FC<DateTextProps> = ({ date, ...props }) => {
 
   if (hoursAgo < 24) {
     return (
-      <Tooltip text={t("date.datetime", { value: date })} side="left">
+      <Tooltip
+        text={t("date.datetime", { value: date })}
+        side="left"
+        size="small"
+      >
         <RelativeDateText shortFormat date={date} {...props} />
       </Tooltip>
     )
