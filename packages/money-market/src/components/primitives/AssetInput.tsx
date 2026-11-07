@@ -6,8 +6,8 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
-  Stack,
   Text,
+  VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { formatNumber, isValidBigSource } from "@galacticcouncil/utils"
@@ -16,6 +16,9 @@ import { useState } from "react"
 
 import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
+
+const ASSET_ITEM_HEIGHT = 50
+const MAX_VISIBLE_ASSET_ITEMS = 8
 
 export interface Asset {
   balance?: string
@@ -29,7 +32,7 @@ export interface Asset {
 
 export type AssetInputProps<T extends Asset = Asset> = Omit<
   BaseAssetInputProps,
-  "asset" | "onAssetClick" | "balance" | "displayValue" | "label"
+  "asset" | "onAssetClick" | "balance" | "displayValue"
 > & {
   symbol: string
   assets: T[]
@@ -37,6 +40,7 @@ export type AssetInputProps<T extends Asset = Asset> = Omit<
   displayValue?: string
   maxButtonBalance?: string
   balanceLabel?: string
+  hideMaxBalanceAction?: boolean
 }
 
 export const AssetInput = <T extends Asset = Asset>({
@@ -46,6 +50,8 @@ export const AssetInput = <T extends Asset = Asset>({
   displayValue,
   maxButtonBalance,
   balanceLabel,
+  hideMaxBalanceAction,
+  label = "Amount",
   ...props
 }: AssetInputProps<T>) => {
   const { formatCurrency } = useAppFormatters()
@@ -63,7 +69,7 @@ export const AssetInput = <T extends Asset = Asset>({
       <Box pb="l" width="100%">
         <BaseAssetInput
           {...props}
-          label="Amount"
+          label={label}
           asset={{
             symbol,
             icon: asset && <ReserveLogo address={asset.address} />,
@@ -79,23 +85,34 @@ export const AssetInput = <T extends Asset = Asset>({
           balance={{
             label: balanceLabel ?? "Balance",
             value: asset?.balance ? formatNumber(asset.balance) : "",
-            onMax: () => props.onChange?.(max),
+            onMax: hideMaxBalanceAction ? null : () => props.onChange?.(max),
             isMaxDisabled: !props.onChange || Big(max).lte(0),
           }}
         />
       </Box>
       <Modal open={isAssetSelectOpen} onOpenChange={setIsAssetSelectOpen}>
         <ModalHeader title="Select asset" />
-        <ModalBody sx={{ p: 0 }}>
-          <Stack separated>
-            {assets.map((asset) => (
+        <ModalBody noPadding>
+          <VirtualizedList
+            items={assets}
+            itemSize={ASSET_ITEM_HEIGHT}
+            maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
+            getItemKey={(index) => assets[index].address}
+            renderItem={(asset) => (
               <Flex
                 align="center"
                 justify="space-between"
-                key={asset.address}
                 py="m"
                 px="var(--modal-content-padding)"
-                sx={{ cursor: "pointer" }}
+                sx={{
+                  cursor: "pointer",
+                  borderBottomWidth: 1,
+                  borderBottomStyle: "solid",
+                  borderColor: getToken("details.separators"),
+                  "&:hover": {
+                    background: getToken("surfaces.containers.dim.dimOnBg"),
+                  },
+                }}
                 onClick={() => {
                   onSelect?.(asset)
                   props.onChange?.("")
@@ -114,8 +131,8 @@ export const AssetInput = <T extends Asset = Asset>({
                   </Text>
                 </Flex>
               </Flex>
-            ))}
-          </Stack>
+            )}
+          />
         </ModalBody>
       </Modal>
     </>

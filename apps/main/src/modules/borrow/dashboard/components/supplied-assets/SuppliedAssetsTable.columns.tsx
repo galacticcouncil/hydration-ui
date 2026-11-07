@@ -26,6 +26,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { SwapActionMenu } from "@/modules/borrow/components/SwapActionMenu"
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { TRemoveMoneyMarketLiquidityProps } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity"
 import { useAssets } from "@/providers/assetsProvider"
@@ -47,7 +48,7 @@ export const useSuppliedAssetsTableColumns = ({
   const { isMobile } = useBreakpoints()
   const { getRelatedAToken } = useAssets()
   const { user } = useMoneyMarketData()
-  const { openWithdraw, openCollateralChange } = useModalContext()
+  const { openWithdraw, openCollateralChange, openSwap } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("reserve.symbol", {
@@ -174,6 +175,7 @@ export const useSuppliedAssetsTableColumns = ({
               disabled={isDisabled}
               variant="tertiary"
               size="small"
+              outline
               onClick={(e) => {
                 e.stopPropagation()
                 handleWithdrawClick(
@@ -187,6 +189,11 @@ export const useSuppliedAssetsTableColumns = ({
             >
               {t("borrow:withdraw")}
             </Button>
+            <SwapActionMenu
+              label={t("borrow:collateralSwap")}
+              disabled={isDisabled}
+              onSelect={() => openSwap(underlyingAsset, symbol)}
+            />
             <Icon
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
@@ -234,6 +241,12 @@ export const useSuppliedAssetsTableColumns = ({
                 {t("details")}
               </Link>
             </Button>
+            <SwapActionMenu
+              label={t("borrow:collateralSwap")}
+              disabled={isDisabled}
+              size="large"
+              onSelect={() => openSwap(underlyingAsset, symbol)}
+            />
           </Flex>
         )
       },
@@ -249,6 +262,7 @@ export const useSuppliedAssetsTableColumns = ({
   }, [
     isMobile,
     openCollateralChange,
+    openSwap,
     openWithdraw,
     t,
     user.isInIsolationMode,
