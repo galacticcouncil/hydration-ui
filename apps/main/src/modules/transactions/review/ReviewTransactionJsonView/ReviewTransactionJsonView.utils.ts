@@ -5,9 +5,19 @@ import {
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
-import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
+import { isArray, isBigInt, isPlainObject, mapValues, prop, zip } from "remeda"
+import { Abi, decodeFunctionData, erc20Abi, getAbiItem, Hex, isHex } from "viem"
 
+import {
+  HYPERVISOR_ABI,
+  HYPERVISOR_WITHDRAW_ABI,
+  UNIPROXY_ABI,
+} from "@/api/gamma/abi"
+import {
+  BIL_DEPOSIT_ZAP_ABI,
+  BIL_POOL_ABI,
+  VAULT_ABI,
+} from "@/modules/strategies/bil/config/abi"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
@@ -29,27 +39,114 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
 
     const params = getAbiItem({
       abi,
-      name: methodName,
+      name: data.slice(0, 10) as Hex,
     })
 
     // @ts-expect-error inputs exists on Abi item
     const inputs = params?.inputs || []
     const args = decodedData?.args || []
 
-    const formattedArgs = args.map((value) => {
+    const format = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(format)
+      if (isPlainObject(value)) return mapValues(value, format)
       if (value === null || value === undefined || isBigInt(value)) {
         return String(value)
       }
       return value
-    })
+    }
+    const formattedArgs = args.map(format)
 
     const argNames = inputs.map(prop("name"))
     return {
-      [methodName]: pipe(zip(argNames, formattedArgs), fromEntries),
+      [methodName]: Object.fromEntries(zip(argNames, formattedArgs)),
     }
   } catch {
     return {}
   }
+}
+
+const KNOWN_ABIS: Abi = [
+  ...erc20Abi,
+  ...UNIPROXY_ABI,
+  ...HYPERVISOR_ABI,
+  ...HYPERVISOR_WITHDRAW_ABI,
+  ...VAULT_ABI,
+  ...BIL_POOL_ABI,
+  ...BIL_DEPOSIT_ZAP_ABI,
+]
+
+const decodeEvmCallInput = (call: unknown): unknown => {
+  if (!isPlainObject(call) || !isHex(call.input)) return call
+  const decoded = decodeEvmCall(KNOWN_ABIS, call.input)
+  return Object.keys(decoded).length ? { ...call, input: decoded } : call
+}
+
+// Replaces the hex input of every EVM.call in the tree with its decoded call,
+// when the selector belongs to a known ABI.
+export const decodeEvmInputs = (json: unknown): unknown => {
+  if (isArray(json)) return json.map(decodeEvmInputs)
+  if (!isPlainObject(json)) return json
+
+  return mapValues(json, (value, key) =>
+    key === "EVM.call" ? decodeEvmCallInput(value) : decodeEvmInputs(value),
+  )
+}
+
+// Every EVM.call in the tree, in order.
+const extractEvmCalls = (json: unknown): Record<string, unknown>[] => {
+  if (isArray(json)) return json.flatMap(extractEvmCalls)
+  if (!isPlainObject(json)) return []
+
+  return Object.entries(json).flatMap(([key, value]) =>
+    key === "EVM.call" && isPlainObject(value)
+      ? [value]
+      : extractEvmCalls(value),
+  )
+}
+
+// Every EVM.call in the tree replaced by its input, other calls left in place.
+const collapseEvmCalls = (json: unknown): unknown => {
+  if (isArray(json)) return json.map(collapseEvmCalls)
+  if (!isPlainObject(json)) return json
+  if (isPlainObject(json["EVM.call"])) return json["EVM.call"].input
+
+  return mapValues(json, collapseEvmCalls)
+}
+
+// True when some batch in the tree holds a call with no EVM.call inside.
+const hasSubstrateCall = (json: unknown): boolean => {
+  if (isArray(json)) return json.some(hasSubstrateCall)
+  if (!isPlainObject(json)) return false
+
+  return Object.entries(json).some(([key, value]) =>
+    key === "calls" && isArray(value)
+      ? value.some((call) => !extractEvmCalls(call).length) ||
+        value.some(hasSubstrateCall)
+      : hasSubstrateCall(value),
+  )
+}
+
+// A batch of substrate and EVM calls gets one view: substrate calls with EVM decoded.
+export const isMixedEvmBatch = (tx: AnyTransaction) =>
+  isPapiTransaction(tx) && hasSubstrateCall(decodeTx(tx))
+
+// Review view only: decodeTx feeds the dry run too, which needs the raw input.
+// "evm" mode on an extrinsic shows just its EVM calls, like a native EVM tx.
+// A batch mixing substrate and EVM calls keeps its shape, so no call is hidden.
+export const decodeReviewTx = (
+  tx: AnyTransaction,
+  path?: string,
+  mode?: "default" | "evm" | "substrate",
+): object | JsonValue => {
+  const json = decodeTx(tx, path)
+  if (!isPapiTransaction(tx)) return json
+
+  const decoded = decodeEvmInputs(json)
+  if (mode !== "evm") return decoded as JsonValue
+  if (hasSubstrateCall(decoded)) return collapseEvmCalls(decoded) as JsonValue
+
+  const inputs = extractEvmCalls(decoded).map(prop("input"))
+  return (inputs.length === 1 ? inputs[0] : inputs) as JsonValue
 }
 
 export const decodeTx = (
@@ -67,9 +164,12 @@ export const decodeTx = (
   }
 
   if (isEvmCall(tx)) {
-    const abi = tx.abi ? safeParse<Abi>(tx.abi) : null
-    if (!abi) return {}
-
+    let abi = KNOWN_ABIS
+    try {
+      if (tx.abi) abi = safeParse<Abi>(tx.abi)
+    } catch {
+      // malformed abi string, fall back to the known ABIs
+    }
     return decodeEvmCall(abi, tx.data as Hex)
   }
 

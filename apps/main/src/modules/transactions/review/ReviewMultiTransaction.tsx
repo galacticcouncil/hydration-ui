@@ -111,6 +111,10 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
       return
     }
 
+    // whether this step reached the chain; a failure after that is final
+    let submitted = false
+    // a reorg re-reports a step's result: never record or advance twice
+    let succeeded = false
     const config: SingleTransaction = {
       ...transaction,
       ...omit(currentBaseConfig, ["tx"]),
@@ -118,14 +122,17 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
       id: `${transaction.id}-${currentIndex}`,
       tx: resolvedTx,
       onSubmitted: (txHash) => {
+        submitted = true
         currentBaseConfig.onSubmitted?.(txHash)
-        transaction.onSubmitted?.(txHash)
         setIsLoading(true)
         if (isLastTransaction) {
+          transaction.onSubmitted?.(txHash)
           setIsLastSubmitted(true)
         }
       },
       onSuccess: async (event) => {
+        if (succeeded) return
+        succeeded = true
         setIsLoading(false)
         setTransactionResults((prev) => [...prev, event])
 
@@ -159,6 +166,10 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
           setIsLastError(true)
         }
         transaction.onError?.(message)
+        // The modal already closed on submit. Left in the store, the failed
+        // flow would reopen from its first step, signable again, on any
+        // remount of this component.
+        if (isLastTransaction && submitted) cancelTransaction(transaction.id)
       },
       onClose: () => {
         cancelTransaction(transaction.id)

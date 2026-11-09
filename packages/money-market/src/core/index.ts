@@ -108,4 +108,9 @@ export {
 } from "@/core/derive/ray-math"
 export type { SummarizeReservesRequest } from "@/core/derive/reserves"
 export { canBorrowAgainst, summarizeReserves } from "@/core/derive/reserves"
-export { getMarket, markets } from "@/core/markets"
+export {
+  getMarket,
+  HIDDEN_RESERVES,
+  isHiddenReserve,
+  markets,
+} from "@/core/markets"

@@ -27,6 +27,9 @@ import Big from "big.js"
 import { isNonNullish, isNullish, prop, unique, zipWith } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
+import { vaultByShareAssetId } from "@/modules/strategies/juicer/config/vaults"
+import { sharePrice } from "@/modules/strategies/juicer/utils/accounting"
 import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -39,7 +42,8 @@ import { TradeRouter } from "./trade"
 import { xykPoolWithLiquidityQuery } from "./xyk"
 
 export const usePriceSubscriber = () => {
-  const { isReady, sdk } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { isReady } = rpc
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(useShallow(prop("setAssets")))
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
@@ -66,7 +70,7 @@ export const usePriceSubscriber = () => {
 
       const prices = await Promise.all(
         activeAssetsIds.map((assetId) =>
-          getSpotPrice(sdk.api.router, assetId, stableCoinId ?? "")(),
+          getDisplayPrice(rpc, assetId, stableCoinId ?? ""),
         ),
       )
 
@@ -135,6 +139,37 @@ export const getSpotPrice =
     return { tokenIn: tokenInParam, tokenOut: tokenOutParam, spotPrice }
   }
 
+/**
+ * Spot price against the display asset. Juicer share tokens are in no pool, so
+ * they take the vault's exchange rate times the price of their collateral.
+ */
+const getDisplayPrice = async (
+  { sdk, evm, featureFlags }: TProviderContext,
+  assetId: string,
+  stableCoinId: string,
+) => {
+  const vault = featureFlags.juicerEnabled
+    ? vaultByShareAssetId(assetId)
+    : undefined
+  const price = await getSpotPrice(
+    sdk.api.router,
+    vault?.assetId ?? assetId,
+    stableCoinId,
+  )()
+  if (!vault) return price
+
+  const spotPrice = await evm
+    .readContract({
+      address: vault.vaultAddress,
+      abi: VAULT_ABI,
+      functionName: "exchangeRate",
+    })
+    .then((rate) => sharePrice(price.spotPrice, rate))
+    .catch(() => null)
+
+  return { ...price, tokenIn: assetId, spotPrice }
+}
+
 export const spotPriceQueryKey = (assetId: AssetId) => [
   "spotPriceKey",
   String(assetId),
@@ -146,13 +181,13 @@ export const spotPriceKeyQuery = (
 ) => {
   const stableCoinId = useDisplayAssetStore.getState().stableCoinId
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
-  const { sdk, isReady } = context
+  const { isReady } = context
   const id = String(assetId)
 
   return queryOptions({
     queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
-      const price = await getSpotPrice(sdk.api.router, id, stableCoinId ?? "")()
+      const price = await getDisplayPrice(context, id, stableCoinId ?? "")
 
       setAssets([{ id, price: price.spotPrice }])
 

@@ -1,3 +1,4 @@
+import { isHiddenReserve } from "@galacticcouncil/money-market/core"
 import {
   useMoneyMarket,
   useReserveSummaries,
@@ -60,14 +61,14 @@ export const MarketsPage: FC = () => {
 
   const stats = useMemo(() => {
     if (!reserves.data) return null
-    const size = reserves.data.reduce(
+    const listed = reserves.data.filter(
+      (r) => !isHiddenReserve(r.underlyingAsset),
+    )
+    const size = listed.reduce(
       (sum, r) => sum.plus(r.totalLiquidityUsd),
       Big(0),
     )
-    const borrows = reserves.data.reduce(
-      (sum, r) => sum.plus(r.totalDebtUsd),
-      Big(0),
-    )
+    const borrows = listed.reduce((sum, r) => sum.plus(r.totalDebtUsd), Big(0))
     return {
       size: size.toFixed(),
       available: size.minus(borrows).toFixed(),
@@ -79,7 +80,13 @@ export const MarketsPage: FC = () => {
   const rows = useMemo(
     () =>
       (reserves.data ?? [])
-        .filter((r) => r.isActive && !r.isFrozen && !r.isPaused)
+        .filter(
+          (r) =>
+            r.isActive &&
+            !r.isFrozen &&
+            !r.isPaused &&
+            !isHiddenReserve(r.underlyingAsset),
+        )
         .sort((a, b) => {
           const aHollar = isHollar(a.underlyingAsset, market)
           const bHollar = isHollar(b.underlyingAsset, market)

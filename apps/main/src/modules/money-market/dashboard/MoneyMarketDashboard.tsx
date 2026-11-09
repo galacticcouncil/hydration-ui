@@ -1,4 +1,7 @@
-import { assessBorrow } from "@galacticcouncil/money-market/core"
+import {
+  assessBorrow,
+  isHiddenReserve,
+} from "@galacticcouncil/money-market/core"
 import {
   useAccountRequest,
   useClaimableRewards,
@@ -202,7 +205,9 @@ export const MoneyMarketDashboard: FC = () => {
     const toSupply = summaries
       .filter(
         (reserve) =>
-          isUsable(reserve) && !isHollar(reserve.underlyingAsset, market),
+          isUsable(reserve) &&
+          !isHollar(reserve.underlyingAsset, market) &&
+          !isHiddenReserve(reserve.underlyingAsset),
       )
       .map((reserve): SupplyRow => {
         const balance = walletByAsset.get(reserve.underlyingAsset)

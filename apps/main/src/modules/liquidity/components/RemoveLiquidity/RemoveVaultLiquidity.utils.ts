@@ -4,9 +4,10 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { encodeFunctionData, Hex, parseAbi } from "viem"
+import { encodeFunctionData, Hex } from "viem"
 
 import { estimateGasLimit } from "@/api/evm"
+import { HYPERVISOR_WITHDRAW_ABI } from "@/api/gamma/abi"
 import {
   estimateVaultCallGas,
   VaultState,
@@ -16,10 +17,6 @@ import { V3PoolBase } from "@/api/pools"
 import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-
-export const HYPERVISOR_WITHDRAW_ABI = parseAbi([
-  "function withdraw(uint256 shares, address to, address from, uint256[4] minAmounts) returns (uint256 amount0, uint256 amount1)",
-])
 
 // Direct hypervisor withdraw; minAmounts cover rebalance slippage.
 export const useVaultWithdraw = () => {

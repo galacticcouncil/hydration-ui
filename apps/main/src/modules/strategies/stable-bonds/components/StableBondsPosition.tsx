@@ -1,9 +1,11 @@
 import {
-  Box,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   Flex,
-  Paper,
   PositionCard,
-  Separator,
+  Stack,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -39,7 +41,7 @@ const PositionRow = ({ bondId }: { bondId: string }) => {
 
   return (
     <PositionCard
-      logo={<AssetLogo id={bondId} size="medium" />}
+      logo={<AssetLogo id={bondId} size="medium" hideChain />}
       symbol={asset.symbol}
       columns={2}
       stats={
@@ -116,18 +118,19 @@ export const StableBondsPosition: React.FC<StableBondsPositionProps> = ({
   if (bondIds.length === 0) return null
 
   return (
-    <Paper>
-      <Box p="l">
-        <Text as="h2" font="primary" fs="base" fw={500}>
+    <Card>
+      <CardHeader>
+        <CardTitle>
           {t("strategies:position.title", { count: bondIds.length })}
-        </Text>
-      </Box>
-      <Separator />
-      <Flex direction="column" gap="m" p="m">
-        {bondIds.map((bondId) => (
-          <PositionRow key={bondId} bondId={bondId} />
-        ))}
-      </Flex>
-    </Paper>
+        </CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Stack gap="m">
+          {bondIds.map((bondId) => (
+            <PositionRow key={bondId} bondId={bondId} />
+          ))}
+        </Stack>
+      </CardBody>
+    </Card>
   )
 }

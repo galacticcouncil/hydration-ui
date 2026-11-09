@@ -1,5 +1,9 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
-import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
+import {
+  createRootRouteWithContext,
+  ErrorRouteComponent,
+  HeadContent,
+} from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
@@ -9,6 +13,7 @@ import { useNeckworkSync } from "@/api/neckworkSync"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { RouterContext } from "@/App"
 import { AppUpdateBanner } from "@/components/AppUpdateBanner/AppUpdateBanner"
+import { RouteError } from "@/components/RouteError"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
@@ -60,9 +65,16 @@ const RootPendingComponent = () => (
   </AssetsProvider>
 )
 
+const RootErrorComponent: ErrorRouteComponent = (props) => (
+  <AssetsProvider>
+    <RouteError {...props} />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   pendingComponent: RootPendingComponent,
+  errorComponent: RootErrorComponent,
   head: ({
     match: {
       context: { i18n },

@@ -17,7 +17,7 @@ export const CardTitle: FC<TextProps> = (props) => (
 )
 
 export const CardDescription: FC<TextProps> = (props) => (
-  <Text fs="p5" color={getToken("text.low")} {...props} />
+  <Text fs="p5" color={getToken("text.medium")} {...props} />
 )
 
 export const CardBody = SCardBody

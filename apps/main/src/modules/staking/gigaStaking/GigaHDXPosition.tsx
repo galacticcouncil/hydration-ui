@@ -22,6 +22,7 @@ import { Trans, useTranslation } from "react-i18next"
 import {
   claimableVotingRewardsQuery,
   gigaAccountStakesQuery,
+  useGigaAccountBalance,
   useGigaStakeExchangeRate,
 } from "@/api/gigaStake"
 import { spotPriceQuery } from "@/api/spotPrice"
@@ -50,7 +51,8 @@ export const GigaHDXPosition = () => {
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
-  const { data: exchangeRate } = useGigaStakeExchangeRate()
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
+    useGigaStakeExchangeRate()
 
   const { data: gigaBorrowSummary, isLoading } = useGigaBorrowSummary()
   const {
@@ -59,7 +61,6 @@ export const GigaHDXPosition = () => {
     account,
     hdxReserve,
     hollarReserve,
-    hdxPosition,
     hollarPosition,
   } = gigaBorrowSummary ?? {}
 
@@ -73,12 +74,18 @@ export const GigaHDXPosition = () => {
     account?.healthFactor || "-1",
   )
 
-  const gigaHdxBalanceHuman = hdxPosition?.underlyingBalance ?? "0"
+  const { data: gigaAccountBalance, isLoading: isGigaAccountBalanceLoading } =
+    useGigaAccountBalance()
+  const gigaHdxBalanceHuman = scaleHuman(
+    gigaAccountBalance?.total ?? 0n,
+    ghdxMeta.decimals,
+  )
   const gigaHdxBalance = Big(gigaHdxBalanceHuman)
     .times(exchangeRate?.toString() || "0")
     .toString()
 
-  const [gigaHdxBalanceUsd] = useDisplayAssetPrice(native.id, gigaHdxBalance)
+  const [gigaHdxBalanceUsd, { isLoading: isGigaHdxBalanceUsdLoading }] =
+    useDisplayAssetPrice(native.id, gigaHdxBalance)
 
   const liquidationPriceHollarPerHdx = useMemo(() => {
     if (!account || !hdxReserve) return null
@@ -162,6 +169,11 @@ export const GigaHDXPosition = () => {
               displayValue: gigaHdxBalanceUsd,
               symbol: ghdxMeta.symbol,
             })}
+            isLoading={
+              isGigaAccountBalanceLoading ||
+              isExchangeRateLoading ||
+              isGigaHdxBalanceUsdLoading
+            }
             sx={{ ml: "auto", textAlign: "right" }}
           />
         </Flex>

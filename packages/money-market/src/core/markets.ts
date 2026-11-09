@@ -51,3 +51,12 @@ export const markets: { readonly [K in CustomMarket]: MarketDescriptor } = {
 /** Resolve a market key to its descriptor. */
 export const getMarket = (market: CustomMarket): MarketDescriptor =>
   markets[market]
+
+/** Reserves kept out of market lists, supply lists and market totals. */
+export const HIDDEN_RESERVES = [
+  "0x0000000000000000000000000000000100000330", // SIGIL, unwound by ref #355
+  "0xb94025f14fdc01f8e3b0c34311bcbae0febd1a4a", // jsHOLLAR, protocol-internal
+]
+
+export const isHiddenReserve = (underlyingAsset: string) =>
+  HIDDEN_RESERVES.includes(underlyingAsset.toLowerCase())
