@@ -8,6 +8,7 @@ import { useWalletBalances } from "@/hooks/app-data-provider/useWalletBalances"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
+import { isHiddenReserve } from "@/ui-config/addresses"
 import { DashboardReserve } from "@/utils/dashboard"
 
 export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
@@ -26,7 +27,8 @@ export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
       .filter(
         (reserve: ComputedReserveData) =>
           !displayGho({ currentMarket, symbol: reserve.symbol }) &&
-          !(reserve.isFrozen || reserve.isPaused),
+          !(reserve.isFrozen || reserve.isPaused) &&
+          !isHiddenReserve(reserve.underlyingAsset),
       )
       .map((reserve: ComputedReserveData) => {
         const walletBalance =
