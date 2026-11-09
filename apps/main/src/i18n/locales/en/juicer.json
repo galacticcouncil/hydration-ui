@@ -128,7 +128,7 @@
     "If token approval is needed, you will confirm it before the deposit or together with it."
   ],
   "deposit.toast.submitted": "Depositing {{ amount }}...",
-  "deposit.toast.success": "{{ amount }} deposited; strategy deployment follows gradually",
+  "deposit.toast.success": "{{ amount }} deposit submitted. Strategy deployment follows gradually",
   "deposit.failed": "The deposit could not complete. Check your balance and the current vault status, then retry. If the approval step went through, it stays valid for your next attempt.",
   "deposit.toast.error": "{{ amount }} not deposited",
   "deposit.failed.filled": "Other deposits filled the vault before yours landed, so nothing was deposited.",
@@ -176,5 +176,11 @@
   "transfer.paused": "The vault is paused. Positions can't be sent until it resumes.",
   "transfer.toast.submitted": "Sending {{ amount }} Juicer position...",
   "transfer.toast.success": "Sent {{ amount }} Juicer position",
-  "transfer.toast.error": "{{ amount }} Juicer position not sent"
+  "transfer.toast.error": "{{ amount }} Juicer position not sent",
+  "ice.progress.submitting": "Submitting",
+  "ice.progress.submitted": "Swapping",
+  "ice.progress.filled": "Depositing",
+  "ice.progress.deposited": "Deposited",
+  "ice.progress.forwardFailed": "Deposit failed",
+  "ice.progress.expired": "Expired"
 }
