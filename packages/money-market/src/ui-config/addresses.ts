@@ -49,3 +49,11 @@ export const AaveV3BILVaultMainnet = {
   GHO_UI_DATA_PROVIDER: "0x5A31E4a57212eB5ad02a1b9fd736A1fDd9Caa05D",
   COLLECTOR: "0xE52567fF06aCd6CBe7BA94dc777a3126e180B6d9",
 }
+
+export const HIDDEN_RESERVES = [
+  "0x0000000000000000000000000000000100000330", // SIGIL, unwound by ref #355
+  "0xb94025f14fdc01f8e3b0c34311bcbae0febd1a4a", // jsHOLLAR, protocol-internal
+]
+
+export const isHiddenReserve = (underlyingAsset: string) =>
+  HIDDEN_RESERVES.includes(underlyingAsset.toLowerCase())
