@@ -21,7 +21,7 @@ import { Abi, Address, Hex } from "viem"
 /** Opaque key for one deployed lending pool. A chain id never identifies one. */
 export type CustomMarket = "hydration_v3" | "bil_v3" | "gigahdx_v3"
 
-/** The six contracts the package reads from or writes to for a single market. */
+/** The contracts the package reads from or writes to for a single market. */
 export type MarketAddresses = {
   POOL_ADDRESSES_PROVIDER: Address
   POOL: Address
@@ -29,6 +29,7 @@ export type MarketAddresses = {
   UI_INCENTIVE_DATA_PROVIDER: Address
   WALLET_BALANCE_PROVIDER: Address
   HOLLAR_TOKEN: Address
+  HOLLAR_UI_DATA_PROVIDER: Address
 }
 
 /** Everything needed to address one market. Carries no chain id by design. */
