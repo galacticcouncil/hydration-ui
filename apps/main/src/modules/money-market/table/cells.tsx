@@ -214,11 +214,12 @@ export const CollateralCell: FC<{ enabled: boolean; isolated: boolean }> = ({
   enabled,
   isolated,
 }) => {
+  const { t } = useTranslation("borrow")
   if (!enabled) return <Text color={getToken("text.low")}>—</Text>
   if (isolated) {
     return (
       <Chip variant="amber" size="small">
-        Isolated
+        {t("collateral.isolated")}
       </Chip>
     )
   }
@@ -237,21 +238,26 @@ export const CollateralCell: FC<{ enabled: boolean; isolated: boolean }> = ({
 export const CollateralSwitch: FC<{
   row: SuppliedRow
   onAction: OnRowAction
-}> = ({ row: { reserve, position }, onAction }) => (
-  <Flex direction="column" align="center" gap="xs">
-    <Toggle
-      checked={position.usageAsCollateralEnabledOnUser}
-      disabled={!onAction}
-      onClick={(e) => e.stopPropagation()}
-      onCheckedChange={() => onAction?.("collateral", reserve.underlyingAsset)}
-    />
-    {reserve.isIsolated && (
-      <Chip variant="amber" size="small">
-        Isolated
-      </Chip>
-    )}
-  </Flex>
-)
+}> = ({ row: { reserve, position }, onAction }) => {
+  const { t } = useTranslation("borrow")
+  return (
+    <Flex direction="column" align="center" gap="xs">
+      <Toggle
+        checked={position.usageAsCollateralEnabledOnUser}
+        disabled={!onAction}
+        onClick={(e) => e.stopPropagation()}
+        onCheckedChange={() =>
+          onAction?.("collateral", reserve.underlyingAsset)
+        }
+      />
+      {reserve.isIsolated && (
+        <Chip variant="amber" size="small">
+          {t("collateral.isolated")}
+        </Chip>
+      )}
+    </Flex>
+  )
+}
 
 type ButtonAction = Exclude<RowAction, "collateral">
 

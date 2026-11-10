@@ -5,7 +5,7 @@ import { ASSET_ID_TO_KAMINO_ID } from "@/api/external/kamino"
 import type { ExternalApyReadingStatus } from "@/api/external/reading"
 import type { ApyConstituent } from "@/modules/money-market/apy/effectiveApy"
 
-export type FeedKind = NonNullable<ApyConstituent["feed"]>["kind"]
+type FeedKind = NonNullable<ApyConstituent["feed"]>["kind"]
 
 /** Which feed an asset reads, from configuration alone. */
 export type FeedSource = {
@@ -72,7 +72,7 @@ export type ConstituentFeed = {
   reading: ExternalApyReadingStatus
 }
 
-export type ResolveConstituentsInput = {
+type ResolveConstituentsInput = {
   /** The adjusted reserve's asset id. */
   assetId: string
   /** The reserve's own base supply APY in the selected market. */
@@ -85,7 +85,7 @@ export type ResolveConstituentsInput = {
   feeds: ReadonlyMap<string, ConstituentFeed>
 }
 
-export type ResolvedConstituents = {
+type ResolvedConstituents = {
   constituents: ApyConstituent[]
   /** A feed of this reserve is on its first fetch: do not compose yet. */
   loading: boolean

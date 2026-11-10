@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest"
 import {
   buildBorrow,
   buildRepay,
-  buildRepayWithATokens,
   buildSetUsageAsCollateral,
   buildSetUserEMode,
   buildSupply,
@@ -36,7 +35,6 @@ describe("pool actions", () => {
       buildWithdraw({ market, asset, amount, to: user }),
       buildBorrow({ market, asset, amount, onBehalfOf: user }),
       buildRepay({ market, asset, amount, onBehalfOf: user }),
-      buildRepayWithATokens({ market, asset, amount }),
       buildSetUsageAsCollateral({ market, asset, useAsCollateral: true }),
       buildSetUserEMode({ market, categoryId: 1 }),
     ]
@@ -70,12 +68,6 @@ describe("pool actions", () => {
       buildRepay({ market, asset, amount, onBehalfOf: other }),
       "repay",
       [asset, amount, 2n, other],
-    ],
-    [
-      "a repay with aTokens, which names no beneficiary",
-      buildRepayWithATokens({ market, asset, amount }),
-      "repayWithATokens",
-      [asset, amount, 2n],
     ],
     [
       "a collateral switch",

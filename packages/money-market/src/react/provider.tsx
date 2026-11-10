@@ -4,7 +4,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react"
 import { MarketDescriptor } from "@/types"
 
 /** How often cached chain state is re-derived against a fresh timestamp. */
-export const DEFAULT_TICK_INTERVAL = 60_000
+const DEFAULT_TICK_INTERVAL = 60_000
 
 /**
  * The transport and the market it addresses, held as one value.
@@ -24,7 +24,7 @@ export type MoneyMarketConnection = {
 
 const Context = createContext<MoneyMarketConnection | null>(null)
 
-export type MoneyMarketProviderProps = {
+type MoneyMarketProviderProps = {
   config: Config
   market: MarketDescriptor
   /** Defaults to {@link DEFAULT_TICK_INTERVAL}. */

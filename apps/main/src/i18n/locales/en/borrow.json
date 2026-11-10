@@ -1,19 +1,43 @@
 {
   "acknowledgeRisks": "I acknowledge the risks involved.",
-  "supply": "Supply",
-  "withdraw": "Withdraw",
-  "withdrawable": "Withdrawable",
-  "borrow": "Borrow",
-  "borrow.withSymbol": "Borrow {{symbol}}",
-  "repay": "Repay",
-  "repay.withSymbol": "Repay {{symbol}}",
-  "claim": "Claim",
+  "availableRewards": "Available rewards",
   "available": "Available",
   "netApy": "Net APY",
   "netWorth": "Net worth",
+
+  "supply": "Supply",
+  "supply.withSymbol": "Supply {{symbol}}",
+  "supply.toast.submitted": "Supplying {{ amount, currency }}...",
+  "supply.toast.success": "{{ amount, currency }} supplied",
+
+  "withdraw": "Withdraw",
+  "withdrawable": "Withdrawable",
+  "withdraw.withSymbol": "Withdraw {{symbol}}",
+  "withdraw.toast.submitted": "Withdrawing {{ amount, currency }}...",
+  "withdraw.toast.success": "{{ amount, currency }} withdrawn",
+
+  "borrow": "Borrow",
+  "borrow.withSymbol": "Borrow {{symbol}}",
+  "borrow.toast.submitted": "Borrowing {{ amount, currency }}...",
+  "borrow.toast.success": "{{ amount, currency }} borrowed",
+  "borrow.maxExceeded": "Maximum available amount exceeded",
+
+  "repay": "Repay",
+  "repay.withSymbol": "Repay {{symbol}}",
+  "repay.toast.submitted": "Repaying {{ amount, currency }}...",
+  "repay.toast.success": "{{ amount, currency }} repaid",
+
+  "claim": "Claim",
+  "claim.rewardsToClaim": "Rewards to claim",
+  "claim.all": "Claim all",
+  "claim.symbol": "Claim {{ symbol }}",
+  "claim.allRewards": "All rewards",
+  "claim.toast.submitted": "Claiming rewards worth {{ value, currency }}...",
+  "claim.toast.success": "Claimed rewards worth {{ value, currency }}",
+
   "healthFactor": "Health factor",
   "healthFactor.liquidationAt": "Liquidation at <1.0",
-  "availableRewards": "Available rewards",
+
   "summary.supplyApy": "Supply APY",
   "summary.borrowApy": "Borrow APY",
   "summary.incentives": "Incentives",
@@ -27,6 +51,7 @@
   "summary.walletBalance": "Wallet balance",
   "summary.availableToBorrow": "Available to borrow",
   "summary.totalWorth": "Total worth",
+
   "collateral.yes": "Yes",
   "collateral.no": "No",
   "collateral.title": "Collateral",
@@ -41,6 +66,7 @@
   "collateral.enable.toast.success": "{{ symbol }} enabled as collateral",
   "collateral.disable.toast.submitted": "Disabling {{ symbol }} as collateral...",
   "collateral.disable.toast.success": "{{ symbol }} disabled as collateral",
+
   "emode.category": "E-mode category",
   "emode.title": "E-mode",
   "emode.disabled": "Disabled",
@@ -51,12 +77,7 @@
   "emode.disable": "Disable E-mode",
   "emode.toast.submitted": "Setting E-mode to {{ category }}...",
   "emode.toast.success": "E-mode set to {{ category }}",
-  "claim.rewardsToClaim": "Rewards to claim",
-  "claim.all": "Claim all",
-  "claim.symbol": "Claim {{ symbol }}",
-  "claim.allRewards": "All rewards",
-  "claim.toast.submitted": "Claiming rewards worth {{ value, currency }}...",
-  "claim.toast.success": "Claimed rewards worth {{ value, currency }}",
+
   "position.supplied": "Supplied",
   "position.borrowed": "Borrowed",
   "position.earnings": "Projected earnings / year",
@@ -68,16 +89,7 @@
   "position.collateralShare": "Share of my collateral",
   "position.liquidationThreshold": "Liquidation threshold",
   "position.debtShare": "Share of my debt",
-  "supply.withSymbol": "Supply {{symbol}}",
-  "supply.toast.submitted": "Supplying {{ amount, currency }}...",
-  "supply.toast.success": "{{ amount, currency }} supplied",
-  "withdraw.withSymbol": "Withdraw {{symbol}}",
-  "withdraw.toast.submitted": "Withdrawing {{ amount, currency }}...",
-  "withdraw.toast.success": "{{ amount, currency }} withdrawn",
-  "borrow.toast.submitted": "Borrowing {{ amount, currency }}...",
-  "borrow.toast.success": "{{ amount, currency }} borrowed",
-  "repay.toast.submitted": "Repaying {{ amount, currency }}...",
-  "repay.toast.success": "{{ amount, currency }} repaid",
+
   "finding.healthFactorBelowOne": "This action would drop your health factor below 1 and make your position liquidatable.",
   "finding.healthFactorRisk": "This action lowers your health factor and increases the risk of liquidation.",
   "finding.supplyCapNearlyReached": "The supply cap of this asset is {{percent, percent}} used. Supplying may not be possible soon.",
@@ -110,13 +122,17 @@
   "finding.eModeRestrictsBorrowing": "In E-mode you can borrow only the assets of the selected category.",
   "finding.nothingToClaim": "There are no rewards to claim.",
   "finding.openDca": "You have an open DCA order spending this asset. Once it is collateral, the order can draw it down and lower your health factor.",
+
   "apy.variable": "APY, variable",
+
   "binding.toast.submitted": "Binding account...",
   "binding.toast.success": "Account bound successfully",
-  "borrow.maxExceeded": "Maximum available amount exceeded",
+
   "cap.range": "{{ valueA, number(notation: 'compact'; maximumFractionDigits: 2) }} of {{ valueB, number(notation: 'compact';  maximumFractionDigits: 2) }}",
   "cap.range.usd": "{{ valueA, currency(notation: 'compact';  maximumFractionDigits: 2) }} of {{ valueB, currency(notation: 'compact';  maximumFractionDigits: 2) }}",
+
   "debt": "Debt",
+
   "risk.title": "Liquidation risk parameters",
   "risk.details": "Risk details",
   "risk.description": "Your health factor and loan to value determine the assurance of your collateral. To avoid liquidations you can supply more collateral or repay borrow positions.",
@@ -126,13 +142,110 @@
   "risk.ltv.description": "Your current loan to value based on your collateral supplied.",
   "risk.ltv.hint": "If your loan to value goes above the liquidation threshold your collateral supplied may be liquidated.",
   "risk.liquidationValue": "Liquidation value",
+  "risk.ltv.max": "MAX",
+
   "reserve.tab.overview": "Overview",
   "reserve.tab.myPosition": "My position",
+
   "reserve.hollar.title": "About HOLLAR",
   "reserve.hollar.description": "HOLLAR is a native decentralized, collateral-backed stablecoin that maintains its $1 peg while generating yield for holders. Built with advanced stability mechanisms, HOLLAR offers enhanced security through partial liquidations that protect more of your collateral than traditional lending protocols.",
+  "reserve.hollar.borrowInfo.title": "Borrow info",
+  "reserve.hollar.borrowInfo.description": "{{ symbol }} is minted when borrowed, up to a cap set by governance, at a rate set by governance rather than by utilization.",
+
+  "reserve.notFound.title": "Reserve not found",
+  "reserve.notFound.description": "{{ address }} is not a reserve of the {{ market }} market.",
+
+  "reserve.availableLiquidity": "Available liquidity",
+  "reserve.utilization": "Utilization",
+  "reserve.oraclePrice": "Oracle price",
+  "reserve.supplyCap": "Supply cap",
+  "reserve.borrowCap": "Borrow cap",
+  "reserve.capLeft": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }} left before the cap",
+
+  "reserve.collateral.title": "Supported collateral",
+  "reserve.collateral.description": "Assets that can be supplied as collateral to borrow {{ symbol }} in this market. E-mode and an account's own state can narrow this further.",
+  "reserve.collateral.empty": "Nothing can currently back a {{ symbol }} borrow.",
+
+  "reserve.borrowable.title": "Assets you can borrow",
+  "reserve.borrowable.description": "What can be borrowed with {{ symbol }} as collateral.",
+  "reserve.borrowable.empty": "Nothing can currently be borrowed against {{ symbol }}.",
+
+  "reserve.rates.title": "Interest rates",
+  "reserve.rates.description": "Current supply and borrow rates for {{ symbol }}, with each incentive listed apart from the base rate.",
+  "reserve.rates.supplyApr": "Supply APR",
+  "reserve.rates.borrowApr": "Borrow APR",
+  "reserve.rates.chartLabel": "Supply and borrow APR history",
+
+  "reserve.params.title": "Protocol parameters",
+  "reserve.params.description": "How {{ symbol }} is configured in this market.",
+  "reserve.params.status.active": "Active",
+  "reserve.params.status.paused": "Paused",
+  "reserve.params.status.frozen": "Frozen",
+  "reserve.params.status.inactive": "Inactive",
+  "reserve.params.unlimited": "Unlimited",
+  "reserve.params.collateralUsage": "Collateral usage",
+  "reserve.params.cannotBeCollateral": "Cannot be collateral",
+  "reserve.params.supported": "Supported",
+  "reserve.params.borrowing": "Borrowing",
+  "reserve.params.borrowableInIsolation": "Borrowable in isolation",
+  "reserve.params.liquidationPenalty": "Liquidation penalty",
+  "reserve.params.reserveFactor": "Reserve factor",
+  "reserve.params.debtCeiling": "Debt ceiling",
+
+  "reserve.emode.title": "E-mode parameters",
+  "reserve.emode.description": "What applies to {{ symbol }} instead once an account enables the {{ category }} E-mode category.",
+  "reserve.emode.category": "Category",
+
+  "reserve.rateModel.title": "Interest rate model",
+  "reserve.rateModel.description": "The variable borrow rate follows the reserve's utilization, rising steeply past the optimal point.",
+  "reserve.rateModel.optimalUtilization": "Optimal utilization",
+  "reserve.rateModel.baseRate": "Base rate",
+  "reserve.rateModel.slopeBelowOptimal": "Slope below optimal",
+  "reserve.rateModel.slopeAboveOptimal": "Slope above optimal",
+  "reserve.rateModel.optimal": "Optimal {{ value, percent }}",
+  "reserve.rateModel.current": "Current {{ value, percent }}",
+  "reserve.rateModel.variableBorrowApr": "Variable borrow APR",
+
+  "market": "Market",
+  "totalSupplied": "Total supplied",
+
+  "markets.title": "All markets",
+  "markets.totalMarketSize": "Total market size",
+  "markets.totalAvailable": "Total available",
+  "markets.totalBorrows": "Total borrows",
+
+  "dashboard.connectWallet": "Connect a wallet.",
+
+  "dashboard.supplied.title": "My supplies",
+  "dashboard.supplied.empty": "Nothing supplied yet.",
+
+  "dashboard.borrowed.title": "My borrows",
+  "dashboard.borrowed.empty": "Nothing borrowed yet.",
+  "dashboard.borrowed.borrowPowerUsed": "Borrow power used",
+
+  "dashboard.toSupply.title": "Assets to supply",
+  "dashboard.toSupply.empty": "No assets to supply.",
+  "dashboard.toSupply.emptyCategory": "No assets in this category.",
+  "dashboard.toSupply.showZeroBalance": "Show assets with no balance",
+  "dashboard.toSupply.hideZeroBalance": "Hide assets with no balance",
+
+  "dashboard.toBorrow.title": "Assets to borrow",
+  "dashboard.toBorrow.empty": "No assets to borrow.",
+  "dashboard.toBorrow.showAll": "Show all assets",
+  "dashboard.toBorrow.hideUnavailable": "Hide unavailable assets",
+
+  "dashboard.category.all": "All categories",
+  "dashboard.category.stable": "Stablecoins",
+  "dashboard.category.dot": "DOT correlated",
+  "dashboard.category.eth": "ETH correlated",
+  "dashboard.category.btc": "BTC correlated",
+  "dashboard.category.sol": "SOL correlated",
+  "dashboard.category.other": "Other",
+
+  "table.showMore": "Show {{ count }} more",
+
   "history.table.title": "Transaction history",
   "history.filter.title": "Filter by",
-  "history.event.all": "All",
   "history.event.borrow": "Borrow",
   "history.event.collateral": "Collateral Change",
   "history.event.emode": "User EMode Set",
@@ -145,6 +258,7 @@
   "history.table.emodeEnabled": "<0>{{ emode }}</0> <1>Enabled</1>",
   "history.table.emodeUpdated": "E-Mode updated",
   "history.table.liquidatedCollateral": "Liquidated Collateral",
+
   "emptyState.title": "No wallet connected",
   "emptyState.description": "Connect a wallet to view your transaction history."
 }

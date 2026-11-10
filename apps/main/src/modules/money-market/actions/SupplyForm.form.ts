@@ -18,7 +18,7 @@ const createSchema = (max: string, decimals: number) =>
     acknowledged: z.boolean(),
   })
 
-export type SupplyFormValues = z.infer<ReturnType<typeof createSchema>>
+type SupplyFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export const useSupplyForm = (
   assessment: SupplyAssessment | undefined,

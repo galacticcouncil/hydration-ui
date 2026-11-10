@@ -92,7 +92,7 @@ const assetsOf = (
   ),
 ]
 
-export type ClaimRewardRequest = ClaimRequest & {
+type ClaimRewardRequest = ClaimRequest & {
   /** The reward to claim, from `summarizeRewards` — it names the controller. */
   reward: Pick<
     ClaimableReward,
@@ -131,7 +131,7 @@ export const buildClaimReward = ({
   ]
 }
 
-export type ClaimAllRewardsRequest = ClaimRequest
+type ClaimAllRewardsRequest = ClaimRequest
 
 /**
  * Claims every reward token the user has accrued — one call per controller the

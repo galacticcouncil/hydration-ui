@@ -52,7 +52,7 @@ type AssessmentParams<Request, Joined extends keyof Request = never> = Omit<
   user: Address | undefined
 }
 
-export type SupplyAssessmentParams = AssessmentParams<
+type SupplyAssessmentParams = AssessmentParams<
   AssessSupplyRequest,
   "walletBalances"
 >
@@ -89,7 +89,7 @@ export const useSupplyAssessment = ({
   return joinSources(data, [account, balances])
 }
 
-export type WithdrawAssessmentParams = AssessmentParams<AssessWithdrawRequest>
+type WithdrawAssessmentParams = AssessmentParams<AssessWithdrawRequest>
 
 /** What withdrawing `amount` of `asset` would do. */
 export const useWithdrawAssessment = ({
@@ -109,7 +109,7 @@ export const useWithdrawAssessment = ({
   return joinSources(data, [account])
 }
 
-export type BorrowAssessmentParams = AssessmentParams<
+type BorrowAssessmentParams = AssessmentParams<
   AssessBorrowRequest,
   "hollarFacilitator"
 >
@@ -143,7 +143,7 @@ export const useBorrowAssessment = ({
   return joinSources(data, isHollar ? [account, facilitator] : [account])
 }
 
-export type RepayAssessmentParams = AssessmentParams<
+type RepayAssessmentParams = AssessmentParams<
   AssessRepayRequest,
   "walletBalances"
 >
@@ -172,8 +172,7 @@ export const useRepayAssessment = ({
   return joinSources(data, [account, balances])
 }
 
-export type CollateralAssessmentParams =
-  AssessmentParams<AssessCollateralRequest>
+type CollateralAssessmentParams = AssessmentParams<AssessCollateralRequest>
 
 /** What flipping `asset`'s collateral flag would do. */
 export const useCollateralAssessment = ({
@@ -191,7 +190,7 @@ export const useCollateralAssessment = ({
   return joinSources(data, [account])
 }
 
-export type EModeAssessmentParams = AssessmentParams<AssessEModeRequest>
+type EModeAssessmentParams = AssessmentParams<AssessEModeRequest>
 
 /** What switching to e-mode `categoryId` (0 leaves) would do. */
 export const useEModeAssessment = ({
@@ -209,7 +208,7 @@ export const useEModeAssessment = ({
   return joinSources(data, [account])
 }
 
-export type ClaimAssessmentParams = Omit<AssessClaimRequest, "claimable"> & {
+type ClaimAssessmentParams = Omit<AssessClaimRequest, "claimable"> & {
   user: Address | undefined
 }
 

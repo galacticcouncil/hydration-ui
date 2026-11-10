@@ -25,6 +25,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { FC, ReactNode, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useNavigateToReserve } from "@/modules/money-market/hooks"
 import { TablePaper } from "@/modules/money-market/table/TablePaper"
@@ -86,7 +87,7 @@ const ReserveCards = <T extends { reserve: ReserveSummary }>({
   })
 }
 
-export type TableState = { isLoading: boolean; error: Error | null }
+type TableState = { isLoading: boolean; error: Error | null }
 
 /** A failed read, with the chain's own reason underneath the wrapper's. */
 export const ReadError: FC<{ error: Error }> = ({ error }) => (
@@ -117,6 +118,7 @@ export const ReserveDataTable = <T extends { reserve: ReserveSummary }>({
   /** Square corners, for a table stacked with others inside a panel. */
   flat?: boolean
 }) => {
+  const { t } = useTranslation("borrow")
   const navigateToReserve = useNavigateToReserve()
   const [expanded, setExpanded] = useState(false)
   const { isMobile } = useBreakpoints()
@@ -162,7 +164,7 @@ export const ReserveDataTable = <T extends { reserve: ReserveSummary }>({
               width="100%"
               onClick={() => setExpanded(true)}
             >
-              Show {hidden} more
+              {t("table.showMore", { count: hidden })}
             </Button>
           </Box>
         </>

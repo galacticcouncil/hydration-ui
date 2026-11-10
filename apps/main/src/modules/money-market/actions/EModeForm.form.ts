@@ -7,7 +7,7 @@ const schema = z.object({
   acknowledged: z.boolean(),
 })
 
-export type EModeFormValues = z.infer<typeof schema>
+type EModeFormValues = z.infer<typeof schema>
 
 export const useEModeForm = (categoryId = 0) =>
   useForm<EModeFormValues>({

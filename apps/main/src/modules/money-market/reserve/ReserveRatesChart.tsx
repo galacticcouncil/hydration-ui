@@ -70,7 +70,7 @@ const average = (data: RatePoint[]) =>
 export const ReserveRatesChart: FC<{ reserve: ReserveSummary }> = ({
   reserve,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "borrow"])
   const { themeProps } = useTheme()
   const { market } = useMoneyMarket()
   const [timeRange, setTimeRange] = useState<ApyChartTimeRangeOption>("1M")
@@ -91,20 +91,20 @@ export const ReserveRatesChart: FC<{ reserve: ReserveSummary }> = ({
     return [
       {
         key: "supply" as const,
-        label: "Supply APR",
+        label: t("borrow:reserve.rates.supplyApr"),
         color: themeProps.accents.info.onPrimary,
         data: supply,
         average: average(supply),
       },
       {
         key: "borrow" as const,
-        label: "Borrow APR",
+        label: t("borrow:reserve.rates.borrowApr"),
         color: themeProps.colors.basePalette.coralPink,
         data: borrow,
         average: average(borrow),
       },
     ].filter((s) => s.key === "supply" || reserve.borrowingEnabled)
-  }, [data, themeProps, reserve.borrowingEnabled])
+  }, [data, themeProps, reserve.borrowingEnabled, t])
 
   const visible = useMemo(
     () => series.filter((s) => !hidden.has(s.key)),
@@ -351,7 +351,7 @@ export const ReserveRatesChart: FC<{ reserve: ReserveSummary }> = ({
         <SDrawIn key={timeRange}>
           <Chart
             definition={definition}
-            ariaLabel="Supply and borrow APR history"
+            ariaLabel={t("borrow:reserve.rates.chartLabel")}
             height={[150, 250]}
             renderTooltipBody={({ points }) => (
               <ChartLegendTooltipBody

@@ -34,7 +34,7 @@ export type PositionChange =
   | { kind: "setUsageAsCollateral"; asset: Address; enabled: boolean }
   | { kind: "setEMode"; categoryId: number }
 
-export type ProjectAccountRequest = SummarizeAccountRequest & {
+type ProjectAccountRequest = SummarizeAccountRequest & {
   change: PositionChange
 }
 

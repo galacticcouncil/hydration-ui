@@ -41,7 +41,6 @@ export const SHeader = styled.header(
     }
 
     ${mq(FULL_HEADER_BREAKPOINT)} {
-      gap: ${theme.space.xxxl};
       [data-intersect="explorer"] {
         display: block;
       }

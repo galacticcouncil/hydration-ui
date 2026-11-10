@@ -30,6 +30,7 @@ import {
   ValueStats,
   ValueStatsValue,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
@@ -46,6 +47,7 @@ import {
   byUsdDesc,
   usePositions,
 } from "@/modules/money-market/dashboard/usePositions"
+import { EModeSelect } from "@/modules/money-market/EModeSelect"
 import {
   HealthFactorNumber,
   HF_UNBOUNDED,
@@ -84,12 +86,12 @@ const canBorrow = (row: BorrowRow) => Big(row.available).gt(0)
 // new asset whose symbol fits none lands in "Other"; move to a per-market
 // asset list if patterns start misfiling
 const CATEGORIES = [
-  { key: "stable", label: "Stablecoins", pattern: /USD|HOLLAR|DAI|EUR/i },
-  { key: "dot", label: "DOT correlated", pattern: /DOT/i },
-  { key: "eth", label: "ETH correlated", pattern: /ETH/i },
-  { key: "btc", label: "BTC correlated", pattern: /BTC/i },
-  { key: "sol", label: "SOL correlated", pattern: /SOL/i },
-  { key: "other", label: "Other", pattern: /.*/ },
+  { key: "stable", pattern: /USD|HOLLAR|DAI|EUR/i },
+  { key: "dot", pattern: /DOT/i },
+  { key: "eth", pattern: /ETH/i },
+  { key: "btc", pattern: /BTC/i },
+  { key: "sol", pattern: /SOL/i },
+  { key: "other", pattern: /.*/ },
 ] as const
 type Category = (typeof CATEGORIES)[number]["key"]
 
@@ -157,6 +159,7 @@ const ShowMore: FC<{
 
 export const MoneyMarketDashboard: FC = () => {
   const { t } = useTranslation(["common", "borrow"])
+  const { isMobile } = useBreakpoints()
   const user = useUserAddress()
   const [open, setOpen] = useState<OpenAction | null>(null)
   const [riskOpen, setRiskOpen] = useState(false)
@@ -278,7 +281,7 @@ export const MoneyMarketDashboard: FC = () => {
   // only the categories this market has; the filter hides below two
   const categoryItems = CATEGORIES.filter((c) =>
     toSupply.some((r) => categoryOfReserve(r.reserve) === c.key),
-  )
+  ).map(({ key }) => ({ key, label: t(`borrow:dashboard.category.${key}`) }))
   const { rows: visibleToSupply, hidesZeroBalance } = toSupplyRows({
     rows: toSupply,
     market,
@@ -313,13 +316,13 @@ export const MoneyMarketDashboard: FC = () => {
       ? (action: RowAction, asset: Address) => setOpen({ action, asset })
       : undefined
     return {
-      supplied: suppliedColumns(onAction),
-      borrowed: borrowedColumns(onAction),
-      toSupply: toSupplyColumns(onAction),
-      toSupplyPinned: toSupplyColumns(onAction, true),
-      toBorrow: toBorrowColumns(onAction),
+      supplied: suppliedColumns(t, onAction),
+      borrowed: borrowedColumns(t, onAction),
+      toSupply: toSupplyColumns(t, onAction),
+      toSupplyPinned: toSupplyColumns(t, onAction, true),
+      toBorrow: toBorrowColumns(t, onAction),
     }
-  }, [user])
+  }, [user, t])
 
   // stacked columns show one side at a time, side by side they both show
   const column = (s: Side) => ({
@@ -438,18 +441,22 @@ export const MoneyMarketDashboard: FC = () => {
         columnTemplate={["1fr", null, null, "1fr 1fr"]}
         gap="xl"
         align="start"
-        mt="l"
+        mt={[null, null, null, "l"]}
       >
         <Stack gap="xl" sx={column("supply")}>
           <ReserveTable
-            title="My supplies"
-            empty={user ? "Nothing supplied yet." : "Connect a wallet."}
+            title={t("borrow:dashboard.supplied.title")}
+            empty={
+              user
+                ? t("borrow:dashboard.supplied.empty")
+                : t("borrow:dashboard.connectWallet")
+            }
             actions={
               (accountLoading || supplied.length > 0) && (
                 <TableStats
                   isLoading={accountLoading}
                   stats={[
-                    ["Balance", usd(acc?.totalLiquidityUsd)],
+                    [t("balance"), usd(acc?.totalLiquidityUsd)],
                     [
                       t("apy"),
                       <NetApyValue
@@ -458,7 +465,10 @@ export const MoneyMarketDashboard: FC = () => {
                         figure="earnedApy"
                       />,
                     ],
-                    ["Collateral", usd(acc?.totalCollateralUsd)],
+                    [
+                      t("borrow:summary.collateral"),
+                      usd(acc?.totalCollateralUsd),
+                    ],
                   ]}
                 />
               )
@@ -469,14 +479,14 @@ export const MoneyMarketDashboard: FC = () => {
             error={account.error}
           />
           <ReserveTable
-            title="Assets to supply"
+            title={t("borrow:dashboard.toSupply.title")}
             actions={
               categoryItems.length > 1 && (
                 <Select<Category | "all">
                   variant={category === "all" ? "muted" : "accent"}
                   size="small"
                   items={[
-                    { key: "all", label: "All categories" },
+                    { key: "all", label: t("borrow:dashboard.category.all") },
                     ...categoryItems,
                   ]}
                   value={category}
@@ -490,14 +500,16 @@ export const MoneyMarketDashboard: FC = () => {
                   open={showZeroBalance}
                   onToggle={() => setShowZeroBalance((show) => !show)}
                 >
-                  {showZeroBalance ? "Hide" : "Show"} assets with no balance
+                  {showZeroBalance
+                    ? t("borrow:dashboard.toSupply.hideZeroBalance")
+                    : t("borrow:dashboard.toSupply.showZeroBalance")}
                 </ShowMore>
               )
             }
             empty={
               category === "all"
-                ? "No assets to supply."
-                : "No assets in this category."
+                ? t("borrow:dashboard.toSupply.empty")
+                : t("borrow:dashboard.toSupply.emptyCategory")
             }
             data={visibleToSupply.filter((r) => !r.pinned)}
             columns={columns.toSupply}
@@ -511,26 +523,37 @@ export const MoneyMarketDashboard: FC = () => {
         </Stack>
         <Stack gap="xl" sx={column("borrow")}>
           <ReserveTable
-            title="My borrows"
-            empty={user ? "Nothing borrowed yet." : "Connect a wallet."}
+            title={t("borrow:dashboard.borrowed.title")}
+            empty={
+              user
+                ? t("borrow:dashboard.borrowed.empty")
+                : t("borrow:dashboard.connectWallet")
+            }
             actions={
-              (accountLoading || borrowed.length > 0) && (
-                <TableStats
-                  isLoading={accountLoading}
-                  stats={[
-                    ["Balance", usd(acc?.totalBorrowsUsd)],
-                    [
-                      t("apy"),
-                      <NetApyValue
-                        key="debtApy"
-                        netApy={netApy}
-                        figure="debtApy"
-                      />,
-                    ],
-                    ["Borrow power used", percent(borrowPowerUsed)],
-                  ]}
-                />
-              )
+              <>
+                {/* sits in the sub nav on wider screens */}
+                {isMobile && <EModeSelect />}
+                {(accountLoading || borrowed.length > 0) && (
+                  <TableStats
+                    isLoading={accountLoading}
+                    stats={[
+                      [t("balance"), usd(acc?.totalBorrowsUsd)],
+                      [
+                        t("apy"),
+                        <NetApyValue
+                          key="debtApy"
+                          netApy={netApy}
+                          figure="debtApy"
+                        />,
+                      ],
+                      [
+                        t("borrow:dashboard.borrowed.borrowPowerUsed"),
+                        percent(borrowPowerUsed),
+                      ],
+                    ]}
+                  />
+                )}
+              </>
             }
             data={borrowed}
             columns={columns.borrowed}
@@ -538,8 +561,8 @@ export const MoneyMarketDashboard: FC = () => {
             error={account.error}
           />
           <ReserveTable
-            title="Assets to borrow"
-            empty="No assets to borrow."
+            title={t("borrow:dashboard.toBorrow.title")}
+            empty={t("borrow:dashboard.toBorrow.empty")}
             footer={
               anyAvailable &&
               anyUnavailable && (
@@ -548,8 +571,8 @@ export const MoneyMarketDashboard: FC = () => {
                   onToggle={() => setShowUnavailable((show) => !show)}
                 >
                   {showUnavailable
-                    ? "Hide unavailable assets"
-                    : "Show all assets"}
+                    ? t("borrow:dashboard.toBorrow.hideUnavailable")
+                    : t("borrow:dashboard.toBorrow.showAll")}
                 </ShowMore>
               )
             }

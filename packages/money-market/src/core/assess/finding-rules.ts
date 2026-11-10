@@ -23,7 +23,7 @@ const CAP_NEARLY_REACHED_PERCENT = 98
 /** Cap usage, in percent, from which a cap is treated as reached. */
 const CAP_REACHED_PERCENT = 99.99
 
-export type HealthFactorFindingsRequest = {
+type HealthFactorFindingsRequest = {
   /** The account's health factor now. */
   current: string
   /** The account's health factor once the action has gone through. */
@@ -112,7 +112,7 @@ export const debtCeilingFindings = (
     reserve.debtCeilingUsd,
   )
 
-export type ZeroLtvLockFindingsRequest = {
+type ZeroLtvLockFindingsRequest = {
   /** The asset the action is on, which never blocks itself. */
   asset: Address
   positions: Pick<

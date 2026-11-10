@@ -5,6 +5,7 @@ import {
 } from "@galacticcouncil/money-market/react"
 import type { CustomMarket } from "@galacticcouncil/money-market/types"
 import { Flex, Select } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import {
   Outlet,
   useMatch,
@@ -14,6 +15,7 @@ import {
   useSearch,
 } from "@tanstack/react-router"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { BreadcrumbBar } from "@/modules/layout/components/BreadcrumbBar"
 import { Container, MainContent } from "@/modules/layout/components/Content"
@@ -34,6 +36,8 @@ const MARKET_ITEMS = Object.values(markets).map((m) => ({
  */
 export const MoneyMarketLayout: FC = () => {
   const { isReady } = useRpcProvider()
+  // below that it sits beside the dashboard's "My borrows" title
+  const { isMobile } = useBreakpoints()
   const { config } = useMoneyMarket()
   const { market = DEFAULT_MARKET } = useSearch({ from: "/borrow" })
   const descriptor = markets[market]
@@ -55,7 +59,7 @@ export const MoneyMarketLayout: FC = () => {
                 actions={
                   <Flex align="center" gap="m">
                     <MarketSelect />
-                    <EModeSelect key={market} />
+                    {!isMobile && <EModeSelect key={market} />}
                   </Flex>
                 }
               />
@@ -87,7 +91,8 @@ const PendingPage: FC = () => {
 }
 
 /** Sits in the sub nav strip, so every page shares it. */
-export const MarketSelect: FC = () => {
+const MarketSelect: FC = () => {
+  const { t } = useTranslation("borrow")
   const { market } = useSearch({ from: "/borrow" })
   const navigate = useNavigate()
 
@@ -101,7 +106,7 @@ export const MarketSelect: FC = () => {
 
   return (
     <Select
-      label="Market"
+      label={t("market")}
       items={MARKET_ITEMS}
       value={market}
       onValueChange={onMarketChange}

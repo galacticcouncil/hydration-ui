@@ -8,7 +8,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 /** The package's codes plus the ones only the app can assess. */
-export type AppFindingCode = FindingCode | "openDca"
+type AppFindingCode = FindingCode | "openDca"
 
 export type AppFinding = Finding<AppFindingCode>
 

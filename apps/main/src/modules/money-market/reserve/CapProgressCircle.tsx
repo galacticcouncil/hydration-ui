@@ -7,9 +7,9 @@ import { useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-export type CapProgressCircleType = "supply" | "borrow"
+type CapProgressCircleType = "supply" | "borrow"
 
-export type CapProgressCircleProps = ProgressCircleProps & {
+type CapProgressCircleProps = ProgressCircleProps & {
   tooltip: string
   type: CapProgressCircleType
 }

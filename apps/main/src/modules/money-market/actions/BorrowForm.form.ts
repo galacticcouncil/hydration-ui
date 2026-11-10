@@ -18,7 +18,7 @@ const createSchema = (max: string, decimals: number) =>
     acknowledged: z.boolean(),
   })
 
-export type BorrowFormValues = z.infer<ReturnType<typeof createSchema>>
+type BorrowFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export const useBorrowForm = (
   assessment: BorrowAssessment | undefined,

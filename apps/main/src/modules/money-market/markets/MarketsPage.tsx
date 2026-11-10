@@ -47,7 +47,7 @@ const { accessor, display } = createColumnHelper<ReserveSummary>()
  * pages can be compared number for number.
  */
 export const MarketsPage: FC = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "borrow"])
   const { market } = useMoneyMarket()
   const reserves = useReserveSummaries()
   const navigateToReserve = useNavigateToReserve()
@@ -107,11 +107,11 @@ export const MarketsPage: FC = () => {
       // sorted and searched by the name the row shows
       accessor((reserve) => resolveDisplay(reserve).symbol, {
         id: "symbol",
-        header: "Asset",
+        header: t("asset"),
         cell: ({ row }) => <ReserveAsset reserve={row.original} />,
       }),
       accessor("totalLiquidityUsd", {
-        header: "Total supplied",
+        header: t("borrow:totalSupplied"),
         ...right,
         sortingFn: sortBy({
           select: (row) => row.original.totalLiquidityUsd,
@@ -132,7 +132,7 @@ export const MarketsPage: FC = () => {
       }),
       accessor((reserve) => apyOf(reserve, "supply"), {
         id: "supplyApy",
-        header: "Supply APY",
+        header: t("borrow:summary.supplyApy"),
         ...right,
         sortingFn: sortBy({
           select: (row) => apyOf(row.original, "supply"),
@@ -147,7 +147,7 @@ export const MarketsPage: FC = () => {
           ),
       }),
       accessor("totalDebtUsd", {
-        header: "Total borrowed",
+        header: t("totalBorrowed"),
         ...right,
         sortingFn: sortBy({
           select: (row) => row.original.totalDebtUsd,
@@ -167,7 +167,7 @@ export const MarketsPage: FC = () => {
       }),
       accessor((reserve) => apyOf(reserve, "borrow"), {
         id: "variableBorrowApy",
-        header: "Borrow APY",
+        header: t("borrow:summary.borrowApy"),
         ...right,
         sortingFn: sortBy({
           select: (row) => apyOf(row.original, "borrow"),
@@ -213,7 +213,7 @@ export const MarketsPage: FC = () => {
             size="large"
             fixedSize
             isLoading={reserves.isPending}
-            label="Total market size"
+            label={t("borrow:markets.totalMarketSize")}
             wrap
             value={usd(stats?.size)}
           />
@@ -221,7 +221,7 @@ export const MarketsPage: FC = () => {
             size="large"
             fixedSize
             isLoading={reserves.isPending}
-            label="Total available"
+            label={t("borrow:markets.totalAvailable")}
             wrap
             value={usd(stats?.available)}
           />
@@ -229,7 +229,7 @@ export const MarketsPage: FC = () => {
             size="large"
             fixedSize
             isLoading={reserves.isPending}
-            label="Total borrows"
+            label={t("borrow:markets.totalBorrows")}
             wrap
             value={usd(stats?.borrows)}
           />
@@ -239,7 +239,7 @@ export const MarketsPage: FC = () => {
       <Box>
         <TitleWithSearch
           as="h1"
-          title="All markets"
+          title={t("borrow:markets.title")}
           value={searchPhrase}
           placeholder={t("search.placeholder.assets")}
           onChange={(e) => setSearchPhrase(e.target.value)}

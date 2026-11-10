@@ -1,6 +1,6 @@
 import { Paper, PaperProps } from "@galacticcouncil/ui/components"
 
-export type TablePaperProps = PaperProps & {
+type TablePaperProps = PaperProps & {
   isTransparent?: boolean
 }
 

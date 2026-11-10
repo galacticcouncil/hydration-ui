@@ -15,7 +15,7 @@ import {
   ReserveApy,
 } from "@/modules/money-market/apy/effectiveApy"
 
-export type VaultAprReading =
+type VaultAprReading =
   | { status: "known"; apr: string }
   | { status: "loading" }
   | { status: "unavailable" }

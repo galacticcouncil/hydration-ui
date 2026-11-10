@@ -9,7 +9,7 @@ import {
 } from "@/modules/money-market/reserves/reserves"
 import type { RowAction } from "@/modules/money-market/table/cells"
 
-export type ActionRoute =
+type ActionRoute =
   | "addStablepool"
   | "supplyIsolated"
   | "removeMoneyMarket"

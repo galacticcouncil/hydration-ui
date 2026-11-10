@@ -38,13 +38,7 @@ export const HeaderSelect = <TKey extends string>({
   const selected = options.find((o) => o.key === value)
 
   return (
-    <Flex
-      justify="space-between"
-      align="center"
-      direction={["column", "row"]}
-      gap="base"
-      {...props}
-    >
+    <Flex justify="space-between" align="center" gap="base" {...props}>
       <Text fs="p3" fw={700} lh={1}>
         {label}
       </Text>

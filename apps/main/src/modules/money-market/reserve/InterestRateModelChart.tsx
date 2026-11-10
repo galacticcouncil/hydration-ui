@@ -36,7 +36,7 @@ const modelCurve = (reserve: ReserveSummary): Point[] => {
 export const InterestRateModelChart: FC<{ reserve: ReserveSummary }> = ({
   reserve,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "borrow"])
   const { themeProps } = useTheme()
 
   const definition = useMemo(() => {
@@ -48,12 +48,20 @@ export const InterestRateModelChart: FC<{ reserve: ReserveSummary }> = ({
     const labelColor = themeProps.colors.skyBlue[600]
 
     const labels = [
-      { utilization: optimal, label: "Optimal", dy: 10 },
-      { utilization: current, label: "Current", dy: 32 },
+      {
+        utilization: optimal,
+        label: t("borrow:reserve.rateModel.optimal", { value: optimal }),
+        dy: 10,
+      },
+      {
+        utilization: current,
+        label: t("borrow:reserve.rateModel.current", { value: current }),
+        dy: 32,
+      },
     ].map(({ utilization, label, dy }) => ({
       utilization,
       variableRate: topRate,
-      label: `${label} ${t("percent", { value: utilization })}`,
+      label,
       anchor: utilization > 50 ? ("end" as const) : ("start" as const),
       dx: utilization > 50 ? -10 : 10,
       dy,
@@ -125,14 +133,16 @@ export const InterestRateModelChart: FC<{ reserve: ReserveSummary }> = ({
   return (
     <Chart
       definition={definition}
-      ariaLabel="Interest rate model"
+      ariaLabel={t("borrow:reserve.rateModel.title")}
       aspectRatio={["2 / 1", "3 / 1"]}
       renderTooltipBody={({ points }) => (
         <ChartLegendTooltipBody
-          label="Utilization"
+          label={t("borrow:reserve.utilization")}
           points={points.filter(({ markId }) => markId === RATE_MARK_ID)}
           formatLabel={(value) => t("percent", { value })}
-          formatSeriesLabel={() => "Variable borrow APR"}
+          formatSeriesLabel={() =>
+            t("borrow:reserve.rateModel.variableBorrowApr")
+          }
           formatValue={({ yValue }) =>
             t("percent", { value: Number(yValue) * 100 })
           }

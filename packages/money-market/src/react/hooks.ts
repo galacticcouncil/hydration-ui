@@ -39,7 +39,7 @@ export const RESERVES_STALE_TIME = 5 * 60_000
  * A user's own state is shorter-lived on purpose: it changes because of what
  * they just did, and a supply or a repay has to show up promptly.
  */
-export const POSITIONS_STALE_TIME = 30_000
+const POSITIONS_STALE_TIME = 30_000
 
 /**
  * A market's reserves, base currency and reward configuration, as read.

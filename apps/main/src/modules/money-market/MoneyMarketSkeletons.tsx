@@ -1,11 +1,14 @@
 import {
   Box,
+  ChartSkeleton,
   Flex,
   Grid,
+  LogoSkeleton,
   Paper,
   Separator,
   Skeleton,
   Stack,
+  Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { FC } from "react"
@@ -15,7 +18,6 @@ import {
   ProseSkeleton,
   TableSkeleton,
 } from "@/modules/layout/components/LayoutSkeleton"
-import { AssetHeaderSkeleton } from "@/modules/layout/components/LayoutSkeleton/AssetHeaderSkeleton"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 
 const StatsSkeleton: FC<{ labels: string[] }> = ({ labels }) => (
@@ -74,15 +76,22 @@ export const MoneyMarketDashboardSkeleton = () => {
   )
 }
 
-export const MarketsPageSkeleton = () => (
-  <Stack gap="xl">
-    <StatsSkeleton
-      labels={["Total market size", "Total available", "Total borrows"]}
-    />
-    <TitleSearchSkeleton />
-    <TableSkeleton rows={10} cols={[3, null, 6]} />
-  </Stack>
-)
+export const MarketsPageSkeleton = () => {
+  const { t } = useTranslation("borrow")
+  return (
+    <Stack gap="xl">
+      <StatsSkeleton
+        labels={[
+          t("markets.totalMarketSize"),
+          t("markets.totalAvailable"),
+          t("markets.totalBorrows"),
+        ]}
+      />
+      <TitleSearchSkeleton />
+      <TableSkeleton rows={10} cols={[3, null, 6]} />
+    </Stack>
+  )
+}
 
 export const BorrowHistoryPageSkeleton = () => (
   <Stack gap="xl">
@@ -99,19 +108,64 @@ const SectionSkeleton: FC<{ children: React.ReactNode }> = ({ children }) => (
   </Paper>
 )
 
+// mirrors InterestRates: APY stats, legend + time range, then the chart
+const RatesChartSkeleton = () => {
+  const { t } = useTranslation("borrow")
+  return (
+    <Stack gap="xl">
+      <Flex gap="xxxl">
+        <ValueStats
+          size="medium"
+          wrap
+          isLoading
+          label={t("summary.supplyApy")}
+        />
+        <ValueStats
+          size="medium"
+          wrap
+          isLoading
+          label={t("summary.borrowApy")}
+        />
+      </Flex>
+      <Stack gap="base">
+        <Flex justify="space-between" align="center" gap="base" wrap>
+          <Flex gap="xl">
+            <Skeleton width={90} height={16} />
+            <Skeleton width={90} height={16} />
+          </Flex>
+          <Skeleton width={160} height={28} />
+        </Flex>
+        <ChartSkeleton sx={{ height: [150, 250] }} />
+      </Stack>
+    </Stack>
+  )
+}
+
 export const ReserveDetailPageSkeleton = () => (
   <Stack gap="xl">
     <Flex align="center" justify="space-between" gap="xxl" wrap>
-      <AssetHeaderSkeleton />
-      <Flex gap="m">
-        <Skeleton width={100} height={36} />
-        <Skeleton width={100} height={36} />
+      {/* sized as ReserveTitle and ReserveActions, so the header keeps its height */}
+      <Flex align="center" gap="base">
+        <LogoSkeleton size="large" />
+        <Stack>
+          <Text font="primary" fs={["h7", null, "h6"]} lh={1} fw={600}>
+            <Skeleton width={100} />
+          </Text>
+          <Text fs="p5">
+            <Skeleton width={40} />
+          </Text>
+        </Stack>
+      </Flex>
+      {/* the actions are pinned to the screen bottom below md */}
+      <Flex gap="base" display={["none", null, "flex"]} sx={{ lineHeight: 0 }}>
+        <Skeleton width={100} height="2.5rem" />
+        <Skeleton width={40} height="2.5rem" />
       </Flex>
     </Flex>
-    <TwoColumnGrid template="sidebar">
+    <TwoColumnGrid template="sidebar" breakpoint="lg">
       <Stack gap="xl">
         <SectionSkeleton>
-          <Skeleton height={240} />
+          <RatesChartSkeleton />
         </SectionSkeleton>
         <SectionSkeleton>
           <Grid columnTemplate={["1fr 1fr", null, "repeat(3, 1fr)"]} gap="l">

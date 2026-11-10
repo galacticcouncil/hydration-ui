@@ -3,11 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export type CollateralStatus =
-  | "enabled"
-  | "isolated"
-  | "disabled"
-  | "unavailable"
+type CollateralStatus = "enabled" | "isolated" | "disabled" | "unavailable"
 
 const COLORS = {
   enabled: "accents.success.emphasis",

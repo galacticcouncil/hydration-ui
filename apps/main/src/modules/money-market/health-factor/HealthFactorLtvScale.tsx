@@ -67,7 +67,7 @@ export const HealthFactorLtvScale = ({
               {(Number(loanToValue) * 100).toFixed(2)}%
             </Text>
             <Flex inline gap="s" color={getToken("text.medium")}>
-              <Text fs="p6">MAX</Text>
+              <Text fs="p6">{t("borrow:risk.ltv.max")}</Text>
               <Text fs="p6">
                 {(Number(currentLoanToValue) * 100).toFixed(2)}%
               </Text>

@@ -18,7 +18,7 @@ const createSchema = (max: string, decimals: number) =>
     isMax: z.boolean(),
   })
 
-export type RepayFormValues = z.infer<ReturnType<typeof createSchema>>
+type RepayFormValues = z.infer<ReturnType<typeof createSchema>>
 
 export const useRepayForm = (
   assessment: RepayAssessment | undefined,

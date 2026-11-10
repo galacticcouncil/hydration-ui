@@ -6,7 +6,7 @@ const schema = z.object({
   acknowledged: z.boolean(),
 })
 
-export type CollateralFormValues = z.infer<typeof schema>
+type CollateralFormValues = z.infer<typeof schema>
 
 export const useCollateralForm = () =>
   useForm<CollateralFormValues>({

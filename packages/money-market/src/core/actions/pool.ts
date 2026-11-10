@@ -38,7 +38,6 @@ const DEFAULT_GAS_LIMIT = {
   withdraw: 1_000_000n,
   borrow: 1_300_000n,
   repay: 1_000_000n,
-  repayWithATokens: 1_000_000n,
   setUserUseReserveAsCollateral: 1_000_000n,
   setUserEMode: 1_000_000n,
 } as const satisfies Partial<
@@ -88,7 +87,7 @@ type AssetAmountRequest = PoolRequest & {
   amount: bigint
 }
 
-export type SupplyRequest = AssetAmountRequest & {
+type SupplyRequest = AssetAmountRequest & {
   /** Who ends up holding the aTokens. */
   onBehalfOf: Address
   /** From `assessSupply`, when the asset is isolated and joins other collateral. */
@@ -134,7 +133,7 @@ export const buildSupply = ({
   ]
 }
 
-export type WithdrawRequest = AssetAmountRequest & {
+type WithdrawRequest = AssetAmountRequest & {
   /** Who receives the underlying. */
   to: Address
 }
@@ -150,7 +149,7 @@ export const buildWithdraw = ({
   poolCall(market, "withdraw", [asset, amount, to], gas),
 ]
 
-export type BorrowRequest = AssetAmountRequest & {
+type BorrowRequest = AssetAmountRequest & {
   /** Whose collateral backs the debt. */
   onBehalfOf: Address
 }
@@ -171,7 +170,7 @@ export const buildBorrow = ({
   ),
 ]
 
-export type RepayRequest = AssetAmountRequest & {
+type RepayRequest = AssetAmountRequest & {
   /** Whose debt is repaid. */
   onBehalfOf: Address
 }
@@ -192,27 +191,7 @@ export const buildRepay = ({
   ),
 ]
 
-export type RepayWithATokensRequest = AssetAmountRequest
-
-/**
- * Repays the caller's own debt in `asset` out of their aTokens. The pool takes
- * no `onBehalfOf` here — aTokens can only be spent by whoever holds them.
- */
-export const buildRepayWithATokens = ({
-  market,
-  asset,
-  amount,
-  gas,
-}: RepayWithATokensRequest): ActionPlan => [
-  poolCall(
-    market,
-    "repayWithATokens",
-    [asset, amount, VARIABLE_INTEREST_RATE_MODE],
-    gas,
-  ),
-]
-
-export type SetUsageAsCollateralRequest = PoolRequest & {
+type SetUsageAsCollateralRequest = PoolRequest & {
   asset: Address
   useAsCollateral: boolean
 }
@@ -232,7 +211,7 @@ export const buildSetUsageAsCollateral = ({
   ),
 ]
 
-export type SetUserEModeRequest = PoolRequest & {
+type SetUserEModeRequest = PoolRequest & {
   /** The e-mode category to enter, or `0` to leave e-mode entirely. */
   categoryId: number
 }

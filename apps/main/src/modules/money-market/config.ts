@@ -7,7 +7,7 @@ import { WsPolkadotClient } from "@/api/rpcClient"
  * Hydration's EVM chain, declared here rather than imported, so this debug
  * surface owns everything it needs and pulls nothing from v1.
  */
-export const hydrationEvmChain = defineChain({
+const hydrationEvmChain = defineChain({
   id: 222222,
   name: "Hydration",
   nativeCurrency: { name: "WETH", symbol: "WETH", decimals: 18 },

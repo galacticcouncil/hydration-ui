@@ -8,7 +8,7 @@ import type { Reserve } from "@/types"
  * an emission is always divided by the same supply the summary reports; a
  * second copy of this accrual is how the two quietly start disagreeing.
  */
-export type ReserveTotals = {
+type ReserveTotals = {
   totalDebt: bigint
   totalLiquidity: bigint
 }

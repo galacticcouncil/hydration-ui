@@ -1,5 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
+import { TFunction } from "i18next"
 
 import {
   ActionsCell,
@@ -18,14 +19,17 @@ const right = { meta: { sx: { textAlign: "right" } } } as const
 const center = { meta: { sx: { textAlign: "center" } } } as const
 
 const supplied = createColumnHelper<SuppliedRow>()
-export const suppliedColumns = (onAction: OnRowAction) => [
+export const suppliedColumns = (
+  t: TFunction<["common", "borrow"]>,
+  onAction: OnRowAction,
+) => [
   supplied.display({
-    header: "Asset",
+    header: t("asset"),
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   supplied.display({
     id: "amount",
-    header: "Balance",
+    header: t("balance"),
     ...right,
     cell: ({ row }) => (
       <AmountCell
@@ -36,14 +40,14 @@ export const suppliedColumns = (onAction: OnRowAction) => [
     ),
   }),
   supplied.display({
-    header: "APY",
+    header: t("apy"),
     ...right,
     cell: ({ row }) => (
       <ReserveApyCell reserve={row.original.reserve} side="supply" />
     ),
   }),
   supplied.display({
-    header: "Collateral",
+    header: t("borrow:summary.collateral"),
     ...center,
     cell: ({ row }) => (
       <CollateralSwitch row={row.original} onAction={onAction} />
@@ -61,14 +65,17 @@ export const suppliedColumns = (onAction: OnRowAction) => [
   }),
 ]
 
-export const borrowedColumns = (onAction: OnRowAction) => [
+export const borrowedColumns = (
+  t: TFunction<["common", "borrow"]>,
+  onAction: OnRowAction,
+) => [
   supplied.display({
-    header: "Asset",
+    header: t("asset"),
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   supplied.display({
     id: "amount",
-    header: "Debt",
+    header: t("borrow:debt"),
     ...right,
     cell: ({ row }) => (
       <AmountCell
@@ -79,7 +86,7 @@ export const borrowedColumns = (onAction: OnRowAction) => [
     ),
   }),
   supplied.display({
-    header: "APY",
+    header: t("apy"),
     ...right,
     cell: ({ row }) => (
       <ReserveApyCell reserve={row.original.reserve} side="borrow" />
@@ -104,16 +111,20 @@ const toSupply = createColumnHelper<SupplyRow>()
  * column is an empty placeholder that keeps the rest aligned with the
  * ordinary table below it.
  */
-export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
+export const toSupplyColumns = (
+  t: TFunction<["common", "borrow"]>,
+  onAction: OnRowAction,
+  pinned = false,
+) => [
   toSupply.display({
-    header: "Asset",
+    header: t("asset"),
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   pinned
     ? toSupply.display({ id: "balancePlaceholder" })
     : toSupply.display({
         id: "amount",
-        header: "Balance",
+        header: t("balance"),
         ...right,
         cell: ({ row }) => (
           <AmountCell
@@ -124,14 +135,14 @@ export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
         ),
       }),
   toSupply.display({
-    header: "APY",
+    header: t("apy"),
     ...right,
     cell: ({ row }) => (
       <ReserveApyCell reserve={row.original.reserve} side="supply" />
     ),
   }),
   toSupply.display({
-    header: "Collateral",
+    header: t("borrow:summary.collateral"),
     ...center,
     cell: ({ row }) => (
       <CollateralCell
@@ -156,14 +167,17 @@ export const toSupplyColumns = (onAction: OnRowAction, pinned = false) => [
 ]
 
 const toBorrow = createColumnHelper<BorrowRow>()
-export const toBorrowColumns = (onAction: OnRowAction) => [
+export const toBorrowColumns = (
+  t: TFunction<["common", "borrow"]>,
+  onAction: OnRowAction,
+) => [
   toBorrow.display({
-    header: "Asset",
+    header: t("asset"),
     cell: ({ row }) => <ReserveAsset reserve={row.original.reserve} />,
   }),
   toBorrow.display({
     id: "amount",
-    header: "Available",
+    header: t("available"),
     ...right,
     cell: ({ row }) => (
       <AmountCell
@@ -174,7 +188,7 @@ export const toBorrowColumns = (onAction: OnRowAction) => [
     ),
   }),
   toBorrow.display({
-    header: "APY",
+    header: t("apy"),
     ...right,
     cell: ({ row }) => (
       <ReserveApyCell reserve={row.original.reserve} side="borrow" />

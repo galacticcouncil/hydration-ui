@@ -29,6 +29,7 @@ import {
   Separator,
   Stack,
   Summary,
+  SummaryRowValue,
   Text,
   ToggleGroup,
   ToggleGroupItem,
@@ -41,6 +42,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useParams, useSearch } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
+import { TFunction } from "i18next"
 import { FC, Fragment, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Address } from "viem"
@@ -86,7 +88,15 @@ const byLtvDesc = (a: Row, b: Row) =>
 const canBeCollateral = (reserve: ReserveSummary) =>
   reserve.usageAsCollateralEnabled && Big(reserve.ltv).gt(0)
 
-const yesNo = (value: boolean) => (value ? "Yes" : "No")
+const tones = {
+  warning: "accents.alertAlt.primary",
+  danger: "accents.danger.secondary",
+  neutral: "text.medium",
+} as const
+
+const toned = (tone: keyof typeof tones, text: string) => (
+  <SummaryRowValue color={getToken(tones[tone])}>{text}</SummaryRowValue>
+)
 
 const usePercent = () => {
   const { t } = useTranslation()
@@ -94,6 +104,7 @@ const usePercent = () => {
 }
 
 export const ReserveDetailPage: FC<{ address: string }> = ({ address }) => {
+  const { t } = useTranslation("borrow")
   const reserves = useReserveSummaries()
   const { market } = useMoneyMarket()
 
@@ -106,8 +117,11 @@ export const ReserveDetailPage: FC<{ address: string }> = ({ address }) => {
     return (
       <Alert
         variant="warning"
-        title="Reserve not found"
-        description={`${address} is not a reserve of the ${market.marketTitle} market.`}
+        title={t("reserve.notFound.title")}
+        description={t("reserve.notFound.description", {
+          address,
+          market: market.marketTitle,
+        })}
       />
     )
   }
@@ -154,9 +168,8 @@ const ReserveDetail: FC<{
   const account = useAccountSummary(user).data
   const eModeId = account?.account.eModeCategoryId
   const [open, setOpen] = useState<OpenAction | null>(null)
-  // below md the grid stacks into one column, so the page splits into tabs
   const { gte } = useBreakpoints()
-  const stacked = !gte("md")
+  const stacked = !gte("lg")
   const [tab, setTab] = useState<"overview" | "position">("overview")
   // positions can hold reserves the user has fully exited, at zero
   const hasPosition = !!account?.positions.some(
@@ -174,8 +187,8 @@ const ReserveDetail: FC<{
     // in e-mode only the category's own assets can be borrowed
     const eMode = eModeCategories(reserves).find((c) => c.id === eModeId)
     return {
-      collateral: collateralColumns(onAction),
-      borrowable: borrowableColumns(onAction, (candidate) =>
+      collateral: collateralColumns(t, onAction),
+      borrowable: borrowableColumns(t, onAction, (candidate) =>
         eMode && candidate.eModeCategoryId !== eMode.id
           ? t("emode.notAvailable", { category: eMode.label })
           : undefined,
@@ -231,7 +244,7 @@ const ReserveDetail: FC<{
         </ToggleGroup>
       )}
 
-      <TwoColumnGrid template="sidebar">
+      <TwoColumnGrid template="sidebar" breakpoint="lg">
         {showOverview && (
           <Stack gap="xl">
             {hollar ? (
@@ -252,30 +265,30 @@ const ReserveDetail: FC<{
             {borrowingEnabled && (
               <Section
                 flush
-                title="Supported collateral"
-                description={`Assets that can be supplied as collateral to borrow ${symbol} in this market. E-mode and an account's own state can narrow this further.`}
+                title={t("reserve.collateral.title")}
+                description={t("reserve.collateral.description", { symbol })}
               >
                 <ReserveDataTable
                   size="compact"
                   data={collateral}
                   columns={columns.collateral}
                   limit={10}
-                  empty={`Nothing can currently back a ${symbol} borrow.`}
+                  empty={t("reserve.collateral.empty", { symbol })}
                 />
               </Section>
             )}
             {canBeCollateral(reserve) && (
               <Section
                 flush
-                title="Assets you can borrow"
-                description={`What can be borrowed with ${symbol} as collateral.`}
+                title={t("reserve.borrowable.title")}
+                description={t("reserve.borrowable.description", { symbol })}
               >
                 <ReserveDataTable
                   size="compact"
                   data={borrowable}
                   columns={columns.borrowable}
                   limit={10}
-                  empty={`Nothing can currently be borrowed against ${symbol}.`}
+                  empty={t("reserve.borrowable.empty", { symbol })}
                 />
               </Section>
             )}
@@ -351,7 +364,7 @@ const ReserveTitle: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 const StatsPanel: FC<{ stats: ValueStatsProps[] }> = ({ stats }) => {
   const { gte } = useBreakpoints()
 
-  if (!gte("md")) {
+  if (!gte("lg")) {
     return (
       <ScrollArea
         orientation="horizontal"
@@ -388,7 +401,7 @@ const StatsPanel: FC<{ stats: ValueStatsProps[] }> = ({ stats }) => {
 }
 
 const ReserveStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "borrow"])
   const percent = usePercent()
   const { symbol } = useReserveDisplay(reserve)
   const tokens = (value: string) =>
@@ -398,28 +411,28 @@ const ReserveStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
     <StatsPanel
       stats={[
         {
-          label: "Total supplied",
+          label: t("borrow:totalSupplied"),
           value: t("currency.compact", { value: reserve.totalLiquidityUsd }),
           bottomLabel: tokens(reserve.totalLiquidity),
         },
         {
-          label: "Total borrowed",
+          label: t("totalBorrowed"),
           value: t("currency.compact", { value: reserve.totalDebtUsd }),
           bottomLabel: tokens(reserve.totalDebt),
         },
         {
-          label: "Available liquidity",
+          label: t("borrow:reserve.availableLiquidity"),
           value: t("currency.compact", {
             value: reserve.availableLiquidityUsd,
           }),
           bottomLabel: tokens(reserve.availableLiquidity),
         },
         {
-          label: "Utilization",
+          label: t("borrow:reserve.utilization"),
           value: percent(reserve.borrowUsageRatio),
         },
         {
-          label: "Oracle price",
+          label: t("borrow:reserve.oraclePrice"),
           value: t("currency", { value: reserve.priceInUsd }),
         },
       ]}
@@ -428,7 +441,7 @@ const ReserveStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 }
 
 const HollarStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "borrow"])
   const facilitator = useHollarFacilitator()
   const cap = facilitator.data?.maxCapacity
   const { symbol } = useReserveDisplay(reserve)
@@ -439,12 +452,12 @@ const HollarStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
     <StatsPanel
       stats={[
         {
-          label: "Total borrowed",
+          label: t("totalBorrowed"),
           value: t("currency.compact", { value: reserve.totalDebtUsd }),
           bottomLabel: tokens(reserve.totalDebt),
         },
         {
-          label: "Borrow cap",
+          label: t("borrow:reserve.borrowCap"),
           isLoading: facilitator.isPending,
           value: cap
             ? t("currency.compact", {
@@ -454,7 +467,7 @@ const HollarStats: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
           bottomLabel: cap ? tokens(cap) : undefined,
         },
         {
-          label: "Oracle price",
+          label: t("borrow:reserve.oraclePrice"),
           value: t("currency", { value: reserve.priceInUsd }),
         },
       ]}
@@ -484,13 +497,16 @@ const AboutHollar: FC = () => {
  * rate is set by governance - there is no supply side and no utilization curve.
  */
 const HollarBorrowInfo: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const { t } = useTranslation(["common", "borrow"])
   const facilitator = useHollarFacilitator()
   const { symbol } = useReserveDisplay(reserve)
 
   return (
     <Section
-      title="Borrow info"
-      description={`${symbol} is minted when borrowed, up to a cap set by governance, at a rate set by governance rather than by utilization.`}
+      title={t("borrow:reserve.hollar.borrowInfo.title")}
+      description={t("borrow:reserve.hollar.borrowInfo.description", {
+        symbol,
+      })}
     >
       <Flex gap="xxxl" align="center" wrap>
         {facilitator.error ? (
@@ -498,7 +514,7 @@ const HollarBorrowInfo: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
         ) : facilitator.data ? (
           <CapStat
             type="borrow"
-            label="Total borrowed"
+            label={t("totalBorrowed")}
             amount={reserve.totalDebt}
             amountUsd={reserve.totalDebtUsd}
             cap={facilitator.data.maxCapacity}
@@ -507,7 +523,7 @@ const HollarBorrowInfo: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
               .toFixed()}
           />
         ) : (
-          <ValueStats size="small" wrap isLoading label="Total borrowed" />
+          <ValueStats size="small" wrap isLoading label={t("totalBorrowed")} />
         )}
         <ApyStat reserve={reserve} side="borrow" />
       </Flex>
@@ -516,12 +532,13 @@ const HollarBorrowInfo: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 }
 
 const InterestRates: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const { t } = useTranslation("borrow")
   const { symbol } = useReserveDisplay(reserve)
 
   return (
     <Section
-      title="Interest rates"
-      description={`Current supply and borrow rates for ${symbol}, with each incentive listed apart from the base rate.`}
+      title={t("reserve.rates.title")}
+      description={t("reserve.rates.description", { symbol })}
     >
       <Flex gap="xxxl">
         <ApyStat reserve={reserve} side="supply" />
@@ -539,18 +556,22 @@ const InterestRates: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 const ApyStat: FC<{ reserve: ReserveSummary; side: ApySide }> = ({
   reserve,
   side,
-}) => (
-  <ValueStats
-    size="medium"
-    wrap
-    label={side === "supply" ? "Supply APY" : "Borrow APY"}
-    customValue={
-      <ValueStatsValue size="medium">
-        <ReserveApyCell reserve={reserve} side={side} font="primary" />
-      </ValueStatsValue>
-    }
-  />
-)
+}) => {
+  const { t } = useTranslation("borrow")
+
+  return (
+    <ValueStats
+      size="medium"
+      wrap
+      label={t(side === "supply" ? "summary.supplyApy" : "summary.borrowApy")}
+      customValue={
+        <ValueStatsValue size="medium">
+          <ReserveApyCell reserve={reserve} side={side} font="primary" />
+        </ValueStatsValue>
+      }
+    />
+  )
+}
 
 const CapStat: FC<{
   label: string
@@ -571,7 +592,9 @@ const CapStat: FC<{
           radius={32}
           thickness={4}
           percent={Big(amount).div(cap).times(100).toNumber()}
-          tooltip={`${t("number.compact", { value: Big(cap).minus(amount).toFixed() })} left before the cap`}
+          tooltip={t("borrow:reserve.capLeft", {
+            value: Big(cap).minus(amount).toFixed(),
+          })}
         />
       )}
       <ValueStats
@@ -602,69 +625,84 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
   const { symbol } = useReserveDisplay(reserve)
 
   const capLabel = (cap: string) =>
-    cap === "0" ? "Unlimited" : `${t("number", { value: cap })} ${symbol}`
+    cap === "0"
+      ? t("borrow:reserve.params.unlimited")
+      : `${t("number", { value: cap })} ${symbol}`
 
   const status = reserve.isPaused
-    ? "Paused"
+    ? toned("danger", t("borrow:reserve.params.status.paused"))
     : reserve.isFrozen
-      ? "Frozen"
+      ? toned("warning", t("borrow:reserve.params.status.frozen"))
       : reserve.isActive
-        ? "Active"
-        : "Inactive"
+        ? t("borrow:reserve.params.status.active")
+        : toned("danger", t("borrow:reserve.params.status.inactive"))
 
   const collateralUsage = !canBeCollateral(reserve) ? (
-    "Cannot be collateral"
+    t("borrow:reserve.params.cannotBeCollateral")
   ) : reserve.isIsolated ? (
     <Chip variant="amber" size="small">
-      Isolated
+      {t("borrow:collateral.isolated")}
     </Chip>
   ) : (
     <Chip variant="green" size="small">
-      Supported
+      {t("borrow:reserve.params.supported")}
     </Chip>
   )
 
   // one list split evenly, so a reserve with few rows still fills both columns
   const rows = [
-    { label: "Status", content: status },
+    { label: t("status"), content: status },
     // Hollar's real cap is its facilitator bucket, shown in Borrow info
     ...(hollar
       ? []
       : [
-          { label: "Supply cap", content: capLabel(reserve.supplyCap) },
-          { label: "Borrow cap", content: capLabel(reserve.borrowCap) },
+          {
+            label: t("borrow:reserve.supplyCap"),
+            content: capLabel(reserve.supplyCap),
+          },
+          {
+            label: t("borrow:reserve.borrowCap"),
+            content: capLabel(reserve.borrowCap),
+          },
         ]),
-    { label: "Collateral usage", content: collateralUsage },
     {
-      label: "Borrowing",
-      content: reserve.borrowingEnabled ? "Enabled" : "Disabled",
+      label: t("borrow:reserve.params.collateralUsage"),
+      content: collateralUsage,
     },
     {
-      label: "Borrowable in isolation",
-      content: yesNo(reserve.borrowableInIsolation),
+      label: t("borrow:reserve.params.borrowing"),
+      content: reserve.borrowingEnabled
+        ? t("borrow:collateral.enabled")
+        : toned("neutral", t("borrow:collateral.disabled")),
+    },
+    {
+      label: t("borrow:reserve.params.borrowableInIsolation"),
+      content: reserve.borrowableInIsolation
+        ? t("yes")
+        : toned("neutral", t("no")),
     },
     // unset on a reserve that cannot back a borrow, so meaningless there
     ...(canBeCollateral(reserve)
       ? [
-          { label: "Max LTV", content: percent(reserve.ltv) },
+          { label: t("borrow:summary.maxLtv"), content: percent(reserve.ltv) },
           {
-            label: "Liquidation threshold",
+            label: t("borrow:position.liquidationThreshold"),
             content: percent(reserve.liquidationThreshold),
           },
           {
-            label: "Liquidation penalty",
+            label: t("borrow:reserve.params.liquidationPenalty"),
             content: percent(reserve.liquidationBonus),
           },
         ]
       : []),
     {
-      label: "Reserve factor",
+      label: t("borrow:reserve.params.reserveFactor"),
       content: percent(reserve.reserveFactor),
     },
     ...(reserve.isIsolated
       ? [
           {
-            label: "Debt ceiling",
+            label: t("borrow:reserve.params.debtCeiling"),
             content: t("borrow:cap.range.usd", {
               valueA: reserve.isolationModeTotalDebtUsd,
               valueB: reserve.debtCeilingUsd,
@@ -677,14 +715,14 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
 
   return (
     <Section
-      title="Protocol parameters"
-      description={`How ${symbol} is configured in this market.`}
+      title={t("borrow:reserve.params.title")}
+      description={t("borrow:reserve.params.description", { symbol })}
     >
       {!hollar && (
         <Grid columns={[1, 2]} gap="xl">
           <CapStat
             type="supply"
-            label="Total supplied"
+            label={t("borrow:totalSupplied")}
             amount={reserve.totalLiquidity}
             amountUsd={reserve.totalLiquidityUsd}
             cap={reserve.supplyCap}
@@ -693,7 +731,7 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
           {reserve.borrowingEnabled && (
             <CapStat
               type="borrow"
-              label="Total borrowed"
+              label={t("totalBorrowed")}
               amount={reserve.totalDebt}
               amountUsd={reserve.totalDebtUsd}
               cap={reserve.borrowCap}
@@ -703,8 +741,9 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
         </Grid>
       )}
 
-      <Grid columns={[1, null, 2]} gap="xl" align="start">
+      <Grid columns={[1, null, 2]} columnGap="xl" align="start">
         <Summary rows={rows.slice(0, half)} />
+        <Separator display={["block", null, "none"]} />
         <Summary rows={rows.slice(half)} />
       </Grid>
     </Section>
@@ -712,29 +751,34 @@ const ProtocolParameters: FC<{ reserve: ReserveSummary; hollar: boolean }> = ({
 }
 
 const EModeParameters: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const { t } = useTranslation("borrow")
   const percent = usePercent()
   const { symbol } = useReserveDisplay(reserve)
 
   return (
     <Section
-      title="E-mode parameters"
-      description={`What applies to ${symbol} instead once an account enables the ${reserve.eModeLabel} E-mode category.`}
+      title={t("reserve.emode.title")}
+      description={t("reserve.emode.description", {
+        symbol,
+        category: reserve.eModeLabel,
+      })}
     >
-      <Grid columns={[1, null, 2]} gap="xl" align="start">
+      <Grid columns={[1, null, 2]} columnGap="xl" align="start">
         <Summary
           rows={[
-            { label: "Category", content: reserve.eModeLabel },
-            { label: "Max LTV", content: percent(reserve.eModeLtv) },
+            { label: t("reserve.emode.category"), content: reserve.eModeLabel },
+            { label: t("summary.maxLtv"), content: percent(reserve.eModeLtv) },
           ]}
         />
+        <Separator display={["block", null, "none"]} />
         <Summary
           rows={[
             {
-              label: "Liquidation threshold",
+              label: t("position.liquidationThreshold"),
               content: percent(reserve.eModeLiquidationThreshold),
             },
             {
-              label: "Liquidation penalty",
+              label: t("reserve.params.liquidationPenalty"),
               content: percent(reserve.eModeLiquidationBonus),
             },
           ]}
@@ -745,27 +789,30 @@ const EModeParameters: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
 }
 
 const InterestRateModel: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
+  const { t } = useTranslation("borrow")
   const percent = usePercent()
 
   return (
     <Section
-      title="Interest rate model"
-      description="The variable borrow rate follows the reserve's utilization, rising steeply past the optimal point."
+      title={t("reserve.rateModel.title")}
+      description={t("reserve.rateModel.description")}
     >
       <Grid columnTemplate={[null, null, "1fr 2fr"]} gap="xl" align="flex-end">
         <Stack gap="xl">
           <ValueStats
             size="large"
             wrap
-            label="Utilization"
+            label={t("reserve.utilization")}
             customValue={
               <Flex align="center" gap="s">
-                <ProgressCircle
-                  radius={12}
-                  thickness={3}
-                  percent={Number(reserve.borrowUsageRatio) * 100}
-                  color={getToken("text.high")}
-                />
+                {Number(reserve.borrowUsageRatio) > 0 && (
+                  <ProgressCircle
+                    radius={12}
+                    thickness={3}
+                    percent={Number(reserve.borrowUsageRatio) * 100}
+                    color={getToken("text.high")}
+                  />
+                )}
                 <ValueStatsValue size="large">
                   {percent(reserve.borrowUsageRatio)}
                 </ValueStatsValue>
@@ -775,19 +822,19 @@ const InterestRateModel: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
           <Summary
             rows={[
               {
-                label: "Optimal utilization",
+                label: t("reserve.rateModel.optimalUtilization"),
                 content: percent(reserve.optimalUsageRatio),
               },
               {
-                label: "Base rate",
+                label: t("reserve.rateModel.baseRate"),
                 content: percent(reserve.baseVariableBorrowRate),
               },
               {
-                label: "Slope below optimal",
+                label: t("reserve.rateModel.slopeBelowOptimal"),
                 content: percent(reserve.variableRateSlope1),
               },
               {
-                label: "Slope above optimal",
+                label: t("reserve.rateModel.slopeAboveOptimal"),
                 content: percent(reserve.variableRateSlope2),
               },
             ]}
@@ -872,15 +919,18 @@ const columnHelper = createColumnHelper<Row>()
 // fits one small text button, so the column before it ends right beside it
 const ACTION_COLUMN_WIDTH = 110
 
-const collateralColumns = (onAction: OnRowAction) => [
+const collateralColumns = (
+  t: TFunction<["borrow", "common"]>,
+  onAction: OnRowAction,
+) => [
   columnHelper.display({
-    header: "Asset",
+    header: t("common:asset"),
     cell: ({ row }) => (
       <ReserveAsset reserve={row.original.reserve} size="small" />
     ),
   }),
   columnHelper.display({
-    header: "Max LTV",
+    header: t("summary.maxLtv"),
     meta: { sx: { textAlign: "right" } },
     cell: ({ row }) => <PercentCell value={row.original.reserve.ltv} />,
   }),
@@ -898,17 +948,18 @@ const collateralColumns = (onAction: OnRowAction) => [
 ]
 
 const borrowableColumns = (
+  t: TFunction<["borrow", "common"]>,
   onAction: OnRowAction,
   blockedReason: (reserve: ReserveSummary) => string | undefined,
 ) => [
   columnHelper.display({
-    header: "Asset",
+    header: t("common:asset"),
     cell: ({ row }) => (
       <ReserveAsset reserve={row.original.reserve} size="small" />
     ),
   }),
   columnHelper.display({
-    header: "Borrow APY",
+    header: t("summary.borrowApy"),
     meta: { sx: { textAlign: "right" } },
     cell: ({ row }) => (
       <ReserveApyCell reserve={row.original.reserve} side="borrow" />

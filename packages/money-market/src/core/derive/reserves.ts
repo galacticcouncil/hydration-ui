@@ -47,7 +47,7 @@ const E_MODE_LABELS: Record<string, string> = {
  * Every number out is a plain fixed-point decimal string in human units,
  * produced with `toFixed` so no exponent notation can leak.
  */
-export type SummarizeReservesRequest = {
+type SummarizeReservesRequest = {
   reserves: Reserve[]
   baseCurrency: BaseCurrency
   /**

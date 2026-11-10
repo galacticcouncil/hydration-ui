@@ -126,31 +126,6 @@ export const poolAbi = [
         type: "address",
       },
       {
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        name: "interestRateMode",
-        type: "uint256",
-      },
-    ],
-    name: "repayWithATokens",
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        name: "asset",
-        type: "address",
-      },
-      {
         name: "useAsCollateral",
         type: "bool",
       },
