@@ -1,8 +1,4 @@
-import { isHiddenReserve } from "@galacticcouncil/money-market/core"
-import {
-  useMoneyMarket,
-  useReserveSummaries,
-} from "@galacticcouncil/money-market/react"
+import { useMoneyMarket } from "@galacticcouncil/money-market/react"
 import type { ReserveSummary } from "@galacticcouncil/money-market/types"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
@@ -30,6 +26,7 @@ import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvi
 import { useNavigateToReserve } from "@/modules/money-market/hooks"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
 import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { useVisibleReserveSummaries } from "@/modules/money-market/reserves/useVisibleReserveSummaries"
 import {
   NoData,
   ReserveApyCell,
@@ -50,7 +47,7 @@ const { accessor, display } = createColumnHelper<ReserveSummary>()
 export const MarketsPage: FC = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { market } = useMoneyMarket()
-  const reserves = useReserveSummaries()
+  const reserves = useVisibleReserveSummaries()
   const navigateToReserve = useNavigateToReserve()
   const resolveDisplay = useResolveReserveDisplay()
   const resolveApy = useResolveReserveApy()
@@ -61,33 +58,27 @@ export const MarketsPage: FC = () => {
   )
 
   const stats = useMemo(() => {
-    if (!reserves.data) return null
-    const listed = reserves.data.filter(
-      (r) => !isHiddenReserve(r.underlyingAsset),
-    )
-    const size = listed.reduce(
+    if (reserves.isPending || reserves.isError) return null
+    const size = reserves.data.reduce(
       (sum, r) => sum.plus(r.totalLiquidityUsd),
       Big(0),
     )
-    const borrows = listed.reduce((sum, r) => sum.plus(r.totalDebtUsd), Big(0))
+    const borrows = reserves.data.reduce(
+      (sum, r) => sum.plus(r.totalDebtUsd),
+      Big(0),
+    )
     return {
       size: size.toFixed(),
       available: size.minus(borrows).toFixed(),
       borrows: borrows.toFixed(),
     }
-  }, [reserves.data])
+  }, [reserves.data, reserves.isPending, reserves.isError])
 
   // v1's list: only reserves open for use, Hollar first, then largest supply
   const rows = useMemo(
     () =>
-      (reserves.data ?? [])
-        .filter(
-          (r) =>
-            r.isActive &&
-            !r.isFrozen &&
-            !r.isPaused &&
-            !isHiddenReserve(r.underlyingAsset),
-        )
+      reserves.data
+        .filter((r) => r.isActive && !r.isFrozen && !r.isPaused)
         .sort((a, b) => {
           const aHollar = isHollar(a.underlyingAsset, market)
           const bHollar = isHollar(b.underlyingAsset, market)

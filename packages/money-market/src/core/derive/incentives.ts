@@ -1,7 +1,7 @@
 import type Big from "big.js"
 import type { Address } from "viem"
 
-import { Decimal, normalize, shift } from "@/core/big"
+import { Decimal, Integer, normalize, shift } from "@/core/big"
 import { SECONDS_PER_YEAR, USD_DECIMALS } from "@/core/constants"
 import { rayDiv } from "@/core/derive/ray-math"
 import { reserveTotals } from "@/core/derive/reserve-totals"
@@ -310,21 +310,21 @@ const accrue = ({
 
   const { incentivesLastUpdateTimestamp: lastUpdate, precision } = emission
   const until = Math.min(currentTimestamp, emission.emissionEndTimestamp)
+  const assetUnit = Decimal(10).pow(precision)
   const index =
     lastUpdate >= currentTimestamp ||
     lastUpdate >= emission.emissionEndTimestamp
       ? Decimal(emission.tokenIncentivesIndex)
-      : shift(
-          Decimal(emission.emissionPerSecond).times(until - lastUpdate),
-          precision,
-        )
+      : Integer(emission.emissionPerSecond)
+          .times(until - lastUpdate)
+          .times(assetUnit)
           .div(totalScaledSupply.toString())
           .plus(emission.tokenIncentivesIndex)
 
-  return shift(
-    index.minus(userIndex).times(scaledBalance.toString()),
-    -precision,
-  )
+  // The controller truncates each reserve's reward before combining reserves.
+  return Integer(index.minus(userIndex))
+    .times(scaledBalance.toString())
+    .div(assetUnit)
 }
 
 /**

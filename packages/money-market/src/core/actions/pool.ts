@@ -90,7 +90,7 @@ type AssetAmountRequest = PoolRequest & {
 type SupplyRequest = AssetAmountRequest & {
   /** Who ends up holding the aTokens. */
   onBehalfOf: Address
-  /** From `assessSupply`, when the asset is isolated and joins other collateral. */
+  /** From `assessSupply`, when the isolated asset must become collateral. */
   isolationJoin?: IsolationJoin
 }
 

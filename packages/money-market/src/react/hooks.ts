@@ -30,10 +30,10 @@ import {
 } from "@/types"
 
 /**
- * A market's reserve list changes when governance lists an asset; its rates and
- * indices change every block, but ticking accrues those forward without a read.
+ * Refresh prices, liquidity and reserve flags every minute. Ticking only
+ * accrues interest between reads.
  */
-export const RESERVES_STALE_TIME = 5 * 60_000
+export const RESERVES_STALE_TIME = 60_000
 
 /**
  * A user's own state is shorter-lived on purpose: it changes because of what
@@ -59,6 +59,7 @@ export const useMarketReserves = (
     queryKey: moneyMarketKeys.reserves(descriptor.market),
     queryFn: () => readReserves(config, descriptor),
     staleTime: RESERVES_STALE_TIME,
+    refetchInterval: RESERVES_STALE_TIME,
   })
 }
 

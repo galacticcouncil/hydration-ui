@@ -56,6 +56,7 @@ export const useSupplyIsolatedLiquidity = ({
   initialAsset,
   aToken,
   supplyAssetId,
+  symbol,
   asset,
   decimals,
   onSubmitted,
@@ -63,6 +64,7 @@ export const useSupplyIsolatedLiquidity = ({
   initialAsset: TAssetData
   aToken: TErc20AToken
   supplyAssetId: string
+  symbol: string
   /** The reserve's underlying asset. */
   asset: Address
   decimals: number
@@ -163,10 +165,14 @@ export const useSupplyIsolatedLiquidity = ({
         aToken.decimals,
       )
 
+  const supplyAmount = isAaveSupply
+    ? amountIn || "0"
+    : scaleHuman(trade?.swap.amountOut.toString() ?? "0", aToken.decimals)
+
   const assessment = useSupplyAssessment({
     user,
     asset,
-    amount: minReceiveAmountShifted,
+    amount: supplyAmount,
   })
   const findings = assessment.data?.findings ?? []
   const isBlockedSupply = hasBlocker(findings)
@@ -186,6 +192,7 @@ export const useSupplyIsolatedLiquidity = ({
 
   const onSubmit = async () => {
     if (!user) throw new Error("EVM address not found")
+    if (!assessment.data || isTradeLoading || isBlockedSupply) return
 
     const isolationJoin = assessment.data?.isolationJoin
     const feePerGas = await fetchFeePerGas(evm)
@@ -244,7 +251,7 @@ export const useSupplyIsolatedLiquidity = ({
 
     const toastParams = {
       amount: minReceiveAmountShifted,
-      symbol: aToken.symbol,
+      symbol,
     }
 
     await createBatch({

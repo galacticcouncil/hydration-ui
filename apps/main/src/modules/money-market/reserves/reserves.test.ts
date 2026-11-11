@@ -6,6 +6,7 @@ import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { describe, expect, it } from "vitest"
 
 import {
+  isGigaStakingReserve,
   isPoolShareReserve,
   isSwapInReserve,
 } from "@/modules/money-market/reserves/reserves"
@@ -36,6 +37,16 @@ const GDOT = getAddressFromAssetId("690")
 const POOL_PRIME = getAddressFromAssetId("143")
 const PRIME = getAddressFromAssetId("43")
 const DOT = getAddressFromAssetId("5")
+const STHDX = getAddressFromAssetId("670")
+
+describe("isGigaStakingReserve", () => {
+  it("matches only stHDX in the GIGAHDX market", () => {
+    expect(isGigaStakingReserve(STHDX, GIGAHDX)).toBe(true)
+    expect(isGigaStakingReserve(STHDX, MAIN)).toBe(false)
+    expect(isGigaStakingReserve(STHDX, BIL)).toBe(false)
+    expect(isGigaStakingReserve(DOT, GIGAHDX)).toBe(false)
+  })
+})
 
 const reserve = (underlyingAsset: string, isIsolated = false) => ({
   underlyingAsset: underlyingAsset as `0x${string}`,

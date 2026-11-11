@@ -1,3 +1,4 @@
+import { useMoneyMarket } from "@galacticcouncil/money-market/react"
 import type {
   PositionSummary,
   ReserveSummary,
@@ -25,6 +26,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -36,6 +38,7 @@ import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { ApySide, ApyTooltip } from "@/modules/money-market/apy/ApyTooltip"
 import { ApyRate, NetApyState } from "@/modules/money-market/apy/effectiveApy"
 import { useReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
+import { isGigaStakingReserve } from "@/modules/money-market/reserves/reserves"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 
 export type SuppliedRow = {
@@ -284,34 +287,44 @@ export const ActionsCell: FC<{
   size = "small",
 }) => {
   const { t } = useTranslation(["borrow", "common"])
+  const { market } = useMoneyMarket()
+  const isStakingReserve = isGigaStakingReserve(asset, market)
 
   return (
     <Flex justify="flex-end" gap="s">
-      {actions.map((action) => (
-        <Tooltip
-          key={action}
-          text={tooltip}
-          size="small"
-          side="top"
-          asChild
-          preventDefault
-        >
-          <Flex inline>
-            <Button
-              variant="muted"
-              outline
-              size="small"
-              disabled={disabled || !onAction}
-              onClick={(e) => {
-                e.stopPropagation()
-                onAction?.(action, asset)
-              }}
-            >
-              {t(action)}
-            </Button>
-          </Flex>
-        </Tooltip>
-      ))}
+      {actions.map((action) =>
+        action === "withdraw" && isStakingReserve ? (
+          <Button key={action} variant="muted" outline size="small" asChild>
+            <Link to="/staking" onClick={(e) => e.stopPropagation()}>
+              {t("manageStaking")}
+            </Link>
+          </Button>
+        ) : (
+          <Tooltip
+            key={action}
+            text={tooltip}
+            size="small"
+            side="top"
+            asChild
+            preventDefault
+          >
+            <Flex inline>
+              <Button
+                variant="muted"
+                outline
+                size="small"
+                disabled={disabled || !onAction}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAction?.(action, asset)
+                }}
+              >
+                {t(action)}
+              </Button>
+            </Flex>
+          </Tooltip>
+        ),
+      )}
       {more && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -326,20 +339,30 @@ export const ActionsCell: FC<{
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" size={size}>
-            {more.map((action) => (
-              <DropdownMenuItem key={action} asChild>
-                <MenuSelectionItem
-                  variant="filterLink"
-                  onClick={(e) => {
-                    // the menu is portaled, yet its clicks still bubble to the row
-                    e.stopPropagation()
-                    onAction?.(action, asset)
-                  }}
-                >
-                  <MenuItemLabel>{t(action)}</MenuItemLabel>
-                </MenuSelectionItem>
-              </DropdownMenuItem>
-            ))}
+            {more.map((action) =>
+              action === "withdraw" && isStakingReserve ? (
+                <DropdownMenuItem key={action} asChild>
+                  <MenuSelectionItem variant="filterLink" asChild>
+                    <Link to="/staking" onClick={(e) => e.stopPropagation()}>
+                      <MenuItemLabel>{t("manageStaking")}</MenuItemLabel>
+                    </Link>
+                  </MenuSelectionItem>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem key={action} asChild>
+                  <MenuSelectionItem
+                    variant="filterLink"
+                    onClick={(e) => {
+                      // the menu is portaled, yet its clicks still bubble to the row
+                      e.stopPropagation()
+                      onAction?.(action, asset)
+                    }}
+                  >
+                    <MenuItemLabel>{t(action)}</MenuItemLabel>
+                  </MenuSelectionItem>
+                </DropdownMenuItem>
+              ),
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )}

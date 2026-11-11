@@ -1,4 +1,7 @@
-import { useAccountSummary } from "@galacticcouncil/money-market/react"
+import {
+  useAccountSummary,
+  useMoneyMarket,
+} from "@galacticcouncil/money-market/react"
 import type {
   IncentiveApr,
   ReserveSummary,
@@ -16,6 +19,7 @@ import {
   SummaryRowProps,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
+import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,6 +33,7 @@ import {
 import { ApyRate } from "@/modules/money-market/apy/effectiveApy"
 import { useReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { useUserAddress } from "@/modules/money-market/hooks"
+import { isGigaStakingReserve } from "@/modules/money-market/reserves/reserves"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import {
   ApyCell,
@@ -76,6 +81,7 @@ const PositionCard: FC<{
  */
 export const MyPosition: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
   const { t } = useTranslation(["borrow", "common"])
+  const { market } = useMoneyMarket()
   const user = useUserAddress()
   const account = useAccountSummary(user)
   const { symbol, logoId } = useReserveDisplay(reserve)
@@ -150,15 +156,20 @@ export const MyPosition: FC<{ reserve: ReserveSummary }> = ({ reserve }) => {
         ]
       : []
 
-  const actionButton = (action: "withdraw" | "repay") => (
-    <Button
-      variant="tertiary"
-      size="small"
-      onClick={() => setOpen({ action, asset })}
-    >
-      {t(action)}
-    </Button>
-  )
+  const actionButton = (action: "withdraw" | "repay") =>
+    action === "withdraw" && isGigaStakingReserve(asset, market) ? (
+      <Button variant="tertiary" size="small" asChild>
+        <Link to="/staking">{t("manageStaking")}</Link>
+      </Button>
+    ) : (
+      <Button
+        variant="tertiary"
+        size="small"
+        onClick={() => setOpen({ action, asset })}
+      >
+        {t(action)}
+      </Button>
+    )
 
   return (
     <>

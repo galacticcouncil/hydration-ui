@@ -2,11 +2,13 @@ import type { Config } from "@wagmi/core"
 import { readContract } from "@wagmi/core"
 import Big from "big.js"
 import type { Address } from "viem"
+import { decodeFunctionData, getAddress, parseUnits } from "viem"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AssessSupplyRequest } from "@/core"
 import {
   assessSupply,
+  buildSupply,
   getMarket,
   hasBlocker,
   readPositions,
@@ -36,6 +38,7 @@ const GDOT = "0x00000000000000000000000000000001000002b2" as Address
 const ETH = "0x0000000000000000000000000000000100000022" as Address
 const WBTC = "0x0000000000000000000000000000000100000013" as Address
 const PRIME = "0x000000000000000000000000000000010000002b" as Address
+const APYUSD = "0x000000000000000000000000000000010000002e" as Address
 /** Its supply cap of 1 is far below what it already holds. */
 const PRIME_POOL = "0x000000000000000000000000000000010000008f" as Address
 
@@ -152,6 +155,41 @@ describe("assessSupply", () => {
   })
 
   describe("blockers", () => {
+    it.each([
+      { amount: "4", cap: "1000", supplied: "995", blocked: false },
+      { amount: "5", cap: "1000", supplied: "995", blocked: false },
+      { amount: "5.000001", cap: "1000", supplied: "995", blocked: true },
+      { amount: "10", cap: "1000", supplied: "995", blocked: true },
+      { amount: "1", cap: "1000", supplied: "1000", blocked: true },
+      { amount: "1", cap: "1000", supplied: "1001", blocked: true },
+      { amount: "10", cap: "0", supplied: "995", blocked: false },
+    ])(
+      "assesses $amount supplied with $supplied of cap $cap already used",
+      ({ amount, cap, supplied, blocked }) => {
+        const { max, findings } = assessSupply({
+          ...request,
+          amount,
+          summaries: request.summaries.map((summary) =>
+            summary.underlyingAsset === USDC
+              ? { ...summary, supplyCap: cap, totalLiquidity: supplied }
+              : summary,
+          ),
+          // A swap can supply the asset without the user holding it already.
+          walletBalances: wallet(USDC, "0"),
+        })
+
+        expect(max).toBe("0")
+        expect(
+          findings.some(
+            (finding) =>
+              finding.kind === "blocker" &&
+              finding.code === "supplyCapExceeded",
+          ),
+        ).toBe(blocked)
+        expect(hasBlocker(findings)).toBe(blocked)
+      },
+    )
+
     it("blocks a frozen reserve with a max of zero", () => {
       const { max, findings } = assessSupply({
         ...request,
@@ -256,25 +294,103 @@ describe("assessSupply", () => {
       expect(isolationJoin).toBeDefined()
     })
 
-    it("enters isolation mode when the isolated asset is the first collateral", () => {
+    it("does not enable a zero-LTV isolated reserve as the first collateral", () => {
+      const reserves = {
+        ...request.reserves,
+        reserves: request.reserves.reserves.map((reserve) =>
+          reserve.underlyingAsset === PRIME
+            ? { ...reserve, baseLTVasCollateral: "0" }
+            : reserve,
+        ),
+      }
       const { isolationJoin, findings, projection } = assessSupply({
         ...request,
+        reserves,
+        summaries: summarizeReserves({
+          ...reserves,
+          currentTimestamp: fixtureTimestamp,
+        }),
         positions: { ...request.positions, positions: [] },
         asset: PRIME,
         amount: "100",
       })
 
       expect(isolationJoin).toBeUndefined()
-      expect(findings).toEqual([
-        {
-          kind: "notice",
-          tone: "info",
-          code: "enteringIsolationMode",
-          params: {},
+      expect(findings).toEqual([])
+      expect(projection.account.isInIsolationMode).toBe(false)
+    })
+
+    it("does not rejoin isolation when topping up active isolated collateral", () => {
+      const { isolationJoin, findings, projection } = assessSupply({
+        ...request,
+        positions: {
+          ...request.positions,
+          positions: [
+            {
+              underlyingAsset: PRIME,
+              scaledATokenBalance: "1000000",
+              scaledVariableDebt: "0",
+              usageAsCollateralEnabledOnUser: true,
+            },
+          ],
         },
-      ])
+        asset: PRIME,
+        amount: "100",
+      })
+
+      expect(isolationJoin).toBeUndefined()
+      expect(findings).toEqual([])
       expect(projection.account.isInIsolationMode).toBe(true)
     })
+
+    it.each([PRIME, APYUSD])(
+      "explicitly enables %s as the first collateral",
+      (asset) => {
+        const { isolationJoin, findings, projection } = assessSupply({
+          ...request,
+          positions: { ...request.positions, positions: [] },
+          asset,
+          amount: "100",
+        })
+
+        expect(isolationJoin).toEqual({ disableCollateral: [] })
+        const reserve = request.reserves.reserves.find(
+          (reserve) => reserve.underlyingAsset === asset,
+        )
+        if (!reserve) throw new Error("Missing reserve fixture")
+        const amount = parseUnits("100", reserve.decimals)
+        const plan = buildSupply({
+          market,
+          asset,
+          amount,
+          onBehalfOf: fixtureUser,
+          isolationJoin,
+        })
+        expect(
+          plan.map((call) =>
+            decodeFunctionData({ abi: call.abi, data: call.data }),
+          ),
+        ).toEqual([
+          {
+            functionName: "supply",
+            args: [getAddress(asset), amount, getAddress(fixtureUser), 0],
+          },
+          {
+            functionName: "setUserUseReserveAsCollateral",
+            args: [getAddress(asset), true],
+          },
+        ])
+        expect(findings).toEqual([
+          {
+            kind: "notice",
+            tone: "info",
+            code: "enteringIsolationMode",
+            params: {},
+          },
+        ])
+        expect(projection.account.isInIsolationMode).toBe(true)
+      },
+    )
   })
 
   describe("projection", () => {

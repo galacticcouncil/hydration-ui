@@ -41,7 +41,7 @@ export type SupplyAssessment = {
   max: string
   /** The account after supplying `amount`. */
   projection: AccountSummary
-  /** Present when the supply must first turn the other collateral off. */
+  /** Present when the supply must explicitly enable isolated collateral. */
   isolationJoin?: IsolationJoin
   findings: Finding[]
 }
@@ -91,6 +91,17 @@ export function assessSupply({
     blockers.push({ kind: "blocker", code: "reserveFrozen", params: {} })
   }
 
+  const amountRaw = toBaseUnits(amount, reserve.decimals)
+  const supplyCapRaw = toBaseUnits(summary.supplyCap, reserve.decimals)
+  if (
+    amountRaw > 0n &&
+    supplyCapRaw > 0n &&
+    amountRaw + toBaseUnits(summary.totalLiquidity, reserve.decimals) >
+      supplyCapRaw
+  ) {
+    blockers.push({ kind: "blocker", code: "supplyCapExceeded", params: {} })
+  }
+
   const isolationSupplyWithDebt =
     summary.isIsolated && hasDebt && !isActiveCollateral
   if (isolationSupplyWithDebt) {
@@ -103,8 +114,8 @@ export function assessSupply({
 
   const isolationJoin: IsolationJoin | undefined =
     summary.isIsolated &&
+    !Decimal(summary.ltv).eq(0) &&
     !isActiveCollateral &&
-    otherCollateral.length > 0 &&
     !isolationSupplyWithDebt &&
     forSelf
       ? {
@@ -115,7 +126,7 @@ export function assessSupply({
       : undefined
 
   const notices: Finding[] = [...supplyCapFindings(summary)]
-  if (isolationJoin) {
+  if (isolationJoin && otherCollateral.length > 0) {
     notices.push({
       kind: "notice",
       tone: "warning",
@@ -139,7 +150,6 @@ export function assessSupply({
     })
   }
 
-  const amountRaw = toBaseUnits(amount, reserve.decimals)
   const projection =
     amountRaw === 0n
       ? current

@@ -1,7 +1,7 @@
 import { Abi, Address, Hex } from "viem"
 
 /**
- * The vocabulary of CONTEXT.md, expressed as types.
+ * The vocabulary of ../../GLOSSARY.md, expressed as types.
  *
  * The one boundary that matters is where a value came from:
  * `Reserve` and `Position` are decoded, validated chain state; `ReserveSummary`,
@@ -436,9 +436,9 @@ export type ActionPlan = EvmCall[]
 /* -------------------------------------------------------------------------- */
 
 /**
- * What supplying an isolated asset beside other collateral takes: those
- * collateral flags off first, so the supplied asset becomes the account's only
- * collateral. The addresses are the other collateral's underlying assets.
+ * Explicitly enables the supplied isolated asset as the account's only
+ * collateral. Other collateral is disabled first; the list is empty when
+ * there is none to disable.
  */
 export type IsolationJoin = {
   disableCollateral: Address[]
@@ -455,6 +455,8 @@ export type FindingCode =
   | "healthFactorRisk"
   /** The reserve's supply cap is at least 98% used; `percent`. */
   | "supplyCapNearlyReached"
+  /** The proposed supply exceeds the reserve's remaining supply cap. */
+  | "supplyCapExceeded"
   /** The reserve's borrow cap is at least 98% used; `percent`. */
   | "borrowCapNearlyReached"
   /** The isolated reserve's debt ceiling is at least 98% used; `percent`. */

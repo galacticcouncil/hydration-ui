@@ -7,6 +7,7 @@ import {
   HOLLAR_ASSET_ID,
   ISOLATED_MODE_ASSETS,
   MONEY_MARKET_STRATEGY_ASSETS,
+  STHDX_ASSET_ID,
 } from "@galacticcouncil/utils"
 
 /**
@@ -25,9 +26,17 @@ export const reserveAssetId = (address: string, market: MarketDescriptor) =>
 export const isHollar = (address: string, market: MarketDescriptor) =>
   address.toLowerCase() === market.addresses.HOLLAR_TOKEN.toLowerCase()
 
+/** stHDX in the GIGAHDX market is withdrawn through staking. */
+export const isGigaStakingReserve = (
+  address: string,
+  market: MarketDescriptor,
+) =>
+  market.market === "gigahdx_v3" &&
+  reserveAssetId(address, market) === STHDX_ASSET_ID
+
 /**
- * A pool-share reserve (CONTEXT.md). Main market only: the modals that serve
- * these reserves act on no other, so the same asset on another market is an
+ * A pool-share reserve (see packages/money-market/GLOSSARY.md). Main market
+ * only: the modals act on no other market, so the same asset elsewhere is an
  * ordinary reserve.
  */
 export const isPoolShareReserve = (address: string, market: MarketDescriptor) =>

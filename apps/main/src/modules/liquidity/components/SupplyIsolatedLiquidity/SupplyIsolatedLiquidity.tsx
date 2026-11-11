@@ -147,6 +147,7 @@ const SupplyIsolatedLiquidityBody = ({
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
+    symbol,
     aToken,
     asset: summary.underlyingAsset,
     decimals,

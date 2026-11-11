@@ -1,7 +1,4 @@
-import {
-  assessBorrow,
-  isHiddenReserve,
-} from "@galacticcouncil/money-market/core"
+import { assessBorrow } from "@galacticcouncil/money-market/core"
 import {
   useAccountRequest,
   useClaimableRewards,
@@ -58,6 +55,7 @@ import { useFormattedHealthFactor } from "@/modules/money-market/health-factor/u
 import { useUserAddress } from "@/modules/money-market/hooks"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
 import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { useVisibleReserveSummaries } from "@/modules/money-market/reserves/useVisibleReserveSummaries"
 import {
   BorrowRow,
   NetApyValue,
@@ -182,7 +180,6 @@ export const MoneyMarketDashboard: FC = () => {
   }
 
   const {
-    reserves,
     account,
     acc,
     isLoading: accountLoading,
@@ -191,6 +188,7 @@ export const MoneyMarketDashboard: FC = () => {
     netApy,
     borrowPowerUsed,
   } = usePositions(user)
+  const reserves = useVisibleReserveSummaries()
   const balances = useWalletBalances(user)
   const request = useAccountRequest(user).data
   const facilitator = useHollarFacilitator()
@@ -199,7 +197,7 @@ export const MoneyMarketDashboard: FC = () => {
   const resolveDisplay = useResolveReserveDisplay()
 
   const { toSupply, toBorrow } = useMemo(() => {
-    const summaries = reserves.data ?? []
+    const summaries = reserves.data
 
     const walletByAsset = new Map(
       balances.data?.balances.map((b) => [b.underlyingAsset, b.amount]),
@@ -209,9 +207,7 @@ export const MoneyMarketDashboard: FC = () => {
     const toSupply = summaries
       .filter(
         (reserve) =>
-          isUsable(reserve) &&
-          !isHollar(reserve.underlyingAsset, market) &&
-          !isHiddenReserve(reserve.underlyingAsset),
+          isUsable(reserve) && !isHollar(reserve.underlyingAsset, market),
       )
       .map((reserve): SupplyRow => {
         const balance = walletByAsset.get(reserve.underlyingAsset)

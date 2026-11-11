@@ -278,6 +278,107 @@ describe("summarizeRewards", () => {
     expect(rewards([])).toEqual([])
   })
 
+  describe("integer reward rounding", () => {
+    beforeEach(() => {
+      const reserve = chain.reserves.find(
+        (entry) => entry.underlyingAsset === INCENTIVISED,
+      )!
+      const incentives = chain.incentives.find(
+        (entry) => entry.underlyingAsset === INCENTIVISED,
+      )!
+      const emission = incentives.supply.emissions[0]!
+
+      chain = {
+        ...chain,
+        reserves: [
+          {
+            ...reserve,
+            liquidityIndex: (10n ** 27n).toString(),
+            totalScaledVariableDebt: "0",
+            availableLiquidity: "3000001",
+          },
+        ],
+        incentives: [
+          {
+            ...incentives,
+            supply: {
+              ...incentives.supply,
+              emissions: [
+                {
+                  ...emission,
+                  precision: 6,
+                  emissionPerSecond: "1",
+                  tokenIncentivesIndex: "0",
+                  incentivesLastUpdateTimestamp: fixtureTimestamp - 1,
+                  emissionEndTimestamp: fixtureTimestamp + 100,
+                },
+              ],
+            },
+            variableBorrow: { ...incentives.variableBorrow, emissions: [] },
+          },
+        ],
+      }
+      positions = {
+        ...positions,
+        positions: [
+          {
+            underlyingAsset: INCENTIVISED,
+            scaledATokenBalance: "3000001",
+            scaledVariableDebt: "0",
+            usageAsCollateralEnabledOnUser: false,
+          },
+        ],
+      }
+    })
+
+    it("floors the index increment before multiplying by the user's balance", () => {
+      // floor(1 * 10^6 / 3,000,001) = 0: the index has not advanced.
+      expect(rewards(userIncentivesFrom(chain.incentives))).toEqual([])
+    })
+
+    it.each([
+      { decimals: 6, expected: "0.000001" },
+      { decimals: 18, expected: "0.000000000000000001" },
+    ])(
+      "floors accrued base units for a $decimals-decimal reward",
+      ({ decimals, expected }) => {
+        const emission = chain.incentives[0]!.supply.emissions[0]!
+        emission.incentivesLastUpdateTimestamp = fixtureTimestamp
+        emission.tokenIncentivesIndex = "750000"
+        emission.rewardTokenDecimals = decimals
+        positions.positions[0]!.scaledATokenBalance = "2"
+
+        // floor(750,000 * 2 / 10^6) = 1 reward base unit.
+        const [reward] = rewards(userIncentivesFrom(chain.incentives))
+        expect(reward?.amount).toBe(expected)
+      },
+    )
+
+    it("floors each reserve's accrual before adding the booked balance once", () => {
+      const emission = chain.incentives[0]!.supply.emissions[0]!
+      emission.incentivesLastUpdateTimestamp = fixtureTimestamp
+      emission.tokenIncentivesIndex = "750000"
+      emission.rewardTokenDecimals = 6
+      positions.positions[0]!.scaledATokenBalance = "2"
+      chain.reserves.push({ ...chain.reserves[0]!, underlyingAsset: ZERO_RATE })
+      chain.incentives.push({
+        ...chain.incentives[0]!,
+        underlyingAsset: ZERO_RATE,
+      })
+      positions.positions.push({
+        ...positions.positions[0]!,
+        underlyingAsset: ZERO_RATE,
+      })
+
+      const userIncentives = userIncentivesFrom(chain.incentives, {
+        unclaimed: "5",
+      })
+      // Each reserve accrues floor(1.5) = 1; the controller has booked 5.
+      const [reward] = rewards(userIncentives)
+      expect(reward?.amount).toBe("0.000007")
+    })
+  })
+
   it("earns nothing further from an emission that has already ended", () => {
     const held = chain.incentives.find(
       (entry) => entry.underlyingAsset === INCENTIVISED,

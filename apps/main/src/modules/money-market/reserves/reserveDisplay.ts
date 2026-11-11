@@ -25,7 +25,7 @@ export type ReserveDisplay = { name: string; symbol: string; logoId: string }
 
 /**
  * The one place a reserve gets its name, symbol and logo. A pool-share reserve
- * (CONTEXT.md) shows as its aToken, as the rest of the app names it (GDOT, not
+ * (see packages/money-market/GLOSSARY.md) shows as its aToken (GDOT, not
  * 2-Pool-GDOT); any other reserve shows as its registry asset, and as the
  * chain names it when the registry has none. A pool-share reserve whose aToken
  * the registry lacks is shown as any other reserve.

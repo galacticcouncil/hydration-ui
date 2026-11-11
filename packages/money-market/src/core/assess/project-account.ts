@@ -169,17 +169,17 @@ function supply(
 }
 
 /**
- * `ValidationLogic.validateUseAsCollateral`, which the pool runs on a first
- * supply: a reserve with LTV 0 never becomes collateral; one does when the
- * user has no collateral yet; otherwise only if the user is not in isolation
- * mode and the reserve is not isolated itself.
+ * A plain supply never automatically enables isolated or zero-LTV collateral.
+ * Other reserves become collateral unless the user is already in isolation.
  */
 function enablesAsCollateralOnFirstSupply(
   reserves: MarketReserves,
   positions: MarketPositions,
   reserve: Reserve,
 ): boolean {
-  if (reserve.baseLTVasCollateral === "0") return false
+  if (reserve.baseLTVasCollateral === "0" || reserve.debtCeiling !== "0") {
+    return false
+  }
 
   const collateral = positions.positions.filter(
     (position) => position.usageAsCollateralEnabledOnUser,
@@ -191,7 +191,7 @@ function enablesAsCollateralOnFirstSupply(
     collateral.length === 1 &&
     findByAsset(reserves.reserves, only.underlyingAsset).debtCeiling !== "0"
 
-  return !isolationModeActive && reserve.debtCeiling === "0"
+  return !isolationModeActive
 }
 
 /** Applies `update` to the asset's position, creating an empty one if absent. */

@@ -64,6 +64,7 @@ import { ReserveRatesChart } from "@/modules/money-market/reserve/ReserveRatesCh
 import { reserveDisplay } from "@/modules/money-market/reserves/reserveDisplay"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { useVisibleReserveSummaries } from "@/modules/money-market/reserves/useVisibleReserveSummaries"
 import {
   ActionsCell,
   OnRowAction,
@@ -126,7 +127,7 @@ export const ReserveDetailPage: FC<{ address: string }> = ({ address }) => {
     )
   }
 
-  return <ReserveDetail reserve={reserve} reserves={reserves.data} />
+  return <ReserveDetail reserve={reserve} />
 }
 
 const findReserve = (reserves: ReserveSummary[], address: string) =>
@@ -157,8 +158,8 @@ export const ReserveCrumb: FC = () => {
 
 const ReserveDetail: FC<{
   reserve: ReserveSummary
-  reserves: ReserveSummary[]
-}> = ({ reserve, reserves }) => {
+}> = ({ reserve }) => {
+  const { data: reserves } = useVisibleReserveSummaries()
   const { borrowingEnabled } = reserve
   const { symbol } = useReserveDisplay(reserve)
   const { market } = useMoneyMarket()

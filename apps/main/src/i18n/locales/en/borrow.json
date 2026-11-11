@@ -11,6 +11,7 @@
   "supply.toast.success": "{{ amount, currency }} supplied",
 
   "withdraw": "Withdraw",
+  "manageStaking": "Manage staking",
   "withdrawable": "Withdrawable",
   "withdraw.withSymbol": "Withdraw {{symbol}}",
   "withdraw.toast.submitted": "Withdrawing {{ amount, currency }}...",
@@ -93,6 +94,7 @@
   "finding.healthFactorBelowOne": "This action would drop your health factor below 1 and make your position liquidatable.",
   "finding.healthFactorRisk": "This action lowers your health factor and increases the risk of liquidation.",
   "finding.supplyCapNearlyReached": "The supply cap of this asset is {{percent, percent}} used. Supplying may not be possible soon.",
+  "finding.supplyCapExceeded": "The amount exceeds the remaining supply cap. Reduce the amount to continue.",
   "finding.borrowCapNearlyReached": "The borrow cap of this asset is {{percent, percent}} used. Borrowing may not be possible soon.",
   "finding.debtCeilingNearlyReached": "The debt ceiling of this isolated asset is {{percent, percent}} used. Borrowing against it may not be possible soon.",
   "finding.zeroLtvCollateralBlocks": "Withdraw or disable {{symbols}} as collateral first. Assets with 0% LTV block this action while they are collateral.",

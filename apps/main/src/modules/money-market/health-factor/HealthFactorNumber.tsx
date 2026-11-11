@@ -1,6 +1,7 @@
-import { Box } from "@galacticcouncil/ui/components"
+import { Box, Icon } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
+import { Infinity as InfinityIcon } from "lucide-react"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -34,13 +35,20 @@ export const HealthFactorNumber: FC<{ readonly value: string }> = ({
           : healthFactorColor,
       }}
     >
-      {unbounded
-        ? toDisplayedHealthFactor(value)
-        : t("number", {
-            value: toDisplayedHealthFactor(value),
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
+      {unbounded ? (
+        <Icon
+          component={InfinityIcon}
+          size="1.25em"
+          display="inline-flex"
+          sx={{ verticalAlign: "middle" }}
+        />
+      ) : (
+        t("number", {
+          value: toDisplayedHealthFactor(value),
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      )}
     </Box>
   )
 }

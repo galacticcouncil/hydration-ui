@@ -203,6 +203,22 @@ describe("projectAccount", () => {
     )
   })
 
+  it.each([PRIME, APYUSD])(
+    "does not automatically enable isolated collateral on a plain first supply of %s",
+    (asset) => {
+      const { account, positions } = project(
+        { kind: "supply", asset, amountRaw: 1_000_000n },
+        only(),
+      )
+
+      expect(
+        positions.find((position) => position.underlyingAsset === asset)
+          ?.usageAsCollateralEnabledOnUser,
+      ).toBe(false)
+      expect(account.isInIsolationMode).toBe(false)
+    },
+  )
+
   it("leaves only the supplied asset as collateral on an isolation join", () => {
     const change: PositionChange = {
       kind: "isolationJoin",
