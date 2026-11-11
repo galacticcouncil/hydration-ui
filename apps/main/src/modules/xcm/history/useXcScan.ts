@@ -1,4 +1,4 @@
-import { isAddressValidOnHydration } from "@galacticcouncil/utils"
+import { ZecAddr } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
@@ -24,10 +24,9 @@ export const createXcScanQueryKey = (address: string) => ["xcscan", address]
 
 const NO_JOURNEYS: XcJourney[] = []
 
-// xc-scan answers a NEAR id or a Zcash address with a 500, so only substrate
-// and evm accounts are looked up there
+// xc-scan returns a 500 for Zcash addresses
 export const isXcScanAddress = (address: string) =>
-  isAddressValidOnHydration(address)
+  !!address && !ZecAddr.isValid(address)
 
 type XcScanOptions = {
   claimableOnly?: boolean

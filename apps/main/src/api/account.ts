@@ -1,4 +1,5 @@
 import { HydrationQueries } from "@galacticcouncil/descriptors"
+import { isSS58Address } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { ObservedValueOf } from "rxjs"
@@ -58,7 +59,8 @@ export type AccountUniquesEntries = AccountUniquesObservedValue["entries"]
 
 export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   const { isConnected, account } = useAccount()
-  const address = isConnected ? account.address : ""
+  const address =
+    isConnected && isSS58Address(account.address) ? account.address : ""
 
   return usePapiValue("System.Account", [address, { at: "best" }], options)
 }

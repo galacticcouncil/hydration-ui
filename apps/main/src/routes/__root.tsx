@@ -136,8 +136,8 @@ function ApiSubscriptions() {
 }
 
 function AccountSubscriptions({ account }: { account: Account }) {
-  useXcScanSubscription(account.address)
-  useScanJourneysSubscription(account.address)
+  useXcScanSubscription(account.rawAddress)
+  useScanJourneysSubscription(account.rawAddress)
 
   return null
 }

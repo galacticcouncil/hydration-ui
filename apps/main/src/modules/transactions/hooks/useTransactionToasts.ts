@@ -1,5 +1,6 @@
 import {
   etherscan,
+  HYDRATION_CHAIN_KEY,
   intentscan,
   nearblocks,
   neckwork,
@@ -166,10 +167,11 @@ function getTransactionLink(
     return zcashexplorer.tx(meta.srcChainKey, txHash)
   }
 
-  if (
+  const isEvmTx =
     meta.type === TransactionType.EvmApprove ||
     (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)
-  ) {
+
+  if (isEvmTx && meta.srcChainKey !== HYDRATION_CHAIN_KEY) {
     return etherscan.tx(meta.srcChainKey, txHash)
   }
 

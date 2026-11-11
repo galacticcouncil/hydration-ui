@@ -1,4 +1,5 @@
 import { AssetBalance } from "@galacticcouncil/sdk-next"
+import { isSS58Address } from "@galacticcouncil/utils"
 import {
   experimental_streamedQuery as streamedQuery,
   queryOptions,
@@ -66,7 +67,7 @@ export const accountBalancesQuery = (
     }),
     enabled:
       isReady &&
-      !!address &&
+      isSS58Address(address) &&
       !!filter?.followedTokenIds.length &&
       !!filter?.erc20AssetIds.length,
     staleTime: Infinity,
@@ -84,7 +85,7 @@ export const maxWithdrawAllQuery = (
   queryOptions({
     queryKey: [...MAX_WITHDRAW_ALL_QUERY_KEY, address],
     queryFn: () => sdk.api.aave.getMaxWithdrawAll(address),
-    enabled: isReady && !!address,
+    enabled: isReady && isSS58Address(address),
     staleTime: Infinity,
     refetchOnWindowFocus: true,
   })
