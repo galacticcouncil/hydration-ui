@@ -1,4 +1,4 @@
-import { ArrowRight, Blend } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import { Box, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { BIL_ERC20_ID, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
@@ -9,6 +9,7 @@ import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
+import { MultiplyLogo } from "@/modules/strategies/multiply/components/MultiplyLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -17,10 +18,6 @@ const STRATEGY_ASSET_ICON_BY_KEY: Partial<
 > = {
   strategiesBil: BIL_ERC20_ID,
   strategiesHollarBonds: HOLLAR_ASSET_ID,
-}
-
-const STRATEGY_ICON_BY_KEY: Partial<Record<NavigationKey, typeof Blend>> = {
-  strategiesMultiply: Blend,
 }
 
 type Props = {
@@ -46,8 +43,8 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
             <JuicerStrategyLogo size="medium" />
           ) : showAssetIcon ? (
             <AssetLogo id={assetIconId} size="medium" hideChain />
-          ) : STRATEGY_ICON_BY_KEY[key] ? (
-            <Icon component={STRATEGY_ICON_BY_KEY[key]} />
+          ) : key === "strategiesMultiply" ? (
+            <MultiplyLogo size="medium" />
           ) : null}
           <Box>
             <Text fw={600} fs="p4" lh={1.4}>

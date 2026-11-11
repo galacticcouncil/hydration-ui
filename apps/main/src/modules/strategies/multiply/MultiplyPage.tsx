@@ -1,10 +1,8 @@
 import {
   Box,
-  Flex,
   Paper,
   SectionHeader,
   Separator,
-  Spinner,
   Stack,
   ToggleGroup,
   ToggleGroupItem,
@@ -18,9 +16,11 @@ import { Markdown } from "@/components/Markdown"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { ReserveApyProvider } from "@/modules/money-market/apy/ReserveApyProvider"
 import { CustomLoopWizard } from "@/modules/strategies/multiply/components/CustomLoopWizard"
+import { MultiplyDepositModal } from "@/modules/strategies/multiply/components/MultiplyDepositModal"
 import { MultiplyDetailsCard } from "@/modules/strategies/multiply/components/MultiplyDetailsCard"
 import { MultiplyHeader } from "@/modules/strategies/multiply/components/MultiplyHeader"
 import { MultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm"
+import { MultiplyPairDetailsModal } from "@/modules/strategies/multiply/components/MultiplyPairDetailsModal"
 import { MultiplyPairSelectModal } from "@/modules/strategies/multiply/components/MultiplyPairSelectModal"
 import { MultiplyPositionsCard } from "@/modules/strategies/multiply/components/MultiplyPositionsCard"
 import {
@@ -49,6 +49,8 @@ const MultiplyPageContent: React.FC = () => {
   const { data: positions } = useMultiplyPositions()
   const [isSelectOpen, setIsSelectOpen] = useState(false)
   const [isWizardOpen, setIsWizardOpen] = useState(false)
+  const [depositSlug, setDepositSlug] = useState<string | null>(null)
+  const [detailsSlug, setDetailsSlug] = useState<string | null>(null)
   const addLoop = useCustomLoopsStore((s) => s.add)
   const { build, isReady: isBuilderReady } = useLoopBuilder()
 
@@ -129,6 +131,11 @@ const MultiplyPageContent: React.FC = () => {
               <MultiplyDetailsCard
                 pairs={pairs}
                 onCustomLoop={() => setIsWizardOpen(true)}
+                onDeposit={(next) => {
+                  selectPair(next)
+                  setDepositSlug(next.slug)
+                }}
+                onDetails={(next) => setDetailsSlug(next.slug)}
               />
 
               <Paper p="xl">
@@ -146,11 +153,8 @@ const MultiplyPageContent: React.FC = () => {
 
         {showOverview && (
           <Box minWidth={0}>
-            {selected.data &&
-            selected.collateralReserve &&
-            selected.debtReserve ? (
+            <Paper px="xl">
               <MultiplyOpenForm
-                // a new pair is a new collateral: start the form over
                 key={pair.slug}
                 pair={pair}
                 metrics={selected.data}
@@ -159,11 +163,7 @@ const MultiplyPageContent: React.FC = () => {
                 debtReserve={selected.debtReserve}
                 onPairClick={() => setIsSelectOpen(true)}
               />
-            ) : (
-              <Flex justify="center" p="xl">
-                <Spinner />
-              </Flex>
-            )}
+            </Paper>
           </Box>
         )}
       </TwoColumnGrid>
@@ -174,6 +174,16 @@ const MultiplyPageContent: React.FC = () => {
           onSelect={selectPair}
         />
       )}
+
+      <MultiplyDepositModal
+        row={pairs.find((p) => p.pair.slug === depositSlug) ?? null}
+        onClose={() => setDepositSlug(null)}
+      />
+
+      <MultiplyPairDetailsModal
+        row={pairs.find((p) => p.pair.slug === detailsSlug) ?? null}
+        onClose={() => setDetailsSlug(null)}
+      />
 
       {isSelectOpen && (
         <MultiplyPairSelectModal

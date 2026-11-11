@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Flex,
-  Icon,
   Label,
   LoadingButton,
   MenuItemLabel,
@@ -110,11 +109,9 @@ const WithdrawalPosition: FC<{ row: WithdrawalRow }> = ({ row }) => {
                 variant="tertiary"
                 outline
                 size="small"
-                sx={{ px: "base" }}
+                icon={Ellipsis}
                 disabled={isQueueActionPending}
-              >
-                <Icon component={Ellipsis} size="m" />
-              </Button>
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>

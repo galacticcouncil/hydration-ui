@@ -3,6 +3,7 @@ import {
   Grid,
   Paper,
   Separator,
+  Skeleton,
   Stack,
   Text,
   Tooltip,
@@ -35,6 +36,7 @@ type MultiplyPositionPreviewProps = {
   projection: ReturnType<typeof projectMultiplyPosition>
   risk: PairRisk | null
   eModeLabel: string | null
+  isLoading?: boolean
 }
 
 export const MultiplyPositionPreview: React.FC<
@@ -49,6 +51,7 @@ export const MultiplyPositionPreview: React.FC<
   projection,
   risk,
   eModeLabel,
+  isLoading = false,
 }) => {
   const { t } = useTranslation(["strategies", "common"])
 
@@ -58,6 +61,7 @@ export const MultiplyPositionPreview: React.FC<
       debt={debt}
       supplyApy={supplyApy}
       borrowApy={borrowApy}
+      isLoading={isLoading}
       amounts={
         amount > 0 ? [projection.collateral, projection.debt] : undefined
       }
@@ -65,42 +69,51 @@ export const MultiplyPositionPreview: React.FC<
       <PreviewRow
         label={t("multiply.open.netApy")}
         value={
-          <Flex align="center" gap="xs">
-            <Text fs="p5" fw={600} lh={1} color={apyColor(projection.netApy)}>
-              {t("common:percent", { value: projection.netApy * 100 })}
-            </Text>
-            <Tooltip
-              text={
-                <NetApyBreakdown
-                  leverage={leverage}
-                  collateral={collateral}
-                  debt={debt}
-                  supplyApy={supplyApy}
-                  borrowApy={borrowApy}
-                  netApy={projection.netApy}
-                />
-              }
-            >
-              <TooltipIcon size="0.75em" color={getToken("text.low")} />
-            </Tooltip>
-          </Flex>
+          isLoading ? (
+            <Skeleton width={48} />
+          ) : (
+            <Flex align="center" gap="xs">
+              <Text fs="p5" fw={600} lh={1} color={apyColor(projection.netApy)}>
+                {t("common:percent", { value: projection.netApy * 100 })}
+              </Text>
+              <Tooltip
+                text={
+                  <NetApyBreakdown
+                    leverage={leverage}
+                    collateral={collateral}
+                    debt={debt}
+                    supplyApy={supplyApy}
+                    borrowApy={borrowApy}
+                    netApy={projection.netApy}
+                  />
+                }
+              >
+                <TooltipIcon size="0.75em" color={getToken("text.low")} />
+              </Tooltip>
+            </Flex>
+          )
         }
       />
       <PreviewRow
         label={t("common:healthFactor")}
         value={
-          <Text fs="p5" fw={600} lh={1}>
-            <HealthFactorNumber value={projection.healthFactor.toString()} />
-          </Text>
+          isLoading ? (
+            <Skeleton width={48} />
+          ) : (
+            <Text fs="p5" fw={600} lh={1}>
+              <HealthFactorNumber value={projection.healthFactor.toString()} />
+            </Text>
+          )
         }
       />
       {eModeLabel && (
         <PreviewRow label={t("multiply.custom.eMode")} value={eModeLabel} />
       )}
-      {risk && (
-        <PreviewRow
-          label={t("multiply.risk.column")}
-          value={
+      {/* risk is null until its price history loads */}
+      <PreviewRow
+        label={t("multiply.risk.column")}
+        value={
+          risk && !isLoading ? (
             <RiskBadge
               risk={risk}
               collateral={collateral.symbol}
@@ -108,9 +121,11 @@ export const MultiplyPositionPreview: React.FC<
               hf={projection.healthFactor}
               leverage={leverage}
             />
-          }
-        />
-      )}
+          ) : (
+            <Skeleton width={48} />
+          )
+        }
+      />
     </MultiplyAssetsCard>
   )
 }
@@ -123,8 +138,17 @@ export const MultiplyAssetsCard: React.FC<{
   borrowApy: number
   /** Collateral and debt amounts; without them only the APYs show. */
   amounts?: [number, number]
+  isLoading?: boolean
   children: React.ReactNode
-}> = ({ collateral, debt, supplyApy, borrowApy, amounts, children }) => {
+}> = ({
+  collateral,
+  debt,
+  supplyApy,
+  borrowApy,
+  amounts,
+  isLoading = false,
+  children,
+}) => {
   const { t } = useTranslation(["strategies", "common"])
 
   return (
@@ -136,6 +160,7 @@ export const MultiplyAssetsCard: React.FC<{
           apy={supplyApy}
           value={amounts?.[0] ?? 0}
           isEmpty={!amounts}
+          isLoading={isLoading}
         />
         <AssetRow
           label={t("multiply.open.borrow")}
@@ -143,6 +168,7 @@ export const MultiplyAssetsCard: React.FC<{
           apy={borrowApy}
           value={amounts?.[1] ?? 0}
           isEmpty={!amounts}
+          isLoading={isLoading}
         />
         <Separator mx="-m" />
         <Stack gap="xs">{children}</Stack>
@@ -179,12 +205,14 @@ const AssetRow = ({
   apy,
   value,
   isEmpty,
+  isLoading,
 }: {
   label: string
   asset: Asset
   apy: number
   value: number
   isEmpty: boolean
+  isLoading: boolean
 }) => {
   const { t } = useTranslation(["strategies", "common"])
 
@@ -211,13 +239,17 @@ const AssetRow = ({
             })}
           </Text>
         </SAmountReveal>
-        <SApyText
-          fs={isEmpty ? "p5" : "p6"}
-          fw={isEmpty ? 600 : 400}
-          color={isEmpty ? getToken("text.high") : getToken("text.medium")}
-        >
-          {t("multiply.open.apy", { value: apy * 100 })}
-        </SApyText>
+        {isLoading ? (
+          <Skeleton width={64} />
+        ) : (
+          <SApyText
+            fs={isEmpty ? "p5" : "p6"}
+            fw={isEmpty ? 600 : 400}
+            color={isEmpty ? getToken("text.high") : getToken("text.medium")}
+          >
+            {t("multiply.open.apy", { value: apy * 100 })}
+          </SApyText>
+        )}
       </Stack>
     </Flex>
   )

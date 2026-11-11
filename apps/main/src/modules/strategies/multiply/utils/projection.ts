@@ -181,6 +181,10 @@ export const getExitCost = ({
     ? sold - quotedOut / collateralPriceInDebt
     : 0
 
+/** What is left under a cap, or null when the cap is 0 (uncapped). */
+export const getCapRoom = (cap: string, used: string) =>
+  Number(cap) > 0 ? Number(cap) - Number(used) : null
+
 /**
  * The largest deposit, in collateral, the market can take at this leverage: the
  * ramp supplies `L·E` of collateral and borrows `(L−1)·E` worth of debt. Rooms

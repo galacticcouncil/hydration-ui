@@ -16,7 +16,7 @@ import { SAddressTagCopyButton } from "@/components/AddressTag/AddressTag.styled
 export type AddressTagLinkType = "none" | "account" | "contract"
 
 export type AddressTagProps = {
-  label: string
+  label?: string
   address: string | undefined
   fs?: TextProps["fs"]
   fw?: TextProps["fw"]
@@ -55,9 +55,11 @@ export const AddressTag = ({
 
   return (
     <Flex align="center" gap="xs">
-      <Text fs={fs} fw={fw} lh={lh} color={getToken("text.low")}>
-        {label}
-      </Text>
+      {label && (
+        <Text fs={fs} fw={fw} lh={lh} color={getToken("text.low")}>
+          {label}
+        </Text>
+      )}
       {explorerHref ? (
         <Tooltip text={t("openInExplorer")} size="small" asChild>
           <ExternalLink href={explorerHref} underlined={false}>

@@ -18,19 +18,24 @@ import {
   type MultiplyPairRow,
   useMultiplyPairColumns,
 } from "@/modules/strategies/multiply/components/MultiplyPairs.columns"
+import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 
 type MultiplyDetailsCardProps = {
   pairs: MultiplyPairRow[]
   onCustomLoop: () => void
+  onDeposit: (pair: MultiplyPair) => void
+  onDetails: (pair: MultiplyPair) => void
 }
 
 export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
   pairs,
   onCustomLoop,
+  onDeposit,
+  onDetails,
 }) => {
   const { t } = useTranslation("strategies")
   const { gte } = useBreakpoints()
-  const columns = useMultiplyPairColumns()
+  const columns = useMultiplyPairColumns(onDeposit, onDetails)
   const isLoading =
     pairs.every((p) => p.data === null) && pairs.some((p) => p.isLoading)
 
@@ -40,7 +45,7 @@ export const MultiplyDetailsCard: React.FC<MultiplyDetailsCardProps> = ({
         <Text as="h2" font="primary" fs="base" fw={500}>
           {t("multiply.details.title")}
         </Text>
-        <Button size="small" variant="secondary" onClick={onCustomLoop}>
+        <Button size="small" variant="accent" outline onClick={onCustomLoop}>
           <Icon size="s" component={Plus} />
           {t("multiply.custom.cta")}
         </Button>

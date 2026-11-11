@@ -15,7 +15,7 @@ const WINDOW_MS = 30 * 24 * 60 * 60_000
 
 export type PairRisk = {
   level: RiskLevel
-  // largest 30-day collateral/debt fall, null for correlated loops or without history
+  // largest 30-day collateral/debt fall, null without history
   largestFall: number | null
 }
 
@@ -47,8 +47,6 @@ export const usePairRiskLevels = (assetIds: string[]) => {
       debtAssetId: string,
       { correlated, hf }: { correlated: boolean; hf: number },
     ): PairRisk | null => {
-      if (correlated) return { level: "low", largestFall: null }
-
       const closes = (id: string) => {
         if (id === USDT_ASSET_ID) return "usdt" as const
         const query = series.byId.get(id)
@@ -57,7 +55,8 @@ export const usePairRiskLevels = (assetIds: string[]) => {
       }
       const c = closes(collateralAssetId)
       const d = closes(debtAssetId)
-      if (c === null || d === null) return null
+      if (c === null || d === null)
+        return correlated ? { level: "low", largestFall: null } : null
 
       // USDT is the quote asset, so its own series is a flat 1 at the other side's times
       const flat = (other: typeof c) =>

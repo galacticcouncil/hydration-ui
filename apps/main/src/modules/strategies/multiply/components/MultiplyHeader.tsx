@@ -14,7 +14,7 @@ export const MultiplyHeader: React.FC = () => {
   return (
     <Flex justify="space-between" align="center" gap="s">
       <Flex align="center" gap="base">
-        <MultiplyLogo size={36} />
+        <MultiplyLogo size="large" />
         <Text
           font="primary"
           fs="h6"
