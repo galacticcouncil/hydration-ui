@@ -1,4 +1,4 @@
-import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
+import { Ellipsis, Eye, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   AssetLabel,
@@ -7,7 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Icon,
+  Flex,
+  MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
   Skeleton,
@@ -21,9 +22,16 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { SMenuLabelText } from "@/modules/strategies/multiply/components/MultiplyPairs.styled"
 import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
-import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
-import { isCustomLoop } from "@/modules/strategies/multiply/config/pairs"
+import {
+  RiskBadge,
+  RiskBadgeSkeleton,
+} from "@/modules/strategies/multiply/components/RiskBadge"
+import {
+  isCustomLoop,
+  type MultiplyPair,
+} from "@/modules/strategies/multiply/config/pairs"
 import { useCustomLoopsStore } from "@/modules/strategies/multiply/hooks/useCustomLoops"
 import { type MultiplyPairRow } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useMultiplyPositions } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
@@ -43,7 +51,10 @@ const AssetCell: React.FC<{ id: string }> = ({ id }) => {
   )
 }
 
-export const useMultiplyPairColumns = () => {
+export const useMultiplyPairColumns = (
+  onDeposit: (pair: MultiplyPair) => void,
+  onDetails: (pair: MultiplyPair) => void,
+) => {
   const { t } = useTranslation(["strategies", "common"])
   const display = useResolveAssetDisplay()
   const remove = useCustomLoopsStore((st) => st.remove)
@@ -72,8 +83,9 @@ export const useMultiplyPairColumns = () => {
         header: t("multiply.risk.column"),
         cell: ({ row }) => {
           const { pair, risk, data } = row.original
-          if (!risk || !data)
-            return row.original.isLoading ? <Skeleton width={64} /> : "—"
+          if (!data) return row.original.isLoading ? <RiskBadgeSkeleton /> : "—"
+          // with the reserves loaded, risk is null only while the price history loads
+          if (!risk) return <RiskBadgeSkeleton />
           return (
             <RiskBadge
               risk={risk}
@@ -134,11 +146,20 @@ export const useMultiplyPairColumns = () => {
       columnHelper.display({
         id: "actions",
         header: "",
+        meta: { sx: { textAlign: "right" } },
         cell: ({ row }) => {
           const { pair } = row.original
-          if (!isCustomLoop(pair)) return null
+          const deposit = (
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={() => onDeposit(pair)}
+            >
+              {t("common:deposit")}
+            </Button>
+          )
           const hasPosition = !canRemoveLoop(pair.slug, positionSlugs)
-          const item = (
+          const removeItem = (
             <DropdownMenuItem asChild disabled={hasPosition}>
               <MenuSelectionItem
                 variant="filterLink"
@@ -149,31 +170,55 @@ export const useMultiplyPairColumns = () => {
                   })
                 }
               >
-                <MenuItemLabel>{t("multiply.custom.remove")}</MenuItemLabel>
+                <MenuItemIcon component={Trash} />
+                <MenuItemLabel>
+                  <SMenuLabelText>{t("multiply.custom.remove")}</SMenuLabelText>
+                </MenuItemLabel>
               </MenuSelectionItem>
             </DropdownMenuItem>
           )
           return (
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="tertiary" outline size="small" px="base">
-                  <Icon component={Ellipsis} size="m" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {hasPosition ? (
-                  <Tooltip text={t("multiply.custom.removeDisabled")} asChild>
-                    <div>{item}</div>
-                  </Tooltip>
-                ) : (
-                  item
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Flex justify="flex-end" gap="s">
+              {deposit}
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="tertiary"
+                    outline
+                    size="small"
+                    icon={Ellipsis}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" size="small">
+                  <DropdownMenuItem asChild>
+                    <MenuSelectionItem
+                      variant="filterLink"
+                      onClick={() => onDetails(pair)}
+                    >
+                      <MenuItemIcon component={Eye} />
+                      <MenuItemLabel>
+                        <SMenuLabelText>{t("common:details")}</SMenuLabelText>
+                      </MenuItemLabel>
+                    </MenuSelectionItem>
+                  </DropdownMenuItem>
+                  {isCustomLoop(pair) &&
+                    (hasPosition ? (
+                      <Tooltip
+                        text={t("multiply.custom.removeDisabled")}
+                        asChild
+                      >
+                        <div>{removeItem}</div>
+                      </Tooltip>
+                    ) : (
+                      removeItem
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Flex>
           )
         },
       }),
     ],
-    [t, display, positionSlugs, remove],
+    [t, display, positionSlugs, remove, onDeposit, onDetails],
   )
 }

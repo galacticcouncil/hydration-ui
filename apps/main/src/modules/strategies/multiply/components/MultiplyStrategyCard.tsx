@@ -21,7 +21,7 @@ const MultiplyStrategyCardContent: React.FC = () => {
 
   return (
     <StrategyCard
-      logo={<MultiplyLogo size={56} />}
+      logo={<MultiplyLogo size="extra-large" />}
       title={t("multiply.name")}
       stats={[
         {

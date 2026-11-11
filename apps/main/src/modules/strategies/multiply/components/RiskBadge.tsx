@@ -2,6 +2,7 @@ import {
   Box,
   Chip,
   type ChipVariant,
+  Skeleton,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
@@ -52,12 +53,29 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 
   return (
     <Tooltip text={why} side="left" asChild>
-      {/* flex, so the trigger is the chip's height, not a text line's */}
       <Box as="span" display="flex">
         <Chip size="small" rounded variant={VARIANT[risk.level]}>
           {t(`multiply.risk.${risk.level}`)}
         </Chip>
       </Box>
     </Tooltip>
+  )
+}
+
+export const RiskBadgeSkeleton: React.FC = () => {
+  const { t } = useTranslation("strategies")
+
+  return (
+    <Box as="span" display="flex" position="relative">
+      <Box as="span" display="flex" sx={{ visibility: "hidden" }} aria-hidden>
+        <Chip size="small" rounded variant={VARIANT.medium}>
+          {t("multiply.risk.medium")}
+        </Chip>
+      </Box>
+      <Skeleton
+        borderRadius={9999}
+        style={{ position: "absolute", inset: 0 }}
+      />
+    </Box>
   )
 }
