@@ -35,9 +35,15 @@ type ApyTooltipProps = {
   parts: ReadonlyArray<ApyPart>
   total: string
   side: ApySide
+  hideDescription?: boolean
 }
 
-const ApyBreakdown: FC<ApyTooltipProps> = ({ parts, total, side }) => {
+export const ApyBreakdown: FC<ApyTooltipProps> = ({
+  parts,
+  total,
+  side,
+  hideDescription,
+}) => {
   const { t } = useTranslation()
   const { themeProps } = useTheme()
   const getAssetColor = useAssetColor()
@@ -134,9 +140,11 @@ const ApyBreakdown: FC<ApyTooltipProps> = ({ parts, total, side }) => {
           )
         })}
       </Flex>
-      <Text fs="p6" color={getToken("text.medium")}>
-        {t("apy.rewards.description")}
-      </Text>
+      {!hideDescription && (
+        <Text fs="p6" color={getToken("text.medium")}>
+          {t("apy.rewards.description")}
+        </Text>
+      )}
     </Flex>
   )
 }

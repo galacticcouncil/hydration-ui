@@ -10,13 +10,14 @@ import {
   ModalFooter,
   ModalHeader,
   Paper,
+  ScrollArea,
   Separator,
   Stack,
   Text,
   WizardStep,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
@@ -75,12 +76,6 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
   const [step, setStep] = useState(0)
   const [collateralId, setCollateralId] = useState<string | null>(null)
   const [pickSlug, setPickSlug] = useState<string | null>(null)
-
-  // each step opens at the top of the scroll area, not where the last list left off
-  const topRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    topRef.current?.scrollIntoView({ block: "nearest" })
-  }, [step])
 
   const symbol = (id: string) => display(id).symbol
 
@@ -219,8 +214,7 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
   return (
     <Modal variant="popup" open onOpenChange={onClose}>
       <ModalHeader title={t("multiply.custom.title")} />
-      <ModalBody scrollable noPadding>
-        <div ref={topRef} />
+      <ModalBody scrollable={false} noPadding>
         <Collapsible
           open={step === 0}
           onOpenChange={openStep(0)}
@@ -230,39 +224,43 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
             collateralId,
           )}
         >
-          {collaterals.map(({ collateralAssetId, valid, best, reason }) => (
-            <SPairOption
-              key={collateralAssetId}
-              type="button"
-              selected={collateralId === collateralAssetId}
-              disabled={!best}
-              onClick={() => {
-                if (collateralId !== collateralAssetId) {
-                  setCollateralId(collateralAssetId)
-                  setPickSlug(null)
-                }
-                setStep(1)
-              }}
-            >
-              {assetRow(
-                collateralAssetId,
-                best
-                  ? t("multiply.custom.loopsAvailable", { count: valid.length })
-                  : (reason ?? t("multiply.custom.cantLoop")),
-              )}
-              {best && (
-                <Flex gap="l" align="center">
-                  {apyStat(t("multiply.custom.bestApy"), best.maxNetApy)}
-                  {stat(
-                    t("cards.multiply.maxLeverage"),
-                    leverage(
-                      Math.max(...valid.map((c) => c.data!.maxLeverage)),
-                    ),
-                  )}
-                </Flex>
-              )}
-            </SPairOption>
-          ))}
+          <StepList>
+            {collaterals.map(({ collateralAssetId, valid, best, reason }) => (
+              <SPairOption
+                key={collateralAssetId}
+                type="button"
+                selected={collateralId === collateralAssetId}
+                disabled={!best}
+                onClick={() => {
+                  if (collateralId !== collateralAssetId) {
+                    setCollateralId(collateralAssetId)
+                    setPickSlug(null)
+                  }
+                  setStep(1)
+                }}
+              >
+                {assetRow(
+                  collateralAssetId,
+                  best
+                    ? t("multiply.custom.loopsAvailable", {
+                        count: valid.length,
+                      })
+                    : (reason ?? t("multiply.custom.cantLoop")),
+                )}
+                {best && (
+                  <Flex gap="l" align="center">
+                    {apyStat(t("multiply.custom.bestApy"), best.maxNetApy)}
+                    {stat(
+                      t("cards.multiply.maxLeverage"),
+                      leverage(
+                        Math.max(...valid.map((c) => c.data!.maxLeverage)),
+                      ),
+                    )}
+                  </Flex>
+                )}
+              </SPairOption>
+            ))}
+          </StepList>
         </Collapsible>
 
         <Separator />
@@ -276,30 +274,32 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
             pick?.pair.debtAssetId,
           )}
         >
-          {debtLoops.map((c) => (
-            <SPairOption
-              key={c.pair.slug}
-              type="button"
-              selected={pickSlug === c.pair.slug}
-              disabled={c.unavailable}
-              onClick={() => {
-                setPickSlug(c.pair.slug)
-                setStep(2)
-              }}
-            >
-              {assetRow(c.pair.debtAssetId, c.reason)}
-              {!c.unavailable && (
-                <Flex gap="l" align="center">
-                  {riskBadge(c)}
-                  {apyStat(t("cards.multiply.maxApy"), c.maxNetApy)}
-                  {stat(
-                    t("cards.multiply.maxLeverage"),
-                    leverage(c.data!.maxLeverage),
-                  )}
-                </Flex>
-              )}
-            </SPairOption>
-          ))}
+          <StepList>
+            {debtLoops.map((c) => (
+              <SPairOption
+                key={c.pair.slug}
+                type="button"
+                selected={pickSlug === c.pair.slug}
+                disabled={c.unavailable}
+                onClick={() => {
+                  setPickSlug(c.pair.slug)
+                  setStep(2)
+                }}
+              >
+                {assetRow(c.pair.debtAssetId, c.reason)}
+                {!c.unavailable && (
+                  <Flex gap="l" align="center">
+                    {riskBadge(c)}
+                    {apyStat(t("cards.multiply.maxApy"), c.maxNetApy)}
+                    {stat(
+                      t("cards.multiply.maxLeverage"),
+                      leverage(c.data!.maxLeverage),
+                    )}
+                  </Flex>
+                )}
+              </SPairOption>
+            ))}
+          </StepList>
         </Collapsible>
 
         <Separator />
@@ -378,5 +378,13 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
     </Modal>
   )
 }
+
+const StepList = ({ children }: { children: React.ReactNode }) => (
+  <ScrollArea sx={{ height: "auto" }}>
+    <Box maxHeight={["calc(100dvh - 280px)", "calc(75dvh - 280px)"]}>
+      {children}
+    </Box>
+  </ScrollArea>
+)
 
 const STEPS = ["collateral", "borrow", "review"] as const

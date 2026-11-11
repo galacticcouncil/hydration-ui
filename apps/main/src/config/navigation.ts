@@ -1,6 +1,7 @@
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  Blend,
   BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
@@ -175,7 +176,7 @@ export const NAVIGATION: NavigationItem[] = [
       {
         key: "strategiesMultiply",
         to: LINKS.strategiesMultiply,
-        icon: GoalIcon,
+        icon: Blend,
       },
     ],
   },
