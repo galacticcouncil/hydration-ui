@@ -1,4 +1,8 @@
 import {
+  incentiveControllerAbi,
+  poolAbi,
+} from "@galacticcouncil/money-market/core"
+import {
   formatTypeValueJson,
   JsonValue,
   propPath,
@@ -73,6 +77,8 @@ const KNOWN_ABIS: Abi = [
   ...VAULT_ABI,
   ...BIL_POOL_ABI,
   ...BIL_DEPOSIT_ZAP_ABI,
+  ...poolAbi,
+  ...incentiveControllerAbi,
 ]
 
 const decodeEvmCallInput = (call: unknown): unknown => {

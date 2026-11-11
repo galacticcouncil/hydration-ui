@@ -38,6 +38,7 @@ import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Address } from "viem"
 
+import { AccountBindingBanner } from "@/modules/money-market/account/AccountBindingBanner"
 import {
   OpenAction,
   OpenActionModal,
@@ -331,6 +332,7 @@ export const MoneyMarketDashboard: FC = () => {
 
   return (
     <Stack gap="xl">
+      <AccountBindingBanner />
       <ScrollArea
         orientation="horizontal"
         horizontalEdgeOffset="var(--layout-gutter)"

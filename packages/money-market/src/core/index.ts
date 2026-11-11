@@ -1,3 +1,4 @@
+export { incentiveControllerAbi, poolAbi } from "@/core/abi"
 export type {} from "@/core/actions/claim"
 export { buildClaimAllRewards, buildClaimReward } from "@/core/actions/claim"
 export type {} from "@/core/actions/pool"

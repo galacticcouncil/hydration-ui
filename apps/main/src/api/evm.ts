@@ -1,4 +1,5 @@
 import { h160 } from "@galacticcouncil/common"
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
 import {
   isEvmParachainAccount,
   QUERY_KEY_BLOCK_PREFIX,
@@ -111,8 +112,10 @@ export const useBindEvmAccount = (address: string) => {
           },
         },
         {
-          onSuccess: () =>
-            queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address)),
+          onSuccess: () => {
+            queryClient.invalidateQueries(evmAccountBindingQuery(rpc, address))
+            queryClient.invalidateQueries({ queryKey: moneyMarketKeys.all })
+          },
         },
       )
     },

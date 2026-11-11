@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next"
 import { TitleWithSearch } from "@/components/TitleWithSearch"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { AccountBindingBanner } from "@/modules/money-market/account/AccountBindingBanner"
 import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { useNavigateToReserve } from "@/modules/money-market/hooks"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
@@ -235,6 +236,8 @@ export const MarketsPage: FC = () => {
           />
         </Stack>
       </ScrollArea>
+
+      <AccountBindingBanner />
 
       <Box>
         <TitleWithSearch

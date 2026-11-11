@@ -4,12 +4,16 @@ import {
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
 import { Select } from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { evmAccountBindingQuery } from "@/api/evm"
 import { ActionModal } from "@/modules/money-market/actions/ActionModal"
 import { EModeForm } from "@/modules/money-market/actions/EModeForm"
 import { useUserAddress } from "@/modules/money-market/hooks"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const EModeSelect: FC = () => {
   const { t } = useTranslation("borrow")
@@ -17,8 +21,12 @@ export const EModeSelect: FC = () => {
   const { data: current } = useAccountSummary(user)
   const { data: reserves } = useReserveSummaries()
   const [categoryId, setCategoryId] = useState<number | null>(null)
+  const { account } = useAccount()
+  const { data: isBound } = useQuery(
+    evmAccountBindingQuery(useRpcProvider(), account?.address ?? ""),
+  )
 
-  if (!user || !current || !reserves) return null
+  if (!user || !current || !reserves || !isBound) return null
 
   const currentId = current.account.eModeCategoryId
 
