@@ -178,7 +178,12 @@ const PairDetails: React.FC<{
     t("common:currency.compact", { value, symbol })
 
   return (
-    <Stack gap="xl" separated separator={<ModalContentDivider />}>
+    <Stack gap="m">
+      <Section title={t("multiply.pairDetails.howItWorks")}>
+        <Text fs="p5" color={getToken("text.medium")}>
+          {t("multiply.pairDetails.howItWorksText", { collateral, debt })}
+        </Text>
+      </Section>
       <Section
         title={t("multiply.pairDetails.risk")}
         action={
@@ -195,6 +200,7 @@ const PairDetails: React.FC<{
         }
       >
         <Summary
+          mb="-base"
           separator={<ModalContentDivider />}
           rows={[
             ...(atMax
@@ -283,6 +289,7 @@ const PairDetails: React.FC<{
 
       <Section title={t("multiply.pairDetails.parameters")}>
         <Summary
+          mb="-base"
           separator={<ModalContentDivider />}
           rows={[
             ...(inEMode
@@ -343,6 +350,7 @@ const PairDetails: React.FC<{
         </Grid>
         {breakEven !== null && (
           <Summary
+            mb="-base"
             separator={<ModalContentDivider />}
             rows={[
               {
@@ -360,6 +368,7 @@ const PairDetails: React.FC<{
 
       <Section title={t("multiply.pairDetails.capacity")}>
         <Summary
+          mb="-base"
           separator={<ModalContentDivider />}
           rows={[
             {
@@ -404,14 +413,9 @@ const PairDetails: React.FC<{
         />
       </Section>
 
-      <Section title={t("multiply.pairDetails.howItWorks")}>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("multiply.pairDetails.howItWorksText", { collateral, debt })}
-        </Text>
-      </Section>
-
       <Section title={t("multiply.pairDetails.contracts")}>
         <Summary
+          mb="-base"
           separator={<ModalContentDivider />}
           rows={[
             {
@@ -442,15 +446,21 @@ const Section: React.FC<{
   action?: React.ReactNode
   children: React.ReactNode
 }> = ({ title, action, children }) => (
-  <Stack gap="s">
-    <Flex align="center" justify="space-between" gap="m">
-      <Text font="primary" fs="p3" fw={600} color={getToken("text.high")}>
+  <Paper p="xl" borderRadius="xl" shadow={false} bg="dim">
+    <Flex align="center" justify="space-between" gap="base">
+      <Text
+        font="primary"
+        fs="p3"
+        mb="base"
+        fw={600}
+        color={getToken("text.high")}
+      >
         {title}
       </Text>
       {action}
     </Flex>
     {children}
-  </Stack>
+  </Paper>
 )
 
 const RateCard: React.FC<{
@@ -460,7 +470,7 @@ const RateCard: React.FC<{
 }> = ({ rate, side, fallback }) => {
   const { t } = useTranslation()
   return (
-    <Paper p="m" shadow={false}>
+    <Paper p="m" shadow={false} bg="dim">
       {rate?.status === "known" ? (
         <ApyBreakdown
           parts={rate.parts}
