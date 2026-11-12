@@ -10,11 +10,13 @@ type SubmitButtonProps = React.ComponentPropsWithoutRef<
 > & {
   chain: AnyChain | null
   status: XcmTransferStatus
+  submitLabel?: string
 }
 
 export const SubmitButton: React.FC<SubmitButtonProps> = ({
   chain,
   status,
+  submitLabel,
   ...props
 }) => {
   const { t } = useTranslation(["xcm", "common"])
@@ -32,7 +34,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
       case XcmTransferStatus.ApproveAndTransferValid:
         return t("form.submit.approve")
       default:
-        return t("common:transfer")
+        return submitLabel ?? t("common:transfer")
     }
   }
 

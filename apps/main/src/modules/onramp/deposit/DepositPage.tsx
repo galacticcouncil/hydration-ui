@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
@@ -15,6 +16,7 @@ import { useShallow } from "zustand/shallow"
 
 import { PendingDeposit } from "@/modules/onramp/components/PendingDeposit"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
+import { DepositOnchain } from "@/modules/onramp/deposit/onchain/DepositOnchain"
 import { DepositAsset } from "@/modules/onramp/deposit/steps/DepositAsset"
 import { DepositBank } from "@/modules/onramp/deposit/steps/DepositBank"
 import { DepositCexSelect } from "@/modules/onramp/deposit/steps/DepositCexSelect"
@@ -44,12 +46,17 @@ export const DepositPage = () => {
     useShallow(selectPendingDepositsByAccount(account?.address)),
   )
 
+  const isOnchainHoldings = page === OnrampScreen.DepositOnchainHoldings
+
   const showPendingDeposits =
     page === OnrampScreen.MethodSelect && pendingDeposits.length > 0
 
   return (
     <Flex direction="column" align="center">
-      <ModalContainer open>
+      <ModalContainer
+        open
+        contentWidth={isOnchainHoldings ? pxToRem(650) : undefined}
+      >
         {page === OnrampScreen.MethodSelect && (
           <DepositMethodSelect onSelect={paginateTo} />
         )}
@@ -78,6 +85,15 @@ export const DepositPage = () => {
         {page === OnrampScreen.DepositBank && (
           <DepositBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
         )}
+        {(page === OnrampScreen.DepositOnchainHoldings ||
+          page === OnrampScreen.DepositOnchainForm ||
+          page === OnrampScreen.DepositOnchainSubmitted) && (
+          <DepositOnchain
+            page={page}
+            onBack={() => paginateTo(OnrampScreen.MethodSelect)}
+          />
+        )}
+
         {page === OnrampScreen.DepositSuccess && (
           <DepositSuccess onConfirm={reset} />
         )}

@@ -4,7 +4,6 @@ import {
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { ENV } from "@/config/env"
@@ -19,7 +18,6 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp"])
-  const navigate = useNavigate()
 
   return (
     <>
@@ -38,7 +36,7 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           />
           <StepButton
             icon={ArrowRightLeftIcon}
-            onClick={() => navigate({ to: "/cross-chain" })}
+            onClick={() => onSelect(OnrampScreen.DepositOnchainHoldings)}
             title={t("deposit.method.onchain.title")}
             description={t("deposit.method.onchain.description")}
           />

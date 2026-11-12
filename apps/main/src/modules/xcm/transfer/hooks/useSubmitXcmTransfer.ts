@@ -1,5 +1,5 @@
 import { HexString, invariant, isAnyEvmChain } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, useAccountOverride } from "@galacticcouncil/web3-connect"
 import { ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
@@ -52,6 +52,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
   const { account } = useAccount()
+  const accountOverride = useAccountOverride()
   const { papi } = useRpcProvider()
 
   const { addPendingApproval } = useApprovalTrackingStore()
@@ -147,6 +148,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             : undefined
 
         return {
+          signingAccount: accountOverride !== undefined ? account : undefined,
           title: t("form.title"),
           description: t("tx.description", i18nVars),
           invalidateQueries: [
@@ -183,6 +185,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         let transferTxHash: string | null = null
         return createTransaction(
           {
+            signingAccount: accountOverride !== undefined ? account : undefined,
             tx: [
               ...prerequisites.map((prerequisite) => ({
                 tx: prerequisite,

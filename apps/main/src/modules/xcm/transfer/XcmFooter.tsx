@@ -12,9 +12,13 @@ import { XcmLimits } from "@/modules/xcm/transfer/XcmLimits"
 
 type XcmFooterProps = {
   isSubmitting: boolean
+  submitLabel?: string
 }
 
-export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
+export const XcmFooter: React.FC<XcmFooterProps> = ({
+  isSubmitting,
+  submitLabel,
+}) => {
   const { t } = useTranslation()
 
   const {
@@ -97,6 +101,7 @@ export const XcmFooter: React.FC<XcmFooterProps> = ({ isSubmitting }) => {
           isLoading={isLoading || isLoadingCallOrTransfer || isSubmitting}
           disabledVariant="muted"
           chain={srcChain}
+          submitLabel={submitLabel}
         />
       </Flex>
     </Box>
