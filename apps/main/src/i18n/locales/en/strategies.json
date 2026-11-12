@@ -29,6 +29,7 @@
   "cards.multiply.leverage": "{{ value, number(minimumFractionDigits: 1; maximumFractionDigits: 1) }}×",
 
   "multiply.name": "Multiply",
+  "multiply.subtitle": "Leverage your position in a single transaction",
   "multiply.tab.overview": "Overview",
   "multiply.tab.myPositions": "My positions",
   "multiply.select.title": "Select loop",
@@ -126,8 +127,8 @@
   "multiply.risk.medium": "Medium risk",
   "multiply.risk.high": "High risk",
   "multiply.risk.correlated": "Both assets are in the same E-mode category and move together.",
-  "multiply.risk.fall": "{{collateral}} fell up to {{fall, percent}} against {{debt}} in the last 30 days. About {{buffer, percent}} liquidates at max leverage. Positions don't deleverage automatically.",
-  "multiply.risk.fallAt": "{{collateral}} fell up to {{fall, percent}} against {{debt}} in the last 30 days. About {{buffer, percent}} liquidates at {{leverage}} leverage. Positions don't deleverage automatically.",
+  "multiply.risk.fall": "{{collateral}} fell up to {{fall, percent}} against {{debt}} in the last 30 days. A max-leverage position can take a fall of about {{buffer, percent}} before it's liquidated. Positions don't deleverage automatically.",
+  "multiply.risk.fallAt": "{{collateral}} fell up to {{fall, percent}} against {{debt}} in the last 30 days. A {{leverage}} position can take a fall of about {{buffer, percent}} before it's liquidated. Positions don't deleverage automatically.",
   "multiply.risk.noHistory": "Not enough price history, so treated as high risk. Positions don't deleverage automatically.",
   "multiply.custom.cta": "Custom loop",
   "multiply.custom.title": "Custom loop",

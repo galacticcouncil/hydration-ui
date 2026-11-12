@@ -168,6 +168,7 @@ export const EModeForm: FC<Props> = ({ initialCategoryId, onSubmitted }) => {
             selected ? (
               <AssetLogo
                 size="small"
+                collapsed
                 id={selected.assets.map(
                   // a category lists its reserves without their name
                   (a) => resolveDisplay({ ...a, name: a.symbol }).logoId,

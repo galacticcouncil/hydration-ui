@@ -225,7 +225,7 @@
   "navigation.strategiesHollarBonds.title": "HOLLAR Bonds",
   "navigation.strategiesHollarBonds.description": "Lock stablecoins and earn a fixed APR",
   "navigation.strategiesMultiply.title": "Multiply",
-  "navigation.strategiesMultiply.description": "Multiply your yield by looping collateral against borrowed assets",
+  "navigation.strategiesMultiply.description": "Leverage your position by looping borrowed assets back into collateral",
   "navigation.liquidity.title": "Liquidity",
   "navigation.memepad.title": "Memepad",
   "navigation.myLiquidity.title": "My Liquidity",

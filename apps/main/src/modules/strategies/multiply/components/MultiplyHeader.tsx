@@ -15,15 +15,20 @@ export const MultiplyHeader: React.FC = () => {
     <Flex justify="space-between" align="center" gap="s">
       <Flex align="center" gap="base">
         <MultiplyLogo size="large" />
-        <Text
-          font="primary"
-          fs="h6"
-          lh={1}
-          fw={600}
-          color={getToken("text.high")}
-        >
-          {t("multiply.name")}
-        </Text>
+        <Flex direction="column" gap="xs">
+          <Text
+            font="primary"
+            fs="h6"
+            lh={1}
+            fw={600}
+            color={getToken("text.high")}
+          >
+            {t("multiply.name")}
+          </Text>
+          <Text fs="p5" lh={1} color={getToken("text.medium")}>
+            {t("multiply.subtitle")}
+          </Text>
+        </Flex>
       </Flex>
       <StrategyBadge type={StrategyBadgeType.Leverage} />
     </Flex>
