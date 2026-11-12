@@ -20,20 +20,13 @@ import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
 import { applyResetTutorialsParam } from "@/modules/tutorials/utils/resetTutorials"
+import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
 import { routeTree } from "./routeTree.gen"
 
 const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error, query) => {
-      console.error("[RQ]", error, query)
-    },
-  }),
-  mutationCache: new MutationCache({
-    onError: (error, query) => {
-      console.error("[RQ]", error, query)
-    },
-  }),
+  queryCache: new QueryCache({ onError: logQueryError }),
+  mutationCache: new MutationCache({ onError: logMutationError }),
 })
 
 setupPortfolioPersistence(queryClient)

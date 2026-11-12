@@ -6,6 +6,7 @@ import {
 import {
   HbrApiError,
   HbrNetworkError,
+  HbrResponseError,
 } from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   BankErrorKind,
@@ -33,6 +34,8 @@ export const classifySignError = (error: unknown): SignErrorKind => {
     return classifyBankError(error)
   }
   if (error instanceof HbrNetworkError) return "unavailable"
+  // The server's answer could not be read: the wallet DID sign (doctrine 2).
+  if (error instanceof HbrResponseError) return "unknown"
   // The provider's own error object (EthereumSigner.signMessage rethrows it).
   if (getEip1193ErrorCode(error) === EIP1193_USER_REJECTED) return "declined"
   return "walletFailed"

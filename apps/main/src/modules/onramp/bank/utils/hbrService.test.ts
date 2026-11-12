@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import {
+  hbrSessionAccess,
+  liveSessionFor,
+  useHbrSessionStore,
+} from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureService"
@@ -12,13 +16,7 @@ const H160 = "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
 const SIGNATURE = `0x${"11".repeat(65)}`
 
 // The same wiring the app uses (hooks/useHbr.ts), against the real store.
-const session = {
-  getToken: () => useHbrSessionStore.getState().session?.token ?? null,
-  onUnauthorized: (token: string | null) => {
-    if (token) useHbrSessionStore.getState().discardToken(token)
-    else useHbrSessionStore.getState().clear()
-  },
-}
+const session = hbrSessionAccess
 
 const signIn = (token = TOKEN) =>
   useHbrSessionStore
@@ -41,7 +39,10 @@ describe("HBR HTTP client session", () => {
     )
     const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
 
-    const error = await service.getMe().catch((e: unknown) => e)
+    const error = await service
+      .forWallet(H160)
+      .getMe()
+      .catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(HbrApiError)
     expect((error as HbrApiError).status).toBe(401)
@@ -57,7 +58,10 @@ describe("HBR HTTP client session", () => {
     })
     const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
 
-    await service.getMe().catch(() => undefined)
+    await service
+      .forWallet(H160)
+      .getMe()
+      .catch(() => undefined)
 
     expect(useHbrSessionStore.getState().session?.token).toBe(OTHER_TOKEN)
   })
@@ -73,7 +77,7 @@ describe("HBR HTTP client session", () => {
       fetchFn,
     })
 
-    await expect(service.getMe()).resolves.toEqual({
+    await expect(service.forWallet(H160).getMe()).resolves.toEqual({
       h160: H160,
       customer: null,
     })
@@ -88,7 +92,9 @@ describe("HBR HTTP client session", () => {
     const fetchFn = vi.fn()
     const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
 
-    await expect(service.getOnboarding()).rejects.toBeInstanceOf(HbrApiError)
+    await expect(
+      service.forWallet(H160).getOnboarding(),
+    ).rejects.toBeInstanceOf(HbrApiError)
     expect(fetchFn).not.toHaveBeenCalled()
   })
 
@@ -99,7 +105,9 @@ describe("HBR HTTP client session", () => {
     )
     const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
 
-    await expect(service.closeSession()).resolves.toBeUndefined()
+    await expect(
+      service.forWallet(H160).closeSession(),
+    ).resolves.toBeUndefined()
   })
 })
 
@@ -123,20 +131,25 @@ describe("HBR fixture service", () => {
       signature: SIGNATURE,
     })
     useHbrSessionStore.getState().setSession(opened)
-    expect((await service.getMe()).customer).toBeNull()
+    expect((await service.forWallet(H160).getMe()).customer).toBeNull()
 
-    await expect(service.getOnboarding()).rejects.toMatchObject({
-      status: 404,
-      code: "customer_not_found",
-    })
-    await service.createCustomer("business")
-    expect((await service.getOnboarding()).bound).toBe(false)
+    await expect(service.forWallet(H160).getOnboarding()).rejects.toMatchObject(
+      {
+        status: 404,
+        code: "customer_not_found",
+      },
+    )
+    await service.forWallet(H160).createCustomer("business")
+    expect((await service.forWallet(H160).getOnboarding()).bound).toBe(false)
 
-    const bind = await service.createBindChallenge()
-    await service.verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
+    const bind = await service.forWallet(H160).createBindChallenge()
+    await service
+      .forWallet(H160)
+      .verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
 
     const reads = []
-    for (let i = 0; i < 4; i++) reads.push(await service.getOnboarding())
+    for (let i = 0; i < 4; i++)
+      reads.push(await service.forWallet(H160).getOnboarding())
     expect(reads.map((r) => r.status)).toEqual([
       "tos_pending",
       "kyc_under_review",
@@ -162,7 +175,9 @@ describe("HBR fixture service", () => {
     })
 
     signIn(OTHER_TOKEN)
-    await expect(service.getMe()).rejects.toMatchObject({ status: 401 })
+    await expect(service.forWallet(H160).getMe()).rejects.toMatchObject({
+      status: 401,
+    })
     expect(useHbrSessionStore.getState().session).toBeNull()
   })
 
@@ -175,12 +190,45 @@ describe("HBR fixture service", () => {
         signature: SIGNATURE,
       }),
     )
-    await service.createCustomer("individual")
+    await service.forWallet(H160).createCustomer("individual")
     await expect(
-      service.buildRamp({
+      service.forWallet(H160).buildRamp({
         bankAccountId: "00000000-0000-4000-8000-0000000000b1",
         usdcAmount: "25",
       }),
     ).rejects.toMatchObject({ status: 503, code: "ramp_build_unavailable" })
+  })
+})
+
+describe("HBR calls are bound to the session's wallet", () => {
+  const WALLET_B = "0x0000000000000000000000000000000000000b0b"
+
+  it("a session matches its own wallet in any case, never another", () => {
+    signIn()
+    const live = useHbrSessionStore.getState().session
+    expect(liveSessionFor(live, H160.toUpperCase().replace("0X", "0x"))).toBe(
+      live,
+    )
+    expect(liveSessionFor(live, WALLET_B)).toBeNull()
+    expect(liveSessionFor(null, H160)).toBeNull()
+  })
+
+  it("a call made for wallet A under B's session sends nothing and keeps B's session", async () => {
+    useHbrSessionStore.getState().setSession({
+      token: OTHER_TOKEN,
+      h160: WALLET_B,
+      expiresAt: "2026-10-23T00:00:00.000Z",
+    })
+    const fetchFn = vi.fn()
+    const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
+
+    await expect(service.forWallet(H160).getMe()).rejects.toMatchObject({
+      status: 401,
+    })
+    await expect(service.forWallet(H160).getOnboarding()).rejects.toMatchObject(
+      { status: 401 },
+    )
+    expect(fetchFn).not.toHaveBeenCalled()
+    expect(useHbrSessionStore.getState().session?.token).toBe(OTHER_TOKEN)
   })
 })

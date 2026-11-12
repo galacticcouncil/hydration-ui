@@ -47,6 +47,7 @@ import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   HbrService,
   HbrSessionAccess,
+  NO_SESSION,
 } from "@/modules/onramp/bank/utils/hbrService"
 
 const LOGIN_TTL_MS = 10 * 60_000 // DEFAULT_LOGIN_TTL_MS (walletSession.mjs)
@@ -105,11 +106,12 @@ export const createHbrFixtureService = (args: {
     return fresh
   }
 
-  const authed = async () => {
+  const authed = async (expected: string) => {
     await settle()
-    const token = session.getToken()
-    const h160 = token ? sessions.get(token) : undefined
-    if (!token || !h160) {
+    const token = session.getToken(expected.toLowerCase())
+    if (!token) throw new HbrApiError(401, NO_SESSION)
+    const h160 = sessions.get(token)
+    if (h160 !== expected.toLowerCase()) {
       session.onUnauthorized(token)
       throw new HbrApiError(401, "unauthorized", { error: "unauthorized" })
     }
@@ -120,8 +122,8 @@ export const createHbrFixtureService = (args: {
     throw new HbrApiError(status, error, { error, ...extra })
   }
 
-  const withCustomer = async () => {
-    const ctx = await authed()
+  const withCustomer = async (expected: string) => {
+    const ctx = await authed(expected)
     if (!ctx.wallet.customerType) refuse(404, "customer_not_found")
     return ctx
   }
@@ -191,139 +193,145 @@ export const createHbrFixtureService = (args: {
         h160: challenge.h160,
       })
     },
-    closeSession: async () => {
-      await settle()
-      const token = session.getToken()
-      if (token) sessions.delete(token)
-    },
-    getMe: async () => {
-      const { h160, wallet } = await authed()
-      return meResponseSchema.parse({
-        h160,
-        customer: wallet.bound ? { id: FIXTURE_CUSTOMER_ID } : null,
-      })
-    },
-    createCustomer: async (type) => {
-      const { wallet } = await authed()
-      if (!createCustomerRequestSchema.safeParse({ type }).success)
-        return refuse(400, "bad_request")
-      wallet.customerType ??= type
-      return createCustomerResponseSchema.parse({
-        customer: { id: FIXTURE_CUSTOMER_ID, type: wallet.customerType },
-      })
-    },
-    createBindChallenge: async () => {
-      const { h160, wallet } = await authed()
-      if (!wallet.customerType) return refuse(409, "customer_required")
-      if (wallet.bound) return refuse(409, "already_bound")
-      const nonce = randomHex32()
-      const w = challengeWindow()
-      challenges.set(nonce, { h160, kind: "bind", expiresAt: w.expiresAtMs })
-      return bindChallengeResponseSchema.parse({
-        nonce,
-        message: renderFixtureBindMessage({
-          address: h160,
+    forWallet: (forH160) => ({
+      closeSession: async () => {
+        await settle()
+        const token = session.getToken(forH160.toLowerCase())
+        if (token) sessions.delete(token)
+      },
+      getMe: async () => {
+        const { h160, wallet } = await authed(forH160)
+        return meResponseSchema.parse({
+          h160,
+          customer: wallet.bound ? { id: FIXTURE_CUSTOMER_ID } : null,
+        })
+      },
+      createCustomer: async (type) => {
+        const { wallet } = await authed(forH160)
+        if (!createCustomerRequestSchema.safeParse({ type }).success)
+          return refuse(400, "bad_request")
+        wallet.customerType ??= type
+        return createCustomerResponseSchema.parse({
+          customer: { id: FIXTURE_CUSTOMER_ID, type: wallet.customerType },
+        })
+      },
+      createBindChallenge: async () => {
+        const { h160, wallet } = await authed(forH160)
+        if (!wallet.customerType) return refuse(409, "customer_required")
+        if (wallet.bound) return refuse(409, "already_bound")
+        const nonce = randomHex32()
+        const w = challengeWindow()
+        challenges.set(nonce, { h160, kind: "bind", expiresAt: w.expiresAtMs })
+        return bindChallengeResponseSchema.parse({
           nonce,
-          issuedAt: w.issuedAt,
-          expiresAt: w.expiresAt,
-        }),
-      })
-    },
-    verifyBind: async (body) => {
-      const { h160, wallet } = await authed()
-      if (!sessionRequestSchema.safeParse(body).success)
-        return refuse(400, "bad_request")
-      if (!wallet.customerType) return refuse(409, "customer_required")
-      if (wallet.bound) return refuse(409, "already_bound")
-      if (!takeChallenge(body.nonce, "bind", h160))
-        return refuse(422, "bind_refused")
-      wallet.bound = true
-      return bindVerifyResponseSchema.parse({
-        customer: { id: FIXTURE_CUSTOMER_ID },
-        h160,
-        chain: "hydration",
-      })
-    },
-    getOnboarding: async () => {
-      const { wallet } = await withCustomer()
-      const type = wallet.customerType ?? "individual"
-      if (!wallet.bound) {
-        return onboardingResponseSchema.parse(
-          buildFixtureOnboarding({
-            type,
-            bound: false,
-            ...FIXTURE_UNBOUND_ONBOARDING,
+          message: renderFixtureBindMessage({
+            address: h160,
+            nonce,
+            issuedAt: w.issuedAt,
+            expiresAt: w.expiresAt,
           }),
+        })
+      },
+      verifyBind: async (body) => {
+        const { h160, wallet } = await authed(forH160)
+        if (!sessionRequestSchema.safeParse(body).success)
+          return refuse(400, "bad_request")
+        if (!wallet.customerType) return refuse(409, "customer_required")
+        if (wallet.bound) return refuse(409, "already_bound")
+        if (!takeChallenge(body.nonce, "bind", h160))
+          return refuse(422, "bind_refused")
+        wallet.bound = true
+        return bindVerifyResponseSchema.parse({
+          customer: { id: FIXTURE_CUSTOMER_ID },
+          h160,
+          chain: "hydration",
+        })
+      },
+      getOnboarding: async () => {
+        const { wallet } = await withCustomer(forH160)
+        const type = wallet.customerType ?? "individual"
+        if (!wallet.bound) {
+          return onboardingResponseSchema.parse(
+            buildFixtureOnboarding({
+              type,
+              bound: false,
+              ...FIXTURE_UNBOUND_ONBOARDING,
+            }),
+          )
+        }
+        const [first, second, last] = FIXTURE_ONBOARDING_SEQUENCE
+        const step = [first, second][wallet.onboardingReads] ?? last
+        wallet.onboardingReads += 1
+        return onboardingResponseSchema.parse(
+          buildFixtureOnboarding({ type, bound: true, ...step }),
         )
-      }
-      const [first, second, last] = FIXTURE_ONBOARDING_SEQUENCE
-      const step = [first, second][wallet.onboardingReads] ?? last
-      wallet.onboardingReads += 1
-      return onboardingResponseSchema.parse(
-        buildFixtureOnboarding({ type, bound: true, ...step }),
-      )
-    },
-    createBankAccount: async (body) => {
-      await withCustomer()
-      if (!createBankAccountRequestSchema.safeParse(body).success)
-        return refuse(400, "bad_request")
-      return createBankAccountResponseSchema.parse(FIXTURE_CREATE_BANK_ACCOUNT)
-    },
-    listBankAccounts: async () => {
-      await withCustomer()
-      return listBankAccountsResponseSchema.parse(FIXTURE_BANK_ACCOUNTS)
-    },
-    deleteBankAccount: async () => {
-      await withCustomer()
-      return deleteBankAccountResponseSchema.parse(FIXTURE_DELETE_BANK_ACCOUNT)
-    },
-    quoteRamp: async (body) => {
-      await withCustomer()
-      if (!rampRequestSchema.safeParse(body).success)
-        return refuse(400, "bad_request", { nothingBroadcast: true })
-      return rampQuoteResponseSchema.parse(FIXTURE_QUOTE)
-    },
-    buildRamp: async () => {
-      await withCustomer()
-      return refuse(503, FIXTURE_RAMP_BUILD_REFUSAL.error, {
-        nothingBroadcast: FIXTURE_RAMP_BUILD_REFUSAL.nothingBroadcast,
-      })
-    },
-    reportRamp: async (_id, txHash) => {
-      await withCustomer()
-      if (!rampReportRequestSchema.safeParse({ txHash }).success)
-        return refuse(400, "invalid_tx_hash")
-      return refuse(404, "ramp_not_found")
-    },
-    listRamps: async () => {
-      await withCustomer()
-      return listRampsResponseSchema.parse(FIXTURE_RAMPS)
-    },
-    getRamp: async (id) => {
-      await withCustomer()
-      if (id !== FIXTURE_RAMP_BUILT.id) return refuse(404, "ramp_not_found")
-      return rampResponseSchema.parse({ ramp: FIXTURE_RAMP_BUILT })
-    },
-    requestOnrampAccount: async (currency) => {
-      await withCustomer()
-      if (!onrampAccountRequestSchema.safeParse({ currency }).success)
-        return refuse(400, "bad_request")
-      const account = FIXTURE_ONRAMP_ACCOUNTS.accounts.find(
-        (a) => a.currency === currency,
-      )
-      return onrampAccountResponseSchema.parse({ account })
-    },
-    listOnrampAccounts: async () => {
-      await withCustomer()
-      return onrampAccountsResponseSchema.parse(FIXTURE_ONRAMP_ACCOUNTS)
-    },
-    retryOnrampAccount: async () => {
-      await withCustomer()
-      return refuse(409, "retry_not_allowed", { reason: "not_held" })
-    },
-    listDeposits: async () => {
-      await withCustomer()
-      return depositsResponseSchema.parse(FIXTURE_DEPOSITS)
-    },
+      },
+      createBankAccount: async (body) => {
+        await withCustomer(forH160)
+        if (!createBankAccountRequestSchema.safeParse(body).success)
+          return refuse(400, "bad_request")
+        return createBankAccountResponseSchema.parse(
+          FIXTURE_CREATE_BANK_ACCOUNT,
+        )
+      },
+      listBankAccounts: async () => {
+        await withCustomer(forH160)
+        return listBankAccountsResponseSchema.parse(FIXTURE_BANK_ACCOUNTS)
+      },
+      deleteBankAccount: async () => {
+        await withCustomer(forH160)
+        return deleteBankAccountResponseSchema.parse(
+          FIXTURE_DELETE_BANK_ACCOUNT,
+        )
+      },
+      quoteRamp: async (body) => {
+        await withCustomer(forH160)
+        if (!rampRequestSchema.safeParse(body).success)
+          return refuse(400, "bad_request", { nothingBroadcast: true })
+        return rampQuoteResponseSchema.parse(FIXTURE_QUOTE)
+      },
+      buildRamp: async () => {
+        await withCustomer(forH160)
+        return refuse(503, FIXTURE_RAMP_BUILD_REFUSAL.error, {
+          nothingBroadcast: FIXTURE_RAMP_BUILD_REFUSAL.nothingBroadcast,
+        })
+      },
+      reportRamp: async (_id, txHash) => {
+        await withCustomer(forH160)
+        if (!rampReportRequestSchema.safeParse({ txHash }).success)
+          return refuse(400, "invalid_tx_hash")
+        return refuse(404, "ramp_not_found")
+      },
+      listRamps: async () => {
+        await withCustomer(forH160)
+        return listRampsResponseSchema.parse(FIXTURE_RAMPS)
+      },
+      getRamp: async (id) => {
+        await withCustomer(forH160)
+        if (id !== FIXTURE_RAMP_BUILT.id) return refuse(404, "ramp_not_found")
+        return rampResponseSchema.parse({ ramp: FIXTURE_RAMP_BUILT })
+      },
+      requestOnrampAccount: async (currency) => {
+        await withCustomer(forH160)
+        if (!onrampAccountRequestSchema.safeParse({ currency }).success)
+          return refuse(400, "bad_request")
+        const account = FIXTURE_ONRAMP_ACCOUNTS.accounts.find(
+          (a) => a.currency === currency,
+        )
+        return onrampAccountResponseSchema.parse({ account })
+      },
+      listOnrampAccounts: async () => {
+        await withCustomer(forH160)
+        return onrampAccountsResponseSchema.parse(FIXTURE_ONRAMP_ACCOUNTS)
+      },
+      retryOnrampAccount: async () => {
+        await withCustomer(forH160)
+        return refuse(409, "retry_not_allowed", { reason: "not_held" })
+      },
+      listDeposits: async () => {
+        await withCustomer(forH160)
+        return depositsResponseSchema.parse(FIXTURE_DEPOSITS)
+      },
+    }),
   }
 }

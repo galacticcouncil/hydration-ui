@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   HbrApiError,
   HbrNetworkError,
+  HbrResponseError,
 } from "@/modules/onramp/bank/utils/hbrErrors"
 import { classifySignError } from "@/modules/onramp/bank/utils/signing"
 
@@ -46,5 +47,9 @@ describe("sign error classification", () => {
       "rateLimited",
     )
     expect(classifySignError(new HbrNetworkError())).toBe("unavailable")
+  })
+
+  it("an unreadable server answer never reads as the wallet not signing", () => {
+    expect(classifySignError(new HbrResponseError(200))).toBe("unknown")
   })
 })

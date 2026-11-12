@@ -28,3 +28,21 @@ export const useHbrSessionStore = create<HbrSessionStore>((set, get) => ({
     if (get().session?.token === token) set({ session: null })
   },
 }))
+
+/** The session when it belongs to `h160` (any case), else null. */
+export const liveSessionFor = (
+  session: HbrSession | null,
+  h160: string,
+): HbrSession | null =>
+  session !== null && session.h160 === h160.toLowerCase() ? session : null
+
+/**
+ * The service's view of the store: a token only for the wallet a call was
+ * made for, so a call started under wallet A never goes out with B's token.
+ */
+export const hbrSessionAccess = {
+  getToken: (h160: string) =>
+    liveSessionFor(useHbrSessionStore.getState().session, h160)?.token ?? null,
+  onUnauthorized: (token: string) =>
+    useHbrSessionStore.getState().discardToken(token),
+}

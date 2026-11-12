@@ -18,6 +18,9 @@ type BankSessionProps = {
 const BankSession: FC<BankSessionProps> = ({ h160, signer }) => {
   const session = useHbrSession(h160)
   if (!session) return <BankSignIn h160={h160} signer={signer} />
+  // `h160` is the connected wallet. Every query below asks for this wallet's
+  // token (hbrSessionAccess.getToken), so even a session of another wallet
+  // that slipped past the check above sends nothing and shows nothing.
   return <BankOnboarding h160={h160} signer={signer} />
 }
 

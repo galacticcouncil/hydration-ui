@@ -26,6 +26,7 @@ import {
 } from "@/modules/onramp/bank/utils/onboarding"
 
 type BankOnboardingProps = {
+  /** The connected wallet: every query key and token below is bound to it. */
   h160: string
   signer: MessageSigner
 }
@@ -35,7 +36,7 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({ h160, signer }) => {
   const { t } = useTranslation(["onramp"])
   const me = useHbrMe(h160)
   const onboarding = useHbrOnboarding(h160)
-  const signOut = useHbrSignOut()
+  const signOut = useHbrSignOut(h160)
   const clear = useHbrSessionStore((state) => state.clear)
 
   // The server's wallet of this session must be this wallet.

@@ -31,8 +31,11 @@ const STAGE_ICONS: Record<StageView, FC> = {
   unknown: CircleAlertIcon,
 }
 
-// Bearer links (API doc 2 step 5): opened for the user only, never logged,
-// stored or put in a URL of ours.
+// Bearer links (API doc 2 step 5): opened for the user only, never stored or
+// put in a URL of ours. Our code logs them nowhere: the onboarding query is
+// marked sensitive, so the app's global react-query error log prints its key
+// and error only (utils/queryErrorLog.ts). The query is dropped (gcTime 0) once
+// no screen shows it; browser extensions reading the page are out of reach.
 const openHostedLink = (link: HostedLink) => {
   if (link.url) window.open(link.url, "_blank", "noopener,noreferrer")
 }
