@@ -101,6 +101,19 @@ describe("bank account create refusals", () => {
     })
   })
 
+  it("only a 503 bridge_unavailable says 'not sent'; a 502 claims nothing", () => {
+    expect(
+      classifyCreateBankAccountError(
+        new HbrApiError(503, "bridge_unavailable"),
+      ),
+    ).toEqual({ kind: "notSent" })
+    expect(
+      classifyCreateBankAccountError(
+        new HbrApiError(502, "bridge_unavailable"),
+      ),
+    ).toEqual({ kind: "unavailable" })
+  })
+
   it("the server's fixed detail is shown as sent", () => {
     const detail =
       "This bank account was removed. Add a different account or contact support."

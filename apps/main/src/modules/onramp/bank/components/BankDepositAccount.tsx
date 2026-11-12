@@ -14,6 +14,7 @@ import type {
   OnrampCurrency,
 } from "@/modules/onramp/bank/config/schemas"
 import {
+  useHbrActionInFlight,
   useHbrRequestOnrampAccount,
   useHbrRetryOnrampAccount,
 } from "@/modules/onramp/bank/hooks/useHbr"
@@ -65,6 +66,17 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
   const errorText = useErrorText()
   const request = useHbrRequestOnrampAccount(h160)
   const retry = useHbrRetryOnrampAccount(h160)
+  // Per currency, from the mutation cache: survives the tab remount.
+  const requestInFlight = useHbrActionInFlight(
+    h160,
+    "requestOnrampAccount",
+    currency,
+  )
+  const retryInFlight = useHbrActionInFlight(
+    h160,
+    "retryOnrampAccount",
+    currency,
+  )
   const view = findOnrampAccount(query.data, currency)
   const visible = getVisibleInstructions(query, currency)
 
@@ -76,17 +88,27 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
           description={t(`bank.error.${classifyBankError(query.error)}`)}
         />
       ) : null}
-      {view && (
-        <Stack gap="s">
-          <Text fs="p3" fw={500}>
-            {t(`bank.deposit.status.${view.status}.title`, {
-              currency: t(`bank.deposit.currency.${currency}`),
-            })}
-          </Text>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t(`bank.deposit.status.${view.status}.description`)}
-          </Text>
-        </Stack>
+      {/* After a failed read the last status is not restated (rule 5: its
+          instructions are hidden too); the title says the read failed. */}
+      {query.error ? (
+        <Text fs="p3" fw={500}>
+          {t("bank.deposit.readFailed", {
+            currency: t(`bank.deposit.currency.${currency}`),
+          })}
+        </Text>
+      ) : (
+        view && (
+          <Stack gap="s">
+            <Text fs="p3" fw={500}>
+              {t(`bank.deposit.status.${view.status}.title`, {
+                currency: t(`bank.deposit.currency.${currency}`),
+              })}
+            </Text>
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t(`bank.deposit.status.${view.status}.description`)}
+            </Text>
+          </Stack>
+        )
       )}
       {visible && (
         <BankDepositInstructions
@@ -98,9 +120,11 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
       {canRequestOnrampAccount(view) && (
         <LoadingButton
           size="large"
-          isLoading={request.isPending}
-          disabled={request.isPending}
-          onClick={() => request.mutate(currency)}
+          isLoading={requestInFlight.pending}
+          disabled={requestInFlight.pending}
+          onClick={() => {
+            if (requestInFlight.isFree()) request.mutate(currency)
+          }}
         >
           {t("bank.deposit.request", {
             currency: t(`bank.deposit.currency.${currency}`),
@@ -117,9 +141,11 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
         <LoadingButton
           size="large"
           variant="secondary"
-          isLoading={retry.isPending}
-          disabled={retry.isPending}
-          onClick={() => retry.mutate(currency)}
+          isLoading={retryInFlight.pending}
+          disabled={retryInFlight.pending}
+          onClick={() => {
+            if (retryInFlight.isFree()) retry.mutate(currency)
+          }}
         >
           {t("bank.deposit.retry")}
         </LoadingButton>

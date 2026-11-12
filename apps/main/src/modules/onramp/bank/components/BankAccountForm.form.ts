@@ -10,16 +10,30 @@ export type BankRail = "ach" | "sepa"
 const text = (v: string) => v.trim()
 const compact = (v: string) => v.replace(/\s+/g, "").toUpperCase()
 
-// The field rules of `POST /v1/bank-accounts` (API doc 4: USD `rail: "ach"`,
-// EUR `rail: "sepa"`). The server validates again; nothing else is accepted.
+// The server's own field rules, copied from hydration-ramp
+// server/routes/bankAccountRoutes.mjs:371-389 (B1: `text(max)`, ADDRESS_FIELDS,
+// IBAN, BODY_FIELDS) and server/lib/bridge/ibanCountryAlpha3.mjs:16-53 (the
+// SEPA IBAN countries). The form refuses what the server would refuse with 400.
+// eslint-disable-next-line no-control-regex -- the server's own control-character rule
+const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/
 const RULES = {
-  accountNumber: /^\d{4,17}$/,
-  routingNumber: /^\d{9}$/,
+  accountNumber: /^[0-9]{4,17}$/,
+  routingNumber: /^[0-9]{9}$/,
   state: /^[A-Z]{2}$/,
   country: /^[A-Z]{3}$/,
-  bic: /^[A-Z0-9]{8}([A-Z0-9]{3})?$/,
-  iban: /^[A-Z]{2}\d{2}[A-Z0-9]{8,30}$/,
+  bic: /^[A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?$/,
+  iban: /^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/,
 }
+export const SEPA_IBAN_COUNTRIES: ReadonlySet<string> = new Set(
+  "AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO CH GB MC SM AD VA".split(
+    " ",
+  ),
+)
+const MAX = { bankName: 100, street: 100, city: 64, postalCode: 16 }
+
+/** The server's `text(max)`, after our trim: 1..max characters, no control character. */
+const isText = (v: string, max: number) =>
+  v.length >= 1 && v.length <= max && !CONTROL.test(v)
 
 export const bankAccountFormSchema = z
   .object({
@@ -41,7 +55,7 @@ export const bankAccountFormSchema = z
     const fail = (
       path: string,
       key:
-        | "required"
+        | "text"
         | "country"
         | "accountNumber"
         | "routingNumber"
@@ -54,20 +68,27 @@ export const bankAccountFormSchema = z
         path: [path],
         message: i18n.t(`onramp:bank.accounts.form.error.${key}`),
       })
-    if (!text(v.streetLine1)) fail("streetLine1", "required")
-    if (!text(v.city)) fail("city", "required")
-    if (!text(v.postalCode)) fail("postalCode", "required")
+    const streetLine2 = text(v.streetLine2)
+    if (!isText(text(v.streetLine1), MAX.street)) fail("streetLine1", "text")
+    if (streetLine2 && !isText(streetLine2, MAX.street))
+      fail("streetLine2", "text")
+    if (!isText(text(v.city), MAX.city)) fail("city", "text")
+    if (!isText(text(v.postalCode), MAX.postalCode)) fail("postalCode", "text")
     if (!RULES.country.test(compact(v.country))) fail("country", "country")
+    const bankName = text(v.bankName)
     if (v.rail === "ach") {
-      if (!text(v.bankName)) fail("bankName", "required")
+      if (!isText(bankName, MAX.bankName)) fail("bankName", "text")
       if (!RULES.accountNumber.test(text(v.accountNumber)))
         fail("accountNumber", "accountNumber")
       if (!RULES.routingNumber.test(text(v.routingNumber)))
         fail("routingNumber", "routingNumber")
       if (!RULES.state.test(compact(v.state))) fail("state", "state")
     } else {
-      if (!RULES.iban.test(compact(v.iban))) fail("iban", "iban")
+      const iban = compact(v.iban)
+      if (!RULES.iban.test(iban) || !SEPA_IBAN_COUNTRIES.has(iban.slice(0, 2)))
+        fail("iban", "iban")
       if (!RULES.bic.test(compact(v.bic))) fail("bic", "bic")
+      if (bankName && !isText(bankName, MAX.bankName)) fail("bankName", "text")
     }
   })
 

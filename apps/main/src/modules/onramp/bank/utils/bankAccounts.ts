@@ -95,9 +95,12 @@ export const classifyCreateBankAccountError = (
   switch (error.code) {
     case "outcome_unknown":
       return { kind: "uncertain" }
+    // Rule 10: only the 503 states "not sent"; a 502 claims nothing.
     case "bridge_unavailable":
     case "forwarder_unavailable":
-      return { kind: "notSent" }
+      return error.status === 503
+        ? { kind: "notSent" }
+        : { kind: classifyBankError(error) }
     case "rail_unavailable":
       return { kind: "railUnavailable", gate: body?.gate ?? null }
     case "bank_account_exists":

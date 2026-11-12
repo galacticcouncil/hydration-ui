@@ -12,11 +12,15 @@ import {
   classifyBankError,
 } from "@/modules/onramp/bank/utils/onboarding"
 
+/** The one view of `currency`; none, or more than one (malformed), reads null: fail closed. */
 export const findOnrampAccount = (
   data: OnrampAccountsResponse | undefined,
   currency: OnrampCurrency,
-): OnrampAccountView | null =>
-  data?.accounts.find((account) => account.currency === currency) ?? null
+): OnrampAccountView | null => {
+  const views =
+    data?.accounts.filter((account) => account.currency === currency) ?? []
+  return views.length === 1 ? (views[0] ?? null) : null
+}
 
 /**
  * Deposit instructions to show, or null (API doc rule 5): only from the
@@ -95,11 +99,17 @@ export const formatUsdcBaseUnits = (value: string): string | null => {
 type DepositEntry = DepositsResponse["deposits"][number]
 
 /**
- * Rule 17: a EUR deposit shows USDC only, so Bridge's EUR `amount` is not
- * shown; a USD deposit shows the USD amount Bridge received.
+ * The bank amount line of a deposit, or null. Rule 17: a EUR deposit shows
+ * USDC only, so Bridge's EUR `amount` is never shown. A USD amount says
+ * "received by Bridge" only when Bridge's own `receivedAt` is set; otherwise
+ * (for example `funds_scheduled`, in transit) it is a neutral transfer amount.
  */
-export const getDepositSentAmount = (entry: DepositEntry) =>
-  entry.currency === "usd" ? entry.amount : null
+export const getDepositAmountLine = (
+  entry: DepositEntry,
+): { amount: string; received: boolean } | null =>
+  entry.currency === "usd"
+    ? { amount: entry.amount, received: entry.receivedAt !== null }
+    : null
 
 // The detail codes of API doc 4 (GET /v1/onramp/deposits); a code token, not copy.
 export const DEPOSIT_DETAIL_CODES = [

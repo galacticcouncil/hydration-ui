@@ -13,8 +13,8 @@ import {
   canRequestOnrampAccount,
   canRetryOnrampAccount,
   formatUsdcBaseUnits,
+  getDepositAmountLine,
   getDepositDetailKey,
-  getDepositSentAmount,
   getVisibleInstructions,
 } from "@/modules/onramp/bank/utils/onramp"
 
@@ -68,6 +68,13 @@ describe("deposit instructions visibility (rule 5)", () => {
     ).toBeNull()
   })
 
+  it("two views of one currency (malformed) show nothing", () => {
+    const ready = read(FIXTURE_ONRAMP_VIEWS.ready("usd"))
+    const usd = ready.accounts[0]
+    const data = { accounts: usd ? [usd, usd] : [] }
+    expect(getVisibleInstructions({ data, error: null }, "usd")).toBeNull()
+  })
+
   it("never shows one currency's details for the other", () => {
     expect(
       getVisibleInstructions(
@@ -119,8 +126,20 @@ describe("deposit history", () => {
     const { deposits } = depositsResponseSchema.parse(FIXTURE_DEPOSIT_HISTORY)
     const eur = deposits.find((d) => d.currency === "eur")
     const usd = deposits.find((d) => d.currency === "usd")
-    expect(eur && getDepositSentAmount(eur)).toBeNull()
-    expect(usd && getDepositSentAmount(usd)).toBe(usd?.amount)
+    expect(eur && getDepositAmountLine(eur)).toBeNull()
+    expect(usd && getDepositAmountLine(usd)?.amount).toBe(usd?.amount)
+  })
+
+  it("'received by Bridge' only with Bridge's receivedAt (fixture f5, funds_scheduled)", () => {
+    const { deposits } = depositsResponseSchema.parse(FIXTURE_DEPOSIT_HISTORY)
+    const f5 = deposits.find((d) => d.detail === "funds_scheduled")
+    const f4 = deposits.find((d) => d.status === "received_by_bridge")
+    expect(f5?.receivedAt).toBeNull()
+    expect(f5 && getDepositAmountLine(f5)).toEqual({
+      amount: "20.00",
+      received: false,
+    })
+    expect(f4 && getDepositAmountLine(f4)?.received).toBe(true)
   })
 
   it("an unknown detail code gets the generic copy", () => {

@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next"
 import type { DepositsResponse } from "@/modules/onramp/bank/config/schemas"
 import {
   formatUsdcBaseUnits,
+  getDepositAmountLine,
   getDepositDetailKey,
-  getDepositSentAmount,
 } from "@/modules/onramp/bank/utils/onramp"
 
 type Entry =
@@ -28,7 +28,7 @@ const usdc = (value: string) => formatUsdcBaseUnits(value) ?? "-"
 export const BankDepositEntry: FC<BankDepositEntryProps> = ({ entry }) => {
   const { t } = useTranslation(["onramp"])
   const isDeposit = "id" in entry
-  const sent = isDeposit ? getDepositSentAmount(entry) : null
+  const amountLine = isDeposit ? getDepositAmountLine(entry) : null
   const detailKey = getDepositDetailKey(entry.detail)
   const { progress } = entry
 
@@ -48,9 +48,11 @@ export const BankDepositEntry: FC<BankDepositEntryProps> = ({ entry }) => {
             : t("bank.history.unattributedDate")}
         </Text>
       </Flex>
-      {sent && (
+      {amountLine && (
         <Text fs="p5" color={getToken("text.medium")}>
-          {t("bank.history.sentUsd", { amount: sent })}
+          {amountLine.received
+            ? t("bank.history.receivedUsd", { amount: amountLine.amount })
+            : t("bank.history.transferUsd", { amount: amountLine.amount })}
         </Text>
       )}
       <Text fs="p5" color={getToken("text.medium")}>
