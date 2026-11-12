@@ -20,6 +20,7 @@ import {
   http,
   parseSignature,
   PublicClient,
+  stringToHex,
   TransactionReceipt,
   WalletClient,
 } from "viem"
@@ -90,6 +91,20 @@ export class EthereumSigner {
       return `${err.name}: ${err.details || err.shortMessage}`
     if (err instanceof Error) return err.message
     return "Unknown error"
+  }
+
+  /**
+   * EIP-191 `personal_sign` of `message` exactly as given: its UTF-8 bytes,
+   * hex-encoded so no wallet reads it as hex or trims it. Calls the provider
+   * directly and rethrows its own error untouched, so the caller can read the
+   * EIP-1193 `code` (4001 = the user rejected) with `getEip1193ErrorCode`.
+   */
+  async signMessage(message: string): Promise<Hex> {
+    const signature = await this.provider.request({
+      method: "personal_sign",
+      params: [stringToHex(message), this.address as Address],
+    })
+    return signature as Hex
   }
 
   async getGas(
