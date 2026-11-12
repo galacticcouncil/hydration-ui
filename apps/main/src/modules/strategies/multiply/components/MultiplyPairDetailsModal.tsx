@@ -1,5 +1,6 @@
 import { type ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
+  Amount,
   Flex,
   Grid,
   Modal,
@@ -7,6 +8,7 @@ import {
   ModalContentDivider,
   ModalHeader,
   Paper,
+  Separator,
   Stack,
   Summary,
   Text,
@@ -169,13 +171,22 @@ const PairDetails: React.FC<{
         })
       : null
 
-  const breakEven =
-    borrowApy !== null && maxLeverage > 1
-      ? ((maxLeverage - 1) / maxLeverage) * borrowApy
-      : null
-
   const compact = (value: number | string, symbol?: string) =>
     t("common:currency.compact", { value, symbol })
+  // null means the reserve sets no cap
+  const withUsd = (value: number | null, symbol: string, priceUsd: number) => (
+    <Amount
+      value={
+        value === null
+          ? t("multiply.pairDetails.noLimit")
+          : compact(Math.max(0, value), symbol)
+      }
+      displayValue={
+        value === null ? undefined : compact(Math.max(0, value) * priceUsd)
+      }
+      sx={{ textAlign: "right" }}
+    />
+  )
 
   return (
     <Stack gap="m">
@@ -183,6 +194,67 @@ const PairDetails: React.FC<{
         <Text fs="p5" color={getToken("text.medium")}>
           {t("multiply.pairDetails.howItWorksText", { collateral, debt })}
         </Text>
+      </Section>
+      <Section title={t("multiply.pairDetails.capacity")}>
+        <Summary
+          mb="-base"
+          separator={<ModalContentDivider />}
+          rows={[
+            {
+              label: t("multiply.pairDetails.maxDeposit"),
+              tooltip: t("multiply.pairDetails.maxDepositTooltip", {
+                leverage: leverageLabel(maxLeverage),
+              }),
+              content: withUsd(maxDeposit, collateral, collateralPriceUsd),
+            },
+            {
+              label: t("multiply.pairDetails.supplyRoom", { collateral }),
+              content: withUsd(supplyRoom, collateral, collateralPriceUsd),
+            },
+            {
+              label: t("multiply.pairDetails.borrowRoom", { debt }),
+              content: withUsd(debtRoom, debt, debtPriceUsd),
+            },
+            ...(collateralReserve.isIsolated
+              ? [
+                  {
+                    label: t("multiply.pairDetails.ceilingRoom"),
+                    tooltip: t("multiply.pairDetails.ceilingRoomTooltip", {
+                      collateral,
+                    }),
+                    content: (
+                      <Amount
+                        value={t("multiply.pairDetails.ofTotal", {
+                          value: compact(
+                            collateralReserve.availableDebtCeilingUsd,
+                          ),
+                          total: compact(collateralReserve.debtCeilingUsd),
+                        })}
+                        sx={{ textAlign: "right" }}
+                      />
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </Section>
+      <Section title={t("multiply.pairDetails.yield")}>
+        <Grid columnTemplate={["1fr", "1fr auto 1fr"]} gap="xl">
+          <RateCard
+            assetId={pair.collateralAssetId}
+            rate={resolveApy(collateralReserve).supply}
+            side="supply"
+            fallback={supplyApy}
+          />
+          <Separator orientation={["horizontal", "vertical"]} />
+          <RateCard
+            assetId={pair.debtAssetId}
+            rate={resolveApy(debtReserve).borrow}
+            side="borrow"
+            fallback={borrowApy}
+          />
+        </Grid>
       </Section>
       <Section
         title={t("multiply.pairDetails.risk")}
@@ -335,84 +407,6 @@ const PairDetails: React.FC<{
         />
       </Section>
 
-      <Section title={t("multiply.pairDetails.yield")}>
-        <Grid columnTemplate={["1fr", "1fr 1fr"]} gap="m">
-          <RateCard
-            rate={resolveApy(collateralReserve).supply}
-            side="supply"
-            fallback={supplyApy}
-          />
-          <RateCard
-            rate={resolveApy(debtReserve).borrow}
-            side="borrow"
-            fallback={borrowApy}
-          />
-        </Grid>
-        {breakEven !== null && (
-          <Summary
-            mb="-base"
-            separator={<ModalContentDivider />}
-            rows={[
-              {
-                label: t("multiply.pairDetails.breakEven"),
-                tooltip: t("multiply.pairDetails.breakEvenTooltip", {
-                  collateral,
-                  leverage: leverageLabel(maxLeverage),
-                }),
-                content: percent(breakEven),
-              },
-            ]}
-          />
-        )}
-      </Section>
-
-      <Section title={t("multiply.pairDetails.capacity")}>
-        <Summary
-          mb="-base"
-          separator={<ModalContentDivider />}
-          rows={[
-            {
-              label: t("multiply.pairDetails.maxDeposit"),
-              tooltip: t("multiply.pairDetails.maxDepositTooltip", {
-                leverage: leverageLabel(maxLeverage),
-              }),
-              content:
-                maxDeposit === null
-                  ? t("multiply.pairDetails.noLimit")
-                  : compact(maxDeposit, collateral),
-            },
-            {
-              label: t("multiply.pairDetails.supplyRoom", { collateral }),
-              content:
-                supplyRoom === null
-                  ? t("multiply.pairDetails.noLimit")
-                  : compact(Math.max(0, supplyRoom), collateral),
-            },
-            {
-              label: t("multiply.pairDetails.borrowRoom", { debt }),
-              content:
-                debtRoom === null
-                  ? t("multiply.pairDetails.noLimit")
-                  : compact(Math.max(0, debtRoom), debt),
-            },
-            ...(collateralReserve.isIsolated
-              ? [
-                  {
-                    label: t("multiply.pairDetails.ceilingRoom"),
-                    tooltip: t("multiply.pairDetails.ceilingRoomTooltip", {
-                      collateral,
-                    }),
-                    content: t("multiply.pairDetails.ofTotal", {
-                      value: compact(collateralReserve.availableDebtCeilingUsd),
-                      total: compact(collateralReserve.debtCeilingUsd),
-                    }),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </Section>
-
       <Section title={t("multiply.pairDetails.contracts")}>
         <Summary
           mb="-base"
@@ -464,13 +458,21 @@ const Section: React.FC<{
 )
 
 const RateCard: React.FC<{
+  assetId: string
   rate: ApyRate | undefined
   side: "supply" | "borrow"
   fallback: number | null
-}> = ({ rate, side, fallback }) => {
+}> = ({ assetId, rate, side, fallback }) => {
   const { t } = useTranslation()
+  const asset = useResolveAssetDisplay()(assetId)
   return (
-    <Paper p="m" shadow={false} bg="dim">
+    <Stack gap="s" justify="flex-start">
+      <Flex align="center" gap="s">
+        <AssetLogo id={asset.logoId} size="small" />
+        <Text fs="p5" fw={500}>
+          {asset.symbol}
+        </Text>
+      </Flex>
       {rate?.status === "known" ? (
         <ApyBreakdown
           parts={rate.parts}
@@ -488,7 +490,7 @@ const RateCard: React.FC<{
           </Text>
         </Stack>
       )}
-    </Paper>
+    </Stack>
   )
 }
 

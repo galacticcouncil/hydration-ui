@@ -6,7 +6,7 @@ import {
   StorageValue,
 } from "zustand/middleware"
 
-const DB_VERSION = 3
+const DB_VERSION = 4
 const DB_NAME = "hydration-db"
 const KEY_PATH = "key" as const
 
@@ -15,6 +15,7 @@ export enum IndexedDBStores {
   PortfolioBalances = "portfolio-balances",
   AccountBalances = "account-balances",
   ExternalApy = "external-apy",
+  RiskSeries = "risk-series",
 }
 
 export type IndexedDBConfig = {

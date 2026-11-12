@@ -167,8 +167,6 @@
   "multiply.pairDetails.minHf": "Target health factor",
   "multiply.pairDetails.minHfTooltip": "The lowest health factor the loop builds down to. It caps the max leverage.",
   "multiply.pairDetails.yield": "Yield",
-  "multiply.pairDetails.breakEven": "Break-even supply APY",
-  "multiply.pairDetails.breakEvenTooltip": "At {{leverage}}, the loop earns more than it pays while {{collateral}} yields above this rate.",
   "multiply.pairDetails.capacity": "Capacity",
   "multiply.pairDetails.maxDeposit": "Max deposit",
   "multiply.pairDetails.maxDepositTooltip": "The largest deposit the market can take at {{leverage}} right now, given the caps below.",
