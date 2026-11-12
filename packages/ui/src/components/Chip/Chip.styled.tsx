@@ -17,10 +17,15 @@ export type ChipVariant =
   | "amber"
   | "lime"
   | "green"
+  | "teal"
   | "cyan"
   | "blue"
   | "purple"
   | "pink"
+  | "indigo"
+  | "violet"
+  | "stone"
+  | "slate"
 
 export type ChipSize = "extra-small" | "small" | "medium" | "large"
 export type SChipProps = {
@@ -34,33 +39,59 @@ const variantStyles = (color: string, bg: string) => css`
   color: ${color};
 `
 
-const variants = createVariants(({ buttons, accents, tags: { soft } }) => ({
-  primary: variantStyles(
-    buttons.primary.high.onButton,
-    buttons.primary.high.rest,
-  ),
-  secondary: variantStyles(
-    buttons.primary.medium.onButton,
-    buttons.primary.medium.rest,
-  ),
-  tertiary: variantStyles(
-    buttons.primary.low.onButton,
-    buttons.primary.low.rest,
-  ),
-  info: variantStyles(accents.info.onPrimary, accents.info.primary),
-  success: variantStyles(accents.success.onEmphasis, accents.success.emphasis),
-  warning: variantStyles(accents.alertAlt.onPrimary, accents.alertAlt.primary),
-  danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
-  red: variantStyles(soft.red.foreground, soft.red.background),
-  orange: variantStyles(soft.orange.foreground, soft.orange.background),
-  amber: variantStyles(soft.amber.foreground, soft.amber.background),
-  lime: variantStyles(soft.lime.foreground, soft.lime.background),
-  green: variantStyles(soft.green.foreground, soft.green.background),
-  cyan: variantStyles(soft.cyan.foreground, soft.cyan.background),
-  blue: variantStyles(soft.blue.foreground, soft.blue.background),
-  purple: variantStyles(soft.purple.foreground, soft.purple.background),
-  pink: variantStyles(soft.pink.foreground, soft.pink.background),
-}))
+// ponytail: palette hues with no upstream soft token. text.high is white in
+// dark and near-black in light, so mixing toward it adapts per theme. Move to
+// hydration-styles tags.soft if these stick.
+const softMixStyles = (hue: string, text: string) =>
+  variantStyles(
+    `color-mix(in srgb, ${hue}, ${text} 50%)`,
+    `color-mix(in srgb, ${hue} 14%, transparent)`,
+  )
+
+const variants = createVariants(
+  ({ buttons, accents, colors, secondaryColors, text, tags: { soft } }) => ({
+    primary: variantStyles(
+      buttons.primary.high.onButton,
+      buttons.primary.high.rest,
+    ),
+    secondary: variantStyles(
+      buttons.primary.medium.onButton,
+      buttons.primary.medium.rest,
+    ),
+    tertiary: variantStyles(
+      buttons.primary.low.onButton,
+      buttons.primary.low.rest,
+    ),
+    info: variantStyles(accents.info.onPrimary, accents.info.primary),
+    success: variantStyles(
+      accents.success.onEmphasis,
+      accents.success.emphasis,
+    ),
+    warning: variantStyles(
+      accents.alertAlt.onPrimary,
+      accents.alertAlt.primary,
+    ),
+    danger: variantStyles(accents.danger.onPrimary, accents.danger.secondary),
+    red: variantStyles(soft.red.foreground, soft.red.background),
+    orange: variantStyles(soft.orange.foreground, soft.orange.background),
+    amber: variantStyles(soft.amber.foreground, soft.amber.background),
+    lime: variantStyles(soft.lime.foreground, soft.lime.background),
+    green: variantStyles(soft.green.foreground, soft.green.background),
+    // upstream soft.teal is hollar green, so mix a real teal from the palette
+    teal: softMixStyles(
+      `color-mix(in srgb, ${colors.successGreen["500"]} 40%, ${colors.azureBlue["500"]})`,
+      text.high,
+    ),
+    cyan: variantStyles(soft.cyan.foreground, soft.cyan.background),
+    blue: variantStyles(soft.blue.foreground, soft.blue.background),
+    purple: variantStyles(soft.purple.foreground, soft.purple.background),
+    pink: variantStyles(soft.pink.foreground, soft.pink.background),
+    indigo: softMixStyles(secondaryColors.blues.blueViolet, text.high),
+    violet: softMixStyles(colors.lavender["700"], text.high),
+    stone: softMixStyles(colors.accent["900"], text.high),
+    slate: softMixStyles(colors.darkBlue["300"], text.high),
+  }),
+)
 
 const sizes = createVariants((theme) => ({
   "extra-small": css`

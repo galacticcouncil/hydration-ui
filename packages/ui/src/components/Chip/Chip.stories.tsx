@@ -1,15 +1,43 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import React from "react"
+import React, { Fragment } from "react"
 
-import { Flex } from "@/components"
+import { Flex, Grid, Text } from "@/components"
+import { getToken } from "@/utils"
 
 import { Chip } from "./Chip"
+import { ChipSize, ChipVariant } from "./Chip.styled"
 
 type Story = StoryObj<typeof Chip>
 
 export default {
   component: Chip,
 } satisfies Meta<typeof Chip>
+
+const VARIANTS = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "info",
+  "success",
+  "warning",
+  "danger",
+  "red",
+  "orange",
+  "amber",
+  "lime",
+  "green",
+  "teal",
+  "cyan",
+  "blue",
+  "purple",
+  "pink",
+  "indigo",
+  "violet",
+  "stone",
+  "slate",
+] satisfies ChipVariant[]
+
+const SIZES = ["large", "medium", "small", "extra-small"] satisfies ChipSize[]
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Chip>) => (
   <Flex gap="xl" align="center">
@@ -25,15 +53,14 @@ const Template = (args: React.ComponentPropsWithoutRef<typeof Chip>) => (
   </Flex>
 )
 
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <Text fs="p6" color={getToken("text.medium")}>
+    {children}
+  </Text>
+)
+
 export const Default: Story = {
   render: Template,
-}
-
-export const Primary: Story = {
-  render: Template,
-  args: {
-    variant: "primary",
-  },
 }
 
 export const Rounded: Story = {
@@ -44,107 +71,33 @@ export const Rounded: Story = {
   },
 }
 
-export const Secondary: Story = {
-  render: Template,
-  args: {
-    variant: "secondary",
-  },
-}
-
-export const Tertiary: Story = {
-  render: Template,
-  args: {
-    variant: "tertiary",
-  },
-}
-
-export const Info: Story = {
-  render: Template,
-  args: {
-    variant: "info",
-  },
-}
-
-export const Success: Story = {
-  render: Template,
-  args: {
-    variant: "success",
-  },
-}
-
-export const Warning: Story = {
-  render: Template,
-  args: {
-    variant: "warning",
-  },
-}
-
-export const Danger: Story = {
-  render: Template,
-  args: {
-    variant: "danger",
-  },
-}
-
-export const Red: Story = {
-  render: Template,
-  args: {
-    variant: "red",
-  },
-}
-
-export const Orange: Story = {
-  render: Template,
-  args: {
-    variant: "orange",
-  },
-}
-
-export const Amber: Story = {
-  render: Template,
-  args: {
-    variant: "amber",
-  },
-}
-
-export const Lime: Story = {
-  render: Template,
-  args: {
-    variant: "lime",
-  },
-}
-
-export const Green: Story = {
-  render: Template,
-  args: {
-    variant: "green",
-  },
-}
-
-export const Cyan: Story = {
-  render: Template,
-  args: {
-    variant: "cyan",
-  },
-}
-
-export const Blue: Story = {
-  render: Template,
-  args: {
-    variant: "blue",
-  },
-}
-
-export const Purple: Story = {
-  render: Template,
-  args: {
-    variant: "purple",
-  },
-}
-
-export const Pink: Story = {
-  render: Template,
-  args: {
-    variant: "pink",
-  },
+export const Variants: Story = {
+  render: () => (
+    <Grid
+      columnTemplate={`auto repeat(${SIZES.length + 1}, max-content)`}
+      gap="xl"
+      align="center"
+      justifyContent="start"
+      justifyItems="start"
+    >
+      <span />
+      {SIZES.map((size) => (
+        <Label key={size}>{size}</Label>
+      ))}
+      <Label>rounded</Label>
+      {VARIANTS.map((variant) => (
+        <Fragment key={variant}>
+          <Label>{variant}</Label>
+          {SIZES.map((size) => (
+            <Chip key={size} variant={variant} size={size}>
+              Voted
+            </Chip>
+          ))}
+          <Chip variant={variant} rounded>
+            Voted
+          </Chip>
+        </Fragment>
+      ))}
+    </Grid>
+  ),
 }
