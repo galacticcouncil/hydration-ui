@@ -2,6 +2,7 @@ import { h160 } from "@galacticcouncil/common"
 import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
 import {
   isEvmParachainAccount,
+  isSS58Address,
   QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
   safeConvertSS58toH160,
@@ -73,7 +74,7 @@ export const evmAccountBindingQuery = (
   address: string,
 ) => {
   return queryOptions({
-    enabled: isReady && !!address,
+    enabled: isReady && (isSS58Address(address) || isEvmAddress(address)),
     queryKey: ["evm", "accountBinding", address],
     staleTime: millisecondsInHour,
     queryFn: async () => {

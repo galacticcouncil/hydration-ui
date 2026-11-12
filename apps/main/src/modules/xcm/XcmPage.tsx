@@ -9,7 +9,7 @@ import { XcmTransferApp } from "@/modules/xcm/transfer/XcmTransferApp"
 
 export const XcmPage = () => {
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const address = account?.rawAddress ?? ""
 
   const claimable = useClaimableTransactions()
   const { data: all, isLoading: isLoadingXcScan } = useXcScan(address)

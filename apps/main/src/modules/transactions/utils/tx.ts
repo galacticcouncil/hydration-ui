@@ -1,6 +1,7 @@
 import { HYDRATION_CHAIN_KEY, neckwork } from "@galacticcouncil/utils"
 import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
+import { toZecPaymentUri } from "@galacticcouncil/xc-sdk"
 import { Binary, SizedHex } from "polkadot-api"
 import { first, isBigInt, isNumber, isObjectType } from "remeda"
 
@@ -224,13 +225,11 @@ export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
     return getPapiTransactionCallData(tx)
   }
 
-  if (
-    isEvmCall(tx) ||
-    isSolanaCall(tx) ||
-    isSuiCall(tx) ||
-    isNearCall(tx) ||
-    isZecCall(tx)
-  ) {
+  if (isZecCall(tx)) {
+    return toZecPaymentUri(tx)
+  }
+
+  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx) || isNearCall(tx)) {
     return tx.data
   }
 
