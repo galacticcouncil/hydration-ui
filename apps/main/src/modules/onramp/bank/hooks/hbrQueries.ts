@@ -13,7 +13,6 @@ import {
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
 import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
-import { SENSITIVE_QUERY_META } from "@/utils/queryErrorLog"
 
 // About every 10 s while the user is in the hosted flow (API doc 2 step 5;
 // the onboarding read is limited to 6 a minute per wallet).
@@ -24,16 +23,17 @@ export type MessageSigner = {
   signMessage: (message: string) => Promise<string>
 }
 
-// Every HBR query and mutation carries SENSITIVE_QUERY_META: the app's global
-// react-query error log then prints its key and error only, never its data
-// (bearer links) or variables (signatures, later bank details).
+// Every HBR query and mutation key starts with HBR_QUERY_KEY_PREFIX, a root of
+// SENSITIVE_KEY_ROOTS (utils/queryErrorLog.ts): the app's global react-query
+// error log then prints its key and error only, never its data (bearer links,
+// deposit instructions) or variables (bank details). Mutations need their key
+// for that, so every one below sets `mutationKey`.
 
 // `h160` is the SESSION's wallet: keys and tokens are both bound to it.
 export const hbrMeQuery = (service: HbrService, h160: string) =>
   queryOptions({
     queryKey: hbrQueryKeys.me(h160),
     queryFn: () => service.forWallet(h160).getMe(),
-    meta: SENSITIVE_QUERY_META,
     retry: false,
     staleTime: 0,
   })
@@ -42,7 +42,6 @@ export const hbrOnboardingQuery = (service: HbrService, h160: string) =>
   queryOptions({
     queryKey: hbrQueryKeys.onboarding(h160),
     queryFn: () => service.forWallet(h160).getOnboarding(),
-    meta: SENSITIVE_QUERY_META,
     // Rule 12: a 401 is never repeated; reads are repeated by the poll only.
     retry: false,
     staleTime: 0,
@@ -64,7 +63,7 @@ export const hbrSignInMutation = (
   signer: MessageSigner,
 ) =>
   mutationOptions({
-    meta: SENSITIVE_QUERY_META,
+    mutationKey: hbrQueryKeys.mutation(h160, "signIn"),
     mutationFn: async () => {
       const challenge = await service.createChallenge(h160)
       const signature = await signer.signMessage(challenge.message)
@@ -85,7 +84,7 @@ export const hbrSignOutMutation = (
   h160: string,
 ) =>
   mutationOptions({
-    meta: SENSITIVE_QUERY_META,
+    mutationKey: hbrQueryKeys.mutation(h160, "signOut"),
     mutationFn: async () => {
       try {
         await service.forWallet(h160).closeSession()
@@ -109,7 +108,7 @@ export const hbrCreateCustomerMutation = (
   h160: string,
 ) =>
   mutationOptions({
-    meta: SENSITIVE_QUERY_META,
+    mutationKey: hbrQueryKeys.mutation(h160, "createCustomer"),
     mutationFn: (type: CustomerType) =>
       service.forWallet(h160).createCustomer(type),
     onSettled: invalidateWallet(queryClient, h160),
@@ -127,7 +126,7 @@ export const hbrBindWalletMutation = (
   signer: MessageSigner,
 ) =>
   mutationOptions({
-    meta: SENSITIVE_QUERY_META,
+    mutationKey: hbrQueryKeys.mutation(h160, "bindWallet"),
     mutationFn: async () => {
       const api = service.forWallet(h160)
       try {

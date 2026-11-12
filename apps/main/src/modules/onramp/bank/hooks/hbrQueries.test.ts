@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+
 import {
   MutationCache,
   QueryCache,
@@ -9,11 +12,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   hbrBindWalletMutation,
   hbrCreateCustomerMutation,
-  hbrMeQuery,
   hbrOnboardingQuery,
   hbrSignInMutation,
-  hbrSignOutMutation,
 } from "@/modules/onramp/bank/hooks/hbrQueries"
+import * as hbrQueries from "@/modules/onramp/bank/hooks/hbrQueries"
 import {
   hbrSessionAccess,
   useHbrSessionStore,
@@ -22,8 +24,16 @@ import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureService"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
+import {
+  HBR_QUERY_KEY_PREFIX,
+  hbrQueryKeys,
+} from "@/modules/onramp/bank/utils/queryKeys"
 import { classifySignError } from "@/modules/onramp/bank/utils/signing"
-import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
+import {
+  logMutationError,
+  logQueryError,
+  SENSITIVE_KEY_ROOTS,
+} from "@/utils/queryErrorLog"
 
 vi.mock("@galacticcouncil/web3-connect", () => ({
   EIP1193_USER_REJECTED: 4001,
@@ -148,22 +158,104 @@ describe("the global react-query error log never prints HBR data", () => {
     expect(logged()).not.toContain("secret-variable")
   })
 
-  it("every HBR query and mutation factory carries the sensitive marker", () => {
-    const service = createHbrFixtureService({
-      session: hbrSessionAccess,
-      delayMs: 0,
-    })
+  it("a mutation under the HBR key root logs no variables, factory or not", async () => {
     const client = appQueryClient()
-    const signer = { signMessage: async () => SIGNATURE }
-    for (const options of [
-      hbrMeQuery(service, A),
-      hbrOnboardingQuery(service, A),
-      hbrSignInMutation(service, A, signer),
-      hbrSignOutMutation(service, client, A),
-      hbrCreateCustomerMutation(service, client, A),
-      hbrBindWalletMutation(service, client, A, signer),
-    ])
-      expect(options.meta).toEqual({ sensitive: true })
+    await runMutation(
+      client,
+      {
+        mutationKey: [HBR_QUERY_KEY_PREFIX, "anything"],
+        mutationFn: async () => {
+          throw new HbrApiError(503, "unavailable")
+        },
+      },
+      "secret-variable",
+    ).catch(() => {})
+
+    expect(consoleError).toHaveBeenCalled()
+    expect(logged()).not.toContain("secret-variable")
+  })
+
+  it("the bank module builds queries and mutations in hbrQueries.ts only", () => {
+    const root = fileURLToPath(new URL("..", import.meta.url))
+    const sources = readdirSync(root, { recursive: true, encoding: "utf8" })
+      .filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f))
+      .filter((f) => !f.endsWith("hooks/hbrQueries.ts"))
+    const offenders = sources.filter((f) =>
+      /\b(queryOptions|mutationOptions|useQueryClient\(\)\.(fetchQuery|setQueryData))\s*\(|\buse(Query|Mutation)\((?!\s*hbr[A-Z]\w*(Query|Mutation)\()/.test(
+        readFileSync(`${root}/${f}`, "utf8"),
+      ),
+    )
+    expect(offenders).toEqual([])
+  })
+
+  it("an HBR key fetched outside the factories logs no data (fetchQuery)", async () => {
+    const client = appQueryClient()
+    let call = 0
+    const queryFn = async () => {
+      call += 1
+      if (call === 1) return ONBOARDING
+      throw new HbrApiError(429, "rate_limited")
+    }
+    const queryKey = hbrQueryKeys.onboarding(A)
+    await client.fetchQuery({ queryKey, queryFn, retry: false })
+    await client
+      .fetchQuery({ queryKey, queryFn, retry: false, staleTime: 0 })
+      .catch(() => {})
+
+    expect(consoleError).toHaveBeenCalled()
+    expect(logged()).not.toContain("secret-bearer")
+  })
+
+  it("setQueryData on an HBR key followed by a failing fetch logs no data", async () => {
+    const client = appQueryClient()
+    const queryKey = hbrQueryKeys.onboarding(A)
+    client.setQueryData(queryKey, ONBOARDING)
+    await client
+      .fetchQuery({
+        queryKey,
+        queryFn: async () => {
+          throw new HbrApiError(502, "bridge_unavailable")
+        },
+        retry: false,
+        staleTime: 0,
+      })
+      .catch(() => {})
+
+    expect(consoleError).toHaveBeenCalled()
+    expect(logged()).not.toContain("secret-bearer")
+  })
+
+  it("every query and mutation factory exported by hbrQueries is under the HBR key root", () => {
+    // Any argument shape: a proxy that answers every property and call, and
+    // reads as an address string where a key needs one.
+    const anything: unknown = new Proxy(() => {}, {
+      get: (_t, prop) =>
+        prop === Symbol.toPrimitive
+          ? () => A
+          : prop === "toLowerCase"
+            ? () => A
+            : anything,
+      apply: () => anything,
+    })
+    const factories = Object.entries(hbrQueries).filter(
+      ([name, value]) =>
+        typeof value === "function" && /^hbr.*(Query|Mutation)$/.test(name),
+    )
+    expect(factories.length).toBeGreaterThan(0)
+    for (const [name, factory] of factories) {
+      const options = (
+        factory as (...a: unknown[]) => {
+          queryKey?: unknown[]
+          mutationKey?: unknown[]
+        }
+      )(anything, anything, A, anything, anything)
+      const key = options.queryKey ?? options.mutationKey
+      expect([name, key?.[0]]).toEqual([name, HBR_QUERY_KEY_PREFIX])
+    }
+  })
+
+  it("the HBR key root is a sensitive root of the global log", () => {
+    expect(SENSITIVE_KEY_ROOTS.has(HBR_QUERY_KEY_PREFIX)).toBe(true)
   })
 
   it("a query without the marker keeps today's log (the whole query)", async () => {

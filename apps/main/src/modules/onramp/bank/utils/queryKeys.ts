@@ -16,4 +16,6 @@ export const hbrQueryKeys = {
   ramp: (h160: string, rampId: string) => [...wallet(h160), "ramps", rampId],
   onrampAccounts: (h160: string) => [...wallet(h160), "onramp-accounts"],
   deposits: (h160: string) => [...wallet(h160), "deposits"],
+  /** Mutation keys: the HBR root keeps their variables out of the global error log. */
+  mutation: (h160: string, name: string) => [...wallet(h160), "mutation", name],
 }

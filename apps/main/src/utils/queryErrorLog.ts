@@ -1,23 +1,24 @@
 import type { Mutation, Query } from "@tanstack/react-query"
 
 /**
- * react-query `meta` for a query or mutation whose data or variables must
- * never be logged (bearer links, session tokens, bank details). The flag
- * travels with the query or mutation itself, so the global error log below
- * cannot miss it the way a key-prefix convention could (mutations have no
- * key).
+ * First key segments whose queries and mutations hold data or variables that
+ * must never be logged ("hbr": bearer links, session tokens, bank details,
+ * deposit instructions). The check reads the key the query or mutation is
+ * stored under, so it holds for every fetch, prefetch or setQueryData of such
+ * a key, with or without a factory. A mutation is covered only when it has a
+ * `mutationKey` under one of these roots; one without a key logs as before.
  */
-export const SENSITIVE_QUERY_META = { sensitive: true } as const
+export const SENSITIVE_KEY_ROOTS: ReadonlySet<string> = new Set(["hbr"])
 
-const isSensitive = (meta: Record<string, unknown> | undefined) =>
-  meta?.sensitive === true
+const isSensitiveKey = (key: readonly unknown[] | undefined) =>
+  typeof key?.[0] === "string" && SENSITIVE_KEY_ROOTS.has(key[0])
 
 /** QueryCache onError: a sensitive query logs its key and error only. */
 export const logQueryError = (
   error: unknown,
   query: Query<unknown, unknown, unknown, readonly unknown[]>,
 ) => {
-  if (isSensitive(query.meta)) {
+  if (isSensitiveKey(query.queryKey)) {
     console.error("[RQ]", error, { queryKey: query.queryKey })
     return
   }
@@ -31,8 +32,9 @@ export const logMutationError = (
   _onMutateResult: unknown,
   mutation: Mutation<unknown, unknown, unknown>,
 ) => {
-  if (isSensitive(mutation.options.meta)) {
-    console.error("[RQ]", error, { mutationKey: mutation.options.mutationKey })
+  const mutationKey = mutation.options.mutationKey
+  if (isSensitiveKey(mutationKey)) {
+    console.error("[RQ]", error, { mutationKey })
     return
   }
   console.error("[RQ]", error, variables)
