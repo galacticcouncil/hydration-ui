@@ -45,5 +45,15 @@ export const SPaper = styled(Box, {
         ? theme.surfaces.themeBasePalette.surfaceHigh
         : theme.controls.dim.base};
     `,
+    bg === "dim" &&
+      css`
+        html.light & {
+          background-color: color-mix(
+            in srgb,
+            ${theme.controls.dim.base} 50%,
+            transparent
+          );
+        }
+      `,
   ],
 )
