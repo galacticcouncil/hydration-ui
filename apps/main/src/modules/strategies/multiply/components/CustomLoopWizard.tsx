@@ -2,9 +2,9 @@ import {
   Alert,
   AssetLabel,
   Box,
+  Button,
   Collapsible,
   Flex,
-  LoadingButton,
   Modal,
   ModalBody,
   ModalFooter,
@@ -280,7 +280,6 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
                 key={c.pair.slug}
                 type="button"
                 selected={pickSlug === c.pair.slug}
-                disabled={c.unavailable}
                 onClick={() => {
                   setPickSlug(c.pair.slug)
                   setStep(2)
@@ -354,25 +353,20 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
                 </Stack>
               </Paper>
               {pick.reason && (
-                <Alert variant="error" description={pick.reason} />
+                <Alert variant="warning" description={pick.reason} />
               )}
             </Stack>
           )}
         </Collapsible>
       </ModalBody>
+      {/* ponytail: not gated on the alert; the deposit form re-checks the fill at the real size */}
       {step === 2 && pick && (
         <ModalFooter>
-          <LoadingButton
-            size="large"
-            width="100%"
-            isLoading={!pick.unavailable && !pick.fills}
-            disabled={pick.unavailable}
-            onClick={create}
-          >
+          <Button size="large" width="100%" onClick={create}>
             {pick.existing
               ? t("multiply.custom.selectExisting")
               : t("multiply.custom.create")}
-          </LoadingButton>
+          </Button>
         </ModalFooter>
       )}
     </Modal>

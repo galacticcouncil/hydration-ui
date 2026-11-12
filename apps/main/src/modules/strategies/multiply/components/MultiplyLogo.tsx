@@ -18,10 +18,14 @@ export const MultiplyLogo = ({ size = "medium" }: { size?: LogoSize }) => {
       flex="none"
       size={pxToRem(px)}
       borderRadius="full"
-      bg={getToken("tags.soft.purple.background")}
-      color={getToken("tags.soft.purple.foreground")}
+      bg={getToken("colors.darkBlue.700")}
     >
-      <Icon component={Blend} size={px * 0.55} />
+      <Icon
+        component={Blend}
+        size={px * 0.55}
+        color={getToken("colors.darkBlue.200")}
+        sx={{ "& svg": { color: "inherit !important" } }}
+      />
     </Flex>
   )
 }

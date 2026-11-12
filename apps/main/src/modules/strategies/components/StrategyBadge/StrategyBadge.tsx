@@ -17,7 +17,7 @@ const variantConfig: Record<StrategyBadgeType, ChipProps["variant"]> = {
   [StrategyBadgeType.RWA]: "purple",
   [StrategyBadgeType.AutoCompound]: "cyan",
   [StrategyBadgeType.LowRisk]: "lime",
-  [StrategyBadgeType.Leverage]: "amber",
+  [StrategyBadgeType.Leverage]: "slate",
   [StrategyBadgeType.Unavailable]: "tertiary",
 }
 
