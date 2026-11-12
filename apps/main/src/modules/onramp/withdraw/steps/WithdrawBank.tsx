@@ -1,7 +1,7 @@
-import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
+import { ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { StepButton } from "@/modules/onramp/components/StepButton"
+import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 
 export type WithdrawBankProps = {
   onBack: () => void
@@ -18,17 +18,7 @@ export const WithdrawBank: React.FC<WithdrawBankProps> = ({ onBack }) => {
         onBack={onBack}
         closable={false}
       />
-      <ModalBody>
-        <Stack gap="m">
-          <StepButton
-            onClick={() =>
-              window.open("https://app.vortexfinance.co", "_blank")
-            }
-            title={t("bank.vortex.title")}
-            description={t("bank.vortex.description")}
-          />
-        </Stack>
-      </ModalBody>
+      <BankFlow />
     </>
   )
 }
