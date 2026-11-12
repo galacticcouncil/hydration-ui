@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url"
 
 import {
   MutationCache,
+  MutationObserver,
   QueryCache,
   QueryClient,
   QueryObserver,
@@ -11,11 +12,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { FIXTURE_ONRAMP_VIEWS } from "@/modules/onramp/bank/config/fixtures"
 import {
+  hbrBankAccountsQuery,
   hbrBindWalletMutation,
   hbrCreateBankAccountMutation,
   hbrCreateCustomerMutation,
   hbrOnboardingQuery,
   hbrOnrampAccountsQuery,
+  hbrPendingFilter,
+  hbrRequestOnrampAccountMutation,
+  hbrRetryOnrampAccountMutation,
   hbrSignInMutation,
 } from "@/modules/onramp/bank/hooks/hbrQueries"
 import * as hbrQueries from "@/modules/onramp/bank/hooks/hbrQueries"
@@ -161,6 +166,19 @@ describe("the global react-query error log never prints HBR data", () => {
     expect(logged()).not.toContain("secret-variable")
   })
 
+  it("a sensitive error is logged as name and message, never the server body it carries", async () => {
+    const client = appQueryClient()
+    await runMutation(client, {
+      mutationKey: [HBR_QUERY_KEY_PREFIX, "anything"],
+      mutationFn: async () => {
+        throw new HbrApiError(400, "bad_request", { value: "echoed-secret" })
+      },
+    }).catch(() => {})
+
+    expect(logged()).toContain("bad_request")
+    expect(logged()).not.toContain("echoed-secret")
+  })
+
   it("a mutation under the HBR key root logs no variables, factory or not", async () => {
     const client = appQueryClient()
     await runMutation(
@@ -178,16 +196,42 @@ describe("the global react-query error log never prints HBR data", () => {
     expect(logged()).not.toContain("secret-variable")
   })
 
-  it("the bank module builds queries and mutations in hbrQueries.ts only", () => {
+  // A TEXT scan of the bank module's non-test sources. It sees: any import from
+  // "@tanstack/react-query" (type-only imports excepted) outside hbrQueries.ts
+  // and useHbr.ts, a namespace or aliased import in useHbr.ts, and in useHbr.ts
+  // any `useQuery`/`useMutation`/`queryOptions`/`mutationOptions` call, with or
+  // without whitespace before the paren, whose argument is not an `hbr*Query(`
+  // or `hbr*Mutation(` factory call. Bound: it does not see react-query reached
+  // through another module that re-exports it, or code outside this directory;
+  // such a query or mutation is still kept out of the log and the persister
+  // only if its key is under SENSITIVE_KEY_ROOTS.
+  it("react-query is reached only through hbrQueries.ts factories and useHbr.ts hooks", () => {
     const root = fileURLToPath(new URL("..", import.meta.url))
     const sources = readdirSync(root, { recursive: true, encoding: "utf8" })
       .filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f))
-      .filter((f) => !f.endsWith("hooks/hbrQueries.ts"))
-    const offenders = sources.filter((f) =>
-      /\b(queryOptions|mutationOptions|useQueryClient\(\)\.(fetchQuery|setQueryData))\s*\(|\buse(Query|Mutation)\((?!\s*hbr[A-Z]\w*(Query|Mutation)\()/.test(
-        readFileSync(`${root}/${f}`, "utf8"),
-      ),
-    )
+      .map((f) => ({ f, text: readFileSync(`${root}/${f}`, "utf8") }))
+    const importRe =
+      /import\s+(type\s+)?([^;]*?)\s+from\s+["']@tanstack\/react-query["']/g
+    const offenders: string[] = []
+    for (const { f, text } of sources) {
+      const isFactories = f.endsWith("hooks/hbrQueries.ts")
+      const isHooks = f.endsWith("hooks/useHbr.ts")
+      for (const [, typeOnly, names = ""] of text.matchAll(importRe)) {
+        if (typeOnly || isFactories) continue
+        if (!isHooks) offenders.push(`${f}: imports react-query`)
+        else if (/\*|\bas\b/.test(names))
+          offenders.push(`${f}: namespace or aliased react-query import`)
+      }
+      if (/require\(\s*["']@tanstack\/react-query/.test(text))
+        offenders.push(`${f}: requires react-query`)
+      if (
+        isHooks &&
+        /\b(use(Suspense)?(Query|Queries|Mutation|InfiniteQuery)|queryOptions|mutationOptions)\s*\((?!\s*hbr[A-Z]\w*(Query|Mutation)\()/.test(
+          text,
+        )
+      )
+        offenders.push(`${f}: a react-query call without an hbr factory`)
+    }
     expect(offenders).toEqual([])
   })
 
@@ -302,7 +346,7 @@ describe("the global react-query error log never prints HBR data", () => {
     expect(logged()).not.toContain("secret-bearer")
   })
 
-  it("every query and mutation factory exported by hbrQueries is under the HBR key root", () => {
+  it("every query and mutation factory exported by hbrQueries is under the HBR key root and never pauses", () => {
     // Any argument shape: a proxy that answers every property and call, and
     // reads as an address string where a key needs one.
     const anything: unknown = new Proxy(() => {}, {
@@ -324,10 +368,16 @@ describe("the global react-query error log never prints HBR data", () => {
         factory as (...a: unknown[]) => {
           queryKey?: unknown[]
           mutationKey?: unknown[]
+          networkMode?: string
         }
       )(anything, anything, A, anything, anything)
       const key = options.queryKey ?? options.mutationKey
-      expect([name, key?.[0]]).toEqual([name, HBR_QUERY_KEY_PREFIX])
+      // Keyed under the root, and never paused (a paused mutation is persisted).
+      expect([name, key?.[0], options.networkMode]).toEqual([
+        name,
+        HBR_QUERY_KEY_PREFIX,
+        "always",
+      ])
     }
   })
 
@@ -372,6 +422,91 @@ describe("onboarding answers are not kept after the screen", () => {
     expect(client.getQueryCache().find({ queryKey: options.queryKey })).toBe(
       undefined,
     )
+  })
+})
+
+describe("bank data is not kept after the screen (rule 5)", () => {
+  const dropped = async (
+    options: ReturnType<
+      typeof hbrOnrampAccountsQuery | typeof hbrBankAccountsQuery
+    >,
+  ) => {
+    const client = appQueryClient()
+    const observer = new QueryObserver(client, options as never)
+    const unsubscribe = observer.subscribe(() => {})
+    await vi.waitFor(() =>
+      expect(client.getQueryData(options.queryKey)).toBeDefined(),
+    )
+    unsubscribe()
+    await vi.advanceTimersByTimeAsync(1)
+    return client.getQueryCache().find({ queryKey: options.queryKey })
+  }
+
+  it("the on-ramp accounts query (deposit instructions) is dropped once unobserved", async () => {
+    vi.useFakeTimers()
+    const service = {
+      forWallet: () => ({
+        listOnrampAccounts: async () => ({ accounts: [] }),
+      }),
+    } as unknown as HbrService
+    expect(await dropped(hbrOnrampAccountsQuery(service, A))).toBe(undefined)
+  })
+
+  it("the bank-accounts list is dropped once unobserved", async () => {
+    vi.useFakeTimers()
+    const service = {
+      forWallet: () => ({
+        listBankAccounts: async () => ({ bankAccounts: [] }),
+      }),
+    } as unknown as HbrService
+    expect(await dropped(hbrBankAccountsQuery(service, A))).toBe(undefined)
+  })
+})
+
+describe("one in-flight on-ramp action per currency, across a remount", () => {
+  it("a pending re-arm for USD is seen by a new observer (a tab round-trip), not for EUR", async () => {
+    setSession(A, "A".repeat(43))
+    let release: () => void = () => {}
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const service = {
+      forWallet: () => ({
+        retryOnrampAccount: async () => {
+          await held
+          return { account: {} }
+        },
+      }),
+    } as unknown as HbrService
+    const client = appQueryClient()
+    const first = new MutationObserver(
+      client,
+      hbrRetryOnrampAccountMutation(service, client, A),
+    )
+    void first.mutate("usd").catch(() => {})
+    // The tab is switched away and back: the first observer is gone.
+    first.reset()
+
+    const usd = hbrPendingFilter(A, "retryOnrampAccount", "usd")
+    const eur = hbrPendingFilter(A, "retryOnrampAccount", "eur")
+    expect(client.isMutating(usd)).toBe(1)
+    expect(client.isMutating(eur)).toBe(0)
+
+    release()
+    await vi.waitFor(() => expect(client.isMutating(usd)).toBe(0))
+  })
+
+  it("the pending filter names the factories' own mutation keys", () => {
+    const client = appQueryClient()
+    const service = {} as HbrService
+    for (const [factory, action] of [
+      [hbrRetryOnrampAccountMutation, "retryOnrampAccount"],
+      [hbrRequestOnrampAccountMutation, "requestOnrampAccount"],
+      [hbrCreateBankAccountMutation, "createBankAccount"],
+    ] as const)
+      expect(factory(service, client, A).mutationKey).toEqual(
+        hbrPendingFilter(A, action).mutationKey,
+      )
   })
 })
 

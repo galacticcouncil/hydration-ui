@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useEffect } from "react"
 
 import { ENV } from "@/config/env"
@@ -11,6 +16,7 @@ import {
   hbrMeQuery,
   hbrOnboardingQuery,
   hbrOnrampAccountsQuery,
+  hbrPendingFilter,
   hbrRemoveBankAccountMutation,
   hbrRequestOnrampAccountMutation,
   hbrRetryOnrampAccountMutation,
@@ -102,3 +108,19 @@ export const useHbrRetryOnrampAccount = (h160: string) =>
 
 export const useHbrDeposits = (h160: string) =>
   useQuery(hbrDepositsQuery(useHbrService(), h160))
+
+/**
+ * Whether an HBR action is pending, read from the mutation cache (so it holds
+ * across a remount), and a starter that refuses to send while it is.
+ */
+export const useHbrActionInFlight = (
+  h160: string,
+  action: string,
+  variables?: unknown,
+) => {
+  const queryClient = useQueryClient()
+  const filter = hbrPendingFilter(h160, action, variables)
+  const pending = useIsMutating(filter) > 0
+  const isFree = () => queryClient.isMutating(filter) === 0
+  return { pending, isFree }
+}

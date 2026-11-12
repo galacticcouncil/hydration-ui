@@ -19,7 +19,10 @@ import {
 import { BankAccountFormField } from "@/modules/onramp/bank/components/BankAccountFormField"
 import { BankAccountRailFields } from "@/modules/onramp/bank/components/BankAccountRailFields"
 import type { CreateBankAccountRequest } from "@/modules/onramp/bank/config/schemas"
-import { useHbrCreateBankAccount } from "@/modules/onramp/bank/hooks/useHbr"
+import {
+  useHbrActionInFlight,
+  useHbrCreateBankAccount,
+} from "@/modules/onramp/bank/hooks/useHbr"
 import {
   BankAccountSubmission,
   classifyCreateBankAccountError,
@@ -36,9 +39,13 @@ type BankAccountFormProps = {
 }
 
 /**
- * POST /v1/bank-accounts. Bank details live in this form's memory only: no
- * persist, no URL, no log (the mutation key is under the HBR root). One
- * `clientRequestId` per submission, reused while the same body is sent again.
+ * POST /v1/bank-accounts. Bank details are held in this form's state and the
+ * mutation's variables, in memory only: not in a URL; not in the global
+ * react-query error log (key under SENSITIVE_KEY_ROOTS); not in the portfolio
+ * persister (it skips sensitive keys, and HBR mutations never pause:
+ * HBR_NETWORK_MODE). Browser extensions reading the page are out of reach.
+ * One `clientRequestId` per submission, reused while the same body is sent
+ * again (lost on Cancel or remount: then a new id, see utils/bankAccounts.ts).
  */
 export const BankAccountForm: FC<BankAccountFormProps> = ({
   h160,
@@ -50,10 +57,13 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
   const firstRail: BankRail = rails.usd ? "ach" : "sepa"
   const form = useBankAccountForm(firstRail)
   const create = useHbrCreateBankAccount(h160)
+  const inFlight = useHbrActionInFlight(h160, "createBankAccount")
   const pending = useRef<BankAccountSubmission | null>(null)
   const rail = form.watch("rail")
 
   const submit = form.handleSubmit((values) => {
+    // One POST at a time: a second click before the re-render sends nothing.
+    if (!inFlight.isFree()) return
     const body = toBankAccountBody(values)
     const submission = nextBankAccountSubmission(pending.current, body, () =>
       crypto.randomUUID(),

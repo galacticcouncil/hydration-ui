@@ -1,4 +1,5 @@
 import {
+  MutationFilters,
   mutationOptions,
   QueryClient,
   queryOptions,
@@ -22,6 +23,14 @@ import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 // the onboarding read is limited to 6 a minute per wallet).
 export const ONBOARDING_POLL_MS = 10_000
 
+/**
+ * Every HBR query and mutation runs whatever the browser's online state: an
+ * offline call fails at once as HbrNetworkError ("could not confirm") instead
+ * of pausing, so no HBR mutation is ever paused and kept for later (react-query
+ * persists paused mutations, variables included).
+ */
+export const HBR_NETWORK_MODE = "always" as const
+
 /** A signer that can `personal_sign` a message exactly as given. */
 export type MessageSigner = {
   signMessage: (message: string) => Promise<string>
@@ -36,6 +45,7 @@ export type MessageSigner = {
 // `h160` is the SESSION's wallet: keys and tokens are both bound to it.
 export const hbrMeQuery = (service: HbrService, h160: string) =>
   queryOptions({
+    networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.me(h160),
     queryFn: () => service.forWallet(h160).getMe(),
     retry: false,
@@ -44,6 +54,7 @@ export const hbrMeQuery = (service: HbrService, h160: string) =>
 
 export const hbrOnboardingQuery = (service: HbrService, h160: string) =>
   queryOptions({
+    networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.onboarding(h160),
     queryFn: () => service.forWallet(h160).getOnboarding(),
     // Rule 12: a 401 is never repeated; reads are repeated by the poll only.
@@ -67,6 +78,7 @@ export const hbrSignInMutation = (
   signer: MessageSigner,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "signIn"),
     mutationFn: async () => {
       const challenge = await service.createChallenge(h160)
@@ -88,6 +100,7 @@ export const hbrSignOutMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "signOut"),
     mutationFn: async () => {
       try {
@@ -112,6 +125,7 @@ export const hbrCreateCustomerMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "createCustomer"),
     mutationFn: (type: CustomerType) =>
       service.forWallet(h160).createCustomer(type),
@@ -130,6 +144,7 @@ export const hbrBindWalletMutation = (
   signer: MessageSigner,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "bindWallet"),
     mutationFn: async () => {
       const api = service.forWallet(h160)
@@ -160,6 +175,7 @@ export const DEPOSITS_POLL_MS = 30_000
 
 export const hbrBankAccountsQuery = (service: HbrService, h160: string) =>
   queryOptions({
+    networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.bankAccounts(h160),
     queryFn: () => service.forWallet(h160).listBankAccounts(),
     retry: false,
@@ -174,6 +190,7 @@ export const hbrCreateBankAccountMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "createBankAccount"),
     mutationFn: (body: CreateBankAccountRequest) =>
       service.forWallet(h160).createBankAccount(body),
@@ -190,6 +207,7 @@ export const hbrRemoveBankAccountMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "removeBankAccount"),
     mutationFn: (id: string) => service.forWallet(h160).deleteBankAccount(id),
     onSettled: () =>
@@ -200,6 +218,7 @@ export const hbrRemoveBankAccountMutation = (
 
 export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
   queryOptions({
+    networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.onrampAccounts(h160),
     queryFn: () => service.forWallet(h160).listOnrampAccounts(),
     retry: false,
@@ -219,6 +238,7 @@ export const hbrRequestOnrampAccountMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "requestOnrampAccount"),
     mutationFn: (currency: OnrampCurrency) =>
       service.forWallet(h160).requestOnrampAccount(currency),
@@ -232,6 +252,7 @@ export const hbrRetryOnrampAccountMutation = (
   h160: string,
 ) =>
   mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "retryOnrampAccount"),
     mutationFn: (currency: OnrampCurrency) =>
       service.forWallet(h160).retryOnrampAccount(currency),
@@ -240,6 +261,7 @@ export const hbrRetryOnrampAccountMutation = (
 
 export const hbrDepositsQuery = (service: HbrService, h160: string) =>
   queryOptions({
+    networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.deposits(h160),
     queryFn: () => service.forWallet(h160).listDeposits(),
     retry: false,
@@ -247,3 +269,22 @@ export const hbrDepositsQuery = (service: HbrService, h160: string) =>
     gcTime: 0,
     refetchInterval: DEPOSITS_POLL_MS,
   })
+
+/**
+ * The pending HBR mutations of one action (and, when given, one variable such
+ * as a currency) in the mutation CACHE, not in a component: a guard built on it
+ * survives a remount (a tab switch), so a second POST is not sent while the
+ * first is pending.
+ */
+export const hbrPendingFilter = (
+  h160: string,
+  action: string,
+  variables?: unknown,
+): MutationFilters => ({
+  mutationKey: hbrQueryKeys.mutation(h160, action),
+  status: "pending",
+  predicate:
+    variables === undefined
+      ? undefined
+      : (mutation) => mutation.state.variables === variables,
+})
