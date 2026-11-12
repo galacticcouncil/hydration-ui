@@ -18,7 +18,7 @@ export const WithdrawBank: React.FC<WithdrawBankProps> = ({ onBack }) => {
         onBack={onBack}
         closable={false}
       />
-      <BankFlow />
+      <BankFlow direction="withdraw" />
     </>
   )
 }

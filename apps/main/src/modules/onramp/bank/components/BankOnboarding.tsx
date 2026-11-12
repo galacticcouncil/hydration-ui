@@ -8,12 +8,14 @@ import {
 import { FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BankAccounts } from "@/modules/onramp/bank/components/BankAccounts"
 import { BankAccountType } from "@/modules/onramp/bank/components/BankAccountType"
+import { BankDeposit } from "@/modules/onramp/bank/components/BankDeposit"
 import { BankErrorMessage } from "@/modules/onramp/bank/components/BankErrorMessage"
 import { BankLinkWallet } from "@/modules/onramp/bank/components/BankLinkWallet"
-import { BankReady } from "@/modules/onramp/bank/components/BankReady"
 import { BankVerify } from "@/modules/onramp/bank/components/BankVerify"
 import {
+  BankDirection,
   MessageSigner,
   useHbrMe,
   useHbrOnboarding,
@@ -29,10 +31,15 @@ type BankOnboardingProps = {
   /** The connected wallet: every query key and token below is bound to it. */
   h160: string
   signer: MessageSigner
+  direction: BankDirection
 }
 
 /** API doc 2 steps 2-5, each screen derived from the latest onboarding read. */
-export const BankOnboarding: FC<BankOnboardingProps> = ({ h160, signer }) => {
+export const BankOnboarding: FC<BankOnboardingProps> = ({
+  h160,
+  signer,
+  direction,
+}) => {
   const { t } = useTranslation(["onramp"])
   const me = useHbrMe(h160)
   const onboarding = useHbrOnboarding(h160)
@@ -81,7 +88,12 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({ h160, signer }) => {
           onCheck={() => void onboarding.refetch()}
         />
       )}
-      {step.kind === "ready" && <BankReady rails={step.rails} />}
+      {step.kind === "ready" &&
+        (direction === "deposit" ? (
+          <BankDeposit h160={h160} />
+        ) : (
+          <BankAccounts h160={h160} rails={step.rails} />
+        ))}
       <Flex justify="center" pb="l">
         <TextButton
           disabled={signOut.isPending}
