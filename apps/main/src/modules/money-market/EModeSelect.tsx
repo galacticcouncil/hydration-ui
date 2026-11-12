@@ -34,6 +34,7 @@ export const EModeSelect: FC = () => {
     <>
       <Select
         label={t("emode.title")}
+        variant={currentId ? "accent" : undefined}
         items={[
           { key: "0", label: t("emode.disabled") },
           ...eModeCategories(reserves).map((category) => ({
