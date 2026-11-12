@@ -9,10 +9,13 @@ import {
 } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { FIXTURE_ONRAMP_VIEWS } from "@/modules/onramp/bank/config/fixtures"
 import {
   hbrBindWalletMutation,
+  hbrCreateBankAccountMutation,
   hbrCreateCustomerMutation,
   hbrOnboardingQuery,
+  hbrOnrampAccountsQuery,
   hbrSignInMutation,
 } from "@/modules/onramp/bank/hooks/hbrQueries"
 import * as hbrQueries from "@/modules/onramp/bank/hooks/hbrQueries"
@@ -186,6 +189,80 @@ describe("the global react-query error log never prints HBR data", () => {
       ),
     )
     expect(offenders).toEqual([])
+  })
+
+  it("a failed bank account create logs no bank detail", async () => {
+    setSession(A, "A".repeat(43))
+    const fetchFn = vi.fn(async () =>
+      jsonResponse(502, { error: "outcome_unknown" }),
+    )
+    const service = createHbrService({
+      baseUrl: "/hbr",
+      session: hbrSessionAccess,
+      fetchFn,
+    })
+    const client = appQueryClient()
+
+    await runMutation(
+      client,
+      hbrCreateBankAccountMutation(service, client, A),
+      {
+        clientRequestId: "00000000-0000-4000-8000-0000000000a1",
+        rail: "sepa",
+        iban: "DE89370400440532013000",
+        bic: "COBADEFFXXX",
+        address: {
+          streetLine1: "Secret Street 1",
+          city: "Secret City",
+          postalCode: "10115",
+          country: "DEU",
+        },
+      },
+    ).catch(() => {})
+
+    expect(consoleError).toHaveBeenCalled()
+    expect(logged()).toContain("outcome_unknown")
+    for (const secret of [
+      "DE89370400440532013000",
+      "Secret Street",
+      "COBADEFF",
+    ])
+      expect(logged()).not.toContain(secret)
+  })
+
+  it("a failed on-ramp poll after a ready read logs no deposit instruction", async () => {
+    setSession(A, "A".repeat(43))
+    const ready = {
+      accounts: [
+        {
+          ...FIXTURE_ONRAMP_VIEWS.ready("usd"),
+          instructions: {
+            accountNumber: "SECRET-ACCOUNT-111",
+            routingNumber: "SECRET-ROUTING-222",
+            bankName: "<placeholder>",
+            beneficiaryName: "<placeholder>",
+          },
+        },
+        FIXTURE_ONRAMP_VIEWS.notRequested("eur"),
+      ],
+    }
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(200, ready))
+      .mockResolvedValueOnce(jsonResponse(429, { error: "rate_limited" }))
+    const service = createHbrService({
+      baseUrl: "/hbr",
+      session: hbrSessionAccess,
+      fetchFn,
+    })
+    const client = appQueryClient()
+    const options = hbrOnrampAccountsQuery(service, A)
+
+    await client.fetchQuery(options)
+    await client.fetchQuery({ ...options, staleTime: 0 }).catch(() => {})
+
+    expect(consoleError).toHaveBeenCalled()
+    expect(logged()).not.toContain("SECRET-")
   })
 
   it("an HBR key fetched outside the factories logs no data (fetchQuery)", async () => {

@@ -4,7 +4,11 @@ import {
   queryOptions,
 } from "@tanstack/react-query"
 
-import type { CustomerType } from "@/modules/onramp/bank/config/schemas"
+import type {
+  CreateBankAccountRequest,
+  CustomerType,
+  OnrampCurrency,
+} from "@/modules/onramp/bank/config/schemas"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import {
   HbrApiError,
@@ -145,4 +149,101 @@ export const hbrBindWalletMutation = (
       }
     },
     onSettled: invalidateWallet(queryClient, h160),
+  })
+
+// ---- Stage 2: bank accounts, on-ramp accounts, deposits -----------------
+
+// GET /v1/onramp/accounts is limited to 6 a minute and reads Bridge per ready
+// account; GET /v1/onramp/deposits to 30 a minute (API doc 1, rate limits).
+export const ONRAMP_ACCOUNTS_POLL_MS = 20_000
+export const DEPOSITS_POLL_MS = 30_000
+
+export const hbrBankAccountsQuery = (service: HbrService, h160: string) =>
+  queryOptions({
+    queryKey: hbrQueryKeys.bankAccounts(h160),
+    queryFn: () => service.forWallet(h160).listBankAccounts(),
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+  })
+
+/** POST /v1/bank-accounts. Variables are bank details: the key keeps them out of the log. */
+export const hbrCreateBankAccountMutation = (
+  service: HbrService,
+  queryClient: QueryClient,
+  h160: string,
+) =>
+  mutationOptions({
+    mutationKey: hbrQueryKeys.mutation(h160, "createBankAccount"),
+    mutationFn: (body: CreateBankAccountRequest) =>
+      service.forWallet(h160).createBankAccount(body),
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: hbrQueryKeys.bankAccounts(h160),
+      }),
+  })
+
+/** DELETE /v1/bank-accounts/:id, then the list is read again; nothing is removed locally first. */
+export const hbrRemoveBankAccountMutation = (
+  service: HbrService,
+  queryClient: QueryClient,
+  h160: string,
+) =>
+  mutationOptions({
+    mutationKey: hbrQueryKeys.mutation(h160, "removeBankAccount"),
+    mutationFn: (id: string) => service.forWallet(h160).deleteBankAccount(id),
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: hbrQueryKeys.bankAccounts(h160),
+      }),
+  })
+
+export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
+  queryOptions({
+    queryKey: hbrQueryKeys.onrampAccounts(h160),
+    queryFn: () => service.forWallet(h160).listOnrampAccounts(),
+    retry: false,
+    staleTime: 0,
+    // Deposit instructions: never kept past the screen (rule 5).
+    gcTime: 0,
+    // Polled while shown, so a status change removes instructions at once.
+    refetchInterval: ONRAMP_ACCOUNTS_POLL_MS,
+  })
+
+const invalidateOnramp = (queryClient: QueryClient, h160: string) => () =>
+  queryClient.invalidateQueries({ queryKey: hbrQueryKeys.onrampAccounts(h160) })
+
+export const hbrRequestOnrampAccountMutation = (
+  service: HbrService,
+  queryClient: QueryClient,
+  h160: string,
+) =>
+  mutationOptions({
+    mutationKey: hbrQueryKeys.mutation(h160, "requestOnrampAccount"),
+    mutationFn: (currency: OnrampCurrency) =>
+      service.forWallet(h160).requestOnrampAccount(currency),
+    onSettled: invalidateOnramp(queryClient, h160),
+  })
+
+/** The re-arm lever (rule 6). Offered only on `retryAllowed`; never repeated automatically. */
+export const hbrRetryOnrampAccountMutation = (
+  service: HbrService,
+  queryClient: QueryClient,
+  h160: string,
+) =>
+  mutationOptions({
+    mutationKey: hbrQueryKeys.mutation(h160, "retryOnrampAccount"),
+    mutationFn: (currency: OnrampCurrency) =>
+      service.forWallet(h160).retryOnrampAccount(currency),
+    onSettled: invalidateOnramp(queryClient, h160),
+  })
+
+export const hbrDepositsQuery = (service: HbrService, h160: string) =>
+  queryOptions({
+    queryKey: hbrQueryKeys.deposits(h160),
+    queryFn: () => service.forWallet(h160).listDeposits(),
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: DEPOSITS_POLL_MS,
   })

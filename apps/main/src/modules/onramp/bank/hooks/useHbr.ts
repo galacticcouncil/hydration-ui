@@ -3,10 +3,17 @@ import { useEffect } from "react"
 
 import { ENV } from "@/config/env"
 import {
+  hbrBankAccountsQuery,
   hbrBindWalletMutation,
+  hbrCreateBankAccountMutation,
   hbrCreateCustomerMutation,
+  hbrDepositsQuery,
   hbrMeQuery,
   hbrOnboardingQuery,
+  hbrOnrampAccountsQuery,
+  hbrRemoveBankAccountMutation,
+  hbrRequestOnrampAccountMutation,
+  hbrRetryOnrampAccountMutation,
   hbrSignInMutation,
   hbrSignOutMutation,
   MessageSigner,
@@ -20,6 +27,9 @@ import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 
 export type { MessageSigner } from "@/modules/onramp/bank/hooks/hbrQueries"
+
+/** Which page opened the bank flow: deposit (on-ramp) or withdraw (cash-out). */
+export type BankDirection = "deposit" | "withdraw"
 
 const hbrService = createHbrService({
   baseUrl: ENV.VITE_HBR_API_URL,
@@ -63,3 +73,32 @@ export const useHbrBindWallet = (h160: string, signer: MessageSigner) =>
   useMutation(
     hbrBindWalletMutation(useHbrService(), useQueryClient(), h160, signer),
   )
+
+export const useHbrBankAccounts = (h160: string) =>
+  useQuery(hbrBankAccountsQuery(useHbrService(), h160))
+
+export const useHbrCreateBankAccount = (h160: string) =>
+  useMutation(
+    hbrCreateBankAccountMutation(useHbrService(), useQueryClient(), h160),
+  )
+
+export const useHbrRemoveBankAccount = (h160: string) =>
+  useMutation(
+    hbrRemoveBankAccountMutation(useHbrService(), useQueryClient(), h160),
+  )
+
+export const useHbrOnrampAccounts = (h160: string) =>
+  useQuery(hbrOnrampAccountsQuery(useHbrService(), h160))
+
+export const useHbrRequestOnrampAccount = (h160: string) =>
+  useMutation(
+    hbrRequestOnrampAccountMutation(useHbrService(), useQueryClient(), h160),
+  )
+
+export const useHbrRetryOnrampAccount = (h160: string) =>
+  useMutation(
+    hbrRetryOnrampAccountMutation(useHbrService(), useQueryClient(), h160),
+  )
+
+export const useHbrDeposits = (h160: string) =>
+  useQuery(hbrDepositsQuery(useHbrService(), h160))

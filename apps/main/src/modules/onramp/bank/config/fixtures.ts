@@ -251,3 +251,202 @@ export const FIXTURE_DEPOSITS = {
   ],
   unattributed: [],
 }
+
+// ---- Stage 2: stateful bank accounts, on-ramp accounts and deposits ----
+
+/**
+ * A listed bank account as the local test server answers it after a create
+ * (hydration-ramp docs/runbooks/local-app-test-server.md section 5: `status:
+ * "active"`, `currency`, `accountType`, `last4` the last 4 digits submitted
+ * for ACH and `null` for SEPA, `bankName` `null`).
+ */
+export const buildFixtureBankAccount = (args: {
+  id: string
+  externalAccountId: string
+  rail: "ach" | "sepa"
+  accountNumber?: string
+}) => ({
+  id: args.id,
+  externalAccountId: args.externalAccountId,
+  status: "active",
+  currency: args.rail === "ach" ? "usd" : "eur",
+  accountType: args.rail === "ach" ? "us" : "iban",
+  last4:
+    args.rail === "ach" && args.accountNumber
+      ? args.accountNumber.slice(-4)
+      : null,
+  bankName: null,
+})
+
+// Payment rail tokens measured on Bridge's sandbox (hbr-bridge-xyz skill,
+// section 6: USD `ach_push`, `fednow`, `wire`; EUR `sepa`).
+const USD_RAILS = ["ach_push", "fednow", "wire"]
+const EUR_RAILS = ["sepa"]
+
+/**
+ * On-ramp account views (API doc 4, GET /v1/onramp/accounts; statuses of
+ * section 5.4). Instructions use the doc's `<placeholder>` values and its
+ * per-currency field sets (`INSTRUCTION_FIELDS`, onrampAccountView.mjs).
+ */
+export const FIXTURE_ONRAMP_VIEWS = {
+  notRequested: (currency: "usd" | "eur") => ({
+    currency,
+    status: "not_requested",
+    onrampAvailable: false,
+    retryAllowed: false,
+  }),
+  preparing: (currency: "usd" | "eur") => ({
+    currency,
+    status: "preparing",
+    onrampAvailable: false,
+    retryAllowed: false,
+  }),
+  // Section 5.4: `refused` carries `reason` (null allowed); rule 6: a refused
+  // account within the re-arm budget reads `retryAllowed: true`.
+  refused: (currency: "usd" | "eur") => ({
+    currency,
+    status: "refused",
+    onrampAvailable: false,
+    retryAllowed: true,
+    reason: null,
+  }),
+  ready: (currency: "usd" | "eur") => ({
+    currency,
+    status: "ready",
+    onrampAvailable: true,
+    retryAllowed: false,
+    instructions:
+      currency === "usd"
+        ? {
+            accountNumber: "<placeholder>",
+            routingNumber: "<placeholder>",
+            bankName: "<placeholder>",
+            beneficiaryName: "<placeholder>",
+            paymentRails: USD_RAILS,
+          }
+        : {
+            iban: "<placeholder>",
+            bic: "<placeholder>",
+            accountHolderName: "<placeholder>",
+            bankName: "<placeholder>",
+            paymentRails: EUR_RAILS,
+          },
+    // API doc 4: HBR's default flush minimum, 1 USDC.
+    minimumDeposit: "1000000",
+  }),
+}
+
+const deposit = (
+  n: string,
+  fields: {
+    currency?: "usd" | "eur"
+    amount: string
+    bridgeState: string
+    receivedAt: string | null
+    status: string
+    label: string
+    detail: string | null
+    progress: [string, string, string]
+  },
+) => ({
+  id: `00000000-0000-4000-8000-0000000000${n}`,
+  currency: fields.currency ?? "usd",
+  amount: fields.amount,
+  bridgeState: fields.bridgeState,
+  receivedAt: fields.receivedAt,
+  status: fields.status,
+  label: fields.label,
+  detail: fields.detail,
+  progress: {
+    arrived: fields.progress[0],
+    deposited: fields.progress[1],
+    // `waiting` = arrived - deposited (progressOf, depositAttribution.mjs).
+    waiting: (
+      BigInt(fields.progress[0]) - BigInt(fields.progress[1])
+    ).toString(),
+    credited: fields.progress[2],
+  },
+})
+
+/**
+ * Deposits in several statuses. Each status and detail is one the server
+ * derives (`chainStatus` and `BEFORE_ARRIVAL`, hydration-ramp
+ * server/lib/onramp/depositAttribution.mjs); labels are `DEPOSIT_LABELS`
+ * (API doc 5.3); the `waiting_deposit_limit` entry is the doc's own example.
+ */
+export const FIXTURE_DEPOSIT_HISTORY = {
+  deposits: [
+    FIXTURE_DEPOSITS.deposits[0],
+    deposit("f2", {
+      amount: "250.00",
+      bridgeState: "payment_processed",
+      receivedAt: "2026-10-21T09:30:00.000Z",
+      status: "credited",
+      label: "Credited",
+      detail: null,
+      progress: ["250000000", "250000000", "250000000"],
+    }),
+    deposit("f3", {
+      amount: "50.00",
+      bridgeState: "payment_processed",
+      receivedAt: "2026-10-22T08:00:00.000Z",
+      status: "queued_on_hydration",
+      label: "Queued on Hydration",
+      detail: null,
+      progress: ["50000000", "50000000", "0"],
+    }),
+    deposit("f4", {
+      amount: "75.00",
+      bridgeState: "funds_received",
+      receivedAt: "2026-10-22T11:00:00.000Z",
+      status: "received_by_bridge",
+      label: "Received by Bridge",
+      detail: null,
+      progress: ["0", "0", "0"],
+    }),
+    // An ACH deposit still `funds_scheduled`: no Bridge receipt time yet.
+    deposit("f5", {
+      amount: "20.00",
+      bridgeState: "funds_scheduled",
+      receivedAt: null,
+      status: "checking",
+      label: "Checking",
+      detail: "funds_scheduled",
+      progress: ["0", "0", "0"],
+    }),
+    deposit("f6", {
+      amount: "0.50",
+      bridgeState: "payment_processed",
+      receivedAt: "2026-10-20T15:00:00.000Z",
+      status: "needs_attention",
+      label: "Needs attention",
+      detail: "below_flush_minimum",
+      progress: ["500000", "0", "0"],
+    }),
+    deposit("f7", {
+      currency: "eur",
+      amount: "90.00",
+      bridgeState: "payment_processed",
+      receivedAt: "2026-10-19T10:00:00.000Z",
+      status: "credited",
+      label: "Credited",
+      detail: null,
+      progress: ["97000000", "97000000", "97000000"],
+    }),
+  ],
+  // USDC on the forwarder with no Bridge delivery naming it (API doc 4).
+  unattributed: [
+    {
+      txHash: `0x${"00".repeat(31)}01`,
+      status: "arrived",
+      label: "Arrived",
+      detail: null,
+      progress: {
+        arrived: "3000000",
+        deposited: "0",
+        waiting: "3000000",
+        credited: "0",
+      },
+    },
+  ],
+}

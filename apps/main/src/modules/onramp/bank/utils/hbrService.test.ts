@@ -232,3 +232,81 @@ describe("HBR calls are bound to the session's wallet", () => {
     expect(useHbrSessionStore.getState().session?.token).toBe(OTHER_TOKEN)
   })
 })
+
+describe("HBR fixture service, stage 2 walk", () => {
+  const signedIn = async () => {
+    const service = createHbrFixtureService({ session, delayMs: 0 })
+    const challenge = await service.createChallenge(H160)
+    useHbrSessionStore.getState().setSession(
+      await service.openSession({
+        nonce: challenge.nonce,
+        signature: SIGNATURE,
+      }),
+    )
+    const api = service.forWallet(H160)
+    await api.createCustomer("individual")
+    const bind = await api.createBindChallenge()
+    await api.verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
+    return api
+  }
+  const ACH = {
+    clientRequestId: "00000000-0000-4000-8000-0000000000a1",
+    rail: "ach" as const,
+    bankName: "<placeholder bank>",
+    accountNumber: "1234567890",
+    routingNumber: "123456789",
+    checkingOrSavings: "checking" as const,
+    address: {
+      streetLine1: "<placeholder>",
+      city: "<placeholder>",
+      state: "NY",
+      postalCode: "<placeholder>",
+      country: "USA",
+    },
+  }
+
+  it("adds, lists and removes a bank account; a retry converges", async () => {
+    const api = await signedIn()
+    expect((await api.listBankAccounts()).bankAccounts).toEqual([])
+    const created = await api.createBankAccount(ACH)
+    expect((await api.createBankAccount(ACH)).bankAccount.id).toBe(
+      created.bankAccount.id,
+    )
+    await expect(
+      api.createBankAccount({ ...ACH, accountNumber: "1234567891" }),
+    ).rejects.toMatchObject({ code: "client_request_id_reused" })
+    const listed = (await api.listBankAccounts()).bankAccounts
+    expect(listed).toHaveLength(1)
+    expect(listed[0]).toMatchObject({ currency: "usd", last4: "7890" })
+    await api.deleteBankAccount(created.bankAccount.id)
+    expect((await api.listBankAccounts()).bankAccounts).toEqual([])
+  })
+
+  it("walks on-ramp pending to ready, EUR refused then re-armed, and deposits", async () => {
+    const api = await signedIn()
+    expect((await api.listDeposits()).deposits).toEqual([])
+    await api.requestOnrampAccount("usd")
+    const eur = await api.requestOnrampAccount("eur")
+    expect(eur.account).toMatchObject({ status: "refused", retryAllowed: true })
+
+    const statuses = []
+    for (let i = 0; i < 3; i++)
+      statuses.push((await api.listOnrampAccounts()).accounts[0]?.status)
+    expect(statuses).toEqual(["preparing", "preparing", "ready"])
+
+    expect((await api.retryOnrampAccount("eur")).account.status).toBe(
+      "preparing",
+    )
+    const deposits = await api.listDeposits()
+    expect(new Set(deposits.deposits.map((d) => d.status))).toEqual(
+      new Set([
+        "waiting_deposit_limit",
+        "credited",
+        "queued_on_hydration",
+        "received_by_bridge",
+        "checking",
+        "needs_attention",
+      ]),
+    )
+  })
+})
