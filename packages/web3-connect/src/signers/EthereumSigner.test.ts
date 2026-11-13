@@ -417,7 +417,22 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     await vi.waitFor(() =>
       expect(options.onMined).toHaveBeenCalledWith(HASH, "success"),
     )
+    expect(options.onMined).toHaveBeenCalledTimes(1)
     expect(sends()).toHaveLength(1)
+  })
+
+  it("an error-surfaced tx hash whose receipt never appears is never handed out", async () => {
+    const { signer, options } = setupPrepared({
+      eth_sendTransaction: () => {
+        throw { code: 4001, message: "x", data: { txHash: HASH } }
+      },
+      eth_getTransactionReceipt: () => null,
+      eth_getTransactionByHash: () => null,
+    })
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome.kind).toBe("failed")
+    await new Promise((r) => setTimeout(r, 50))
+    expect(options.onMined).not.toHaveBeenCalled()
   })
 
   it("D1-B1: a real Error whose non-enumerable cause holds the hash is not a decline", async () => {
