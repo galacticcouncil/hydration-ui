@@ -134,6 +134,7 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
         >
           <ModalBody>
             <BankCashOutHistory
+              hideTitle
               h160={h160}
               onOpen={(rampId) => setView({ kind: "status", rampId })}
             />

@@ -16,6 +16,8 @@ type BankDepositHistoryProps = {
   h160: string
   /** Opens one deposit's timeline in place of this list. */
   onOpen?: (id: string) => void
+  /** The flow's list step already titles the list: no repeated heading. */
+  hideTitle?: boolean
   /** Portfolio's chip; unattributed entries show under All only. */
   filter?: TransferFilter
 }
@@ -29,6 +31,7 @@ export const BankDepositHistory: FC<BankDepositHistoryProps> = ({
   h160,
   onOpen,
   filter = "all",
+  hideTitle = false,
 }) => {
   const { t } = useTranslation(["onramp"])
   const deposits = useHbrDeposits(h160)
@@ -36,9 +39,11 @@ export const BankDepositHistory: FC<BankDepositHistoryProps> = ({
 
   return (
     <Stack gap="m">
-      <Text fs="p3" fw={500}>
-        {t("bank.history.title")}
-      </Text>
+      {!hideTitle && (
+        <Text fs="p3" fw={500}>
+          {t("bank.history.title")}
+        </Text>
+      )}
       {deposits.isError && (
         <Alert
           variant="warning"

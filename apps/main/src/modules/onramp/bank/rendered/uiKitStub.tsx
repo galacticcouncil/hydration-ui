@@ -118,7 +118,12 @@ export const OptionCard: FC<{
 export const Chip: FC<ChildrenProps & { "data-tone"?: string }> = ({
   children,
   "data-tone": tone,
-}) => <span data-chip={tone ?? "1"}>{children}</span>
+  ...rest
+}) => (
+  <span data-chip={tone ?? "1"} {...dataProps(rest)}>
+    {children}
+  </span>
+)
 export const Paper: FC<ChildrenProps> = ({ children, ...rest }) => (
   <section {...dataProps(rest)}>{children}</section>
 )

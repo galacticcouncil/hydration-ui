@@ -53,8 +53,20 @@ export const BankDepositEntry: FC<BankDepositEntryProps> = ({
   return (
     <Paper p="l" data-deposit-row={isDeposit ? entry.id : "unattributed"}>
       <Stack gap="s">
-        <Flex justify="space-between" align="center" gap="m">
-          <Flex align="center" gap="s">
+        <Flex
+          justify="space-between"
+          align="center"
+          gap="s"
+          wrap
+          data-row-header="1"
+        >
+          <Flex
+            align="center"
+            gap="s"
+            sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
+            data-row-amount="1"
+            data-white-space="nowrap"
+          >
             {isDeposit && entry.currency !== "unknown" && (
               <Flex
                 align="center"

@@ -1147,3 +1147,65 @@ describe("phase C fix: unmatched redemptions under Needs attention (C-R5)", () =
     expect(document.querySelector("[data-unlinked-redeems]")).toBeNull()
   })
 })
+
+describe("long server labels and repeated headings (visual nits)", () => {
+  // The longest label of API doc 5.1 (46 characters).
+  const LONGEST = "Cancelled - HOLLAR waiting for mint capacity"
+
+  it("a cash-out row shows the longest 5.1 label in full, wrapping; the amount stays on one line", async () => {
+    rampsList = [
+      {
+        ...FIXTURE_RAMP_BUILT,
+        status: "redemption_cancelled",
+        label: LONGEST,
+        tone: "neutral",
+      },
+    ]
+    signedIn()
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.status.viewTransfers"),
+    )
+    await clickText("bank.cashOut.status.viewTransfers")
+    await waitFor(() =>
+      expect(document.querySelector("[data-ramp-row]")).not.toBeNull(),
+    )
+    const pill = document.querySelector("[data-ramp-row] [data-pill-label]")!
+    expect(pill.textContent).toBe(LONGEST)
+    expect(pill.getAttribute("data-pill-label")).toBe(LONGEST)
+    // the pill may wrap (never nowrap or truncated); the amount may not. The
+    // stub kit cannot see `sx` (the app's JSX runtime turns it into styles), so
+    // the components mirror their white-space in a data attribute.
+    expect(pill.getAttribute("data-white-space")).toBe("normal")
+    expect(
+      document
+        .querySelector("[data-ramp-row] [data-row-amount]")
+        ?.getAttribute("data-white-space"),
+    ).toBe("nowrap")
+    // the list step's title is the only heading for the list
+    expect(text().split("bank.cashOut.history.title").length - 1).toBe(1)
+  })
+
+  it("deposit rows: the same rule, and no repeated heading", async () => {
+    depositsAnswer = {
+      deposits: [{ ...deposit("needs_attention", LONGEST), id: DEP }],
+      unattributed: [],
+    }
+    signedIn()
+    mountFlow("deposit")
+    await waitFor(() => expect(text()).toContain("bank.deposit.viewDeposits"))
+    await clickText("bank.deposit.viewDeposits")
+    await waitFor(() =>
+      expect(document.querySelector("[data-deposit-row]")).not.toBeNull(),
+    )
+    const pill = document.querySelector("[data-deposit-row] [data-pill-label]")!
+    expect(pill.textContent).toBe(LONGEST)
+    expect(pill.getAttribute("data-white-space")).toBe("normal")
+    expect(
+      document
+        .querySelector("[data-deposit-row] [data-row-amount]")
+        ?.getAttribute("data-white-space"),
+    ).toBe("nowrap")
+    expect(text()).not.toContain("bank.history.title")
+  })
+})

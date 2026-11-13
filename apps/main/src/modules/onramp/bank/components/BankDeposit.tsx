@@ -111,6 +111,7 @@ export const BankDeposit: FC<BankDepositProps> = ({ h160 }) => {
       >
         <ModalBody>
           <BankDepositHistory
+            hideTitle
             h160={h160}
             onOpen={(id) => setView({ kind: "deposit", id })}
           />

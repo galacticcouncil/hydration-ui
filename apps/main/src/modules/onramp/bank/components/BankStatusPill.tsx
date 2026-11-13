@@ -17,7 +17,24 @@ type BankStatusPillProps = {
 
 /** A status pill (Figma history and tiles): the colour follows the tone only. */
 export const BankStatusPill: FC<BankStatusPillProps> = ({ label, tone }) => (
-  <Chip variant={TONE_VARIANT[tone]} size="small" rounded data-tone={tone}>
+  // The kit's Chip is one line that never shrinks; a server label can be long
+  // ("Cancelled - HOLLAR waiting for mint capacity"), so it may wrap, in full.
+  <Chip
+    variant={TONE_VARIANT[tone]}
+    size="small"
+    rounded
+    data-tone={tone}
+    data-pill-label={label}
+    data-white-space="normal"
+    sx={{
+      whiteSpace: "normal",
+      height: "auto",
+      maxWidth: "100%",
+      flexShrink: 1,
+      lineHeight: 1.3,
+      textAlign: "left",
+    }}
+  >
     {label}
   </Chip>
 )

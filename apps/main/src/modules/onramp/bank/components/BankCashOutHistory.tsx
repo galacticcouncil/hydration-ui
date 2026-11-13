@@ -24,6 +24,8 @@ import {
 type BankCashOutHistoryProps = {
   h160: string
   onOpen: (rampId: string) => void
+  /** The flow's list step already titles the list: no repeated heading. */
+  hideTitle?: boolean
   /** Portfolio's chip; unmatched redemptions show under All and Needs attention. */
   filter?: TransferFilter
 }
@@ -38,8 +40,21 @@ const RampRow: FC<{
   return (
     <Paper p="l" data-ramp-row={ramp.id}>
       <Stack gap="s">
-        <Flex justify="space-between" align="center" gap="m">
-          <Text fs="p2" fw={500} color={getToken("text.high")}>
+        <Flex
+          justify="space-between"
+          align="center"
+          gap="s"
+          wrap
+          data-row-header="1"
+        >
+          <Text
+            fs="p2"
+            fw={500}
+            color={getToken("text.high")}
+            sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
+            data-row-amount="1"
+            data-white-space="nowrap"
+          >
             {t("bank.cashOut.history.amount", {
               amount: formatUsdcBaseUnits(ramp.usdcAmount) ?? "-",
             })}
@@ -79,6 +94,7 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   h160,
   onOpen,
   filter = "all",
+  hideTitle = false,
 }) => {
   const { t } = useTranslation(["onramp"])
   const list = useHbrRamps(h160)
@@ -88,9 +104,11 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   return (
     <Stack gap="l">
       <Stack gap="m">
-        <Text fs="p3" fw={500}>
-          {t("bank.cashOut.history.title")}
-        </Text>
+        {!hideTitle && (
+          <Text fs="p3" fw={500}>
+            {t("bank.cashOut.history.title")}
+          </Text>
+        )}
         {data.ramps.length === 0 && (
           <Text fs="p5" color={getToken("text.low")}>
             {t("bank.cashOut.history.empty")}
