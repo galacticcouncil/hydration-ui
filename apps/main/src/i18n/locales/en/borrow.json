@@ -168,7 +168,7 @@
   "reserve.capLeft": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }} left before the cap",
 
   "reserve.collateral.title": "Supported collateral",
-  "reserve.collateral.description": "Assets that can be supplied as collateral to borrow {{ symbol }} in this market. E-mode and an account's own state can narrow this further.",
+  "reserve.collateral.description": "Assets that can be supplied as collateral to borrow {{ symbol }} in this market.",
   "reserve.collateral.empty": "Nothing can currently back a {{ symbol }} borrow.",
 
   "reserve.borrowable.title": "Assets you can borrow",
@@ -176,7 +176,7 @@
   "reserve.borrowable.empty": "Nothing can currently be borrowed against {{ symbol }}.",
 
   "reserve.rates.title": "Interest rates",
-  "reserve.rates.description": "Current supply and borrow rates for {{ symbol }}, with each incentive listed apart from the base rate.",
+  "reserve.rates.description": "Current supply and borrow rates for {{ symbol }}.",
   "reserve.rates.supplyApr": "Supply APR",
   "reserve.rates.borrowApr": "Borrow APR",
   "reserve.rates.chartLabel": "Supply and borrow APR history",
@@ -202,7 +202,7 @@
   "reserve.emode.category": "Category",
 
   "reserve.rateModel.title": "Interest rate model",
-  "reserve.rateModel.description": "The variable borrow rate follows the reserve's utilization, rising steeply past the optimal point.",
+  "reserve.rateModel.description": "The variable borrow rate adjusts based on reserve utilization.",
   "reserve.rateModel.optimalUtilization": "Optimal utilization",
   "reserve.rateModel.baseRate": "Base rate",
   "reserve.rateModel.slopeBelowOptimal": "Slope below optimal",
