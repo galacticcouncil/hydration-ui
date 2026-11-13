@@ -6,11 +6,12 @@ import type { BankEntry } from "@/modules/onramp/bank/store/useBankEntryStore"
 /**
  * The wizard steps of each bank flow, in order (Figma "Mobile bank": the
  * stepper above the modal). Deposit has no amount step (HBR takes no deposit
- * amount), so the method choice holds its first place; withdraw sets up first.
+ * amount), so the method choice holds its first place. Withdraw is Figma's
+ * W01-W15 order; its set-up screens (before W01) show no stepper.
  */
 export const BANK_STEPS = {
   deposit: ["method", "verify", "bankDetails", "transfer"],
-  withdraw: ["verify", "amount", "bankAccount", "review", "transfer"],
+  withdraw: ["amount", "bankAccount", "review", "transfer"],
 } as const
 
 export type BankStepKey =

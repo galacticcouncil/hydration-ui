@@ -443,24 +443,32 @@ const app = () => (
   </QueryClientProvider>
 )
 
-/** W02: the saved account is selected; Continue opens its cash-out. */
-const openCashOut = async () => {
-  render(app())
+/**
+ * Figma W01 -> W02 -> W05: enter the amount, Continue; the saved account is
+ * selected, Continue; the review opens on its read-only quote.
+ */
+const amountToQuote = async (amount = "25.5") => {
+  await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+  await act(async () => {
+    fireEvent.change(document.querySelector("input")!, {
+      target: { value: amount },
+    })
+  })
+  await click("bank.flow.continue")
+  await waitFor(() => expect(text()).toContain("bank.accounts.title"))
   await waitFor(() => expect(button("bank.flow.continue").disabled).toBe(false))
   await click("bank.flow.continue")
-  await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
-}
-/** Sign in, enter 25.5, quote, confirm: the review is on screen. */
-const toReview = async () => {
-  await openCashOut()
-  const input = document.querySelector("input") as HTMLInputElement
-  await act(async () => {
-    fireEvent.change(input, { target: { value: "25.5" } })
-  })
-  await click("bank.cashOut.quote.get")
   await waitFor(() =>
     expect(text()).toContain("bank.cashOut.quote.bridgeCredited"),
   )
+}
+const openCashOut = async () => {
+  render(app())
+  await amountToQuote()
+}
+/** Sign in, enter 25.5, pick the account, the quote, confirm: the review is on screen. */
+const toReview = async () => {
+  await openCashOut()
   await click("bank.cashOut.confirm")
   await waitFor(() => expect(text()).toContain("bank.cashOut.review.title"))
   await flush()
@@ -842,12 +850,6 @@ describe("build refusals", () => {
         nothingBroadcast: true,
       })
     await openCashOut()
-    await act(async () => {
-      fireEvent.change(document.querySelector("input")!, {
-        target: { value: "25.5" },
-      })
-    })
-    await click("bank.cashOut.quote.get")
     await waitFor(() => expect(text()).toContain("bank.cashOut.confirm"))
     await click("bank.cashOut.confirm")
     await waitFor(() => expect(text()).toContain("bank.cashOut.error.pending"))
@@ -862,12 +864,6 @@ describe("build refusals", () => {
     buildAnswer = () =>
       json(503, { error: "ramp_build_unavailable", nothingBroadcast: true })
     await openCashOut()
-    await act(async () => {
-      fireEvent.change(document.querySelector("input")!, {
-        target: { value: "25.5" },
-      })
-    })
-    await click("bank.cashOut.quote.get")
     await waitFor(() => expect(text()).toContain("bank.cashOut.confirm"))
     await click("bank.cashOut.confirm")
     await waitFor(() =>
@@ -946,18 +942,9 @@ describe("fix round 1", () => {
       },
       redeemTx: unsigned(REDEEM_B),
     })
+    // "Back to cash out" is a NEW cash-out: amount, account, a new quote.
     await click("bank.cashOut.status.back")
-    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
-    const realNow = Date.now
-    vi.spyOn(Date, "now").mockImplementation(() => realNow() + 25_000)
-    // re-render past the quote cool-down
-    for (const value of ["25.50", "25.5"])
-      await act(async () => {
-        fireEvent.change(document.querySelector("input")!, {
-          target: { value },
-        })
-      })
-    await click("bank.cashOut.quote.get")
+    await amountToQuote("25.5")
     await waitFor(() => expect(text()).toContain("bank.cashOut.confirm"))
     await click("bank.cashOut.confirm")
     await waitFor(() => expect(text()).toContain("bank.cashOut.review.title"))

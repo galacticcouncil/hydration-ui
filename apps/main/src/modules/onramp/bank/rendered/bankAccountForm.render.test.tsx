@@ -285,6 +285,10 @@ const chooseRail = async (rail: "ach" | "sepa" = "ach") => {
   await flush()
 }
 const openAdd = async (rail: "ach" | "sepa" = "ach") => {
+  // Figma W01 -> W02: the amount step's destination row opens the accounts.
+  if (document.querySelector('[data-option="bank.cashOut.form.destination"]'))
+    await clickSel('[data-option="bank.cashOut.form.destination"]')
+  await flush()
   await clickText("bank.accounts.add")
   await flush()
   await chooseRail(rail)
@@ -413,7 +417,8 @@ describe("Q2 clientRequestId", () => {
     await act(async () => setWallet(A))
     await flush()
     await releaseHeld(json(502, { error: "outcome_unknown" }))
-    const formShown = !!document.querySelector("form")
+    // the bank-account form (the amount step is a form too)
+    const formShown = !!document.querySelector('[name="streetLine1"]')
     if (!formShown) await openAdd()
     await fillAch()
     await submit()
@@ -440,7 +445,7 @@ describe("Q2 clientRequestId", () => {
     await flush()
     await act(async () => setWallet(A))
     await flush()
-    if (!document.querySelector("form")) await openAdd()
+    if (!document.querySelector('[name="streetLine1"]')) await openAdd()
     await fillAch()
     // D-R2: the remounted form shows the pending POST of this wallet.
     const btn = Array.from(document.querySelectorAll("button")).find(
@@ -477,7 +482,7 @@ describe("rail switches (E2E-1)", () => {
   }
   // The rail is its own step now: switching is back to the rail choice, then the other rail.
   const pick = async (rail: "ach" | "sepa") => {
-    if (document.querySelector("form")) await back()
+    if (document.querySelector('[name="streetLine1"]')) await back()
     await chooseRail(rail)
   }
   const fieldErrors = () =>
@@ -588,7 +593,7 @@ describe("address dropdowns (round 9)", () => {
   })
   // The rail is its own step now: switching is back to the rail choice, then the other rail.
   const pick = async (rail: "ach" | "sepa") => {
-    if (document.querySelector("form")) await back()
+    if (document.querySelector('[name="streetLine1"]')) await back()
     await chooseRail(rail)
   }
   const selectValue = (name: string) =>

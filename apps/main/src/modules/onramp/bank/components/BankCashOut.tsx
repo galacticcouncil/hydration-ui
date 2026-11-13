@@ -1,24 +1,21 @@
 import {
   Alert,
   Button,
-  FormField,
-  Input,
   ModalBody,
+  ModalFooter,
+  Paper,
   Stack,
+  SummaryRow,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useEffect, useRef, useState } from "react"
-import { Controller, FormProvider, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useBankAccountLine } from "@/modules/onramp/bank/components/BankAccountPicker"
-import {
-  BankCashOutFormValues,
-  useBankCashOutForm,
-} from "@/modules/onramp/bank/components/BankCashOut.form"
-import { BankCashOutHistory } from "@/modules/onramp/bank/components/BankCashOutHistory"
+import type { BankCashOutFormValues } from "@/modules/onramp/bank/components/BankCashOut.form"
 import { BankCashOutQuote } from "@/modules/onramp/bank/components/BankCashOutQuote"
 import { BankCashOutReview } from "@/modules/onramp/bank/components/BankCashOutReview"
-import { BankCashOutStatus } from "@/modules/onramp/bank/components/BankCashOutStatus"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import type {
   BankAccountView,
@@ -37,6 +34,7 @@ import {
   reportRedeemHash,
 } from "@/modules/onramp/bank/utils/cashOut"
 import { buildCashOutTransaction } from "@/modules/onramp/bank/utils/cashOutTransaction"
+import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 import { strictEvmDigest } from "@/modules/transactions/utils/strictEvm"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -44,7 +42,7 @@ import { useTransactionsStore } from "@/states/transactions"
 export const QUOTE_REFRESH_MS = 20_000
 
 type Stage =
-  | { kind: "form" }
+  | { kind: "quote" }
   | {
       kind: "review"
       build: Omit<RampBuildResponse, "approveTx" | "redeemTx">
@@ -52,13 +50,16 @@ type Stage =
       hasApprove: boolean
       chainId: number
     }
-  | { kind: "status"; rampId: string }
 
 type BankCashOutProps = {
   h160: string
   /** The account chosen on the step before; a cash-out goes to it only. */
   account: BankAccountView
+  /** The USDC amount entered on W01 (already checked against the request rule). */
+  usdcAmount: string
   onBack: () => void
+  /** The ramp's status view (Transfer step): after Sign, Not now, or a pending one. */
+  onStatus: (rampId: string) => void
 }
 
 const sameRequest = (
@@ -70,26 +71,32 @@ const sameRequest = (
   a.usdcAmount === String(b.usdcAmount ?? "").trim()
 
 /**
- * Cash out to a bank account (API doc 4: quote, build, report; rule 11). The
- * build's unsigned transactions live in `prepared` (a ref) only until they
- * are handed to createTransaction, once, as two strict steps; then the ref is
- * cleared and the screen shows the ramp's status.
+ * Cash out to a bank account (API doc 4: quote, build, report; rule 11), as
+ * Figma W05: the read-only quote of the amount and account chosen before,
+ * then Confirm (the binding build) and the review whose Sign hands the two
+ * strict steps (W06: approve, then redeem) to createTransaction. The build's
+ * unsigned transactions live in `prepared` (a ref) only until they are handed
+ * over, once; then the ref is cleared and the flow shows the ramp's status.
  */
 export const BankCashOut: FC<BankCashOutProps> = ({
   h160,
   account,
+  usdcAmount,
   onBack,
+  onStatus,
 }) => {
   const { t } = useTranslation(["onramp"])
   const service = useHbrService()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const [stage, setStage] = useState<Stage>({ kind: "form" })
+  const [stage, setStage] = useState<Stage>({ kind: "quote" })
   const prepared = useRef<PreparedCashOut | null>(null)
   const [quotedAt, setQuotedAt] = useState(0)
   const [, setTick] = useState(0)
 
-  const form = useBankCashOutForm(account.id)
-  const values = useWatch({ control: form.control })
+  const body: BankCashOutFormValues = {
+    bankAccountId: account.id,
+    usdcAmount,
+  }
   const quote = useHbrQuoteRamp(h160)
   const build = useHbrBuildRamp(h160, (next) => {
     prepared.current = next
@@ -102,6 +109,17 @@ export const BankCashOut: FC<BankCashOutProps> = ({
     },
     [],
   )
+
+  // W05 opens on the read-only quote of the amount chosen before: asked once
+  // per mount (a ref, so a re-run effect asks nothing more); later reads are
+  // the user's Refresh, at most one per QUOTE_REFRESH_MS.
+  const asked = useRef(false)
+  useEffect(() => {
+    if (asked.current) return
+    asked.current = true
+    setQuotedAt(Date.now())
+    quote.mutate({ bankAccountId: account.id, usdcAmount })
+  }, [quote, account.id, usdcAmount])
 
   // Re-render when the quote may be refreshed again.
   useEffect(() => {
@@ -152,42 +170,15 @@ export const BankCashOut: FC<BankCashOutProps> = ({
     })
     // The outcome is read from the strict ledger, not from this promise.
     void createTransaction(input).catch(() => undefined)
-    setStage({ kind: "status", rampId })
+    onStatus(rampId)
   }
 
   const leaveTo = (rampId: string) => {
     prepared.current = null
     quote.reset()
     build.reset()
-    setStage({ kind: "status", rampId })
+    onStatus(rampId)
   }
-
-  const backToForm = () => {
-    prepared.current = null
-    quote.reset()
-    build.reset()
-    setStage({ kind: "form" })
-  }
-
-  if (stage.kind === "status")
-    return (
-      <BankStepShell
-        title={t("bank.cashOut.title")}
-        step="transfer"
-        onBack={backToForm}
-      >
-        <ModalBody>
-          <Stack gap="l">
-            <BankCashOutStatus
-              h160={h160}
-              rampId={stage.rampId}
-              onBack={backToForm}
-            />
-            <BankCashOutHistory h160={h160} onOpen={leaveTo} />
-          </Stack>
-        </ModalBody>
-      </BankStepShell>
-    )
 
   if (stage.kind === "review")
     return (
@@ -209,7 +200,7 @@ export const BankCashOut: FC<BankCashOutProps> = ({
       </BankStepShell>
     )
 
-  const quoteFits = quote.isSuccess && sameRequest(quote.variables, values)
+  const quoteFits = quote.isSuccess && sameRequest(quote.variables, body)
   const quoteError = quote.isError
     ? classifyCashOutError(quote.error, "quote")
     : null
@@ -228,14 +219,14 @@ export const BankCashOut: FC<BankCashOutProps> = ({
         })
       : t(`bank.cashOut.error.${view.kind}`)
 
-  const onQuote = form.handleSubmit((body) => {
+  const onQuote = () => {
     if (busy || coolingDown) return
     setQuotedAt(Date.now())
     build.reset()
     quote.mutate(body)
-  })
+  }
 
-  const onConfirm = form.handleSubmit((body) => {
+  const onConfirm = () => {
     if (busy || !quoteFits || notAvailable) return
     build.mutate(body, {
       onSuccess: (data) => {
@@ -250,65 +241,81 @@ export const BankCashOut: FC<BankCashOutProps> = ({
         })
       },
     })
-  })
+  }
+
+  const credited =
+    quoteFits && quote.data ? quote.data.quote.bridgeCredited : null
 
   return (
     <BankStepShell
       title={t("bank.cashOut.title")}
-      description={accountLine}
-      step="amount"
+      step="review"
       onBack={onBack}
     >
       <ModalBody>
         <Stack gap="l">
-          <FormProvider {...form}>
-            <Stack gap="m">
-              <Controller
-                control={form.control}
-                name="usdcAmount"
-                render={({ field, fieldState }) => (
-                  <FormField
-                    label={t("bank.cashOut.form.amount")}
-                    error={fieldState.error?.message}
-                  >
-                    <Input
-                      {...field}
-                      value={String(field.value ?? "")}
-                      inputMode="decimal"
-                      autoComplete="off"
-                      isError={!!fieldState.error}
-                    />
-                  </FormField>
-                )}
-              />
-              <Button
-                variant="secondary"
-                disabled={busy || coolingDown || notAvailable}
-                onClick={() => void onQuote()}
+          <Paper p="l" bg="dim">
+            <Stack gap="xs" align="center">
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("bank.cashOut.summary.bridgeReceives")}
+              </Text>
+              <Text
+                font="primary"
+                fs="h6"
+                color={getToken("text.high")}
+                data-summary-credited={credited ?? ""}
               >
-                {t(
-                  quoteFits
-                    ? "bank.cashOut.quote.refresh"
-                    : "bank.cashOut.quote.get",
-                )}
-              </Button>
+                {credited
+                  ? t("bank.cashOut.quote.usdc", {
+                      amount: formatUsdcBaseUnits(credited) ?? "-",
+                    })
+                  : t("bank.cashOut.summary.quoting")}
+              </Text>
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("bank.cashOut.summary.from", { amount: usdcAmount })}
+              </Text>
+              <Text fs="p5" color={getToken("text.low")}>
+                {accountLine}
+              </Text>
             </Stack>
-          </FormProvider>
-          {quoteFits && quote.data && (
-            <BankCashOutQuote
-              quote={quote.data.quote}
-              payoutLimit={quote.data.payoutLimit}
-              currency={currency}
+          </Paper>
+          <Stack gap="s">
+            <Text
+              font="primary"
+              fs="p2"
+              color={getToken("text.tint.secondary")}
+            >
+              {t("bank.cashOut.summary.overview")}
+            </Text>
+            <SummaryRow
+              label={t("bank.cashOut.summary.toAccount")}
+              content={accountLine}
             />
-          )}
+            <SummaryRow
+              label={t("bank.cashOut.summary.payoutCurrency")}
+              content={t(`bank.deposit.currency.${currency}`)}
+            />
+            {quoteFits && quote.data && (
+              <BankCashOutQuote
+                quote={quote.data.quote}
+                payoutLimit={quote.data.payoutLimit}
+                currency={currency}
+              />
+            )}
+          </Stack>
           {quoteError && (
             <Alert variant="warning" description={errorText(quoteError)} />
           )}
           {buildError && (
             <Alert variant="warning" description={errorText(buildError)} />
           )}
+        </Stack>
+      </ModalBody>
+      <ModalFooter>
+        <Stack gap="m" width="100%">
           {buildError?.kind === "pending" && buildError.rampId && (
             <Button
+              size="large"
               variant="secondary"
               onClick={() => leaveTo(buildError.rampId!)}
             >
@@ -316,17 +323,24 @@ export const BankCashOut: FC<BankCashOutProps> = ({
             </Button>
           )}
           {quoteFits && !notAvailable && (
-            <Button
-              size="large"
-              disabled={busy}
-              onClick={() => void onConfirm()}
-            >
+            <Button size="large" disabled={busy} onClick={onConfirm}>
               {t("bank.cashOut.confirm")}
             </Button>
           )}
-          <BankCashOutHistory h160={h160} onOpen={leaveTo} />
+          <Button
+            size="large"
+            variant="tertiary"
+            disabled={busy || coolingDown || notAvailable}
+            onClick={onQuote}
+          >
+            {t(
+              quoteFits
+                ? "bank.cashOut.quote.refresh"
+                : "bank.cashOut.quote.get",
+            )}
+          </Button>
         </Stack>
-      </ModalBody>
+      </ModalFooter>
     </BankStepShell>
   )
 }

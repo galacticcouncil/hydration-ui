@@ -111,10 +111,12 @@ import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
 import {
   buildFixtureOnboarding,
   FIXTURE_BANK_ACCOUNTS,
+  FIXTURE_QUOTE,
   FIXTURE_RAMP_BUILT,
 } from "@/modules/onramp/bank/config/fixtures"
 import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
 const A = "0x1111111111111111111111111111111111111111"
@@ -153,6 +155,8 @@ let depositsAnswer: unknown
 let onrampFail: null | "500" | "429" | "net"
 let bankAccounts: { bankAccounts: unknown[] }
 let rampsList: unknown[]
+let rampView: Record<string, unknown>
+let quoteCalls = 0
 const ready = () =>
   json(
     200,
@@ -196,9 +200,10 @@ const fakeFetch = async (url: string, init: RequestInit) => {
         unlinkedRedeemsTruncated: false,
       })
     case `GET /v1/ramps/${FIXTURE_RAMP_BUILT.id}`:
-      return json(200, {
-        ramp: { ...FIXTURE_RAMP_BUILT, label: "Checking (server)" },
-      })
+      return json(200, { ramp: rampView })
+    case "POST /v1/ramps/quote":
+      quoteCalls += 1
+      return json(200, FIXTURE_QUOTE)
   }
   return json(404, { error: "not_found" })
 }
@@ -261,6 +266,8 @@ beforeEach(() => {
   onrampFail = null
   bankAccounts = FIXTURE_BANK_ACCOUNTS
   rampsList = []
+  rampView = { ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }
+  quoteCalls = 0
   walletState.account = { rawAddress: A, address: A }
   walletState.signer = new FakeEthSigner(A)
   emit()
@@ -283,12 +290,12 @@ describe("the bank modal: stepper, back and close", () => {
     expect(stepper()?.getAttribute("data-step")).toBe("bank.step.verify")
   })
 
-  it("withdraw steps are Verify, Amount, Bank account, Review, Transfer", async () => {
+  it("withdraw steps are Figma's: Amount, Bank account, Review, Transfer", async () => {
     signedIn()
     mountFlow("withdraw")
     await waitFor(() => expect(stepper()).not.toBeNull())
     expect(stepper()?.getAttribute("data-steps")).toBe(
-      "bank.step.verify|bank.step.amount|bank.step.bankAccount|bank.step.review|bank.step.transfer",
+      "bank.step.amount|bank.step.bankAccount|bank.step.review|bank.step.transfer",
     )
   })
 
@@ -345,6 +352,12 @@ describe("the bank modal: stepper, back and close", () => {
     signedIn()
     const onExit = vi.fn()
     mountFlow("withdraw", { onExit })
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-option="bank.cashOut.form.destination"]'),
+      ).not.toBeNull(),
+    )
+    await click('[data-option="bank.cashOut.form.destination"]')
     await waitFor(() => expect(text()).toContain("bank.accounts.addAnother"))
     await click('[data-option="bank.accounts.addAnother"]')
     expect(text()).toContain("bank.accounts.railTitle")
@@ -710,13 +723,19 @@ describe("the cash-out stays on the account chosen at Continue (review 4a B4)", 
     last4: "9999",
     bankName: "Other bank",
   }
-  const desc = () =>
-    document.querySelector("[data-header-description]")?.textContent ?? ""
-  const toCashOut = async () => {
+  // W01 amount -> W02 Continue with the default pick (X) -> W05 review.
+  const toReview = async () => {
     signedIn()
     rampsList = [{ ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }]
     bankAccounts = { bankAccounts: [X] }
     mountFlow("withdraw")
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    await act(async () => {
+      fireEvent.change(document.querySelector("input")!, {
+        target: { value: "25.5" },
+      })
+    })
+    await clickText("bank.flow.continue")
     await waitFor(() =>
       expect(
         Array.from(document.querySelectorAll("button")).find(
@@ -725,36 +744,190 @@ describe("the cash-out stays on the account chosen at Continue (review 4a B4)", 
       ).toBe(false),
     )
     await clickText("bank.flow.continue")
-    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.summary.overview"),
+    )
+  }
+  const reread = async () => {
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ["hbr"] })
+    })
+    await flush()
   }
 
-  it("c1 the list reorders after Continue: still X's cash-out, and a ramp's status stays", async () => {
-    await toCashOut()
-    expect(desc()).toContain("1234")
+  it("c1 the list reorders after Continue: the review stays X's", async () => {
+    await toReview()
+    expect(text()).toContain("1234")
+    bankAccounts = { bankAccounts: [Y, X] }
+    await reread()
+    expect(text()).toContain("bank.cashOut.summary.overview")
+    expect(text()).toContain("1234")
+    expect(text()).not.toContain("9999")
+  })
+
+  it("c1b a ramp's status stays on its ramp whatever the list says", async () => {
+    signedIn()
+    rampsList = [{ ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }]
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.status.viewTransfers"),
+    )
+    await clickText("bank.cashOut.status.viewTransfers")
     await waitFor(() => expect(text()).toContain("bank.cashOut.history.open"))
     await clickText("bank.cashOut.history.open")
     await waitFor(() =>
       expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
     )
     bankAccounts = { bankAccounts: [Y, X] }
-    await act(async () => {
-      await client.refetchQueries({ queryKey: ["hbr"] })
-    })
-    await flush()
+    await reread()
     expect(document.querySelector("[data-cash-out-status]")).not.toBeNull()
     expect(text()).toContain("Checking (server)")
-    expect(text()).not.toContain("9999")
   })
 
-  it("c2 the chosen account leaves the list: the cash-out of X stays, no jump to the picker", async () => {
-    await toCashOut()
+  it("c2 the chosen account leaves the list: the review of X stays, no jump to the picker", async () => {
+    await toReview()
     bankAccounts = { bankAccounts: [Y] }
-    await act(async () => {
-      await client.refetchQueries({ queryKey: ["hbr"] })
-    })
-    await flush()
-    expect(text()).toContain("bank.cashOut.title")
-    expect(desc()).toContain("1234")
+    await reread()
+    expect(text()).toContain("bank.cashOut.summary.overview")
+    expect(text()).toContain("1234")
     expect(text()).not.toContain("bank.accounts.title")
+  })
+})
+
+// ---- phase C: withdraw -----------------------------------------------------
+
+describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
+  const enterAmount = async (value = "25.5") => {
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    await act(async () => {
+      fireEvent.change(document.querySelector("input")!, {
+        target: { value },
+      })
+    })
+  }
+
+  it("the steps go in order and the review asks for one quote", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await enterAmount()
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    // W01 shows no figure of its own: the only cash-out figures are the quote's.
+    expect(text()).not.toContain("bank.cashOut.quote")
+    await clickText("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.bankAccount")
+    await clickText("bank.flow.continue")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.quote.bridgeCredited"),
+    )
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.review")
+    // The summary's figure is the quote's bridgeCredited, nothing computed.
+    expect(document.querySelector("[data-summary-credited]")?.textContent).toBe(
+      `bank.cashOut.quote.usdc ${JSON.stringify({
+        amount: formatUsdcBaseUnits(FIXTURE_QUOTE.quote.bridgeCredited),
+      })}`,
+    )
+    await flush()
+    expect(quoteCalls).toBe(1)
+  })
+
+  it("an invalid amount stays on W01 with its message", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await enterAmount("1.1234567")
+    await clickText("bank.flow.continue")
+    expect(text()).toContain("bank.cashOut.form.error.amount")
+    expect(text()).not.toContain("bank.accounts.title")
+    expect(quoteCalls).toBe(0)
+  })
+
+  it("a cash-out's details replace the list (R01); back returns to the list", async () => {
+    signedIn()
+    rampsList = [FIXTURE_RAMP_BUILT]
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.status.viewTransfers"),
+    )
+    await clickText("bank.cashOut.status.viewTransfers")
+    await waitFor(() =>
+      expect(document.querySelector("[data-ramp-row]")).not.toBeNull(),
+    )
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.transfer")
+    await clickText("bank.cashOut.history.open")
+    await waitFor(() =>
+      expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+    )
+    expect(document.querySelector("[data-ramp-row]")).toBeNull()
+    await click("[data-header-back]")
+    expect(document.querySelector("[data-ramp-row]")).not.toBeNull()
+    expect(document.querySelector("[data-cash-out-status]")).toBeNull()
+  })
+
+  const openStatus = async () => {
+    signedIn()
+    useBankEntryStore.getState().open({
+      direction: "withdraw",
+      target: { kind: "ramp", id: FIXTURE_RAMP_BUILT.id },
+    })
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+    )
+    await waitFor(() => expect(text()).toContain("bank.cashOut.status.cashOut"))
+  }
+
+  it("reopened from Portfolio: the status directly, no stepper", async () => {
+    await openStatus()
+    expect(stepper()).toBeNull()
+  })
+
+  it("the 5.5 timeline lights only the server's stage; its label is the current stage", async () => {
+    rampView = {
+      ...FIXTURE_RAMP_BUILT,
+      status: "credited",
+      label: "Queued on Base (server)",
+      tone: "pending",
+    }
+    await openStatus()
+    expect(
+      document
+        .querySelector("[data-timeline-lit]")
+        ?.getAttribute("data-timeline-lit"),
+    ).toBe("3")
+    expect(text()).toContain("Queued on Base (server)")
+    expect(
+      Array.from(document.querySelectorAll("[data-stage-upcoming]")).map((e) =>
+        e.getAttribute("data-stage-upcoming"),
+      ),
+    ).toEqual(["bank.cashOut.stage.3", "bank.cashOut.stage.4"])
+  })
+
+  it("paid alone completes the timeline", async () => {
+    rampView = {
+      ...FIXTURE_RAMP_BUILT,
+      status: "paid",
+      label: "Paid",
+      tone: "success",
+    }
+    await openStatus()
+    expect(
+      document
+        .querySelector("[data-timeline-complete]")
+        ?.getAttribute("data-timeline-complete"),
+    ).toBe("true")
+  })
+
+  it("an off-timeline status shows its label and detail, no timeline", async () => {
+    rampView = {
+      ...FIXTURE_RAMP_BUILT,
+      status: "expired",
+      label: "Expired - no redemption found",
+      tone: "neutral",
+      detail: "server detail words",
+    }
+    await openStatus()
+    expect(document.querySelector("[data-timeline-lit]")).toBeNull()
+    expect(text()).toContain("Expired - no redemption found")
+    expect(text()).toContain("server detail words")
   })
 })

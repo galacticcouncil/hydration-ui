@@ -1,9 +1,18 @@
-import { Stack, Text, TextButton } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  Paper,
+  Separator,
+  Stack,
+  Text,
+  TextButton,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BankRampLabel } from "@/modules/onramp/bank/components/BankRampLabel"
+import { useRampLabel } from "@/modules/onramp/bank/components/BankRampLabel"
+import { BankStatusPill } from "@/modules/onramp/bank/components/BankStatusPill"
+import type { RampView } from "@/modules/onramp/bank/config/schemas"
 import { useHbrRamps } from "@/modules/onramp/bank/hooks/useHbr"
 import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 
@@ -12,9 +21,52 @@ type BankCashOutHistoryProps = {
   onOpen: (rampId: string) => void
 }
 
+const RampRow: FC<{
+  h160: string
+  ramp: RampView
+  onOpen: (id: string) => void
+}> = ({ h160, ramp, onOpen }) => {
+  const { t } = useTranslation(["onramp"])
+  const { label, detail, tone } = useRampLabel(h160, ramp)
+  return (
+    <Paper p="l" data-ramp-row={ramp.id}>
+      <Stack gap="s">
+        <Flex justify="space-between" align="center" gap="m">
+          <Text fs="p2" fw={500} color={getToken("text.high")}>
+            {t("bank.cashOut.history.amount", {
+              amount: formatUsdcBaseUnits(ramp.usdcAmount) ?? "-",
+            })}
+          </Text>
+          <Stack data-ramp-label={ramp.id}>
+            <BankStatusPill label={label} tone={tone} />
+          </Stack>
+        </Flex>
+        {ramp.createdAt && (
+          <Text fs="p5" color={getToken("text.low")}>
+            {t("bank.history.receivedAt", { value: new Date(ramp.createdAt) })}
+          </Text>
+        )}
+        {detail && (
+          <Text fs="p5" color={getToken("text.medium")}>
+            {detail}
+          </Text>
+        )}
+        <Separator />
+        <Flex justify="center">
+          <TextButton onClick={() => onOpen(ramp.id)}>
+            {t("bank.cashOut.history.open")}
+          </TextButton>
+        </Flex>
+      </Stack>
+    </Paper>
+  )
+}
+
 /**
- * GET /v1/ramps: cash-outs, then, apart, redemptions the server has not
- * matched to a cash-out (rule 9). Each shows its label as returned.
+ * GET /v1/ramps as Figma M05 cards: cash-outs, then, apart and titled as
+ * such, redemptions the server has not matched to a cash-out (rule 9). Each
+ * shows its label as returned (rule 2); a row's Details opens that cash-out
+ * in place of this list.
  */
 export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   h160,
@@ -26,55 +78,53 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   if (!data) return null
 
   return (
-    <Stack gap="m">
-      {data.ramps.length > 0 && (
-        <Stack gap="s">
-          <Text fs="p3" fw={500}>
-            {t("bank.cashOut.history.title")}
+    <Stack gap="l">
+      <Stack gap="m">
+        <Text fs="p3" fw={500}>
+          {t("bank.cashOut.history.title")}
+        </Text>
+        {data.ramps.length === 0 && (
+          <Text fs="p5" color={getToken("text.low")}>
+            {t("bank.cashOut.history.empty")}
           </Text>
-          {data.ramps.map((ramp) => (
-            <Stack key={ramp.id} gap="xs" data-ramp-row={ramp.id}>
-              <Text fs="p5" color={getToken("text.low")}>
-                {t("bank.cashOut.history.amount", {
-                  amount: formatUsdcBaseUnits(ramp.usdcAmount) ?? "-",
-                })}
-              </Text>
-              <BankRampLabel h160={h160} ramp={ramp} />
-              <TextButton onClick={() => onOpen(ramp.id)}>
-                {t("bank.cashOut.history.open")}
-              </TextButton>
-            </Stack>
-          ))}
-          {data.truncated && (
-            <Text fs="p5" color={getToken("text.low")}>
-              {t("bank.cashOut.history.truncated")}
-            </Text>
-          )}
-        </Stack>
-      )}
+        )}
+        {data.ramps.map((ramp) => (
+          <RampRow key={ramp.id} h160={h160} ramp={ramp} onOpen={onOpen} />
+        ))}
+        {data.truncated && (
+          <Text fs="p5" color={getToken("text.low")}>
+            {t("bank.cashOut.history.truncated")}
+          </Text>
+        )}
+      </Stack>
       {data.unlinkedRedeems.length > 0 && (
-        <Stack gap="s" data-unlinked-redeems="1">
-          <Text fs="p3" fw={500}>
-            {t("bank.cashOut.unlinked.title")}
-          </Text>
-          {data.unlinkedRedeems.map((row) => (
-            <Stack key={row.id} gap="xs">
-              <Text fs="p4" fw={500}>
-                {row.label}
+        <Paper p="l" data-unlinked-redeems="1">
+          <Stack gap="m">
+            <Stack gap="xs">
+              <Text fs="p3" fw={500}>
+                {t("bank.cashOut.unlinked.title")}
               </Text>
-              {row.detail && (
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {row.detail}
-                </Text>
-              )}
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("bank.cashOut.unlinked.description")}
+              </Text>
             </Stack>
-          ))}
-          {data.unlinkedRedeemsTruncated && (
-            <Text fs="p5" color={getToken("text.low")}>
-              {t("bank.cashOut.history.truncated")}
-            </Text>
-          )}
-        </Stack>
+            {data.unlinkedRedeems.map((row) => (
+              <Stack key={row.id} gap="xs" align="start">
+                <BankStatusPill label={row.label} tone={row.tone} />
+                {row.detail && (
+                  <Text fs="p5" color={getToken("text.medium")}>
+                    {row.detail}
+                  </Text>
+                )}
+              </Stack>
+            ))}
+            {data.unlinkedRedeemsTruncated && (
+              <Text fs="p5" color={getToken("text.low")}>
+                {t("bank.cashOut.history.truncated")}
+              </Text>
+            )}
+          </Stack>
+        </Paper>
       )}
     </Stack>
   )

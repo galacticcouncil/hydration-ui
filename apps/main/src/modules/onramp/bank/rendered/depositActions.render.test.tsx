@@ -335,11 +335,20 @@ describe("Q4 remove", () => {
     bankList = FIXTURE_BANK_ACCOUNTS
     depositsAnswer = { deposits: [], unattributed: [] }
   })
+  // Figma W01 -> W02: the amount step's destination row opens the accounts.
   const open = async () => {
     direction = "withdraw"
     signIn(A)
     setWallet(A)
     render(app())
+    await flush()
+    await act(async () => {
+      fireEvent.click(
+        document.querySelector(
+          '[data-option="bank.cashOut.form.destination"]',
+        )!,
+      )
+    })
     await flush()
   }
   // Figma W02: the saved accounts are rows and adding is a row too; the

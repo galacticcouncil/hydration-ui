@@ -27,12 +27,19 @@ export const bankCashOutFormSchema = z.object({
 
 export type BankCashOutFormValues = z.infer<typeof bankCashOutFormSchema>
 
-export const useBankCashOutForm = (bankAccountId: string) =>
+/** W01: the amount alone (the account is chosen on the next step). */
+export const bankCashOutAmountSchema = bankCashOutFormSchema.pick({
+  usdcAmount: true,
+})
+
+export type BankCashOutAmountValues = z.infer<typeof bankCashOutAmountSchema>
+
+export const useBankCashOutAmountForm = (usdcAmount: string) =>
   useForm<
-    z.input<typeof bankCashOutFormSchema>,
+    z.input<typeof bankCashOutAmountSchema>,
     unknown,
-    BankCashOutFormValues
+    BankCashOutAmountValues
   >({
-    defaultValues: { bankAccountId, usdcAmount: "" },
-    resolver: standardSchemaResolver(bankCashOutFormSchema),
+    defaultValues: { usdcAmount },
+    resolver: standardSchemaResolver(bankCashOutAmountSchema),
   })

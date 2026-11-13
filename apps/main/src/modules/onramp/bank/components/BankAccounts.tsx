@@ -1,11 +1,19 @@
+import { ModalBody } from "@galacticcouncil/ui/components"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BankAccountPicker } from "@/modules/onramp/bank/components/BankAccountPicker"
+import {
+  BankAccountPicker,
+  useBankAccountLine,
+} from "@/modules/onramp/bank/components/BankAccountPicker"
 import { BankAddAccount } from "@/modules/onramp/bank/components/BankAddAccount"
 import { BankCashOut } from "@/modules/onramp/bank/components/BankCashOut"
+import { BankCashOutAmount } from "@/modules/onramp/bank/components/BankCashOutAmount"
+import { BankCashOutHistory } from "@/modules/onramp/bank/components/BankCashOutHistory"
+import { BankCashOutStatus } from "@/modules/onramp/bank/components/BankCashOutStatus"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import type { BankAccountView } from "@/modules/onramp/bank/config/schemas"
+import { useBankFlow } from "@/modules/onramp/bank/hooks/useBankFlow"
 import {
   useHbrBankAccounts,
   useHbrRemoveBankAccount,
@@ -19,24 +27,36 @@ type BankAccountsProps = {
   rails: { usd: boolean; eur: boolean }
 }
 
-// The cash-out is pinned to the account object captured at Continue: a later
-// list read that reorders or drops accounts never swaps the cash-out (or the
-// status of a ramp in flight) for another account's screen.
+// The review is pinned to the account object captured at Continue (review 4a
+// B4): a later list read that reorders or drops accounts never swaps the
+// cash-out for another account's screen. A status is pinned to its ramp id.
 type View =
+  | { kind: "amount" }
   | { kind: "pick" }
   | { kind: "add" }
-  | { kind: "cashOut"; account: BankAccountView }
+  | { kind: "review"; account: BankAccountView }
+  | { kind: "status"; rampId: string }
+  | { kind: "transfers" }
 
 /**
- * The withdraw flow after set-up: choose a saved bank account (Figma W02) or
- * add one (W03/W04), then the cash-out for that account (API doc 4).
+ * The withdraw flow after set-up, as Figma W01-W15: the amount (W01), the
+ * bank account (W02, or adding one: W03/W04), the review and the two wallet
+ * steps (W05/W06, BankCashOut), then the cash-out's status (W10-W15) and the
+ * list of cash-outs, each opening in place of the list (R01).
  */
 export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
   const { t } = useTranslation(["onramp"])
-  const [view, setView] = useState<View>({ kind: "pick" })
+  const { entry } = useBankFlow()
+  const [view, setView] = useState<View>(
+    entry?.kind === "ramp"
+      ? { kind: "status", rampId: entry.id }
+      : { kind: "amount" },
+  )
+  const [usdcAmount, setUsdcAmount] = useState("")
   const [chosenId, setChosenId] = useState<string | undefined>()
   const list = useHbrBankAccounts(h160)
   const remove = useHbrRemoveBankAccount(h160)
+  const line = useBankAccountLine()
   const accounts = list.data?.bankAccounts ?? []
   const usable = getCashOutAccounts(accounts)
   // The pick follows the live list: a chosen account that left it is dropped.
@@ -69,47 +89,96 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
         ]
       : []),
   ]
+  const accountLine = (id: string) => {
+    const account = accounts.find((a) => a.id === id)
+    return account ? line(account) : null
+  }
 
-  if (view.kind === "add")
-    return (
-      <BankAddAccount
-        h160={h160}
-        rails={rails}
-        onDone={() => setView({ kind: "pick" })}
-        onBack={() => setView({ kind: "pick" })}
-      />
-    )
-
-  if (view.kind === "cashOut")
-    return (
-      <BankCashOut
-        key={view.account.id}
-        h160={h160}
-        account={view.account}
-        onBack={() => setView({ kind: "pick" })}
-      />
-    )
+  switch (view.kind) {
+    case "add":
+      return (
+        <BankAddAccount
+          h160={h160}
+          rails={rails}
+          onDone={() => setView({ kind: "pick" })}
+          onBack={() => setView({ kind: "pick" })}
+        />
+      )
+    case "review":
+      return (
+        <BankCashOut
+          key={`${view.account.id}-${usdcAmount}`}
+          h160={h160}
+          account={view.account}
+          usdcAmount={usdcAmount}
+          onBack={() => setView({ kind: "pick" })}
+          onStatus={(rampId) => setView({ kind: "status", rampId })}
+        />
+      )
+    case "status":
+      return (
+        <BankCashOutStatus
+          key={view.rampId}
+          h160={h160}
+          rampId={view.rampId}
+          accountLine={accountLine}
+          onBack={() => setView({ kind: "amount" })}
+          onViewTransfers={() => setView({ kind: "transfers" })}
+        />
+      )
+    case "transfers":
+      return (
+        <BankStepShell
+          title={t("bank.cashOut.history.title")}
+          step="transfer"
+          onBack={() => setView({ kind: "amount" })}
+        >
+          <ModalBody>
+            <BankCashOutHistory
+              h160={h160}
+              onOpen={(rampId) => setView({ kind: "status", rampId })}
+            />
+          </ModalBody>
+        </BankStepShell>
+      )
+    case "pick":
+      return (
+        <BankStepShell
+          title={t("bank.accounts.title")}
+          description={t("bank.accounts.description")}
+          step="bankAccount"
+          onBack={() => setView({ kind: "amount" })}
+        >
+          <BankAccountPicker
+            accounts={accounts}
+            selectedId={selected?.id}
+            onSelect={setChosenId}
+            onAdd={() => setView({ kind: "add" })}
+            onRemove={(id) => remove.mutate(id)}
+            isRemoving={remove.isPending}
+            notices={notices}
+            onContinue={() => {
+              if (!selected) return
+              setChosenId(selected.id)
+              setView({ kind: "review", account: selected })
+            }}
+          />
+        </BankStepShell>
+      )
+    case "amount":
+      break
+  }
 
   return (
-    <BankStepShell
-      title={t("bank.accounts.title")}
-      description={t("bank.accounts.description")}
-      step="bankAccount"
-    >
-      <BankAccountPicker
-        accounts={accounts}
-        selectedId={selected?.id}
-        onSelect={setChosenId}
-        onAdd={() => setView({ kind: "add" })}
-        onRemove={(id) => remove.mutate(id)}
-        isRemoving={remove.isPending}
-        notices={notices}
-        onContinue={() => {
-          if (!selected) return
-          setChosenId(selected.id)
-          setView({ kind: "cashOut", account: selected })
-        }}
-      />
-    </BankStepShell>
+    <BankCashOutAmount
+      usdcAmount={usdcAmount}
+      accountLine={selected ? line(selected) : null}
+      onChooseAccount={() => setView({ kind: "pick" })}
+      onContinue={(amount) => {
+        setUsdcAmount(amount)
+        setView({ kind: "pick" })
+      }}
+      onViewTransfers={() => setView({ kind: "transfers" })}
+    />
   )
 }

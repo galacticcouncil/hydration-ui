@@ -1,6 +1,7 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
+import { BankCashOutHistory } from "@/modules/onramp/bank/components/BankCashOutHistory"
 import { BankDepositHistory } from "@/modules/onramp/bank/components/BankDepositHistory"
 import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
 import {
@@ -30,12 +31,20 @@ export const PortfolioDepositsPage = () => {
       <BankPortfolio
         onOpen={open}
         history={(h160) => (
-          <BankDepositHistory
-            h160={h160}
-            onOpen={(id) =>
-              open({ direction: "deposit", target: { kind: "deposit", id } })
-            }
-          />
+          <Stack gap="xl">
+            <BankDepositHistory
+              h160={h160}
+              onOpen={(id) =>
+                open({ direction: "deposit", target: { kind: "deposit", id } })
+              }
+            />
+            <BankCashOutHistory
+              h160={h160}
+              onOpen={(id) =>
+                open({ direction: "withdraw", target: { kind: "ramp", id } })
+              }
+            />
+          </Stack>
         )}
       />
     </Flex>
