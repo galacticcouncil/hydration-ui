@@ -532,7 +532,7 @@
   "bank.cashOut.history.title": "Your cash-outs",
   "bank.cashOut.history.empty": "No cash-outs yet.",
   "bank.cashOut.history.amount": "{{ amount }} USDC",
-  "bank.cashOut.history.open": "Details",
+  "bank.cashOut.history.open": "View details",
   "bank.cashOut.history.truncated": "Only the latest 50 are shown.",
   "bank.cashOut.unlinked.title": "Redemptions not matched to a cash-out",
   "bank.cashOut.unlinked.description": "Redemptions from this wallet that the server has not matched to one of your cash-outs. Each shows its own status.",
