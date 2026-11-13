@@ -43,7 +43,7 @@ const MultiplyStrategyCardContent: React.FC = () => {
       ]}
       badges={[StrategyBadgeType.Leverage]}
       description={t("cards.multiply.description")}
-      link="/strategies/multiply"
+      link="/strategies/looper"
     />
   )
 }

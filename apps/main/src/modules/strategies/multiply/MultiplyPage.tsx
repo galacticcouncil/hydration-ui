@@ -1,8 +1,6 @@
 import {
   Box,
   Paper,
-  SectionHeader,
-  Separator,
   Stack,
   ToggleGroup,
   ToggleGroupItem,
@@ -12,10 +10,10 @@ import { Navigate, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Markdown } from "@/components/Markdown"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid/TwoColumnGrid"
 import { ReserveApyProvider } from "@/modules/money-market/apy/ReserveApyProvider"
 import { CustomLoopWizard } from "@/modules/strategies/multiply/components/CustomLoopWizard"
+import { MultiplyAboutCard } from "@/modules/strategies/multiply/components/MultiplyAboutCard"
 import { MultiplyDepositModal } from "@/modules/strategies/multiply/components/MultiplyDepositModal"
 import { MultiplyDetailsCard } from "@/modules/strategies/multiply/components/MultiplyDetailsCard"
 import { MultiplyHeader } from "@/modules/strategies/multiply/components/MultiplyHeader"
@@ -42,8 +40,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 const MultiplyPageContent: React.FC = () => {
   const { t } = useTranslation("strategies")
-  const search = useSearch({ from: "/strategies/multiply/" })
-  const navigate = useNavigate({ from: "/strategies/multiply/" })
+  const search = useSearch({ from: "/strategies/looper/" })
+  const navigate = useNavigate({ from: "/strategies/looper/" })
   const allPairs = useMultiplyPairs()
   const pairs = useMultiplyPairsMetrics(allPairs)
   const { data: positions } = useMultiplyPositions()
@@ -138,15 +136,7 @@ const MultiplyPageContent: React.FC = () => {
                 onDetails={(next) => setDetailsSlug(next.slug)}
               />
 
-              <Paper p="xl">
-                <SectionHeader
-                  title={t("about.title", { suffix: t("multiply.name") })}
-                  as="h2"
-                  noTopPadding
-                />
-                <Separator mx="-xl" mb="xl" />
-                <Markdown id="multiply" muted size="small" />
-              </Paper>
+              <MultiplyAboutCard />
             </>
           )}
         </Stack>

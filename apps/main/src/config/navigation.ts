@@ -73,7 +73,7 @@ export const LINKS = {
   strategiesBil: "/strategies/bil-vault",
   strategiesJuicer: "/strategies/juicer",
   strategiesHollarBonds: "/strategies/hollar-bonds",
-  strategiesMultiply: "/strategies/multiply",
+  strategiesMultiply: "/strategies/looper",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
