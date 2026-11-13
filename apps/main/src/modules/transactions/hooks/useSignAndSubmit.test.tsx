@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const routes = vi.hoisted(() => ({
   signAndSubmitEvmTx: vi.fn(async () => undefined),
   signAndSubmitEvmDispatchTx: vi.fn(async () => undefined),
-  signAndSubmitPolkadotTx: vi.fn(async () => undefined),
+  signAndSubmitPolkadotTx: vi.fn(async (..._args: unknown[]) => undefined),
   submitUnsignedPolkadotTx: vi.fn(async () => undefined),
   strict: vi.fn(async () => undefined),
   signer: null as unknown,

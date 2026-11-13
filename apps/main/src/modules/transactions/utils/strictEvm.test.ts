@@ -215,6 +215,7 @@ describe("strict send: refusals before the prompt", () => {
     expect(polkadot.signAndSubmit).not.toHaveBeenCalled()
     expect(options.onError).toHaveBeenCalledTimes(1)
     expect(state()).toBe("refused")
+    expect(getStrictEvmRefusal(strictTx(), polkadot, 0)).toBe("signer")
   })
 
   it("guarantee 2: a stamped wrap refusal, or no stamp at all, refuses", async () => {
