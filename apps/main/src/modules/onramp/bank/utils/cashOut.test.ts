@@ -4,6 +4,7 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
   isEthereumSigner: () => true,
 }))
 
+import onrampCopy from "@/i18n/locales/en/onramp.json"
 import {
   buildFixtureQuote,
   FIXTURE_QUOTE,
@@ -336,5 +337,17 @@ describe("fixture ramps carry the 5.1 label of their status (fix round 2, item 5
       status: "submitted",
       label: "Checking",
     })
+  })
+})
+
+describe("local Checking copy (advisor M1)", () => {
+  it("is one state-neutral sentence, true for every local checking state, and keeps 'Do not send again'", () => {
+    expect(
+      (onrampCopy as unknown as Record<string, string>)[
+        "bank.cashOut.localChecking.detail"
+      ],
+    ).toBe(
+      "This cash-out is not confirmed yet. We are checking. Do not send again.",
+    )
   })
 })

@@ -379,7 +379,7 @@
   "bank.cashOut.status.amount": "{{ amount }} USDC",
   "bank.cashOut.status.back": "Back to cash out",
   "bank.cashOut.localChecking.label": "Checking - do not send again",
-  "bank.cashOut.localChecking.detail": "Your wallet did not confirm whether it sent this cash-out. We are checking. Do not send again.",
+  "bank.cashOut.localChecking.detail": "This cash-out is not confirmed yet. We are checking. Do not send again.",
   "bank.cashOut.local.checking": "We are checking what your wallet sent.",
   "bank.cashOut.local.declined": "You declined in your wallet. Nothing was sent. This cash-out stays prepared until {{ value, date(format: 'HH:mm') }}; after that you can start a new one.",
   "bank.cashOut.local.notSent": "This cash-out was not sent to your wallet. It stays prepared until {{ value, date(format: 'HH:mm') }}; after that you can start a new one.",

@@ -535,9 +535,14 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     yParity: "0x0",
   })
   /** The wallet replaced the sent tx by H2 (the reviewer's S10 stub RPC). */
-  const replacedBy = (to: string, input: string) => {
+  const replacedBy = (
+    to: string,
+    input: string,
+    extra: Record<string, Handler> = {},
+  ) => {
     let bn = 0x20
     return setupPrepared({
+      ...extra,
       eth_getTransactionReceipt: (params) => {
         const [h] = params as [string]
         return h === H2
@@ -585,6 +590,30 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     expect(options.onReceipt).toHaveBeenCalledWith("unknown")
     expect(options.onSuccess).not.toHaveBeenCalled()
     expect(options.onRepriced).not.toHaveBeenCalled()
+    expect(options.onMined).not.toHaveBeenCalled()
+  }, 30_000)
+
+  it("D2-R1: a hash surfaced by a 4001 whose tx is then cancelled is never handed out", async () => {
+    const { signer, options, calls } = replacedBy(FROM, "0x", {
+      eth_sendTransaction: () => {
+        throw { code: 4001, message: "x", data: { txHash: HASH } }
+      },
+    })
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome.kind).toBe("failed")
+    // the background watch has found the cancel once it read the cancel's receipt
+    await vi.waitFor(
+      () =>
+        expect(
+          calls.some(
+            (c) =>
+              c.method === "eth_getTransactionReceipt" &&
+              (c.params as string[])[0] === H2,
+          ),
+        ).toBe(true),
+      { timeout: 25_000 },
+    )
+    await new Promise((r) => setTimeout(r, 50))
     expect(options.onMined).not.toHaveBeenCalled()
   }, 30_000)
 
