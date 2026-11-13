@@ -30,6 +30,7 @@ const schema = z
     type: z.custom<TradeType>(),
     destAddress: z.string(),
     isSingleTrade: z.boolean(),
+    isOrderMatch: z.boolean(),
   })
   .superRefine((data, ctx) => {
     const isCrossChain =
@@ -126,6 +127,7 @@ export const useXcSwapForm = ({
     type: TradeType.Sell,
     destAddress: "",
     isSingleTrade: true,
+    isOrderMatch: false,
   }
 
   const form = useTradeForm<XcSwapFormValues>({
