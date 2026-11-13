@@ -259,12 +259,12 @@ const makeClient = () =>
     mutationCache: new MutationCache({ onError: logMutationError }),
   })
 
-const mount = () => {
+const mount = (direction: "deposit" | "withdraw" = "withdraw") => {
   const client = makeClient()
   activeClient = client
   render(
     <QueryClientProvider client={client}>
-      <BankFlow direction="withdraw" />
+      <BankFlow direction={direction} />
     </QueryClientProvider>,
   )
   return client
@@ -400,6 +400,23 @@ describe("lead question: identity crosses wallets", () => {
     expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
     expect(log.slice(before).some((e) => e.tokenOf !== null)).toBe(false)
   })
+
+  it.each(["withdraw", "deposit"] as const)(
+    "the link step on %s says what the wallet is linked for",
+    async (direction) => {
+      setEvm(A)
+      mount(direction)
+      await signInAs(A)
+      fireEvent.click(screen.getByText("bank.accountType.cta"))
+      await flush()
+      expect(screen.queryByText("bank.link.title")).not.toBeNull()
+      expect(
+        screen.queryByText(`bank.link.description.${direction}`),
+      ).not.toBeNull()
+      const other = direction === "withdraw" ? "deposit" : "withdraw"
+      expect(screen.queryByText(`bank.link.description.${other}`)).toBeNull()
+    },
+  )
 
   it("L2b A -> Substrate -> A keeps A's session (no request while substrate)", async () => {
     setEvm(A)

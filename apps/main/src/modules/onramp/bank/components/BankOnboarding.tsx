@@ -80,7 +80,9 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({
         />
       )}
       {step.kind === "chooseType" && <BankAccountType h160={h160} />}
-      {step.kind === "bind" && <BankLinkWallet h160={h160} signer={signer} />}
+      {step.kind === "bind" && (
+        <BankLinkWallet h160={h160} signer={signer} direction={direction} />
+      )}
       {step.kind === "verify" && (
         <BankVerify
           step={step}

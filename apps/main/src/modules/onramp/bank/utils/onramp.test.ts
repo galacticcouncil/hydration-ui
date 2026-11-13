@@ -237,6 +237,29 @@ describe("on-ramp polling and the 429 backoff", () => {
   })
 })
 
+describe("wallet link copy (owner feedback 2026-11-13)", () => {
+  it("says what the wallet is linked for, per direction", () => {
+    expect(onrampCopy["bank.link.title"]).toBe(
+      "Link this wallet to your bank profile",
+    )
+    expect(onrampCopy["bank.link.description.withdraw"]).toBe(
+      "A one-time signature that ties this wallet to your verified profile, so you can cash out from it to your bank. It does not move funds.",
+    )
+    expect(onrampCopy["bank.link.description.deposit"]).toBe(
+      "A one-time signature that ties this wallet to your verified profile, so bank deposits arrive in it as HOLLAR. It does not move funds.",
+    )
+    expect(onrampCopy["bank.link.cta"]).toBe("Link wallet")
+  })
+
+  it("no bank string calls the wallet a receiving wallet", () => {
+    const receiving = Object.entries(onrampCopy).filter(
+      ([key, value]) =>
+        key.startsWith("bank.") && /receiving/i.test(String(value)),
+    )
+    expect(receiving).toEqual([])
+  })
+})
+
 describe("preparing copy", () => {
   it("promises no outcome and no typical duration", () => {
     expect(onrampCopy["bank.deposit.preparing.leave"]).toBe(
