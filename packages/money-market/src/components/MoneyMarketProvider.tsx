@@ -9,11 +9,18 @@ import {
   AppFormattersProvider,
   AppFormattersProvidersContextType,
 } from "@/hooks/app-data-provider/useAppFormatters"
+import type { SwapRateProvider as SwapRateProviderApi } from "@/hooks/paraswap/common"
+import { SwapRateProvider } from "@/hooks/paraswap/useSwapRateProvider"
 import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { ExternalApyData, MoneyMarketTxFn, UseMaxBalanceFn } from "@/types"
+import {
+  AssetLogoComponent,
+  ExternalApyData,
+  MoneyMarketTxFn,
+  UseMaxBalanceFn,
+} from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -53,6 +60,16 @@ const ClaimRewardsModal = lazy(async () => ({
     .ClaimRewardsModal,
 }))
 
+const SwapModal = lazy(async () => ({
+  default: (await import("@/components/transactions/Swap/SwapModal")).SwapModal,
+}))
+
+const DebtSwitchModal = lazy(async () => ({
+  default: (
+    await import("@/components/transactions/DebtSwitch/DebtSwitchModal")
+  ).DebtSwitchModal,
+}))
+
 export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
@@ -61,7 +78,11 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   onCreateTransaction: MoneyMarketTxFn
   useMaxBalance: UseMaxBalanceFn
   getRelatedATokenId: (id: string) => string | undefined
+  AssetLogo: AssetLogoComponent
   externalApyData: ExternalApyData
+  swapSlippage: number
+  onSwapModalOpenChange: (open: boolean) => void
+  swapRateProvider?: SwapRateProviderApi
 }
 
 export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
@@ -70,9 +91,13 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   onCreateTransaction,
   useMaxBalance,
   getRelatedATokenId,
+  AssetLogo,
   provider: externalProvider,
   neckwork,
   externalApyData,
+  swapSlippage,
+  onSwapModalOpenChange,
+  swapRateProvider,
   ...formatters
 }) => {
   const provider = useRootStore((state) => state.provider)
@@ -104,17 +129,26 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
                   neckwork={neckwork}
                   useMaxBalance={useMaxBalance}
                   getRelatedATokenId={getRelatedATokenId}
+                  AssetLogo={AssetLogo}
                 >
-                  {children}
-                  <Suspense>
-                    <SupplyModal />
-                    <WithdrawModal />
-                    <BorrowModal />
-                    <RepayModal />
-                    <CollateralChangeModal />
-                    <EmodeModal />
-                    <ClaimRewardsModal />
-                  </Suspense>
+                  <SwapRateProvider
+                    swapRateProvider={swapRateProvider}
+                    swapSlippage={swapSlippage}
+                    onSwapModalOpenChange={onSwapModalOpenChange}
+                  >
+                    {children}
+                    <Suspense>
+                      <SupplyModal />
+                      <WithdrawModal />
+                      <BorrowModal />
+                      <RepayModal />
+                      <CollateralChangeModal />
+                      <EmodeModal />
+                      <ClaimRewardsModal />
+                      <SwapModal />
+                      <DebtSwitchModal />
+                    </Suspense>
+                  </SwapRateProvider>
                 </SharedDependenciesProvider>
               </AppDataProvider>
             </ModalContextProvider>

@@ -198,6 +198,7 @@ export const useSupplyAssetsTableColumns = (
               disabled={isDisabled}
               variant="tertiary"
               size="small"
+              outline
               onClick={(e) => {
                 e.stopPropagation()
 
