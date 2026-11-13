@@ -832,6 +832,30 @@ describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
     expect(quoteCalls).toBe(1)
   })
 
+  it("W02 reached before an amount: Continue returns to W01, no quote", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-option="bank.cashOut.form.destination"]'),
+      ).not.toBeNull(),
+    )
+    await click('[data-option="bank.cashOut.form.destination"]')
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll("button")).find(
+          (b) => b.textContent === "bank.flow.continue",
+        )?.disabled,
+      ).toBe(false),
+    )
+    await clickText("bank.flow.continue")
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    expect(text()).toContain("1234")
+    await flush()
+    expect(quoteCalls).toBe(0)
+  })
+
   it("an invalid amount stays on W01 with its message", async () => {
     signedIn()
     mountFlow("withdraw")

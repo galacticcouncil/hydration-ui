@@ -160,7 +160,10 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
             onContinue={() => {
               if (!selected) return
               setChosenId(selected.id)
-              setView({ kind: "review", account: selected })
+              // Reached from W01's destination row before an amount was
+              // entered: back to W01 with this account; no quote without one.
+              if (!usdcAmount) setView({ kind: "amount" })
+              else setView({ kind: "review", account: selected })
             }}
           />
         </BankStepShell>
