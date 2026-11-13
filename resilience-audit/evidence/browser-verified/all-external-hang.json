@@ -1,0 +1,72 @@
+{
+  "name": "all-external-hang",
+  "waitMs": 35000,
+  "externalRequests": [
+    "https://hydration-api.neckwork.net/v1/status",
+    "https://api.web3modal.org/appkit/v1/config?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json",
+    "https://pulse.walletconnect.org/batch?projectId=265a3fea03b46c14a46a201fbd6c552e&st=appkit&sv=html-universal-1.8.19"
+  ],
+  "websocketTraffic": {
+    "wss://rpc-catfish-2.catfish.hydration.cloud/": {
+      "sent": 827,
+      "received": 850,
+      "methods": {
+        "rpc_methods": 1,
+        "chain_subscribeAllHeads": 1,
+        "chain_subscribeFinalizedHeads": 1,
+        "chain_getBlockHash": 2,
+        "chain_getHeader": 12,
+        "state_getStorageHash": 2,
+        "state_getStorage": 103,
+        "state_call": 669,
+        "system_health": 7,
+        "state_getKeysPaged": 8,
+        "state_queryStorageAt": 8,
+        "eth_call": 13
+      },
+      "closed": false
+    }
+  },
+  "allowedWebsockets": [
+    "wss://rpc-catfish-2.catfish.hydration.cloud/"
+  ],
+  "blockedWebsockets": [],
+  "pageErrors": [],
+  "errors": [
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "State loaded from storage couldn't be migrated since no migrate function was provided"
+  ],
+  "elapsedMs": 36706,
+  "url": "http://127.0.0.1:4173/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+  "bodyText": "Trade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\nConnect Wallet\n\nSwap\nTrade OTC\n‌\n\n\n\n‌\n\n\n‌\n\n\n‌\n\n\n‌\n\n\n \n\n‌\n\n‌\n\n‌\n\n‌\n\n‌\n\n‌\n\n\n‌\n\n‌\n\n‌\n\n‌\n\n\n‌\n\n‌\n\n‌\n\n‌\n\n\n‌\n\n‌\n\n‌\n\n‌\n\n\n‌\n\t‌\n\t‌\n\t‌\n\n‌\n\t‌\n\t‌\n\t‌\n\n‌\n\t‌\n\t‌\n\t‌\n\n‌\n\t‌\n\t‌\n\t‌\n\n‌\n",
+  "buttons": [
+    "",
+    "",
+    "Connect Wallet",
+    "‌‌",
+    "‌‌",
+    "‌"
+  ],
+  "links": [
+    "",
+    "Trade",
+    "Borrow",
+    "Strategies",
+    "Liquidity",
+    "Portfolio",
+    "Cross-Chain",
+    "Stats",
+    "Staking",
+    "Explorer",
+    "",
+    "Deposit",
+    "Swap",
+    "Trade OTC"
+  ],
+  "inputs": 2,
+  "skeletons": 40,
+  "inputEditable": false
+}

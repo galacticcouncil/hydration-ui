@@ -1,0 +1,1464 @@
+{
+  "scope": "Declared production dependencies in root and all workspace manifests. Includes build tooling declared under dependencies; not a claim that all entries execute at runtime or all transitive internals were fault-tested.",
+  "packages": [
+    {
+      "name": "@aave/contract-helpers",
+      "version": "1.23.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "1.23.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "contract/provider adapter",
+      "uptimeDependency": "Bundled contract helpers use the supplied Ethers provider; actual Hydration uses Web3Provider(evm.transport). Dormant IPFS helper exists but UI has no call; no independent Aave API established."
+    },
+    {
+      "name": "@aave/math-utils",
+      "version": "1.23.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "1.23.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "@emotion/babel-plugin",
+      "version": "11.13.5",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^11.12.0"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^11.12.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "@emotion/react",
+      "version": "11.14.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^11.13.3"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^11.13.3"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "@emotion/styled",
+      "version": "11.14.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^11.13.0"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^11.13.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "@ethersproject/providers",
+      "version": "5.8.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^5.8.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "EVM provider adapter",
+      "uptimeDependency": "Bundled Ethers5 provider implementation; actual use supplies Hydration evm.transport rather than default vendor HTTP providers."
+    },
+    {
+      "name": "@galacticcouncil/common",
+      "version": "1.2.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^1.2.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "shared RPC clients/cache",
+      "uptimeDependency": "Bundled shared client pool follows configured Substrate/EVM/Solana/Sui endpoints. No standalone vendor service dependency; inspect supplied transport and feature consumers."
+    },
+    {
+      "name": "@galacticcouncil/descriptors",
+      "version": "2.9.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.9.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "runtime chain descriptors",
+      "uptimeDependency": "Bundled dynamic descriptor/metadata modules depend on app hosting chunks; optional cached metadata failure returnsnull for RPC fallback. No third-party metadata CDN."
+    },
+    {
+      "name": "@galacticcouncil/indexer",
+      "version": "0.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "*"
+        }
+      ],
+      "role": "workspace",
+      "auditRole": "workspace indexer API clients",
+      "uptimeDependency": "Bundled client code contacts configured Neckwork/GraphQL/indexer endpoints; optional service data should remain feature-local."
+    },
+    {
+      "name": "@galacticcouncil/money-market",
+      "version": "0.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "*"
+        }
+      ],
+      "role": "workspace",
+      "auditRole": "workspace borrowing feature",
+      "uptimeDependency": "Bundled feature uses supplied Hydration EVM provider plus optional Neckwork/external APY clients; no default independent Aave cloud required."
+    },
+    {
+      "name": "@galacticcouncil/sdk-next",
+      "version": "2.3.2",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.3.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "Hydration trading/pool SDK",
+      "uptimeDependency": "Bundled SDK discovers pools/assets through shared Hydration client.15s scoped RPC deadlines and60s seed deadline exist; active families aggregate all-or-nothing."
+    },
+    {
+      "name": "@galacticcouncil/ui",
+      "version": "0.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "*"
+        }
+      ],
+      "role": "workspace",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "@galacticcouncil/utils",
+      "version": "0.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "*"
+        }
+      ],
+      "role": "workspace",
+      "auditRole": "workspace shared helpers",
+      "uptimeDependency": "Bundled helpers include optional metadata CDN fetch factory/browser persistence; callers determine root coupling. See deep-startup.json."
+    },
+    {
+      "name": "@galacticcouncil/web3-connect",
+      "version": "0.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "*"
+        },
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "*"
+        }
+      ],
+      "role": "workspace",
+      "auditRole": "workspace wallet integration",
+      "uptimeDependency": "Bundled adapters additionally depend on injected wallet providers, optional Reown/WalletConnect services, and supplied chain RPC transports."
+    },
+    {
+      "name": "@galacticcouncil/xc",
+      "version": "2.1.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.1.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain feature aggregation",
+      "uptimeDependency": "Bundled cross-chain SDK/config follows configured external-chain RPC, quote/execution/bridge services; feature should not gate base Hydration registry."
+    },
+    {
+      "name": "@galacticcouncil/xc-cfg",
+      "version": "2.7.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.7.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain endpoint/configuration data",
+      "uptimeDependency": "Bundled configuration lists chain RPC/services; configuration package itself needs no server, but initialized chains may create optional clients."
+    },
+    {
+      "name": "@galacticcouncil/xc-core",
+      "version": "2.6.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.6.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain transport definitions",
+      "uptimeDependency": "Bundled chain client objects use supplied chain RPC endpoints; independent endpoint resilience must be assessed per consumer."
+    },
+    {
+      "name": "@galacticcouncil/xc-scan",
+      "version": "0.5.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^0.5.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain tracking services",
+      "uptimeDependency": "Bundled tracker follows bridge/indexer/scan endpoints; optional transaction history/tracking dependency."
+    },
+    {
+      "name": "@galacticcouncil/xc-sdk",
+      "version": "2.5.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.5.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain transactions/routes",
+      "uptimeDependency": "Bundled builders contact supplied chain clients and bridge protocols; no single independent package server."
+    },
+    {
+      "name": "@galacticcouncil/xc-swap",
+      "version": "0.9.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^0.9.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "cross-chain trade services",
+      "uptimeDependency": "Bundled swap quote/execution integration follows external-chain RPC and configured quote/bridge services; optional XcSwap path."
+    },
+    {
+      "name": "@hookform/resolvers",
+      "version": "5.2.2",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^5.0.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled form/hook utility",
+      "uptimeDependency": "Local hooks/validation/timing; no default remote service. Browser APIs/storage and app-supplied callbacks determine resilience."
+    },
+    {
+      "name": "@mysten/wallet-standard",
+      "version": "0.19.9",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^0.19.9"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "injected Sui/Solana wallet interoperability",
+      "uptimeDependency": "Bundled wallet discovery/signing standard; relies on installed wallet provider and supplied Sui/Solana transport. No independent default cloud endpoint established."
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "1.8.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^1.6.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "@polkadot-api/tx-utils",
+      "version": "0.2.5",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^0.2.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "@radix-ui/react-checkbox",
+      "version": "1.3.3",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.3.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-collapsible",
+      "version": "1.1.12",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.11"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-dialog",
+      "version": "1.1.15",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.6"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-dropdown-menu",
+      "version": "2.1.16",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^2.1.15"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-hover-card",
+      "version": "1.1.15",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.14"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-navigation-menu",
+      "version": "1.2.14",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.2.14"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-popover",
+      "version": "1.1.15",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.14"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-scroll-area",
+      "version": "1.2.10",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.2.10"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-select",
+      "version": "2.2.6",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^2.2.5"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-separator",
+      "version": "1.1.8",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.7"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-slider",
+      "version": "1.3.6",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.3.5"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-slot",
+      "version": "1.2.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.2.3"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-switch",
+      "version": "1.2.6",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.2.5"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-tabs",
+      "version": "1.1.13",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.13"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-toggle-group",
+      "version": "1.1.11",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.11"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@radix-ui/react-tooltip",
+      "version": "1.2.8",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.2.7"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@reown/appkit",
+      "version": "1.8.19",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^1.8.19"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "optional wallet connection/cloud integration",
+      "uptimeDependency": "Bundled toolkit additionally uses Reown/WalletConnect cloud API, relay, explorer/assets during optional WalletConnect path; see deep wallet audit for endpoints and containment."
+    },
+    {
+      "name": "@scure/base",
+      "version": "1.2.6",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^1.2.6"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "@solana/web3.js",
+      "version": "1.98.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^1.98.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "optional Solana RPC transport",
+      "uptimeDependency": "Bundled Solana Connection uses supplied chain RPC HTTP/WS endpoints. HTTP fetch/body has no default operation deadline;429 retries are bounded. Used in optional Solana balances/signing."
+    },
+    {
+      "name": "@tanstack/charts",
+      "version": "0.14.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "0.14.0"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "0.14.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@tanstack/query-persist-client-core",
+      "version": "5.101.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "5.101.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "query persistence lifecycle",
+      "uptimeDependency": "Bundled persistence utility follows supplied IndexedDB persister; portfolio restore is best-effort and not awaited by boot."
+    },
+    {
+      "name": "@tanstack/react-query",
+      "version": "5.101.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "5.101.4"
+        },
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "5.101.4"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "5.101.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "async query state and cache",
+      "uptimeDependency": "Bundled query framework supplies retry/cache state, not a network deadline or data validation; caller queryFn determines service transport, cancellation, and Suspense scope."
+    },
+    {
+      "name": "@tanstack/react-router",
+      "version": "1.170.10",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^1.170.10"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "routing and error boundaries",
+      "uptimeDependency": "Bundled framework plus lazily fetched same-origin route chunks; boundaries differ by route/root; startup resolver sits outside RouterProvider."
+    },
+    {
+      "name": "@tanstack/react-table",
+      "version": "8.21.3",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^8.20.6"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@tanstack/react-virtual",
+      "version": "3.14.2",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^3.14.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "@tanstack/router-plugin",
+      "version": "1.168.13",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^1.168.13"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "@theme-ui/core",
+      "version": "0.17.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^0.17.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "@theme-ui/css",
+      "version": "0.17.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^0.17.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "@types/uuid",
+      "version": "10.0.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^10.0.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "version": "7.18.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^7.18.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "version": "7.18.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^7.18.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "big.js",
+      "version": "6.2.2",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^6.2.2"
+        },
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^6.2.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "buffer",
+      "version": "6.0.3",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^6.0.3"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "cmdk",
+      "version": "1.1.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "color",
+      "version": "5.0.3",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^5.0.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "comlink",
+      "version": "4.4.2",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^4.4.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "local worker RPC bridge",
+      "uptimeDependency": "Bundled worker communication has no external endpoint; ping worker executable depends on app hosting, and worker invocation has no outer app deadline."
+    },
+    {
+      "name": "date-fns",
+      "version": "4.1.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^4.1.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "eslint-plugin-prettier",
+      "version": "5.5.6",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^5.2.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "eslint-plugin-react",
+      "version": "7.37.5",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^7.37.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "eslint-plugin-react-hooks",
+      "version": "5.2.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^5.0.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "eslint-plugin-simple-import-sort",
+      "version": "12.1.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/eslint-config",
+          "manifest": "packages/eslint-config/package.json",
+          "range": "^12.1.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "build/types/lint tooling",
+      "uptimeDependency": "Declared under production dependencies, but build/type/lint role; no independent browser runtime service established."
+    },
+    {
+      "name": "ethers",
+      "version": "5.7.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "5.7.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "EVM contracts and transaction encoding",
+      "uptimeDependency": "Bundled ABI/contract/signing helpers route network requests through supplied providers; default cloud provider API exists but no current UI call was found."
+    },
+    {
+      "name": "graphql",
+      "version": "16.13.2",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/indexer",
+          "manifest": "packages/indexer/package.json",
+          "range": "^16.11.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "graphql-request",
+      "version": "7.4.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/indexer",
+          "manifest": "packages/indexer/package.json",
+          "range": "^7.2.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "HTTP GraphQL client",
+      "uptimeDependency": "Bundled fetch client uses endpoint supplied by indexer clients; no provider URL intrinsic to package. Deadline/signal depends on caller."
+    },
+    {
+      "name": "humanize-duration-ts",
+      "version": "2.1.1",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^2.1.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "i18next",
+      "version": "23.16.8",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^23.16.4"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^23.16.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled localization",
+      "uptimeDependency": "Translations are bundled; no network backend/current external locale endpoint established."
+    },
+    {
+      "name": "immer",
+      "version": "10.2.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^10.0.3"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "jdenticon",
+      "version": "3.3.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^3.3.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "lightweight-charts",
+      "version": "5.1.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^5.0.8"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^5.0.8"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "lucide-react",
+      "version": "0.459.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^0.459.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "md5",
+      "version": "2.3.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^2.3.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "openapi-fetch",
+      "version": "0.17.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/indexer",
+          "manifest": "packages/indexer/package.json",
+          "range": "^0.17.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "HTTP OpenAPI client",
+      "uptimeDependency": "Bundled fetch client uses configured Neckwork baseURL; no default operation deadline or retry. Request/response parsing and error middleware can hang without caller signal."
+    },
+    {
+      "name": "p-wait-for",
+      "version": "6.0.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^6.0.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "polling utility",
+      "uptimeDependency": "Bundled utility has no endpoint. Timeout aborts polling sleep but does not race a pending condition RPC; nominal60s/3min application polls can remain pending. See deep-wait.json."
+    },
+    {
+      "name": "papaparse",
+      "version": "5.5.3",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^5.5.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "local CSV generation/parsing",
+      "uptimeDependency": "Actual use dynamically imports to produce local CSV downloads; same-origin lazy chunk required, no data service."
+    },
+    {
+      "name": "polkadot-api",
+      "version": "2.2.2",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.1.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "Substrate RPC transport",
+      "uptimeDependency": "Bundled API uses configured primary Hydration and optional other-chain providers; descriptor chunks/cache are same-origin/local. Connection lifecycle protection is separate from individual request deadlines."
+    },
+    {
+      "name": "react",
+      "version": "19.2.5",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^19.1.1"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^19.1.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "react-dom",
+      "version": "19.2.5",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^19.1.1"
+        },
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^19.1.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI framework/theme",
+      "uptimeDependency": "Mandatory executable code supplied by app hosting; once loaded no independent network endpoint. Font/icon/data resources are separate application dependencies."
+    },
+    {
+      "name": "react-hook-form",
+      "version": "7.72.1",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^7.54.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled form/hook utility",
+      "uptimeDependency": "Local hooks/validation/timing; no default remote service. Browser APIs/storage and app-supplied callbacks determine resilience."
+    },
+    {
+      "name": "react-i18next",
+      "version": "15.7.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^15.7.3"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^15.7.3"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "localization React bindings",
+      "uptimeDependency": "Bundled bindings use bundled translations; no standalone network service."
+    },
+    {
+      "name": "react-jazzicon",
+      "version": "1.0.4",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.0.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "react-loading-skeleton",
+      "version": "3.5.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^3.5.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "react-number-format",
+      "version": "5.4.5",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^5.4.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "react-use",
+      "version": "17.6.0",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^17.6.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled form/hook utility",
+      "uptimeDependency": "Local hooks/validation/timing; no default remote service. Browser APIs/storage and app-supplied callbacks determine resilience."
+    },
+    {
+      "name": "react18-json-view",
+      "version": "0.2.10",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^0.2.9-canary.9"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "reflect-metadata",
+      "version": "0.1.13",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/money-market",
+          "manifest": "packages/money-market/package.json",
+          "range": "0.1.13"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "remeda",
+      "version": "2.33.7",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^2.19.0"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "sonner",
+      "version": "2.0.7",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^2.0.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "use-debounce",
+      "version": "10.1.1",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^10.0.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled form/hook utility",
+      "uptimeDependency": "Local hooks/validation/timing; no default remote service. Browser APIs/storage and app-supplied callbacks determine resilience."
+    },
+    {
+      "name": "uuid",
+      "version": "11.1.0",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/utils",
+          "manifest": "packages/utils/package.json",
+          "range": "^11.0.5"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "vaul",
+      "version": "1.1.2",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/ui",
+          "manifest": "packages/ui/package.json",
+          "range": "^1.1.2"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled UI/chart rendering",
+      "uptimeDependency": "Bundled component/rendering code; no independent external data source intrinsic to current use. Data and optional imagery come from application consumers."
+    },
+    {
+      "name": "viem",
+      "version": "2.56.8",
+      "declaredBy": [
+        {
+          "workspace": "@galacticcouncil/main",
+          "manifest": "apps/main/package.json",
+          "range": "^2.55.4"
+        },
+        {
+          "workspace": "@galacticcouncil/web3-connect",
+          "manifest": "packages/web3-connect/package.json",
+          "range": "^2.55.4"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "EVM RPC and contract transport",
+      "uptimeDependency": "Bundled library uses supplied RPC/custom wallet transports. HTTP header timeout does not bound stalled body; Hydration core custom transport shares Papi WS."
+    },
+    {
+      "name": "zod",
+      "version": "4.3.6",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^4.1.11"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "bundled data/math/encoding utility",
+      "uptimeDependency": "Local bundled computation/schema/encoding; no independent remote service intrinsic to current use."
+    },
+    {
+      "name": "zustand",
+      "version": "5.0.12",
+      "declaredBy": [
+        {
+          "workspace": "hydration-ui",
+          "manifest": "package.json",
+          "range": "^5.0.1"
+        }
+      ],
+      "role": "installed library",
+      "auditRole": "state and browser persistence",
+      "uptimeDependency": "Bundled state library; optional middleware uses localStorage/IndexedDB. Available storage setItem errors propagate; persisted shape validation depends on app."
+    }
+  ],
+  "classificationScope": "Each declared package classified by current source use and role; transport/cloud entries require service-level audit. No claim of exhaustive transitive package inspection or all-runtime fault testing.",
+  "supplementaryEvidence": [
+    "audit/deep-startup.json",
+    "audit/deep-wait.json",
+    "audit/source-runtime-import-omissions.json"
+  ]
+}

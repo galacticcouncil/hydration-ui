@@ -1,0 +1,141 @@
+{
+  "kind": "Dependency fault injection; no live calls/signing/transactions",
+  "observationMs": 100,
+  "checks": [
+    {
+      "name": "ocelloids-initial-query-rejection-prevents-SSE",
+      "confirmed": true,
+      "observations": {
+        "subscribe": "rejected",
+        "sseCalls": 0,
+        "request": {
+          "url": "https://ocelloids.invalid/query/crosschain",
+          "hasSignal": false
+        }
+      }
+    },
+    {
+      "name": "ocelloids-initial-query-silent-hang",
+      "confirmed": true,
+      "observations": {
+        "subscribe": "pending",
+        "sseCalls": 0,
+        "request": {
+          "url": "https://ocelloids.invalid/query/crosschain",
+          "hasSignal": false
+        }
+      }
+    },
+    {
+      "name": "ocelloids-malformed-initial-query",
+      "confirmed": true,
+      "observations": {
+        "subscribe": "rejected with TypeError",
+        "sseCalls": 0
+      }
+    },
+    {
+      "name": "ocelloids-late-recovery-after-unsubscribe-opens-SSE",
+      "confirmed": true,
+      "observations": {
+        "sseCalls": 1,
+        "state": "resolved",
+        "staleAddress": "old-address",
+        "implication": "Unmount/account-change cleanup does not cancel the in-flight HTTP load; recovery can start a stale subscription after cleanup."
+      }
+    },
+    {
+      "name": "ocelloids-malformed-SSE-JSON-uncaught-in-handler",
+      "confirmed": true,
+      "observations": {
+        "eventHandler": "throws SyntaxError",
+        "url": "https://ocelloids.invalid/sse/crosschain/default?"
+      }
+    },
+    {
+      "name": "sui-all-balances-rejection-becomes-success-empty",
+      "confirmed": true,
+      "observations": {
+        "result": [],
+        "queryState": "resolved"
+      }
+    },
+    {
+      "name": "sui-balances-silent-hang",
+      "confirmed": true,
+      "observations": {
+        "state": "pending",
+        "hasSignal": false
+      }
+    },
+    {
+      "name": "solana-balance-silent-hang",
+      "confirmed": true,
+      "observations": {
+        "state": "pending",
+        "hasSignal": false
+      }
+    },
+    {
+      "name": "wormhole-executor-HTTP-failure",
+      "confirmed": true,
+      "observations": {
+        "state": "rejected"
+      }
+    },
+    {
+      "name": "wormhole-executor-body-hang",
+      "confirmed": true,
+      "observations": {
+        "state": "pending",
+        "request": {
+          "url": "https://executor.labsapis.com/v0/quote",
+          "hasSignal": false
+        }
+      }
+    },
+    {
+      "name": "wormhole-executor-signedQuote-not-validated-at-fetch",
+      "confirmed": true,
+      "observations": {
+        "state": "resolved",
+        "signedQuote": "invalid-quote",
+        "estimatedCost": "3",
+        "caveat": "Only confirms missing client validation; onchain verification is outside this test."
+      }
+    },
+    {
+      "name": "wormhole-scan-HTTP-status-not-checked",
+      "confirmed": true,
+      "observations": {
+        "state": "resolved",
+        "HTTPStatus": 503,
+        "operations": [],
+        "caveat": "SDK transport is dormant in current UI paths."
+      }
+    },
+    {
+      "name": "reown-auth-iframe-load-timeout-does-not-settle-await",
+      "confirmed": true,
+      "observations": {
+        "stateAfterTimeout": "pending",
+        "timeoutMs": 20000,
+        "alerts": [
+          "iframe_load_failed"
+        ],
+        "abortSignal": "aborted",
+        "caveat": "Conditional remote email/social feature; component timeout shows alert but frameLoadPromise remains pending."
+      }
+    }
+  ],
+  "versions": {
+    "@galacticcouncil/xc-scan": "0.5.0",
+    "@galacticcouncil/xc-cfg": "2.7.0",
+    "@galacticcouncil/xc-sdk": "2.5.0",
+    "@galacticcouncil/xc-core": "2.6.0",
+    "@mysten/sui": "1.45.2",
+    "@solana/web3.js": "1.98.4",
+    "@reown/appkit-wallet": "1.8.19"
+  },
+  "completed": true
+}
