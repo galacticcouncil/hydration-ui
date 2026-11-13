@@ -79,13 +79,36 @@ export const Alert: FC<{ description: string }> = ({ description }) => (
 
 export const OptionCard: FC<{
   label: string
+  description?: string
+  value?: ReactNode
+  isActive?: boolean
   onClick: () => void
   disabled?: boolean
-}> = ({ label, onClick, disabled }) => (
-  <button type="button" onClick={onClick} disabled={disabled}>
-    {label}
-  </button>
+}> = ({ label, description, value, isActive, onClick, disabled }) => (
+  <>
+    <button
+      type="button"
+      data-option={label}
+      data-active={isActive ? "1" : "0"}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {label}
+    </button>
+    {description && <span>{description}</span>}
+    {value}
+  </>
 )
+
+export const Chip: FC<ChildrenProps & { "data-tone"?: string }> = ({
+  children,
+  "data-tone": tone,
+}) => <span data-chip={tone ?? "1"}>{children}</span>
+export const Paper: FC<ChildrenProps & { "data-bank-tile"?: string }> = ({
+  children,
+  "data-bank-tile": tile,
+}) => <section data-bank-tile={tile}>{children}</section>
+export const Grid: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
 
 export const CopyButton: FC<{ text: string }> = ({ text }) => (
   <button type="button" data-copy={text}>
@@ -148,9 +171,27 @@ export const Modal: FC<
       {children}
     </div>
   ) : null
-export const ModalHeader: FC<{ title?: string; description?: string }> = ({
-  title,
-}) => <h2>{title}</h2>
+export const ModalHeader: FC<{
+  title?: string
+  description?: string
+  onBack?: () => void
+  onClose?: () => void
+}> = ({ title, description, onBack, onClose }) => (
+  <header>
+    {onBack && (
+      <button type="button" data-header-back="1" onClick={onBack}>
+        header-back
+      </button>
+    )}
+    <h2>{title}</h2>
+    {description && <p data-header-description="1">{description}</p>}
+    {onClose && (
+      <button type="button" data-header-close="1" onClick={onClose}>
+        header-close
+      </button>
+    )}
+  </header>
+)
 export const ModalFooter: FC<ChildrenProps> = ({ children }) => (
   <div>{children}</div>
 )
@@ -158,7 +199,7 @@ export const ModalContentDivider: FC = () => <hr />
 export const Stepper: FC<{ steps: string[]; activeStepIndex: number }> = ({
   steps,
   activeStepIndex,
-}) => <ol data-step={steps[activeStepIndex]} />
+}) => <ol data-step={steps[activeStepIndex]} data-steps={steps.join("|")} />
 export const SummaryRow: FC<{ label: ReactNode; content: ReactNode }> = ({
   label,
   content,

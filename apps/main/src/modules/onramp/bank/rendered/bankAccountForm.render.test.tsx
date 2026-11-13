@@ -61,20 +61,22 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
   WalletMode: { EVM: "evm" },
 }))
 vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
-vi.mock("@galacticcouncil/ui/assets/icons", () => {
-  const I = () => null
-  return {
-    WalletIcon: I,
-    Building2Icon: I,
-    UserIcon: I,
-    CircleAlertIcon: I,
-    ClockIcon: I,
-    ShieldCheckIcon: I,
-    BadgeCheckIcon: I,
-    LandmarkIcon: I,
-  }
-})
-vi.mock("@galacticcouncil/ui/utils", () => ({ getToken: () => "" }))
+vi.mock(
+  "@galacticcouncil/ui/assets/icons",
+  // any icon name is a null component; "then" stays unset so the module is not a thenable
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_t, key) => (key === "then" ? undefined : () => null),
+        has: (_t, key) => key !== "then",
+      },
+    ),
+)
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (k: string, o?: unknown) => (o ? `${k} ${JSON.stringify(o)}` : k),
@@ -271,14 +273,34 @@ const clickText = (text: string) =>
     if (!b) throw new Error(`no button ${text}`)
     fireEvent.click(b)
   })
+// Figma W03/W04: "Add a bank account" opens the rail choice, then one rail's form.
+const clickSel = (selector: string) =>
+  act(async () => {
+    const el = document.querySelector(selector)
+    if (!el) throw new Error(`no ${selector}`)
+    fireEvent.click(el)
+  })
+const chooseRail = async (rail: "ach" | "sepa" = "ach") => {
+  await clickSel(`[data-option="bank.accounts.form.rail.${rail}"]`)
+  await flush()
+}
+const openAdd = async (rail: "ach" | "sepa" = "ach") => {
+  await clickText("bank.accounts.add")
+  await flush()
+  await chooseRail(rail)
+}
+/** The header's back: from a rail's form to the rail choice (what was typed is dropped). */
+const back = async () => {
+  await clickSel("[data-header-back]")
+  await flush()
+}
 const openForm = async () => {
   direction = "withdraw"
   signIn(A)
   setWallet(A)
   render(app())
   await flush()
-  await clickText("bank.accounts.add")
-  await flush()
+  await openAdd()
 }
 const ids = () =>
   posts().map((p) => (p.body as { clientRequestId: string }).clientRequestId)
@@ -356,16 +378,14 @@ describe("Q2 clientRequestId", () => {
     expect([...byId.values()].every((s) => s.size === 1)).toBe(true)
   })
 
-  it("Q2e outcome_unknown, then Cancel, Add, same details: the id is lost", async () => {
+  it("Q2e outcome_unknown, then back, ACH again, same details: the id is lost", async () => {
     bankQueue.push(() => json(502, { error: "outcome_unknown" }))
     await openForm()
     await fillAch()
     await submit()
     await flush()
-    await clickText("bank.accounts.form.cancel")
-    await flush()
-    await clickText("bank.accounts.add")
-    await flush()
+    await back()
+    await chooseRail("ach")
     await fillAch()
     await submit()
     await flush()
@@ -394,10 +414,7 @@ describe("Q2 clientRequestId", () => {
     await flush()
     await releaseHeld(json(502, { error: "outcome_unknown" }))
     const formShown = !!document.querySelector("form")
-    if (!formShown) {
-      await clickText("bank.accounts.add")
-      await flush()
-    }
+    if (!formShown) await openAdd()
     await fillAch()
     await submit()
     await flush()
@@ -423,10 +440,7 @@ describe("Q2 clientRequestId", () => {
     await flush()
     await act(async () => setWallet(A))
     await flush()
-    if (!document.querySelector("form")) {
-      await clickText("bank.accounts.add")
-      await flush()
-    }
+    if (!document.querySelector("form")) await openAdd()
     await fillAch()
     // D-R2: the remounted form shows the pending POST of this wallet.
     const btn = Array.from(document.querySelectorAll("button")).find(
@@ -461,10 +475,11 @@ describe("rail switches (E2E-1)", () => {
     await type("postalCode", "10115")
     await type("country", "DEU")
   }
-  const pick = (rail: "ach" | "sepa") =>
-    act(async () => {
-      fireEvent.click(document.querySelector(`[data-toggle-item="${rail}"]`)!)
-    })
+  // The rail is its own step now: switching is back to the rail choice, then the other rail.
+  const pick = async (rail: "ach" | "sepa") => {
+    if (document.querySelector("form")) await back()
+    await chooseRail(rail)
+  }
   const fieldErrors = () =>
     Array.from(document.querySelectorAll("[data-field-error]")).map(
       (e) => e.textContent ?? "",
@@ -571,10 +586,11 @@ describe("address dropdowns (round 9)", () => {
       }),
     )
   })
-  const pick = (rail: "ach" | "sepa") =>
-    act(async () => {
-      fireEvent.click(document.querySelector(`[data-toggle-item="${rail}"]`)!)
-    })
+  // The rail is its own step now: switching is back to the rail choice, then the other rail.
+  const pick = async (rail: "ach" | "sepa") => {
+    if (document.querySelector("form")) await back()
+    await chooseRail(rail)
+  }
   const selectValue = (name: string) =>
     (document.querySelector(`select[name="${name}"]`) as HTMLSelectElement)
       .value

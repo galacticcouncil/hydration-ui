@@ -3,15 +3,16 @@ import {
   Alert,
   LoadingButton,
   ModalBody,
+  ModalFooter,
   OptionCard,
   Stack,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import { CustomerType } from "@/modules/onramp/bank/config/schemas"
+import { useBankFlow } from "@/modules/onramp/bank/hooks/useBankFlow"
 import { useHbrCreateCustomer } from "@/modules/onramp/bank/hooks/useHbr"
 import { classifyCreateCustomerError } from "@/modules/onramp/bank/utils/onboarding"
 
@@ -29,6 +30,7 @@ export const BankAccountType: FC<BankAccountTypeProps> = ({ h160 }) => {
   // Bridge holds an earlier attempt's type (the other one): only that is offered.
   const [recordedType, setRecordedType] = useState<CustomerType | null>(null)
   const create = useHbrCreateCustomer(h160)
+  const { direction } = useBankFlow()
 
   const errorKind = create.isError
     ? classifyCreateCustomerError(create.error)
@@ -46,62 +48,63 @@ export const BankAccountType: FC<BankAccountTypeProps> = ({ h160 }) => {
     })
 
   return (
-    <ModalBody>
-      <Stack gap="l">
-        <Stack gap="s" align="center">
-          <Text fs="p2" fw={500} font="primary" align="center">
-            {t("bank.accountType.title")}
-          </Text>
-          <Text fs="p4" align="center" color={getToken("text.medium")}>
-            {t("bank.accountType.description")}
-          </Text>
-        </Stack>
-        <Stack gap="m">
-          {(["individual", "business"] as const).map((option) => (
-            <OptionCard
-              key={option}
-              icon={option === "individual" ? UserIcon : Building2Icon}
-              label={t(`bank.accountType.${option}.title`)}
-              description={t(`bank.accountType.${option}.description`)}
-              value=""
-              isActive={selected === option}
-              disabled={
-                create.isPending ||
-                blocked ||
-                (recordedType !== null && option !== recordedType)
+    <BankStepShell
+      title={t(`bank.accountType.title.${direction}`)}
+      description={t(`bank.accountType.description.${direction}`)}
+      step="verify"
+    >
+      <ModalBody>
+        <Stack gap="l">
+          <Stack gap="m">
+            {(["individual", "business"] as const).map((option) => (
+              <OptionCard
+                key={option}
+                icon={option === "individual" ? UserIcon : Building2Icon}
+                label={t(`bank.accountType.${option}.title`)}
+                description={t(`bank.accountType.${option}.description`)}
+                value=""
+                isActive={selected === option}
+                disabled={
+                  create.isPending ||
+                  blocked ||
+                  (recordedType !== null && option !== recordedType)
+                }
+                onClick={() => setType(option)}
+              />
+            ))}
+          </Stack>
+          {errorKind && (
+            <Alert
+              variant="warning"
+              description={
+                errorKind === "typeConflict"
+                  ? t("bank.accountType.error.typeConflict", {
+                      type: t(`bank.accountType.${selected}.title`),
+                    })
+                  : errorKind === "needsSupport" ||
+                      errorKind === "uncertain" ||
+                      errorKind === "notSentMayExist" ||
+                      errorKind === "notSent"
+                    ? t(`bank.accountType.error.${errorKind}`)
+                    : t(`bank.error.${errorKind}`)
               }
-              onClick={() => setType(option)}
             />
-          ))}
+          )}
         </Stack>
-        {errorKind && (
-          <Alert
-            variant="warning"
-            description={
-              errorKind === "typeConflict"
-                ? t("bank.accountType.error.typeConflict", {
-                    type: t(`bank.accountType.${selected}.title`),
-                  })
-                : errorKind === "needsSupport" ||
-                    errorKind === "uncertain" ||
-                    errorKind === "notSentMayExist" ||
-                    errorKind === "notSent"
-                  ? t(`bank.accountType.error.${errorKind}`)
-                  : t(`bank.error.${errorKind}`)
-            }
-          />
-        )}
-        {!blocked && (
+      </ModalBody>
+      {!blocked && (
+        <ModalFooter>
           <LoadingButton
             size="large"
+            width="100%"
             isLoading={create.isPending}
             disabled={create.isPending}
             onClick={submit}
           >
             {t("bank.accountType.cta")}
           </LoadingButton>
-        )}
-      </Stack>
-    </ModalBody>
+        </ModalFooter>
+      )}
+    </BankStepShell>
   )
 }

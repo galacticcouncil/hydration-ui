@@ -192,7 +192,10 @@ vi.mock("@galacticcouncil/ui/assets/images/ErrorStatus.webp", () => ({
 vi.mock("@galacticcouncil/ui/assets/images/SuccessStatus.webp", () => ({
   default: "",
 }))
-vi.mock("@galacticcouncil/ui/utils", () => ({ getToken: () => "" }))
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (k: string, o?: unknown) => (o ? `${k} ${JSON.stringify(o)}` : k),
@@ -440,10 +443,16 @@ const app = () => (
   </QueryClientProvider>
 )
 
+/** W02: the saved account is selected; Continue opens its cash-out. */
+const openCashOut = async () => {
+  render(app())
+  await waitFor(() => expect(button("bank.flow.continue").disabled).toBe(false))
+  await click("bank.flow.continue")
+  await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+}
 /** Sign in, enter 25.5, quote, confirm: the review is on screen. */
 const toReview = async () => {
-  render(app())
-  await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+  await openCashOut()
   const input = document.querySelector("input") as HTMLInputElement
   await act(async () => {
     fireEvent.change(input, { target: { value: "25.5" } })
@@ -514,12 +523,16 @@ describe("cash-out happy path", () => {
     await toReview()
     await handOver()
     expect(
-      document.querySelector("[data-step]")!.getAttribute("data-step"),
+      document
+        .querySelector("[data-modal] [data-step]")!
+        .getAttribute("data-step"),
     ).toBe("bank.cashOut.tx.approveStep")
     await signStep()
     await waitFor(() =>
       expect(
-        document.querySelector("[data-step]")?.getAttribute("data-step"),
+        document
+          .querySelector("[data-modal] [data-step]")
+          ?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -587,7 +600,9 @@ describe("once (guarantee 5), counted at the signer", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document.querySelector("[data-step]")?.getAttribute("data-step"),
+        document
+          .querySelector("[data-modal] [data-step]")
+          ?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -642,7 +657,9 @@ describe("once (guarantee 5), counted at the signer", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document.querySelector("[data-step]")?.getAttribute("data-step"),
+        document
+          .querySelector("[data-modal] [data-step]")
+          ?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -771,7 +788,9 @@ describe("memory only (guarantee 8)", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document.querySelector("[data-step]")?.getAttribute("data-step"),
+        document
+          .querySelector("[data-modal] [data-step]")
+          ?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -822,8 +841,7 @@ describe("build refusals", () => {
         retryAfter: null,
         nothingBroadcast: true,
       })
-    render(app())
-    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+    await openCashOut()
     await act(async () => {
       fireEvent.change(document.querySelector("input")!, {
         target: { value: "25.5" },
@@ -843,8 +861,7 @@ describe("build refusals", () => {
   it("503 ramp_build_unavailable: not available on this server, no confirm or refresh", async () => {
     buildAnswer = () =>
       json(503, { error: "ramp_build_unavailable", nothingBroadcast: true })
-    render(app())
-    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+    await openCashOut()
     await act(async () => {
       fireEvent.change(document.querySelector("input")!, {
         target: { value: "25.5" },
@@ -902,7 +919,7 @@ describe("non-strict transactions keep master's review", () => {
 // ---- fix round 1 (review 3) ---------------------------------------------------
 const sendCount = () => signer.sendPreparedTransaction.mock.calls.length
 const stepName = () =>
-  document.querySelector("[data-step]")?.getAttribute("data-step")
+  document.querySelector("[data-modal] [data-step]")?.getAttribute("data-step")
 
 describe("fix round 1", () => {
   it("B-2 (B5): a second cash-out of the SAME amount (same approve bytes) can be signed", async () => {
@@ -1012,9 +1029,9 @@ describe("fix round 1", () => {
 
   it("a bank account without last4 reads its currency only, no '••'", async () => {
     h.last4 = null
-    render(app())
-    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
-    expect(text()).toContain("bank.cashOut.form.accountNoLast4.usd")
-    expect(text()).not.toContain('"last4"')
+    await openCashOut()
+    // The account line under the title: currency and rail only, no "••".
+    expect(text()).toContain("bank.accounts.row.currency.usd")
+    expect(text()).not.toContain("bank.accounts.row.last4")
   })
 })

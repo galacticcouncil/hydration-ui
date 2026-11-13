@@ -4,10 +4,12 @@ import {
   ShieldCheckIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { Alert, Button, LoadingButton } from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BankMessage } from "@/modules/onramp/bank/components/BankMessage"
+import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
+import { useBankFlow } from "@/modules/onramp/bank/hooks/useBankFlow"
 import {
   OnboardingStep,
   StageView,
@@ -40,62 +42,138 @@ const openHostedLink = (link: HostedLink) => {
   if (link.url) window.open(link.url, "_blank", "noopener,noreferrer")
 }
 
-/** API doc 2 step 5. The stage picks the copy only; availability is `rails`. */
+/**
+ * API doc 2 step 5, as Figma S04-S06. The stage picks the copy only;
+ * availability is `rails`. S05 ("Continue on Bridge") is this screen after
+ * a Bridge page was opened here; the server's stage still decides the rest.
+ */
 export const BankVerify: FC<BankVerifyProps> = ({
   step,
   isChecking,
   onCheck,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const { direction, onClose } = useBankFlow()
+  const [opened, setOpened] = useState(false)
   const { view, links } = step
   const needsSupport = view === "rejected" || view === "paused"
   const anyLinkUnreadable = !links.kyc.readable || !links.tos.readable
+  const open = (link: HostedLink) => {
+    openHostedLink(link)
+    setOpened(true)
+  }
 
-  return (
-    <BankMessage
-      icon={STAGE_ICONS[view]}
-      title={t(`bank.verify.${view}.title`)}
-      description={t(`bank.verify.${view}.description`)}
-    >
-      {step.rateLimited && (
-        <Alert variant="info" description={t("bank.verify.rateLimited")} />
-      )}
-      {view === "action" && (
-        <>
+  const rateLimited = step.rateLimited && (
+    <Alert variant="info" description={t("bank.verify.rateLimited")} />
+  )
+
+  if (view === "action" && opened)
+    return (
+      <BankStepShell
+        title={t("bank.flow.verifyTitle")}
+        step="verify"
+        onBack={() => setOpened(false)}
+      >
+        <BankMessage
+          icon={ShieldCheckIcon}
+          title={t("bank.verify.opened.title")}
+          description={t(`bank.verify.opened.description.${direction}`)}
+          actions={
+            <>
+              <LoadingButton
+                size="large"
+                isLoading={isChecking}
+                disabled={isChecking}
+                onClick={onCheck}
+              >
+                {t("bank.verify.opened.return")}
+              </LoadingButton>
+              <Button
+                size="large"
+                variant="tertiary"
+                disabled={!links.kyc.readable}
+                onClick={() => open(links.kyc)}
+              >
+                {t("bank.verify.opened.again")}
+              </Button>
+            </>
+          }
+        >
+          {rateLimited}
+        </BankMessage>
+      </BankStepShell>
+    )
+
+  if (view === "action")
+    return (
+      <BankStepShell title={t("bank.flow.verifyTitle")} step="verify">
+        <BankMessage
+          icon={ShieldCheckIcon}
+          title={t("bank.verify.action.title")}
+          description={t(`bank.verify.action.description.${direction}`)}
+          actions={
+            <>
+              <Button
+                size="large"
+                disabled={!links.kyc.readable}
+                onClick={() => open(links.kyc)}
+              >
+                {t("bank.verify.kycCta")}
+              </Button>
+              <Button
+                size="large"
+                variant="tertiary"
+                disabled={!links.tos.readable}
+                onClick={() => open(links.tos)}
+              >
+                {t("bank.verify.tosCta")}
+              </Button>
+            </>
+          }
+        >
+          {rateLimited}
           {anyLinkUnreadable && (
             <Alert
               variant="warning"
               description={t("bank.verify.linkUnavailable")}
             />
           )}
-          <Button
-            size="large"
-            disabled={!links.kyc.readable}
-            onClick={() => openHostedLink(links.kyc)}
-          >
-            {t("bank.verify.kycCta")}
-          </Button>
-          <Button
-            size="large"
-            variant="secondary"
-            disabled={!links.tos.readable}
-            onClick={() => openHostedLink(links.tos)}
-          >
-            {t("bank.verify.tosCta")}
-          </Button>
-        </>
-      )}
-      {!needsSupport && (
-        <LoadingButton
-          size="large"
-          variant={view === "action" ? "tertiary" : "primary"}
-          isLoading={isChecking}
-          disabled={isChecking}
-          onClick={onCheck}
-        >
-          {t("bank.verify.checkStatus")}
-        </LoadingButton>
-      )}
-    </BankMessage>
+        </BankMessage>
+      </BankStepShell>
+    )
+
+  // S06 and the states Figma does not draw: a passive wait, a support case or
+  // an unreadable stage. Each can be left; only a read is offered again.
+  return (
+    <BankStepShell title={t("bank.flow.statusTitle")} step="verify">
+      <BankMessage
+        icon={STAGE_ICONS[view]}
+        title={t(`bank.verify.${view}.title`)}
+        description={t(`bank.verify.${view}.description`)}
+        note={needsSupport ? undefined : t("bank.verify.leaveNote")}
+        actions={
+          <>
+            {onClose && (
+              <Button size="large" variant="secondary" onClick={onClose}>
+                {t("bank.flow.backToPortfolio")}
+              </Button>
+            )}
+            {!needsSupport && (
+              <LoadingButton
+                size="large"
+                variant="tertiary"
+                isLoading={isChecking}
+                disabled={isChecking}
+                onClick={onCheck}
+              >
+                {t("bank.verify.checkStatus")}
+              </LoadingButton>
+            )}
+          </>
+        }
+      >
+        {rateLimited}
+      </BankMessage>
+    </BankStepShell>
   )
 }

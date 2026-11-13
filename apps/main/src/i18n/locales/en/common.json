@@ -250,6 +250,8 @@
   "navigation.portfolioOverview.description": "Your multichain portfolio, liquidity positions and more",
   "navigation.portfolioTracked.title": "Tracked Wallets",
   "navigation.portfolioTracked.description": "Track balances of other wallets",
+  "navigation.portfolioDeposits.title": "Deposits",
+  "navigation.portfolioDeposits.description": "Bank setup and bank transfers",
   "navigation.statsOverview.title": "Overview",
   "navigation.statsTreasury.title": "Treasury",
   "navigation.statsMoneyMarket.title": "Money Market",

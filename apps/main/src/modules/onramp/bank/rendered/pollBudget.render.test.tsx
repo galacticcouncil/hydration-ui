@@ -56,20 +56,22 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
   WalletMode: { EVM: "evm" },
 }))
 vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
-vi.mock("@galacticcouncil/ui/assets/icons", () => {
-  const I = () => null
-  return {
-    WalletIcon: I,
-    Building2Icon: I,
-    UserIcon: I,
-    CircleAlertIcon: I,
-    ClockIcon: I,
-    ShieldCheckIcon: I,
-    BadgeCheckIcon: I,
-    LandmarkIcon: I,
-  }
-})
-vi.mock("@galacticcouncil/ui/utils", () => ({ getToken: () => "" }))
+vi.mock(
+  "@galacticcouncil/ui/assets/icons",
+  // any icon name is a null component; "then" stays unset so the module is not a thenable
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_t, key) => (key === "then" ? undefined : () => null),
+        has: (_t, key) => key !== "then",
+      },
+    ),
+)
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (k: string, o?: unknown) => (o ? `${k} ${JSON.stringify(o)}` : k),

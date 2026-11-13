@@ -61,20 +61,22 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
   WalletMode: { EVM: "evm" },
 }))
 vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
-vi.mock("@galacticcouncil/ui/assets/icons", () => {
-  const I = () => null
-  return {
-    WalletIcon: I,
-    Building2Icon: I,
-    UserIcon: I,
-    CircleAlertIcon: I,
-    ClockIcon: I,
-    ShieldCheckIcon: I,
-    BadgeCheckIcon: I,
-    LandmarkIcon: I,
-  }
-})
-vi.mock("@galacticcouncil/ui/utils", () => ({ getToken: () => "" }))
+vi.mock(
+  "@galacticcouncil/ui/assets/icons",
+  // any icon name is a null component; "then" stays unset so the module is not a thenable
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_t, key) => (key === "then" ? undefined : () => null),
+        has: (_t, key) => key !== "then",
+      },
+    ),
+)
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (k: string, o?: unknown) => (o ? `${k} ${JSON.stringify(o)}` : k),
@@ -337,23 +339,35 @@ describe("Q4 remove", () => {
     render(app())
     await flush()
   }
-  it("with no bank account, adding one is the primary action", async () => {
+  // Figma W02: the saved accounts are rows and adding is a row too; the
+  // footer's Continue (to the cash-out) stays the screen's primary action.
+  const continueButton = () =>
+    Array.from(document.querySelectorAll("button")).find(
+      (b) => b.textContent === "bank.flow.continue",
+    ) as HTMLButtonElement | undefined
+  it("with no bank account, adding one is the only action (Continue disabled)", async () => {
     bankList = { bankAccounts: [] }
     await open()
-    const add = Array.from(document.querySelectorAll("button")).find(
-      (b) => b.textContent === "bank.accounts.add",
-    )
-    expect(add?.getAttribute("data-variant")).toBe("primary")
+    expect(
+      document.querySelector('[data-option="bank.accounts.add"]'),
+    ).not.toBeNull()
     expect(buttons()).not.toContain("bank.accounts.addAnother")
+    expect(continueButton()?.disabled).toBe(true)
   })
 
-  it("with an account listed, 'Add another bank account' is a secondary action", async () => {
+  it("with an account listed, it is selected, Continue is primary and 'Add another bank account' is a row", async () => {
     await open()
-    const add = Array.from(document.querySelectorAll("button")).find(
-      (b) => b.textContent === "bank.accounts.addAnother",
-    )
-    expect(add?.getAttribute("data-variant")).toBe("secondary")
+    expect(
+      document.querySelector('[data-option="bank.accounts.addAnother"]'),
+    ).not.toBeNull()
     expect(buttons()).not.toContain("bank.accounts.add")
+    expect(
+      document
+        .querySelector('[data-option="<placeholder bank>"]')
+        ?.getAttribute("data-active"),
+    ).toBe("1")
+    expect(continueButton()?.disabled).toBe(false)
+    expect(continueButton()?.getAttribute("data-variant")).toBe("primary")
   })
 
   it("R1 the row stays until the server answers; 202 reads removing; list re-read", async () => {

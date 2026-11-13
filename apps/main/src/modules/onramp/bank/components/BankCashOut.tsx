@@ -3,15 +3,14 @@ import {
   Button,
   FormField,
   Input,
+  ModalBody,
   Stack,
-  Text,
-  ToggleGroup,
-  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { FC, useEffect, useRef, useState } from "react"
 import { Controller, FormProvider, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { useBankAccountLine } from "@/modules/onramp/bank/components/BankAccountPicker"
 import {
   BankCashOutFormValues,
   useBankCashOutForm,
@@ -20,6 +19,7 @@ import { BankCashOutHistory } from "@/modules/onramp/bank/components/BankCashOut
 import { BankCashOutQuote } from "@/modules/onramp/bank/components/BankCashOutQuote"
 import { BankCashOutReview } from "@/modules/onramp/bank/components/BankCashOutReview"
 import { BankCashOutStatus } from "@/modules/onramp/bank/components/BankCashOutStatus"
+import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import type {
   BankAccountView,
   RampBuildResponse,
@@ -33,7 +33,6 @@ import { useBankCashOutStore } from "@/modules/onramp/bank/store/useBankCashOutS
 import {
   CashOutErrorView,
   classifyCashOutError,
-  getCashOutAccounts,
   PreparedCashOut,
   reportRedeemHash,
 } from "@/modules/onramp/bank/utils/cashOut"
@@ -57,7 +56,9 @@ type Stage =
 
 type BankCashOutProps = {
   h160: string
-  accounts: BankAccountView[]
+  /** The account chosen on the step before; a cash-out goes to it only. */
+  account: BankAccountView
+  onBack: () => void
 }
 
 const sameRequest = (
@@ -74,17 +75,20 @@ const sameRequest = (
  * are handed to createTransaction, once, as two strict steps; then the ref is
  * cleared and the screen shows the ramp's status.
  */
-export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
+export const BankCashOut: FC<BankCashOutProps> = ({
+  h160,
+  account,
+  onBack,
+}) => {
   const { t } = useTranslation(["onramp"])
   const service = useHbrService()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const cashOutAccounts = getCashOutAccounts(accounts)
   const [stage, setStage] = useState<Stage>({ kind: "form" })
   const prepared = useRef<PreparedCashOut | null>(null)
   const [quotedAt, setQuotedAt] = useState(0)
   const [, setTick] = useState(0)
 
-  const form = useBankCashOutForm(cashOutAccounts[0]?.id ?? "")
+  const form = useBankCashOutForm(account.id)
   const values = useWatch({ control: form.control })
   const quote = useHbrQuoteRamp(h160)
   const build = useHbrBuildRamp(h160, (next) => {
@@ -99,16 +103,6 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
     [],
   )
 
-  // The list arrives after the form: select the first account once it does,
-  // and again if the selected one leaves the list.
-  const firstAccountId = cashOutAccounts[0]?.id
-  const selectedId = values.bankAccountId
-  useEffect(() => {
-    if (!firstAccountId) return
-    if (!cashOutAccounts.some((a) => a.id === selectedId))
-      form.setValue("bankAccountId", firstAccountId)
-  }, [firstAccountId, selectedId, cashOutAccounts, form])
-
   // Re-render when the quote may be refreshed again.
   useEffect(() => {
     if (!quotedAt) return
@@ -119,12 +113,8 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
     return () => clearTimeout(timer)
   }, [quotedAt])
 
-  if (cashOutAccounts.length === 0) return null
-
-  const accountOf = (id: string | undefined) =>
-    cashOutAccounts.find((a) => a.id === id)
-  const currencyOf = (id: string | undefined) =>
-    accountOf(id)?.currency === "eur" ? "eur" : "usd"
+  const currency = account.currency === "eur" ? "eur" : "usd"
+  const accountLine = useBankAccountLine()(account)
 
   const handOver = () => {
     if (stage.kind !== "review") return
@@ -181,26 +171,42 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
 
   if (stage.kind === "status")
     return (
-      <Stack gap="l">
-        <BankCashOutStatus
-          h160={h160}
-          rampId={stage.rampId}
-          onBack={backToForm}
-        />
-        <BankCashOutHistory h160={h160} onOpen={leaveTo} />
-      </Stack>
+      <BankStepShell
+        title={t("bank.cashOut.title")}
+        step="transfer"
+        onBack={backToForm}
+      >
+        <ModalBody>
+          <Stack gap="l">
+            <BankCashOutStatus
+              h160={h160}
+              rampId={stage.rampId}
+              onBack={backToForm}
+            />
+            <BankCashOutHistory h160={h160} onOpen={leaveTo} />
+          </Stack>
+        </ModalBody>
+      </BankStepShell>
     )
 
   if (stage.kind === "review")
     return (
-      <BankCashOutReview
-        build={stage.build}
-        currency={stage.currency}
-        hasApprove={stage.hasApprove}
-        chainId={stage.chainId}
-        onSign={handOver}
-        onLeave={() => leaveTo(stage.build.ramp.id)}
-      />
+      <BankStepShell
+        title={t("bank.cashOut.title")}
+        step="review"
+        onBack={() => leaveTo(stage.build.ramp.id)}
+      >
+        <ModalBody>
+          <BankCashOutReview
+            build={stage.build}
+            currency={stage.currency}
+            hasApprove={stage.hasApprove}
+            chainId={stage.chainId}
+            onSign={handOver}
+            onLeave={() => leaveTo(stage.build.ramp.id)}
+          />
+        </ModalBody>
+      </BankStepShell>
     )
 
   const quoteFits = quote.isSuccess && sameRequest(quote.variables, values)
@@ -231,7 +237,6 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
 
   const onConfirm = form.handleSubmit((body) => {
     if (busy || !quoteFits || notAvailable) return
-    const currency = currencyOf(body.bankAccountId)
     build.mutate(body, {
       onSuccess: (data) => {
         const next = prepared.current
@@ -248,94 +253,80 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
   })
 
   return (
-    <Stack gap="l">
-      <FormProvider {...form}>
-        <Stack gap="m">
-          <Text fs="p2" fw={500} font="primary">
-            {t("bank.cashOut.title")}
-          </Text>
-          <Controller
-            control={form.control}
-            name="bankAccountId"
-            render={({ field }) => (
-              <ToggleGroup<string>
-                type="single"
-                fullWidth
-                value={field.value}
-                onValueChange={(value) => value && field.onChange(value)}
+    <BankStepShell
+      title={t("bank.cashOut.title")}
+      description={accountLine}
+      step="amount"
+      onBack={onBack}
+    >
+      <ModalBody>
+        <Stack gap="l">
+          <FormProvider {...form}>
+            <Stack gap="m">
+              <Controller
+                control={form.control}
+                name="usdcAmount"
+                render={({ field, fieldState }) => (
+                  <FormField
+                    label={t("bank.cashOut.form.amount")}
+                    error={fieldState.error?.message}
+                  >
+                    <Input
+                      {...field}
+                      value={String(field.value ?? "")}
+                      inputMode="decimal"
+                      autoComplete="off"
+                      isError={!!fieldState.error}
+                    />
+                  </FormField>
+                )}
+              />
+              <Button
+                variant="secondary"
+                disabled={busy || coolingDown || notAvailable}
+                onClick={() => void onQuote()}
               >
-                {cashOutAccounts.map((account) => (
-                  <ToggleGroupItem key={account.id} value={account.id}>
-                    {account.last4
-                      ? t(
-                          `bank.cashOut.form.account.${currencyOf(account.id)}`,
-                          {
-                            last4: account.last4,
-                          },
-                        )
-                      : t(
-                          `bank.cashOut.form.accountNoLast4.${currencyOf(account.id)}`,
-                        )}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="usdcAmount"
-            render={({ field, fieldState }) => (
-              <FormField
-                label={t("bank.cashOut.form.amount")}
-                error={fieldState.error?.message}
-              >
-                <Input
-                  {...field}
-                  value={String(field.value ?? "")}
-                  inputMode="decimal"
-                  autoComplete="off"
-                  isError={!!fieldState.error}
-                />
-              </FormField>
-            )}
-          />
-          <Button
-            variant="secondary"
-            disabled={busy || coolingDown || notAvailable}
-            onClick={() => void onQuote()}
-          >
-            {t(
-              quoteFits
-                ? "bank.cashOut.quote.refresh"
-                : "bank.cashOut.quote.get",
-            )}
-          </Button>
+                {t(
+                  quoteFits
+                    ? "bank.cashOut.quote.refresh"
+                    : "bank.cashOut.quote.get",
+                )}
+              </Button>
+            </Stack>
+          </FormProvider>
+          {quoteFits && quote.data && (
+            <BankCashOutQuote
+              quote={quote.data.quote}
+              payoutLimit={quote.data.payoutLimit}
+              currency={currency}
+            />
+          )}
+          {quoteError && (
+            <Alert variant="warning" description={errorText(quoteError)} />
+          )}
+          {buildError && (
+            <Alert variant="warning" description={errorText(buildError)} />
+          )}
+          {buildError?.kind === "pending" && buildError.rampId && (
+            <Button
+              variant="secondary"
+              onClick={() => leaveTo(buildError.rampId!)}
+            >
+              {t("bank.cashOut.error.pendingOpen")}
+            </Button>
+          )}
+          {quoteFits && !notAvailable && (
+            <Button
+              size="large"
+              disabled={busy}
+              onClick={() => void onConfirm()}
+            >
+              {t("bank.cashOut.confirm")}
+            </Button>
+          )}
+          <BankCashOutHistory h160={h160} onOpen={leaveTo} />
         </Stack>
-      </FormProvider>
-      {quoteFits && quote.data && (
-        <BankCashOutQuote
-          quote={quote.data.quote}
-          payoutLimit={quote.data.payoutLimit}
-          currency={currencyOf(values.bankAccountId)}
-        />
-      )}
-      {quoteError && (
-        <Alert variant="warning" description={errorText(quoteError)} />
-      )}
-      {buildError && (
-        <Alert variant="warning" description={errorText(buildError)} />
-      )}
-      {buildError?.kind === "pending" && buildError.rampId && (
-        <Button variant="secondary" onClick={() => leaveTo(buildError.rampId!)}>
-          {t("bank.cashOut.error.pendingOpen")}
-        </Button>
-      )}
-      {quoteFits && !notAvailable && (
-        <Button size="large" disabled={busy} onClick={() => void onConfirm()}>
-          {t("bank.cashOut.confirm")}
-        </Button>
-      )}
-      <BankCashOutHistory h160={h160} onOpen={leaveTo} />
-    </Stack>
+      </ModalBody>
+    </BankStepShell>
   )
 }

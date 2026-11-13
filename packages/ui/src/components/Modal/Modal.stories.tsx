@@ -122,6 +122,27 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
   )
 }
 
+// A modal whose close does more than close (here: a page that navigates away).
+const WithOwnCloseTemplate = (args: Story["args"]) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open Modal</Button>
+      <Modal {...args} open={open} onOpenChange={setOpen}>
+        <ModalHeader
+          title="Bank transfers"
+          align="center"
+          onBack={() => setOpen(false)}
+          onClose={() => setOpen(false)}
+        />
+        <ModalBody>
+          The close button calls onClose instead of closing the dialog itself.
+        </ModalBody>
+      </Modal>
+    </>
+  )
+}
+
 export const Default: Story = {
   render: DefaultTemplate,
 }
@@ -161,4 +182,8 @@ export const ForcedPopupVariant: Story = {
   args: {
     variant: "popup",
   },
+}
+
+export const WithOwnClose: Story = {
+  render: WithOwnCloseTemplate,
 }

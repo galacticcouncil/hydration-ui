@@ -1,10 +1,9 @@
 import {
   Alert,
-  Button,
   LoadingButton,
+  ModalBody,
+  ModalFooter,
   Stack,
-  ToggleGroup,
-  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
@@ -39,10 +38,9 @@ import {
 
 type BankAccountFormProps = {
   h160: string
-  /** Rails whose off-ramp is open (`rails` only); the form offers only these. */
-  rails: { usd: boolean; eur: boolean }
+  /** The rail picked on the step before (only an open one is offered there). */
+  rail: BankRail
   onDone: () => void
-  onCancel: () => void
 }
 
 /**
@@ -52,21 +50,20 @@ type BankAccountFormProps = {
  * persister (it skips sensitive keys, and HBR mutations never pause:
  * HBR_NETWORK_MODE). Browser extensions reading the page are out of reach.
  * One `clientRequestId` per submission, reused while the same body is sent
- * again (lost on Cancel or remount: then a new id, see utils/bankAccounts.ts).
+ * again (lost on back or remount: then a new id, see utils/bankAccounts.ts).
+ * Figma W03/W04 (pattern P05): the rail is chosen first, so this form holds
+ * one rail's fields only; another rail is a new form.
  */
 export const BankAccountForm: FC<BankAccountFormProps> = ({
   h160,
-  rails,
+  rail,
   onDone,
-  onCancel,
 }) => {
   const { t, i18n } = useTranslation(["onramp"])
-  const firstRail: BankRail = rails.usd ? "ach" : "sepa"
-  const form = useBankAccountForm(firstRail)
+  const form = useBankAccountForm(rail)
   const create = useHbrCreateBankAccount(h160)
   const inFlight = useHbrActionInFlight(h160, "createBankAccount")
   const pending = useRef<BankAccountSubmission | null>(null)
-  const rail = form.watch("rail")
   const countries = useMemo(
     () => countryOptions(i18n?.language || "en"),
     [i18n?.language],
@@ -106,7 +103,7 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
         {
           onSuccess: () => {
             pending.current = null
-            form.reset(emptyBankAccountForm(firstRail))
+            form.reset(emptyBankAccountForm(rail))
             onDone()
           },
           onError: (error) => {
@@ -125,56 +122,43 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
   return (
     <FormProvider {...form}>
       <form onSubmit={submit} autoComplete="off">
-        <Stack gap="m">
-          <ToggleGroup<BankRail>
-            type="single"
-            fullWidth
-            value={rail}
-            onValueChange={(value) => {
-              if (!value) return
-              pending.current = null
-              setInvalid(false)
-              form.reset(emptyBankAccountForm(value))
-            }}
-          >
-            <ToggleGroupItem value="ach" disabled={!rails.usd}>
-              {t("bank.accounts.form.rail.ach")}
-            </ToggleGroupItem>
-            <ToggleGroupItem value="sepa" disabled={!rails.eur}>
-              {t("bank.accounts.form.rail.sepa")}
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <BankAccountRailFields />
-          <BankAccountFormField name="streetLine1" />
-          <BankAccountFormField name="streetLine2" />
-          <BankAccountFormField name="city" />
-          {rail === "ach" && <BankAccountStateField />}
-          <BankAccountFormField name="postalCode" />
-          <BankAccountSelectField name="country" options={countries} />
-          {invalid && (
-            <Alert
-              variant="warning"
-              description={t("bank.accounts.form.error.summary")}
-            />
-          )}
-          {errorView && (
-            <Alert
-              variant={errorView.kind === "uncertain" ? "info" : "warning"}
-              description={
-                errorView.kind === "serverDetail"
-                  ? errorView.detail
-                  : errorView.kind === "railUnavailable"
-                    ? t("bank.accounts.error.railUnavailable", {
-                        gate: errorView.gate ?? "-",
-                      })
-                    : t(`bank.accounts.error.${errorView.kind}`)
-              }
-            />
-          )}
+        <ModalBody>
+          <Stack gap="m">
+            <BankAccountRailFields />
+            <BankAccountFormField name="streetLine1" />
+            <BankAccountFormField name="streetLine2" />
+            <BankAccountFormField name="city" />
+            {rail === "ach" && <BankAccountStateField />}
+            <BankAccountFormField name="postalCode" />
+            <BankAccountSelectField name="country" options={countries} />
+            {invalid && (
+              <Alert
+                variant="warning"
+                description={t("bank.accounts.form.error.summary")}
+              />
+            )}
+            {errorView && (
+              <Alert
+                variant={errorView.kind === "uncertain" ? "info" : "warning"}
+                description={
+                  errorView.kind === "serverDetail"
+                    ? errorView.detail
+                    : errorView.kind === "railUnavailable"
+                      ? t("bank.accounts.error.railUnavailable", {
+                          gate: errorView.gate ?? "-",
+                        })
+                      : t(`bank.accounts.error.${errorView.kind}`)
+                }
+              />
+            )}
+          </Stack>
+        </ModalBody>
+        <ModalFooter>
           {/* Read from the mutation cache: a remount still sees the pending POST. */}
           <LoadingButton
             type="submit"
             size="large"
+            width="100%"
             isLoading={inFlight.pending}
             disabled={inFlight.pending}
           >
@@ -182,16 +166,7 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
               ? t("bank.accounts.form.saving")
               : t("bank.accounts.form.submit")}
           </LoadingButton>
-          <Button
-            type="button"
-            size="large"
-            variant="tertiary"
-            disabled={create.isPending}
-            onClick={onCancel}
-          >
-            {t("bank.accounts.form.cancel")}
-          </Button>
-        </Stack>
+        </ModalFooter>
       </form>
     </FormProvider>
   )

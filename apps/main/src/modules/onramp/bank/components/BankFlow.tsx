@@ -1,14 +1,16 @@
 import { useAccount, useWallet } from "@galacticcouncil/web3-connect"
-import { FC } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 
 import { BankConnectEvm } from "@/modules/onramp/bank/components/BankConnectEvm"
 import { BankOnboarding } from "@/modules/onramp/bank/components/BankOnboarding"
 import { BankSignIn } from "@/modules/onramp/bank/components/BankSignIn"
+import { BankFlowContext } from "@/modules/onramp/bank/hooks/useBankFlow"
 import {
   BankDirection,
   MessageSigner,
   useHbrSession,
 } from "@/modules/onramp/bank/hooks/useHbr"
+import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore"
 import { getBankWalletGate } from "@/modules/onramp/bank/utils/walletGate"
 
 type BankSessionProps = {
@@ -27,25 +29,52 @@ const BankSession: FC<BankSessionProps> = ({ h160, signer, direction }) => {
 }
 
 /**
- * The bank deposit and cash-out set-up, shared by /deposit and /withdraw:
- * EVM wallet gate, sign-in, then onboarding (API doc section 2).
+ * The bank deposit and cash-out flows, shared by /deposit and /withdraw: EVM
+ * wallet gate, sign-in, then onboarding (API doc section 2), as the Figma
+ * modal steps. `onExit` is back from the first step; `onClose` is the modal's
+ * close (to Portfolio, Deposits). Both are navigation only.
  */
 type BankFlowProps = {
   direction: BankDirection
+  onExit?: () => void
+  onClose?: () => void
 }
 
-export const BankFlow: FC<BankFlowProps> = ({ direction }) => {
+export const BankFlow: FC<BankFlowProps> = ({ direction, onExit, onClose }) => {
   const { account } = useAccount()
   const wallet = useWallet()
   const gate = getBankWalletGate(account, wallet?.signer)
+  // Read once and then cleared: a reopen from Portfolio applies to this mount.
+  const [entry] = useState(() => {
+    const pending = useBankEntryStore.getState().entry
+    return pending?.direction === direction ? pending : null
+  })
+  useEffect(() => {
+    useBankEntryStore.getState().clear()
+  }, [])
+  const nav = useMemo(
+    () => ({
+      direction,
+      onExit,
+      onClose,
+      entry: entry?.target,
+      reopened: !!entry,
+    }),
+    [direction, onExit, onClose, entry],
+  )
 
-  if (!gate.ok) return <BankConnectEvm reason={gate.reason} />
   return (
-    <BankSession
-      key={gate.h160}
-      h160={gate.h160}
-      signer={gate.signer}
-      direction={direction}
-    />
+    <BankFlowContext.Provider value={nav}>
+      {gate.ok ? (
+        <BankSession
+          key={gate.h160}
+          h160={gate.h160}
+          signer={gate.signer}
+          direction={direction}
+        />
+      ) : (
+        <BankConnectEvm reason={gate.reason} />
+      )}
+    </BankFlowContext.Provider>
   )
 }

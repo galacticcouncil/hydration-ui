@@ -1,11 +1,11 @@
+import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatus.webp"
 import {
-  Flex,
+  Button,
   ModalBody,
   Skeleton,
   Stack,
-  TextButton,
 } from "@galacticcouncil/ui/components"
-import { FC, useEffect } from "react"
+import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BankAccounts } from "@/modules/onramp/bank/components/BankAccounts"
@@ -13,13 +13,15 @@ import { BankAccountType } from "@/modules/onramp/bank/components/BankAccountTyp
 import { BankDeposit } from "@/modules/onramp/bank/components/BankDeposit"
 import { BankErrorMessage } from "@/modules/onramp/bank/components/BankErrorMessage"
 import { BankLinkWallet } from "@/modules/onramp/bank/components/BankLinkWallet"
+import { BankMessage } from "@/modules/onramp/bank/components/BankMessage"
+import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import { BankVerify } from "@/modules/onramp/bank/components/BankVerify"
+import { useBankFlow } from "@/modules/onramp/bank/hooks/useBankFlow"
 import {
   BankDirection,
   MessageSigner,
   useHbrMe,
   useHbrOnboarding,
-  useHbrSignOut,
 } from "@/modules/onramp/bank/hooks/useHbr"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import {
@@ -34,7 +36,12 @@ type BankOnboardingProps = {
   direction: BankDirection
 }
 
-/** API doc 2 steps 2-5, each screen derived from the latest onboarding read. */
+/**
+ * API doc 2 steps 2-5 as the Figma set-up steps S02-S07, each screen derived
+ * from the latest onboarding read. No sign-out here (owner decision
+ * 2026-11-13): the session ends on a wallet switch or disconnect, a 401 and
+ * expiry.
+ */
 export const BankOnboarding: FC<BankOnboardingProps> = ({
   h160,
   signer,
@@ -43,8 +50,8 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({
   const { t } = useTranslation(["onramp"])
   const me = useHbrMe(h160)
   const onboarding = useHbrOnboarding(h160)
-  const signOut = useHbrSignOut(h160)
   const clear = useHbrSessionStore((state) => state.clear)
+  const { onClose } = useBankFlow()
 
   // The server's wallet of this session must be this wallet.
   const meWallet = me.data?.h160.toLowerCase()
@@ -60,17 +67,31 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({
           error: onboarding.error,
         })
 
-  return (
-    <>
-      {step.kind === "loading" && (
+  // S07 ("ready") is shown once, when this screen saw the set-up unfinished
+  // and the server then opened a rail; a user already set up goes straight on.
+  // Display state only: the next screen is still the server's.
+  const [sawSetup, setSawSetup] = useState(false)
+  const [readySeen, setReadySeen] = useState(false)
+  const inSetup =
+    step.kind === "chooseType" || step.kind === "bind" || step.kind === "verify"
+  useEffect(() => {
+    if (inSetup) setSawSetup(true)
+  }, [inSetup])
+
+  if (step.kind === "loading")
+    return (
+      <BankStepShell title={t(`bank.flow.setupTitle.${direction}`)} step={null}>
         <ModalBody>
           <Stack gap="m">
             <Skeleton height={48} />
             <Skeleton height={48} />
           </Stack>
         </ModalBody>
-      )}
-      {step.kind === "error" && (
+      </BankStepShell>
+    )
+  if (step.kind === "error")
+    return (
+      <BankStepShell title={t(`bank.flow.setupTitle.${direction}`)} step={null}>
         <BankErrorMessage
           error={step.error}
           onRetry={() => {
@@ -78,32 +99,46 @@ export const BankOnboarding: FC<BankOnboardingProps> = ({
             void onboarding.refetch()
           }}
         />
-      )}
-      {step.kind === "chooseType" && <BankAccountType h160={h160} />}
-      {step.kind === "bind" && (
-        <BankLinkWallet h160={h160} signer={signer} direction={direction} />
-      )}
-      {step.kind === "verify" && (
-        <BankVerify
-          step={step}
-          isChecking={onboarding.isFetching}
-          onCheck={() => void onboarding.refetch()}
+      </BankStepShell>
+    )
+  if (step.kind === "chooseType") return <BankAccountType h160={h160} />
+  if (step.kind === "bind")
+    return <BankLinkWallet h160={h160} signer={signer} direction={direction} />
+  if (step.kind === "verify")
+    return (
+      <BankVerify
+        step={step}
+        isChecking={onboarding.isFetching}
+        onCheck={() => void onboarding.refetch()}
+      />
+    )
+
+  if (sawSetup && !readySeen)
+    return (
+      <BankStepShell title={t("bank.flow.statusTitle")} step="verify">
+        <BankMessage
+          image={SuccessStatus}
+          title={t(`bank.ready.title.${direction}`)}
+          description={t(`bank.ready.description.${direction}`)}
+          actions={
+            <>
+              <Button size="large" onClick={() => setReadySeen(true)}>
+                {t(`bank.ready.cta.${direction}`)}
+              </Button>
+              {onClose && (
+                <Button size="large" variant="tertiary" onClick={onClose}>
+                  {t("bank.flow.backToPortfolio")}
+                </Button>
+              )}
+            </>
+          }
         />
-      )}
-      {step.kind === "ready" &&
-        (direction === "deposit" ? (
-          <BankDeposit h160={h160} />
-        ) : (
-          <BankAccounts h160={h160} rails={step.rails} />
-        ))}
-      <Flex justify="center" pb="l">
-        <TextButton
-          disabled={signOut.isPending}
-          onClick={() => signOut.mutate()}
-        >
-          {t("bank.signOut")}
-        </TextButton>
-      </Flex>
-    </>
+      </BankStepShell>
+    )
+
+  return direction === "deposit" ? (
+    <BankDeposit h160={h160} />
+  ) : (
+    <BankAccounts h160={h160} rails={step.rails} />
   )
 }

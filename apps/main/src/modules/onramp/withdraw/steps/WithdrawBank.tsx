@@ -1,5 +1,4 @@
-import { ModalHeader } from "@galacticcouncil/ui/components"
-import { useTranslation } from "react-i18next"
+import { useNavigate } from "@tanstack/react-router"
 
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 
@@ -8,17 +7,13 @@ export type WithdrawBankProps = {
 }
 
 export const WithdrawBank: React.FC<WithdrawBankProps> = ({ onBack }) => {
-  const { t } = useTranslation(["onramp"])
+  const navigate = useNavigate()
 
   return (
-    <>
-      <ModalHeader
-        title={t("withdraw.bank.title")}
-        align="center"
-        onBack={onBack}
-        closable={false}
-      />
-      <BankFlow direction="withdraw" />
-    </>
+    <BankFlow
+      direction="withdraw"
+      onExit={onBack}
+      onClose={() => navigate({ to: "/portfolio/deposits" })}
+    />
   )
 }

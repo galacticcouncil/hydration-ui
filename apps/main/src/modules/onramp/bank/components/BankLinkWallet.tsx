@@ -1,9 +1,10 @@
-import { WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import NoFunds from "@galacticcouncil/ui/assets/images/NoFunds.png"
 import { Alert, LoadingButton } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BankMessage } from "@/modules/onramp/bank/components/BankMessage"
+import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import {
   BankDirection,
   MessageSigner,
@@ -28,29 +29,33 @@ export const BankLinkWallet: FC<BankLinkWalletProps> = ({
   const bind = useHbrBindWallet(h160, signer)
 
   return (
-    <BankMessage
-      icon={WalletIcon}
-      title={t("bank.link.title")}
-      description={
-        direction === "withdraw"
-          ? t("bank.link.description.withdraw")
-          : t("bank.link.description.deposit")
-      }
-    >
-      {bind.isError && (
-        <Alert
-          variant="warning"
-          description={t(`bank.sign.error.${classifySignError(bind.error)}`)}
-        />
-      )}
-      <LoadingButton
-        size="large"
-        isLoading={bind.isPending}
-        disabled={bind.isPending}
-        onClick={() => bind.mutate()}
+    <BankStepShell title={t(`bank.flow.setupTitle.${direction}`)} step="verify">
+      <BankMessage
+        image={NoFunds}
+        title={t("bank.link.title")}
+        description={
+          direction === "withdraw"
+            ? t("bank.link.description.withdraw")
+            : t("bank.link.description.deposit")
+        }
+        actions={
+          <LoadingButton
+            size="large"
+            isLoading={bind.isPending}
+            disabled={bind.isPending}
+            onClick={() => bind.mutate()}
+          >
+            {t("bank.link.cta")}
+          </LoadingButton>
+        }
       >
-        {t("bank.link.cta")}
-      </LoadingButton>
-    </BankMessage>
+        {bind.isError && (
+          <Alert
+            variant="warning"
+            description={t(`bank.sign.error.${classifySignError(bind.error)}`)}
+          />
+        )}
+      </BankMessage>
+    </BankStepShell>
   )
 }

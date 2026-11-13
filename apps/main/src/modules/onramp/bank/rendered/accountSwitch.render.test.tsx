@@ -97,19 +97,22 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
 }))
 
 vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
-vi.mock("@galacticcouncil/ui/assets/icons", () => {
-  const I = () => null
-  return {
-    WalletIcon: I,
-    Building2Icon: I,
-    UserIcon: I,
-    CircleAlertIcon: I,
-    ClockIcon: I,
-    ShieldCheckIcon: I,
-    BadgeCheckIcon: I,
-  }
-})
-vi.mock("@galacticcouncil/ui/utils", () => ({ getToken: () => "" }))
+vi.mock(
+  "@galacticcouncil/ui/assets/icons",
+  // any icon name is a null component; "then" stays unset so the module is not a thenable
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_t, key) => (key === "then" ? undefined : () => null),
+        has: (_t, key) => key !== "then",
+      },
+    ),
+)
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
@@ -121,6 +124,7 @@ vi.mock("@/config/env", () => ({
 
 // ---- fake HBR server over fetch -----------------------------------------
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
+import { useHbrSignOut } from "@/modules/onramp/bank/hooks/useHbr"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureService"
@@ -259,15 +263,36 @@ const makeClient = () =>
     mutationCache: new MutationCache({ onError: logMutationError }),
   })
 
+// The bank screens carry no Sign out (owner decision 2026-11-13); the
+// sign-out mutation's rules (clear before DELETE, a 401 reads signed out) are
+// driven here through the hook itself, for the wallet whose session it ends.
+const SignOutHarness = ({ h160 }: { h160: string }) => {
+  const signOut = useHbrSignOut(h160)
+  return (
+    <button type="button" onClick={() => signOut.mutate()}>
+      harness-sign-out
+    </button>
+  )
+}
+let harnessWallet: string | null = null
 const mount = (direction: "deposit" | "withdraw" = "withdraw") => {
   const client = makeClient()
   activeClient = client
   render(
     <QueryClientProvider client={client}>
       <BankFlow direction={direction} />
+      {harnessWallet && <SignOutHarness h160={harnessWallet} />}
     </QueryClientProvider>,
   )
   return client
+}
+// S04 -> S05: open Bridge (window.open stubbed), then "Return to Hydration",
+// which re-reads the onboarding (the former "Check status" of this screen).
+const returnFromBridge = async () => {
+  vi.spyOn(window, "open").mockReturnValue(null)
+  fireEvent.click(screen.getByText("bank.verify.kycCta"))
+  await flush()
+  fireEvent.click(screen.getByText("bank.verify.opened.return"))
 }
 
 const signInAs = async (addr: string) => {
@@ -286,6 +311,7 @@ beforeEach(() => {
   deleteHangs = false
   openSigns = 0
   onboardingOverride = null
+  harnessWallet = null
   errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 })
 afterEach(() => {
@@ -334,7 +360,7 @@ describe("lead question: identity crosses wallets", () => {
     watcher.disconnect()
     // B's wallet never gets the onboarding screen of A's session, not even
     // for one commit before the session guard drops it (reviewer-1 F12).
-    expect(added.some((t) => t.includes("bank.signOut"))).toBe(false)
+    expect(added.some((t) => t.includes("bank.accountType.cta"))).toBe(false)
     // ... and no query was ever built for B under A's session (B has none yet).
     expect(
       activeClient
@@ -379,12 +405,13 @@ describe("lead question: identity crosses wallets", () => {
 
   it("B3 sign-out while its DELETE hangs, then a reload: signed out, no authed request", async () => {
     setEvm(A)
+    harnessWallet = A.toLowerCase()
     mount()
     await signInAs(A)
     await flush()
     expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
     deleteHangs = true
-    fireEvent.click(screen.getByText("bank.signOut"))
+    fireEvent.click(screen.getByText("harness-sign-out"))
     await act(async () => {})
     // Before the DELETE answers, nothing of the session is left locally.
     expect(sessionStorage.length).toBe(0)
@@ -506,7 +533,7 @@ describe("lead question: identity crosses wallets", () => {
     expect(screen.queryByText("bank.verify.action.title")).not.toBeNull()
     errorSpy.mockClear()
     onboardingOverride = () => json(429, { error: "rate_limited" })
-    fireEvent.click(screen.getByText("bank.verify.checkStatus"))
+    await returnFromBridge()
     await flush()
     const logged = errorSpy.mock.calls.map((args) =>
       args
@@ -549,7 +576,7 @@ describe("lead question: identity crosses wallets", () => {
     await flush()
     onboardingOverride = () => json(401, { error: "unauthorized" })
     const before = log.length
-    fireEvent.click(screen.getByText("bank.verify.checkStatus"))
+    await returnFromBridge()
     await flush()
     const after = log.slice(before)
     expect(useHbrSessionStore.getState().session).toBeNull()
@@ -562,6 +589,7 @@ describe("lead question: identity crosses wallets", () => {
 
   it("Q3 a 401 on DELETE /v1/auth/session reads signed out", async () => {
     setEvm(A)
+    harnessWallet = A.toLowerCase()
     mount()
     await signInAs(A)
     const origFetch = fakeFetch
@@ -570,7 +598,7 @@ describe("lead question: identity crosses wallets", () => {
         ? json(401, { error: "unauthorized" })
         : origFetch(url, init),
     )
-    fireEvent.click(screen.getByText("bank.signOut"))
+    fireEvent.click(screen.getByText("harness-sign-out"))
     await flush()
     expect(useHbrSessionStore.getState().session).toBeNull()
     expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
