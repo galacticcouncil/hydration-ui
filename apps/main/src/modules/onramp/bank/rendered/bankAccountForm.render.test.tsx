@@ -439,3 +439,140 @@ describe("Q2 clientRequestId", () => {
     expect(posts().length).toBe(1)
   })
 })
+
+describe("rail switches (E2E-1)", () => {
+  beforeEach(() => {
+    bankQueue.length = 0
+    bankQueue.push(() =>
+      json(201, {
+        bankAccount: {
+          id: "00000000-0000-4000-8000-0000000000b1",
+          externalAccountId: "x",
+        },
+      }),
+    )
+  })
+  const fillSepa = async (bankName?: string) => {
+    await type("iban", "DE89370400440532013000")
+    await type("bic", "COBADEFFXXX")
+    if (bankName !== undefined) await type("bankName", bankName)
+    await type("streetLine1", "Hauptstrasse 1")
+    await type("city", "Berlin")
+    await type("postalCode", "10115")
+    await type("country", "DEU")
+  }
+  const pick = (rail: "ach" | "sepa") =>
+    act(async () => {
+      fireEvent.click(document.querySelector(`[data-toggle-item="${rail}"]`)!)
+    })
+  const fieldErrors = () =>
+    Array.from(document.querySelectorAll("[data-field-error]")).map(
+      (e) => e.textContent ?? "",
+    )
+  const onlySepaKeys = () => {
+    expect(posts()).toHaveLength(1)
+    const body = posts()[0]!.body as Record<string, unknown>
+    expect(Object.keys(body).sort()).toEqual(
+      ["address", "bic", "clientRequestId", "iban", "rail"]
+        .concat("bankName" in body ? ["bankName"] : [])
+        .sort(),
+    )
+    expect(body.rail).toBe("sepa")
+  }
+
+  it("ACH -> SEPA with bank name empty submits one SEPA POST", async () => {
+    await openForm()
+    await pick("sepa")
+    await fillSepa()
+    await submit()
+    await flush()
+    console.warn(
+      "DBG0 errors",
+      JSON.stringify(fieldErrors()),
+      Array.from(document.querySelectorAll("input"))
+        .map(
+          (i) => `${i.getAttribute("name")}=${(i as HTMLInputElement).value}`,
+        )
+        .join(","),
+    )
+    expect(fieldErrors()).toEqual([])
+    onlySepaKeys()
+  })
+
+  it("ACH -> SEPA with bank name filled submits one SEPA POST", async () => {
+    await openForm()
+    await pick("sepa")
+    await fillSepa("Commerzbank")
+    await submit()
+    await flush()
+    console.warn(
+      "DBG errors",
+      JSON.stringify(fieldErrors()),
+      Array.from(document.querySelectorAll("input"))
+        .map(
+          (i) => `${i.getAttribute("name")}=${(i as HTMLInputElement).value}`,
+        )
+        .join(","),
+    )
+    expect(fieldErrors()).toEqual([])
+    onlySepaKeys()
+    expect((posts()[0]!.body as { bankName?: string }).bankName).toBe(
+      "Commerzbank",
+    )
+  })
+
+  it("SEPA -> ACH -> SEPA submits one SEPA POST", async () => {
+    await openForm()
+    await pick("sepa")
+    await pick("ach")
+    await pick("sepa")
+    await fillSepa()
+    await submit()
+    await flush()
+    expect(fieldErrors()).toEqual([])
+    onlySepaKeys()
+  })
+
+  it("ACH -> SEPA -> ACH submits one ACH POST with only ACH keys", async () => {
+    await openForm()
+    await pick("sepa")
+    await pick("ach")
+    await fillAch()
+    await type("country", "USA")
+    await submit()
+    await flush()
+    expect(fieldErrors()).toEqual([])
+    expect(posts()).toHaveLength(1)
+    const body = posts()[0]!.body as Record<string, unknown>
+    expect(Object.keys(body).sort()).toEqual(
+      [
+        "accountNumber",
+        "address",
+        "bankName",
+        "checkingOrSavings",
+        "clientRequestId",
+        "rail",
+        "routingNumber",
+      ].sort(),
+    )
+  })
+
+  it("a refused submit always shows a translated message on a visible field", async () => {
+    await openForm()
+    await pick("sepa")
+    await type("iban", "not-an-iban")
+    await submit()
+    await flush()
+    expect(posts()).toHaveLength(0)
+    const errors = fieldErrors()
+    expect(errors.length).toBeGreaterThan(0)
+    // The form-level summary shows on every refused submit.
+    expect(document.body.textContent).toContain(
+      "bank.accounts.form.error.summary",
+    )
+    // The test i18n returns keys: every message is one of ours.
+    expect(
+      errors.every((e) => e.startsWith("onramp:bank.accounts.form.error.")),
+    ).toBe(true)
+  })
+})

@@ -217,3 +217,35 @@ describe("the form refuses exactly what the server parser refuses", () => {
     expect(verdicts(values)).toEqual({ form: false, server: false })
   })
 })
+
+describe("no raw zod message can reach the user", () => {
+  const fields = Object.keys(emptyBankAccountForm("ach"))
+  const junk: unknown[] = [undefined, null, 42, {}, [], true, "", " "]
+
+  it.each(["ach", "sepa", "other", undefined])(
+    "rail %s: every issue for any junk in any field is one of our translations",
+    (rail) => {
+      for (const field of fields)
+        for (const value of junk) {
+          const values = {
+            ...emptyBankAccountForm("ach"),
+            rail,
+            [field]: value,
+          }
+          const result = bankAccountFormSchema.safeParse(values)
+          for (const issue of result.error?.issues ?? [])
+            expect(issue.message).toMatch(
+              /^onramp:bank\.accounts\.form\.error\./,
+            )
+        }
+    },
+  )
+
+  it("fields of the other rail never fail: an all-undefined SEPA form fails only on visible SEPA fields", () => {
+    const result = bankAccountFormSchema.safeParse({ rail: "sepa" })
+    const paths = (result.error?.issues ?? []).map((i) => String(i.path[0]))
+    expect(paths.sort()).toEqual(
+      ["bic", "city", "country", "iban", "postalCode", "streetLine1"].sort(),
+    )
+  })
+})

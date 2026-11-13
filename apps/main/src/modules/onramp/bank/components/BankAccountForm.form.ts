@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useForm } from "react-hook-form"
+import { Resolver, useForm } from "react-hook-form"
 import { z } from "zod/v4"
 
 import i18n from "@/i18n"
@@ -35,21 +35,35 @@ const MAX = { bankName: 100, street: 100, city: 64, postalCode: 16 }
 const isText = (v: string, max: number) =>
   v.length >= 1 && v.length <= max && !CONTROL.test(v)
 
+// Every field parses whatever the form holds: a field of the other rail (or
+// one never rendered) can be undefined after a rail switch, and must neither
+// fail nor show zod's own message. A missing or non-string value reads as ""
+// and is then judged only by the selected rail's rules below.
+const formText = z.preprocess(
+  (v) => (typeof v === "string" ? v : ""),
+  z.string(),
+)
+
 export const bankAccountFormSchema = z
   .object({
-    rail: z.enum(["ach", "sepa"]),
-    bankName: z.string(),
-    accountNumber: z.string(),
-    routingNumber: z.string(),
-    checkingOrSavings: z.enum(["checking", "savings"]),
-    iban: z.string(),
-    bic: z.string(),
-    streetLine1: z.string(),
-    streetLine2: z.string(),
-    city: z.string(),
-    state: z.string(),
-    postalCode: z.string(),
-    country: z.string(),
+    rail: z.enum(["ach", "sepa"], {
+      error: () => i18n.t("onramp:bank.accounts.form.error.rail"),
+    }),
+    bankName: formText,
+    accountNumber: formText,
+    routingNumber: formText,
+    checkingOrSavings: z.preprocess(
+      (v) => (v === "savings" ? "savings" : "checking"),
+      z.enum(["checking", "savings"]),
+    ),
+    iban: formText,
+    bic: formText,
+    streetLine1: formText,
+    streetLine2: formText,
+    city: formText,
+    state: formText,
+    postalCode: formText,
+    country: formText,
   })
   .superRefine((v, ctx) => {
     const fail = (
@@ -150,7 +164,11 @@ export const toBankAccountBody = (
 
 export const useBankAccountForm = (rail: BankRail) =>
   useForm<BankAccountFormValues>({
-    resolver: standardSchemaResolver(bankAccountFormSchema),
+    // The schema's input is looser than its output (fields of the other rail
+    // may be undefined); the form holds the output shape.
+    resolver: standardSchemaResolver(
+      bankAccountFormSchema,
+    ) as unknown as Resolver<BankAccountFormValues>,
     defaultValues: emptyBankAccountForm(rail),
     mode: "onSubmit",
   })

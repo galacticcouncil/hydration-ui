@@ -6,7 +6,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import { FC, useRef } from "react"
+import { FC, useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -61,31 +61,38 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
   const pending = useRef<BankAccountSubmission | null>(null)
   const rail = form.watch("rail")
 
-  const submit = form.handleSubmit((values) => {
-    // One POST at a time: a second click before the re-render sends nothing.
-    if (!inFlight.isFree()) return
-    const body = toBankAccountBody(values)
-    const submission = nextBankAccountSubmission(pending.current, body, () =>
-      crypto.randomUUID(),
-    )
-    pending.current = submission
-    create.mutate(
-      {
-        clientRequestId: submission.clientRequestId,
-        ...body,
-      } as CreateBankAccountRequest,
-      {
-        onSuccess: () => {
-          pending.current = null
-          form.reset(emptyBankAccountForm(firstRail))
-          onDone()
+  // A refused submit always says so, even when the failing field is not
+  // rendered (it can never block silently).
+  const [invalid, setInvalid] = useState(false)
+  const submit = form.handleSubmit(
+    (values) => {
+      setInvalid(false)
+      // One POST at a time: a second click before the re-render sends nothing.
+      if (!inFlight.isFree()) return
+      const body = toBankAccountBody(values)
+      const submission = nextBankAccountSubmission(pending.current, body, () =>
+        crypto.randomUUID(),
+      )
+      pending.current = submission
+      create.mutate(
+        {
+          clientRequestId: submission.clientRequestId,
+          ...body,
+        } as CreateBankAccountRequest,
+        {
+          onSuccess: () => {
+            pending.current = null
+            form.reset(emptyBankAccountForm(firstRail))
+            onDone()
+          },
+          onError: (error) => {
+            if (isBankAccountSubmissionDone(error)) pending.current = null
+          },
         },
-        onError: (error) => {
-          if (isBankAccountSubmissionDone(error)) pending.current = null
-        },
-      },
-    )
-  })
+      )
+    },
+    () => setInvalid(true),
+  )
 
   const errorView = create.isError
     ? classifyCreateBankAccountError(create.error)
@@ -102,6 +109,7 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
             onValueChange={(value) => {
               if (!value) return
               pending.current = null
+              setInvalid(false)
               form.reset(emptyBankAccountForm(value))
             }}
           >
@@ -119,6 +127,12 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
           {rail === "ach" && <BankAccountFormField name="state" />}
           <BankAccountFormField name="postalCode" />
           <BankAccountFormField name="country" />
+          {invalid && (
+            <Alert
+              variant="warning"
+              description={t("bank.accounts.form.error.summary")}
+            />
+          )}
           {errorView && (
             <Alert
               variant={errorView.kind === "uncertain" ? "info" : "warning"}

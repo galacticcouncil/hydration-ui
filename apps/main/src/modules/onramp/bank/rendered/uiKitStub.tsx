@@ -23,8 +23,14 @@ export const ModalBody: FC<ChildrenProps> = ({ children }) => (
 )
 export const Stack: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
 export const Flex: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
-export const FormField: FC<ChildrenProps> = ({ children }) => (
-  <div>{children}</div>
+export const FormField: FC<ChildrenProps & { error?: string }> = ({
+  children,
+  error,
+}) => (
+  <div>
+    {children}
+    {error && <span data-field-error="1">{error}</span>}
+  </div>
 )
 export const Text: FC<ChildrenProps> = ({ children }) => <span>{children}</span>
 export const Separator: FC = () => <hr />

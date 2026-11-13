@@ -6,7 +6,11 @@ import { useTranslation } from "react-i18next"
 import { BankAccountFormValues } from "@/modules/onramp/bank/components/BankAccountForm.form"
 import { BankAccountFormField } from "@/modules/onramp/bank/components/BankAccountFormField"
 
-/** The fields of the selected rail only: USD ACH or EUR SEPA (API doc 4). */
+/**
+ * The fields of the selected rail only: USD ACH or EUR SEPA (API doc 4). Each
+ * field is keyed by its name, so a rail switch mounts fresh fields instead of
+ * reusing one field's controller for another name.
+ */
 export const BankAccountRailFields: FC = () => {
   const { t } = useTranslation(["onramp"])
   const { watch } = useFormContext<BankAccountFormValues>()
@@ -15,17 +19,17 @@ export const BankAccountRailFields: FC = () => {
   if (rail === "sepa")
     return (
       <>
-        <BankAccountFormField name="iban" />
-        <BankAccountFormField name="bic" />
-        <BankAccountFormField name="bankName" />
+        <BankAccountFormField key="iban" name="iban" />
+        <BankAccountFormField key="bic" name="bic" />
+        <BankAccountFormField key="bankName" name="bankName" />
       </>
     )
 
   return (
     <>
-      <BankAccountFormField name="bankName" />
-      <BankAccountFormField name="accountNumber" />
-      <BankAccountFormField name="routingNumber" />
+      <BankAccountFormField key="bankName" name="bankName" />
+      <BankAccountFormField key="accountNumber" name="accountNumber" />
+      <BankAccountFormField key="routingNumber" name="routingNumber" />
       <Controller<BankAccountFormValues, "checkingOrSavings">
         name="checkingOrSavings"
         render={({ field }) => (
