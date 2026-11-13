@@ -24,6 +24,7 @@ import { WithdrawalsCard } from "@/modules/strategies/juicer/components/Withdraw
 import { WithdrawModal } from "@/modules/strategies/juicer/components/WithdrawModal"
 import { type JuicerVaultConfig } from "@/modules/strategies/juicer/config/vaults"
 import { useDefaultDepositVault } from "@/modules/strategies/juicer/hooks/useDefaultDepositVault"
+import { useIceDepositTracker } from "@/modules/strategies/juicer/hooks/useIceDeposit"
 import { useJuicerAccount } from "@/modules/strategies/juicer/hooks/useJuicerAccount"
 import { useRefetchOnWake } from "@/modules/strategies/juicer/hooks/useRefetchOnWake"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -52,6 +53,7 @@ const JuicerVaultContent = () => {
 
   const { positions, withdrawals, isError } = useJuicerAccount(evmAddress)
   useRefetchOnWake()
+  const iceDeposits = useIceDepositTracker().filter((d) => d.owner === address)
 
   const defaultDeposit = useDefaultDepositVault()
 
@@ -63,7 +65,8 @@ const JuicerVaultContent = () => {
   const [tab, setTab] = useState<"overview" | "positions">(
     section === "withdrawals" ? "positions" : "overview",
   )
-  const hasUserData = positions.length > 0 || withdrawals.length > 0
+  const hasUserData =
+    positions.length > 0 || withdrawals.length > 0 || iceDeposits.length > 0
   const showOverview = !stacked || !hasUserData || tab === "overview"
   const showPositions = !stacked || (hasUserData && tab === "positions")
 
@@ -98,6 +101,7 @@ const JuicerVaultContent = () => {
           {showPositions && (
             <MyPositionsCard
               positions={positions}
+              iceDeposits={iceDeposits}
               onWithdraw={setWithdrawVault}
             />
           )}

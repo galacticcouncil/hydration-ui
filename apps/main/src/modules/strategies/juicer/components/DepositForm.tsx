@@ -33,6 +33,7 @@ import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDepositForm } from "@/modules/strategies/juicer/components/DepositForm.form"
 import { DepositSwapSummary } from "@/modules/strategies/juicer/components/DepositSwapSummary"
+import { ICE_DEPOSIT_ADAPTER } from "@/modules/strategies/juicer/config/constants"
 import {
   JUICER_VAULTS,
   vaultCollateralDisplayId,
@@ -43,6 +44,7 @@ import {
 } from "@/modules/strategies/juicer/hooks/useCollateralEquivalent"
 import { useDepositMaxBalance } from "@/modules/strategies/juicer/hooks/useDepositMaxBalance"
 import { useDepositQuote } from "@/modules/strategies/juicer/hooks/useDepositQuote"
+import { useIceDeposit } from "@/modules/strategies/juicer/hooks/useIceDeposit"
 import { FULL_SHARE_BPS } from "@/modules/strategies/juicer/hooks/useJuicerVaults"
 import { depositCapacityQuery } from "@/modules/strategies/juicer/hooks/useVaultReads"
 import { useDeposit } from "@/modules/strategies/juicer/hooks/useVaultWrites"
@@ -126,6 +128,7 @@ export const DepositForm: FC<DepositFormProps> = ({
       onSuccess?.()
     },
   })
+  const iceDeposit = useIceDeposit(vault)
   const unavailable =
     !rpc.isReady || !capacity || capacityError || !capacity.ready
   const maximum = formatUnits(capacity?.maximum ?? 0n, collateral.decimals)
@@ -147,6 +150,9 @@ export const DepositForm: FC<DepositFormProps> = ({
   // a buy deposit sizes its own fill to the room and spends only what that
   // costs, so the whole balance is a valid amount and the room never binds it
   const isBuyDeposit = isSwap && !isOneToOneDeposit(selected)
+  // where the ICE adapter is deployed, a swap deposit is one ICE intent whose
+  // forward deposits the whole fill (see useIceDeposit), not a Router.buy batch
+  const isIce = !!ICE_DEPOSIT_ADAPTER && isBuyDeposit
   // Capacity is in collateral; the 1:1 swap bounds its OUTPUT, so express the
   // cap in the pay asset at spot. The swap executes below spot (fees, impact),
   // so a spot-converted fill always lands under the cap.
@@ -187,6 +193,10 @@ export const DepositForm: FC<DepositFormProps> = ({
   useEffect(() => {
     if (depositFailed) void refetchCapacity()
   }, [depositFailed, refetchCapacity])
+  const iceFailed =
+    iceDeposit.isError &&
+    !(iceDeposit.error instanceof TransactionClosedError) &&
+    !isWalletRejection(iceDeposit.error)
   const filledFirst =
     depositFailed &&
     !!capacity &&
@@ -234,12 +244,14 @@ export const DepositForm: FC<DepositFormProps> = ({
     !!capacity &&
     quote.depositAmount !== undefined &&
     quote.depositAmount > capacity.maximum
-  const isSwapReady = !isSwap || (isSwapDepositReady(quote) && !exceedsCapacity)
+  const isSwapReady =
+    isIce || !isSwap || (isSwapDepositReady(quote) && !exceedsCapacity)
 
   const canSubmit =
     formState.isValid &&
     isSwapReady &&
     !deposit.isPending &&
+    !iceDeposit.isPending &&
     !isPaused &&
     !atCapacity &&
     !unavailable &&
@@ -274,6 +286,19 @@ export const DepositForm: FC<DepositFormProps> = ({
 
   const onSubmit = handleSubmit(({ amount }) => {
     if (!canSubmit) return
+    if (isIce) {
+      iceDeposit.mutate(
+        { assetIn: assetId, amountIn: parseUnits(amount, asset.decimals) },
+        {
+          onSuccess: () => {
+            setMaxChosen(false)
+            form.reset()
+            onSuccess?.()
+          },
+        },
+      )
+      return
+    }
     deposit.mutate(
       isSwap && quote.tx && quote.depositAmount && quote.maxAmountIn
         ? {
@@ -423,7 +448,8 @@ export const DepositForm: FC<DepositFormProps> = ({
             />
           </Summary>
           {(blockedDescription ||
-            quote.isError ||
+            iceFailed ||
+            (quote.isError && !isIce) ||
             reserve.isError ||
             depositFailed) && (
             <Stack gap="base">
@@ -434,7 +460,7 @@ export const DepositForm: FC<DepositFormProps> = ({
                   description={blockedDescription}
                 />
               )}
-              {quote.isError && (
+              {quote.isError && !isIce && (
                 <Alert
                   variant="warning"
                   description={t("deposit.swap.unavailable", {
@@ -450,6 +476,9 @@ export const DepositForm: FC<DepositFormProps> = ({
                     symbol: asset.symbol,
                   })}
                 />
+              )}
+              {iceFailed && (
+                <Alert variant="error" description={iceDeposit.error.message} />
               )}
               {depositFailed && (
                 <Alert
@@ -488,7 +517,7 @@ export const DepositForm: FC<DepositFormProps> = ({
               type="submit"
               size="large"
               width="100%"
-              isLoading={deposit.isPending}
+              isLoading={deposit.isPending || iceDeposit.isPending}
               disabled={!canSubmit}
               disabledVariant={blockedDescription ? "muted" : undefined}
             >
@@ -496,7 +525,7 @@ export const DepositForm: FC<DepositFormProps> = ({
             </LoadingButton>
           </AuthorizedAction>
         </Stack>
-        {isSwap && (
+        {isSwap && !isIce && (
           <CollapsibleRoot
             open={
               !!quote.swap &&
