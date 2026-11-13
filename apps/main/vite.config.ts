@@ -56,7 +56,7 @@ const fontPreload = (): Plugin => {
   }
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode, isPreview }) => {
   const env = loadEnv(mode, process.cwd())
   const rpcUrls = PROVIDERS.filter((provider) =>
     provider.env.includes(env.VITE_ENV ?? ""),
@@ -66,9 +66,25 @@ export default defineConfig(({ mode }) => {
     JSON.stringify(rpcUrls),
   )
 
+  // Dev server only (not `vite build`, not `vite preview`, whose proxy would
+  // default to this one): `/hbr/*` goes to a local HBR API with `/hbr`
+  // stripped. The target is a server-side env var (no VITE_ prefix), so it
+  // never reaches the bundle. HBR runbook: hydration-ramp
+  // docs/runbooks/local-app-test-server.md, section 4.
+  const hbrDevProxy =
+    command === "serve" && !isPreview
+      ? {
+          "/hbr": {
+            target: process.env.HBR_DEV_PROXY_TARGET || "http://127.0.0.1:8080",
+            rewrite: (path: string) => path.replace(/^\/hbr/, ""),
+          },
+        }
+      : undefined
+
   return {
     server: {
       host: "0.0.0.0",
+      ...(hbrDevProxy ? { proxy: hbrDevProxy } : {}),
     },
     resolve: {
       tsconfigPaths: true,
