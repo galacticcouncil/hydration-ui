@@ -2,7 +2,7 @@ import {
   HYDRATION_CHAIN_KEY,
   useAfterFirstRender,
 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, useWallet } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
@@ -39,7 +39,9 @@ import {
 import { TxState, TxStatus } from "@/modules/transactions/types"
 import {
   canPresentStrict,
+  getStrictEvmRefusal,
   strictEvmDigest,
+  StrictEvmRefusal,
   StrictSendState,
   useStrictEvmLedger,
 } from "@/modules/transactions/utils/strictEvm"
@@ -79,6 +81,8 @@ export type TransactionContext = SingleTransaction &
     strictSend: {
       state: StrictSendState | undefined
       wrapRefusal: StrictEvmWrapRefusal | null
+      /** The send's own pre-prompt checks, read at render: Sign only when null. */
+      refusal: StrictEvmRefusal | null
     } | null
 
     setTip: (tip: string) => void
@@ -127,12 +131,15 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   )
   const strict = transaction.strictEvm
   const strictDigest = useMemo(
-    () => (strict ? strictEvmDigest(strict.prepared) : null),
+    () => (strict ? strictEvmDigest(strict.prepared, strict.scope) : null),
     [strict],
   )
   const strictState = useStrictEvmLedger((ledger) =>
     strictDigest ? ledger.entries[strictDigest] : undefined,
   )
+  const strictSigner = useWallet()?.signer
+  // Re-read on every ledger change too, so an `after` that succeeds clears it.
+  useStrictEvmLedger((ledger) => ledger.entries)
 
   // A strict transaction is a plain EVM send; the fee asset does not route it.
   const detectedEcosystem = useTransactionEcosystem(transaction)
@@ -343,7 +350,15 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         isUsingPermit,
 
         strictSend: strict
-          ? { state: strictState, wrapRefusal: strict.wrapRefusal ?? null }
+          ? {
+              state: strictState,
+              wrapRefusal: strict.wrapRefusal ?? null,
+              refusal: getStrictEvmRefusal(
+                transaction,
+                strictSigner,
+                Date.now(),
+              ),
+            }
           : null,
 
         setTip,

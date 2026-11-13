@@ -67,11 +67,15 @@ export type StrictSendState =
 type StrictEvmLedger = {
   entries: Record<string, StrictSendState>
   set: (digest: string, state: StrictSendState) => void
-  /** Takes a prepared transaction for one send: only a new one or one the user declined. */
+  /**
+   * Takes one hand-over's prepared transaction for one send: only a new one or
+   * one the user declined. Marking it `claimed` here, synchronously, is the
+   * mutex: a second call during the signer's reads before the prompt is refused.
+   */
   claim: (digest: string) => boolean
 }
 
-/** Memory only (no persist, no sync): a digest per prepared transaction, never the transaction. */
+/** Memory only (no persist, no sync): a digest per (scope, prepared transaction), never the transaction. */
 export const useStrictEvmLedger = create<StrictEvmLedger>()((set, get) => ({
   entries: {},
   set: (digest, state) =>
@@ -87,10 +91,21 @@ export const useStrictEvmLedger = create<StrictEvmLedger>()((set, get) => ({
 export const canPresentStrict = (state: StrictSendState | undefined) =>
   state === undefined || state === "rejected"
 
-export const strictEvmDigest = (prepared: PreparedEvmTransaction): string =>
+/**
+ * The ledger key: the hand-over's `scope` (the cash-out's ramp id) and the
+ * prepared fields. Never the calldata alone: the server's approve is
+ * byte-identical for every ramp of the same amount (hydration-ramp
+ * redeemBuilder.mjs:814-822), so a content-only key would make ramp B's approve
+ * look already sent after ramp A's.
+ */
+export const strictEvmDigest = (
+  prepared: PreparedEvmTransaction,
+  scope: string,
+): string =>
   keccak256(
     stringToHex(
       JSON.stringify([
+        String(scope),
         prepared.chainId,
         String(prepared.from).toLowerCase(),
         String(prepared.to).toLowerCase(),
@@ -145,6 +160,8 @@ export const getStrictEvmRefusal = (
   const strict = transaction.strictEvm
   if (!strict || !isPrepared(strict.prepared)) return "invalid"
   if (!H160_RE.test(strict.sessionAddress)) return "invalid"
+  if (typeof strict.scope !== "string" || strict.scope.length === 0)
+    return "invalid"
   const { prepared, after } = strict
   if (!isEthereumSigner(signer)) return "signer"
   // null only once useWrapTransaction saw an account that needs no wrapping
@@ -165,7 +182,10 @@ export const getStrictEvmRefusal = (
     return "sender"
   if (after !== undefined && after !== null) {
     if (!isPrepared(after)) return "invalid"
-    const state = useStrictEvmLedger.getState().entries[strictEvmDigest(after)]
+    const state =
+      useStrictEvmLedger.getState().entries[
+        strictEvmDigest(after, strict.scope)
+      ]
     if (state !== "succeeded") return "sequence"
   }
   if (strict.notAfter !== undefined && now >= strict.notAfter) return "expired"
@@ -208,14 +228,23 @@ export const signAndSubmitStrictEvmTx = async (
   txOptions: TxOptions,
 ): Promise<void> => {
   const strict = transaction.strictEvm
-  if (!strict || !isPrepared(strict.prepared)) {
+  if (
+    !strict ||
+    !isPrepared(strict.prepared) ||
+    typeof strict.scope !== "string" ||
+    strict.scope.length === 0
+  ) {
     txOptions.onError(STRICT_REFUSED)
     return
   }
-  const digest = strictEvmDigest(strict.prepared)
+  const digest = strictEvmDigest(strict.prepared, strict.scope)
   const ledger = useStrictEvmLedger.getState()
+  const before = ledger.entries[digest]
   if (!ledger.claim(digest)) {
-    txOptions.onError(STRICT_REFUSED)
+    // A send of this transaction is already running (a second click): it
+    // answers; this call adds nothing. Any other state is final.
+    if (before !== "claimed" && before !== "prompted")
+      txOptions.onError(STRICT_REFUSED)
     return
   }
   const refusal = getStrictEvmRefusal(transaction, signer, Date.now())
@@ -233,16 +262,23 @@ export const signAndSubmitStrictEvmTx = async (
     else held.push(message)
   }
 
+  let prompted = false
   let outcome: PreparedSendOutcome | null = null
   try {
     outcome = await signer.sendPreparedTransaction(strict.prepared, {
       priorityRpcUrl: txOptions.priorityRpcUrl,
-      onPrompt: () => ledger.set(digest, "prompted"),
+      onPrompt: () => {
+        prompted = true
+        ledger.set(digest, "prompted")
+      },
       onSubmitted: (txHash) => {
+        prompted = true
         ledger.set(digest, "sent")
         strict.onHash?.(txHash)
         txOptions.onSubmitted(txHash)
       },
+      // A speed-up: the same call under a new hash, which is reported too.
+      onRepriced: (txHash) => strict.onHash?.(txHash),
       onReceipt: (status) =>
         ledger.set(
           digest,
@@ -257,13 +293,16 @@ export const signAndSubmitStrictEvmTx = async (
       onFinalized: txOptions.onFinalized,
     })
   } catch {
-    // not expected (the signer never throws): whatever the ledger last saw decides
+    // A callback threw: nothing proves the wallet was not asked, so never
+    // "not sent". A state past `prompted` stays as the ledger saw it.
     const state = useStrictEvmLedger.getState().entries[digest]
-    if (state === "claimed") ledger.set(digest, "refused")
-    else if (state === "prompted") ledger.set(digest, "failed")
+    if (state === "claimed" || state === "prompted")
+      ledger.set(digest, "failed")
     if (held.length === 0) held.push(STRICT_FAILED)
   }
-  const next = outcome ? stateOf(outcome) : null
+  let next = outcome ? stateOf(outcome) : null
+  // From the prompt on, no outcome is a refusal.
+  if (next === "refused" && prompted) next = "failed"
   if (next) ledger.set(digest, next)
   settled = true
   held.forEach((message) => txOptions.onError(message))

@@ -19,6 +19,7 @@ import {
 import { SingleTransaction, StrictEvmOptions } from "@/states/transactions"
 
 const A = "0x00000000000000000000000000000000000000a1"
+const SCOPE = "00000000-0000-4000-8000-0000000000d1"
 const HASH = `0x${"ab".repeat(32)}`
 const approve = {
   chainId: 222222,
@@ -92,6 +93,7 @@ const strictTx = (
     strictEvm: {
       prepared,
       sessionAddress: A,
+      scope: SCOPE,
       wrapRefusal: null,
       ...extra,
     },
@@ -112,7 +114,7 @@ const txOptions = (feeAssetId = "0") => {
 }
 
 const state = (prepared = redeem) =>
-  useStrictEvmLedger.getState().entries[strictEvmDigest(prepared)]
+  useStrictEvmLedger.getState().entries[strictEvmDigest(prepared, SCOPE)]
 
 beforeEach(() => useStrictEvmLedger.setState({ entries: {} }))
 
@@ -282,7 +284,7 @@ describe("strict send: refusals before the prompt", () => {
     ] as const) {
       useStrictEvmLedger.setState({
         entries: approveState
-          ? { [strictEvmDigest(approve)]: approveState }
+          ? { [strictEvmDigest(approve, SCOPE)]: approveState }
           : {},
       })
       const signer = fakeSigner([{ kind: "sent", receipt: "success" }])
@@ -290,7 +292,7 @@ describe("strict send: refusals before the prompt", () => {
       expect(signer.sendPreparedTransaction).not.toHaveBeenCalled()
     }
     useStrictEvmLedger.setState({
-      entries: { [strictEvmDigest(approve)]: "succeeded" },
+      entries: { [strictEvmDigest(approve, SCOPE)]: "succeeded" },
     })
     const signer = fakeSigner([{ kind: "sent", receipt: "success" }])
     await refusedWith(strictTx(redeem, { after: approve }), signer)
@@ -370,5 +372,153 @@ describe("strict send: memory only (guarantee 8)", () => {
     const dump = JSON.stringify(useStrictEvmLedger.getState().entries)
     expect(dump).not.toContain(redeem.data.slice(2))
     expect(dump).not.toContain(redeem.to.slice(2))
+  })
+})
+
+describe("fix round 1 (review 3)", () => {
+  it("B-1 / C1: two concurrent sends against a signer that awaits before the prompt reach the wallet ONCE", async () => {
+    let sends = 0
+    const signer = {
+      __eth: true,
+      address: A,
+      sendPreparedTransaction: vi.fn(
+        async (
+          _p: unknown,
+          o: { onPrompt: () => void; onError: (m: string) => void },
+        ) => {
+          // the real signer awaits six reads before the prompt
+          await new Promise((r) => setTimeout(r, 5))
+          o.onPrompt()
+          sends++
+          o.onError("rejected")
+          return { kind: "rejected" }
+        },
+      ),
+    }
+    const a = txOptions()
+    const b = txOptions()
+    await Promise.all([
+      signAndSubmitStrictEvmTx(strictTx(), signer, a.options),
+      signAndSubmitStrictEvmTx(strictTx(), signer, b.options),
+    ])
+    expect(sends).toBe(1)
+    // the second click is silent while the first send runs (no Checking flash)
+    expect(b.options.onError).not.toHaveBeenCalled()
+  })
+
+  it("B-1: an outcome the signer calls refused after the prompt fired is failed, never not sent", async () => {
+    const signer = {
+      __eth: true,
+      address: A,
+      sendPreparedTransaction: vi.fn(
+        async (
+          _p: unknown,
+          o: { onPrompt: () => void; onError: (m: string) => void },
+        ) => {
+          o.onPrompt()
+          o.onError("refused")
+          return { kind: "refused", reason: "estimate" }
+        },
+      ),
+    }
+    await signAndSubmitStrictEvmTx(strictTx(), signer, txOptions().options)
+    expect(state()).toBe("failed")
+    expect(getStrictStatusView(state())).toBe("checking")
+  })
+
+  it("B-1: a callback that throws before the prompt is not read as not sent", async () => {
+    const signer = {
+      __eth: true,
+      address: A,
+      sendPreparedTransaction: vi.fn(async () => {
+        throw new Error("callback threw")
+      }),
+    }
+    await signAndSubmitStrictEvmTx(strictTx(), signer, txOptions().options)
+    expect(state()).toBe("failed")
+  })
+
+  it("B-2: the same bytes in two scopes (two ramps) are two hand-overs; within one scope still once", async () => {
+    const OTHER = "00000000-0000-4000-8000-00000000bb02"
+    expect(strictEvmDigest(approve, SCOPE)).not.toBe(
+      strictEvmDigest(approve, OTHER),
+    )
+    const signer = fakeSigner([
+      { kind: "sent", receipt: "success" },
+      { kind: "sent", receipt: "success" },
+      { kind: "sent", receipt: "success" },
+    ])
+    await signAndSubmitStrictEvmTx(
+      strictTx(approve),
+      signer,
+      txOptions().options,
+    )
+    await signAndSubmitStrictEvmTx(
+      strictTx(approve, { scope: OTHER }),
+      signer,
+      txOptions().options,
+    )
+    expect(signer.sendPreparedTransaction).toHaveBeenCalledTimes(2)
+    await signAndSubmitStrictEvmTx(
+      strictTx(approve),
+      signer,
+      txOptions().options,
+    )
+    expect(signer.sendPreparedTransaction).toHaveBeenCalledTimes(2)
+  })
+
+  it("B-2: `after` is read in the transaction's own scope", () => {
+    useStrictEvmLedger.setState({
+      entries: { [strictEvmDigest(approve, "another-ramp")]: "succeeded" },
+    })
+    expect(
+      getStrictEvmRefusal(
+        strictTx(redeem, { after: approve }),
+        fakeSigner([]),
+        0,
+      ),
+    ).toBe("sequence")
+  })
+
+  it("a missing scope is refused before the prompt", async () => {
+    const signer = fakeSigner([{ kind: "sent", receipt: "success" }])
+    const tx = strictTx()
+    ;(tx.strictEvm as { scope?: string }).scope = ""
+    await signAndSubmitStrictEvmTx(tx, signer, txOptions().options)
+    expect(signer.sendPreparedTransaction).not.toHaveBeenCalled()
+  })
+
+  it("a speed-up's new hash also goes to onHash", async () => {
+    const hashes: string[] = []
+    const H2 = `0x${"cd".repeat(32)}`
+    const signer = {
+      __eth: true,
+      address: A,
+      sendPreparedTransaction: vi.fn(
+        async (
+          _p: unknown,
+          o: {
+            onPrompt: () => void
+            onSubmitted: (h: string) => void
+            onRepriced: (h: string) => void
+            onReceipt: (s: string) => void
+            onSuccess: (r: unknown) => void
+          },
+        ) => {
+          o.onPrompt()
+          o.onSubmitted(HASH)
+          o.onRepriced(H2)
+          o.onReceipt("success")
+          o.onSuccess({})
+          return { kind: "sent", hash: H2, receipt: "success" }
+        },
+      ),
+    }
+    await signAndSubmitStrictEvmTx(
+      strictTx(redeem, { onHash: (h) => hashes.push(h) }),
+      signer,
+      txOptions().options,
+    )
+    expect(hashes).toEqual([HASH, H2])
   })
 })

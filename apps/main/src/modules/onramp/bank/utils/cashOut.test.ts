@@ -153,17 +153,23 @@ describe("local send state (rule 11)", () => {
     expect(getLocalSendView("succeeded", "rejected", true)).toBe("declined")
     expect(getLocalSendView("succeeded", "refused", true)).toBe("notSent")
   })
-  it("a redeem never presented is not sent; an approve that did not succeed says so", () => {
+  it("a redeem never presented is not sent; only an OBSERVED approve revert says it reverted", () => {
     expect(getLocalSendView(undefined, undefined, false)).toBe("none")
     expect(getLocalSendView(undefined, undefined, true)).toBe("notSent")
     expect(getLocalSendView("reverted", undefined, true)).toBe(
-      "approvalIncomplete",
+      "approvalReverted",
     )
-    expect(getLocalSendView("unknown", undefined, true)).toBe(
-      "approvalIncomplete",
-    )
+    for (const s of [
+      "claimed",
+      "prompted",
+      "failed",
+      "sent",
+      "unknown",
+    ] as const)
+      expect(getLocalSendView(s, undefined, true)).toBe("approvalChecking")
     expect(getLocalSendView("rejected", undefined, true)).toBe("declined")
   })
+
   it("the local label replaces built only", () => {
     expect(showsLocalChecking({ status: "built" }, "checking")).toBe(true)
     expect(showsLocalChecking({ status: "submitted" }, "checking")).toBe(false)

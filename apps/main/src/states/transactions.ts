@@ -66,6 +66,11 @@ export type StrictEvmOptions = {
   prepared: PreparedEvmTransaction
   /** The app session's H160: the wallet's active address and `prepared.from` must equal it. */
   sessionAddress: string
+  /**
+   * The hand-over this transaction belongs to (a cash-out: its ramp id). The
+   * once-ledger is keyed by scope AND fields; `after` is read in the same scope.
+   */
+  scope: string
   /** A strict transaction whose receipt must have succeeded before this one is presented. */
   after?: PreparedEvmTransaction | null
   /** Epoch ms from which the transaction is refused before the wallet is asked. */

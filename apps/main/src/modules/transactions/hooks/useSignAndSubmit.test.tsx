@@ -217,6 +217,7 @@ describe("strict route", () => {
         value: "0x0",
       },
       sessionAddress: A,
+      scope: "r1",
       wrapRefusal: null,
     },
   }

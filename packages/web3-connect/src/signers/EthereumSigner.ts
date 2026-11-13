@@ -101,7 +101,7 @@ export type PreparedReceiptStatus = "success" | "reverted" | "unknown"
 export type PreparedSendOutcome =
   | { kind: "refused"; reason: PreparedSendRefusal }
   | { kind: "rejected" }
-  | { kind: "failed"; code: number | null }
+  | { kind: "failed"; code: number | null; hash?: Hex }
   | { kind: "sent"; hash: Hex; receipt: PreparedReceiptStatus }
 
 export type PreparedSendOptions = {
@@ -110,6 +110,12 @@ export type PreparedSendOptions = {
   onPrompt: () => void
   /** Called before the matching onSuccess/onError, also for the finality re-report. */
   onReceipt: (status: PreparedReceiptStatus) => void
+  /**
+   * The wallet sped the transaction up (viem reason `repriced`: same call,
+   * new hash). Its receipt is then the replacement's. A cancel or another
+   * replacement is not followed: it reads `unknown`.
+   */
+  onRepriced: (txHash: string) => void
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
@@ -126,6 +132,45 @@ export const PREPARED_SEND_ERRORS = {
 } as const
 
 const TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/
+const TX_HASH_IN_TEXT_RE = /0x[0-9a-fA-F]{64}(?![0-9a-fA-F])/
+const HASH_KEY_RE = /hash/i
+
+/**
+ * Hash-shaped values inside a thrown provider error (own enumerable props,
+ * `data`, `cause`, `message`; depth 4). `any` is true for any 0x+64-hex string
+ * anywhere, which is enough to refuse "no hash returned"; `keyed` is the first
+ * one found under a key named like a hash, the only one worth reporting (a
+ * 64-hex word in a message may be calldata).
+ */
+const findHashes = (value: unknown): { any: boolean; keyed: Hex | null } => {
+  let any = false
+  let keyed: Hex | null = null
+  const seen = new Set<unknown>()
+  const walk = (v: unknown, key: string, depth: number) => {
+    if (typeof v === "string") {
+      if (TX_HASH_IN_TEXT_RE.test(v)) {
+        any = true
+        if (!keyed && HASH_KEY_RE.test(key) && TX_HASH_RE.test(v))
+          keyed = v as Hex
+      }
+      return
+    }
+    if (depth > 4 || typeof v !== "object" || v === null || seen.has(v)) return
+    seen.add(v)
+    const keys = new Set([...Object.keys(v), "message", "data", "cause"])
+    for (const k of keys) {
+      let child: unknown
+      try {
+        child = (v as Record<string, unknown>)[k]
+      } catch {
+        continue
+      }
+      walk(child, k, depth + 1)
+    }
+  }
+  walk(value, "", 0)
+  return { any, keyed }
+}
 
 export class EthereumSigner {
   address: string
@@ -396,8 +441,11 @@ export class EthereumSigner {
    * to it after some errors, a second send), and no chain switch. `to`, `data`,
    * `value` and `chainId` go out exactly as given; gas, fees and nonce are
    * estimated as on the plain route. Everything before `onPrompt` is a refusal:
-   * nothing reached the wallet's send. The provider's error is read for its
-   * own `code` before anything wraps it. It never throws.
+   * nothing reached the wallet's send; from `onPrompt` on, no outcome is a
+   * refusal. The provider's error is read for its own `code` before anything
+   * wraps it, and a 4001 counts as a decline only when the error carries no
+   * hash-shaped value. It does not throw itself; a callback that throws
+   * propagates.
    */
   async sendPreparedTransaction(
     prepared: PreparedEvmTransaction,
@@ -481,9 +529,17 @@ export class EthereumSigner {
       hash = answer as Hex
     } catch (error) {
       const code = getEip1193ErrorCode(error)
-      if (code === EIP1193_USER_REJECTED) {
+      const hashes = findHashes(error)
+      // Rule 11: a decline is a raw 4001 AND no hash. A hash anywhere in the
+      // error means the wallet may have sent: never a decline.
+      if (code === EIP1193_USER_REJECTED && !hashes.any) {
         options.onError(PREPARED_SEND_ERRORS.rejected)
         return { kind: "rejected" }
+      }
+      if (hashes.keyed) {
+        options.onSubmitted(hashes.keyed)
+        options.onError(PREPARED_SEND_ERRORS.failed)
+        return { kind: "failed", code, hash: hashes.keyed }
       }
       options.onError(PREPARED_SEND_ERRORS.failed)
       return { kind: "failed", code }
@@ -492,27 +548,43 @@ export class EthereumSigner {
     options.onSubmitted(hash)
 
     let receipt: TransactionReceipt
+    let replacement: { reason: string; hash: Hex } | null = null
     try {
-      receipt = await reader.waitForTransactionReceipt({ hash })
+      receipt = await reader.waitForTransactionReceipt({
+        hash,
+        onReplaced: (r) => {
+          replacement = { reason: r.reason, hash: r.transaction.hash }
+        },
+      })
     } catch {
       options.onReceipt("unknown")
       options.onError(PREPARED_SEND_ERRORS.receipt)
       return { kind: "sent", hash, receipt: "unknown" }
     }
+    const replaced = replacement as { reason: string; hash: Hex } | null
+    if (replaced && replaced.reason !== "repriced") {
+      // Cancelled or replaced by another transaction: this one did not run.
+      options.onReceipt("unknown")
+      options.onError(PREPARED_SEND_ERRORS.receipt)
+      return { kind: "sent", hash, receipt: "unknown" }
+    }
+    // A speed-up is the same call under a new hash: follow it.
+    const finalHash = replaced ? replaced.hash : hash
+    if (replaced) options.onRepriced(finalHash)
     const report = (r: TransactionReceipt) => {
       options.onReceipt(r.status === "success" ? "success" : "reverted")
       this.reportReceipt(r, options)
     }
     report(receipt)
 
-    void this.waitForFinalReceipt(hash, {}, reader).then((final) => {
+    void this.waitForFinalReceipt(finalHash, {}, reader).then((final) => {
       if (final && final.status !== receipt.status) report(final)
       options.onFinalized(final ?? receipt)
     })
 
     return {
       kind: "sent",
-      hash,
+      hash: finalHash,
       receipt: receipt.status === "success" ? "success" : "reverted",
     }
   }
@@ -532,13 +604,16 @@ export class EthereumSigner {
   private async waitForFinalReceipt(
     hash: Hex,
     { interval = 3_000, timeout = 180_000 } = {},
-    client: PublicClient = this.publicClient,
+    client?: PublicClient,
   ): Promise<TransactionReceipt | null> {
     const deadline = Date.now() + timeout
     while (Date.now() < deadline) {
+      // Without `client` (every non-strict caller) this reads the signer's
+      // current client on each poll, as before; the strict send pins its own.
+      const reader = client ?? this.publicClient
       const [receipt, finalized] = await Promise.all([
-        client.getTransactionReceipt({ hash }).catch(() => null),
-        client.getBlock({ blockTag: "finalized" }).catch(() => null),
+        reader.getTransactionReceipt({ hash }).catch(() => null),
+        reader.getBlock({ blockTag: "finalized" }).catch(() => null),
       ])
       if (receipt && finalized && finalized.number >= receipt.blockNumber)
         return receipt

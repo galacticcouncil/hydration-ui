@@ -199,6 +199,7 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
       onSuccess: vi.fn(() => order.push("success")),
       onError: vi.fn((m: string) => order.push(`error:${m}`)),
       onFinalized: vi.fn(),
+      onRepriced: vi.fn((h: string) => order.push(`repriced:${h}`)),
     }
     const sends = () =>
       calls.filter((c) => c.method.endsWith("sendTransaction"))
@@ -378,5 +379,199 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     await signer.sendPreparedTransaction(prepared, options)
     for (const [message] of options.onError.mock.calls)
       expect(String(message)).not.toContain(prepared.data)
+  })
+
+  // ---- fix round 1 (review 3: B-1 R8, B-3, S10, S11) ----
+
+  it("onPrompt fires while eth_sendTransaction is still pending, and a late error is never a refusal", async () => {
+    let answer: ((v: unknown) => void) | null = null
+    let fail: ((e: unknown) => void) | null = null
+    const { signer, options, sends } = setupPrepared({
+      eth_sendTransaction: () =>
+        new Promise((resolve, reject) => {
+          answer = resolve
+          fail = reject
+        }),
+    })
+    const pending = signer.sendPreparedTransaction(prepared, options)
+    await vi.waitFor(() => expect(sends()).toHaveLength(1))
+    expect(options.onPrompt).toHaveBeenCalledTimes(1)
+    expect(answer).not.toBeNull()
+    fail!({ code: -32603, message: "internal" })
+    const outcome = await pending
+    expect(outcome.kind).toBe("failed")
+    expect(outcome.kind).not.toBe("refused")
+  })
+
+  it("a 4001 whose error carries a hash under a hash key is not a decline: failed, and the hash goes out", async () => {
+    const { signer, options, sends } = setupPrepared({
+      eth_sendTransaction: () => {
+        throw { code: 4001, message: "User rejected", data: { txHash: HASH } }
+      },
+    })
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome).toEqual({ kind: "failed", code: 4001, hash: HASH })
+    expect(options.onSubmitted).toHaveBeenCalledWith(HASH)
+    expect(sends()).toHaveLength(1)
+  })
+
+  it("a 4001 with a hash-shaped value anywhere (message, cause) is not a decline; an unkeyed value is not reported", async () => {
+    for (const thrown of [
+      { code: 4001, message: `rejected after ${HASH}` },
+      { code: 4001, message: "x", cause: { detail: HASH } },
+    ]) {
+      const { signer, options } = setupPrepared({
+        eth_sendTransaction: () => {
+          throw thrown
+        },
+      })
+      const outcome = await signer.sendPreparedTransaction(prepared, options)
+      expect(outcome).toEqual({ kind: "failed", code: 4001 })
+      expect(options.onSubmitted).not.toHaveBeenCalled()
+    }
+  })
+
+  const H2 = `0x${"cd".repeat(32)}` as const
+  const rpcTx = (
+    hash: string,
+    to: string,
+    input: string,
+    blockNumber: string | null,
+  ) => ({
+    hash,
+    nonce: "0x7",
+    blockHash: blockNumber ? `0x${"33".repeat(32)}` : null,
+    blockNumber,
+    transactionIndex: blockNumber ? "0x0" : null,
+    from: FROM,
+    to,
+    value: "0x0",
+    gas: "0x5208",
+    maxFeePerGas: "0x1",
+    maxPriorityFeePerGas: "0x1",
+    input,
+    type: "0x2",
+    chainId: "0x3640e",
+    v: "0x0",
+    r: `0x${"01".repeat(32)}`,
+    s: `0x${"02".repeat(32)}`,
+    accessList: [],
+    yParity: "0x0",
+  })
+  /** The wallet replaced the sent tx by H2 (the reviewer's S10 stub RPC). */
+  const replacedBy = (to: string, input: string) => {
+    let bn = 0x20
+    return setupPrepared({
+      eth_getTransactionReceipt: (params) => {
+        const [h] = params as [string]
+        return h === H2
+          ? { ...receiptJson("0x1"), transactionHash: H2, to }
+          : null
+      },
+      eth_getTransactionByHash: () =>
+        rpcTx(HASH, prepared.to, prepared.data.toLowerCase(), null),
+      eth_blockNumber: () => `0x${(bn++).toString(16)}`,
+      eth_getBlockByNumber: (params) => {
+        const [, full] = params as [string, boolean]
+        return {
+          number: `0x${bn.toString(16)}`,
+          hash: `0x${"44".repeat(32)}`,
+          parentHash: `0x${"45".repeat(32)}`,
+          timestamp: "0x1",
+          nonce: "0x0000000000000000",
+          difficulty: "0x0",
+          gasLimit: "0x1",
+          gasUsed: "0x1",
+          miner: FROM,
+          extraData: "0x",
+          logsBloom: `0x${"00".repeat(256)}`,
+          sha3Uncles: `0x${"00".repeat(32)}`,
+          stateRoot: `0x${"00".repeat(32)}`,
+          receiptsRoot: `0x${"00".repeat(32)}`,
+          transactionsRoot: `0x${"00".repeat(32)}`,
+          size: "0x1",
+          totalDifficulty: "0x0",
+          uncles: [],
+          baseFeePerGas: "0x1",
+          mixHash: `0x${"00".repeat(32)}`,
+          transactions: full
+            ? [rpcTx(H2, to, input, `0x${bn.toString(16)}`)]
+            : [],
+        }
+      },
+    })
+  }
+
+  it("a cancel in the wallet (S10) reads unknown: no success, nothing followed", async () => {
+    const { signer, options } = replacedBy(FROM, "0x")
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome).toEqual({ kind: "sent", hash: HASH, receipt: "unknown" })
+    expect(options.onReceipt).toHaveBeenCalledWith("unknown")
+    expect(options.onSuccess).not.toHaveBeenCalled()
+    expect(options.onRepriced).not.toHaveBeenCalled()
+  }, 30_000)
+
+  it("a replacement by another call reads unknown", async () => {
+    const { signer, options } = replacedBy(prepared.to, "0x12345678")
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome).toEqual({ kind: "sent", hash: HASH, receipt: "unknown" })
+    expect(options.onSuccess).not.toHaveBeenCalled()
+  }, 30_000)
+
+  it("a speed-up (same call, new hash) is followed: the new hash goes out, then its receipt", async () => {
+    const { signer, options, order } = replacedBy(
+      prepared.to,
+      prepared.data.toLowerCase(),
+    )
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome).toEqual({ kind: "sent", hash: H2, receipt: "success" })
+    expect(order.slice(0, 5)).toEqual([
+      "prompt",
+      "submitted",
+      `repriced:${H2}`,
+      "receipt:success",
+      "success",
+    ])
+  }, 30_000)
+})
+
+describe("waitForFinalReceipt (S11): non-strict follows the signer's current client, strict keeps its own", () => {
+  const client = (name: string, seen: string[]) => ({
+    getTransactionReceipt: async () => {
+      seen.push(name)
+      return { blockNumber: 5n, status: "success" }
+    },
+    getBlock: async () => ({ number: name === "B" ? 10n : 1n }),
+  })
+  type Waiter = {
+    publicClient: unknown
+    waitForFinalReceipt: (h: string, o: object, c?: unknown) => Promise<unknown>
+  }
+  it("without a client: reads this.publicClient on every poll (master behaviour)", async () => {
+    const { signer } = setup()
+    const s = signer as unknown as Waiter
+    const seen: string[] = []
+    s.publicClient = client("A", seen)
+    const p = s.waitForFinalReceipt("0x01", { interval: 5, timeout: 2_000 })
+    await new Promise((r) => setTimeout(r, 12))
+    s.publicClient = client("B", seen)
+    expect(await p).not.toBeNull()
+    expect(seen).toContain("B")
+  })
+  it("with a client: keeps it", async () => {
+    const { signer } = setup()
+    const s = signer as unknown as Waiter
+    const seen: string[] = []
+    const pinned = client("A", seen)
+    s.publicClient = pinned
+    const p = s.waitForFinalReceipt(
+      "0x01",
+      { interval: 5, timeout: 60 },
+      pinned,
+    )
+    await new Promise((r) => setTimeout(r, 12))
+    s.publicClient = client("B", seen)
+    expect(await p).toBeNull()
+    expect(seen).not.toContain("B")
   })
 })

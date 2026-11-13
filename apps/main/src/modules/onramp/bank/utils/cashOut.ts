@@ -195,25 +195,19 @@ export type CashOutSendRecord = {
  * - declined: the user declined in the wallet (4001, no hash); nothing sent
  * - notSent: the redeem never reached the wallet's send (refused before it,
  *   or never presented)
- * - approvalIncomplete: the approval reached the wallet but did not succeed,
- *   so the redeem was never presented
+ * - approvalReverted: the approval's receipt was OBSERVED reverted, so the
+ *   redeem was never presented
+ * - approvalChecking: the approval reached the wallet and its outcome was not
+ *   observed (no answer, an error, a hash without a receipt, a cancel): it reads
+ *   Checking; the redeem was never presented
  */
 export type LocalSendView =
   | "none"
   | "checking"
   | "declined"
   | "notSent"
-  | "approvalIncomplete"
-
-const AT_WALLET: readonly (StrictSendState | undefined)[] = [
-  "claimed",
-  "prompted",
-  "failed",
-  "sent",
-  "succeeded",
-  "reverted",
-  "unknown",
-]
+  | "approvalReverted"
+  | "approvalChecking"
 
 export const getLocalSendView = (
   approve: StrictSendState | undefined,
@@ -226,10 +220,19 @@ export const getLocalSendView = (
     if (redeem === "refused") return "notSent"
     return "checking"
   }
-  if (approve === "rejected") return "declined"
-  if (approve === undefined || approve === "refused" || approve === "succeeded")
-    return "notSent"
-  return AT_WALLET.includes(approve) ? "approvalIncomplete" : "notSent"
+  switch (approve) {
+    case "rejected":
+      return "declined"
+    case undefined:
+    case "refused":
+    case "succeeded":
+      return "notSent"
+    case "reverted":
+      return "approvalReverted"
+    // claimed, prompted, failed, sent, unknown: not observed
+    default:
+      return "approvalChecking"
+  }
 }
 
 /**

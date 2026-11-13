@@ -49,6 +49,9 @@ const h = vi.hoisted(() => {
     estimateFeeArgs: [] as unknown[],
     paymentInfoArgs: [] as unknown[],
     channel: [] as unknown[],
+    // the EVM binding read: answered at once unless a test holds it
+    bindingPending: false,
+    last4: "6789" as string | null,
   }
 })
 
@@ -59,6 +62,7 @@ type Step =
   | { kind: "failed" }
   | { kind: "sent"; hash: string; receipt: "success" | "reverted" | "unknown" }
   | { kind: "hold" }
+  | { kind: "repriced"; hash: string; newHash: string }
 
 const A = "0x1111111111111111111111111111111111111111"
 const wallet: {
@@ -118,6 +122,15 @@ class FakeEthSigner {
       return step.kind === "rejected"
         ? { kind: "rejected" }
         : { kind: "failed", code: null }
+    }
+    if (step.kind === "repriced") {
+      o.onSubmitted(step.hash)
+      ;(o as unknown as { onRepriced: (h: string) => void }).onRepriced(
+        step.newHash,
+      )
+      o.onReceipt("success")
+      o.onSuccess({ status: "success", blockNumber: 1n })
+      return { kind: "sent", hash: step.newHash, receipt: "success" }
     }
     if (step.kind !== "sent") throw new Error("bad script")
     o.onSubmitted(step.hash)
@@ -235,7 +248,10 @@ vi.mock("@/api/evm", async () => {
     evmAccountBindingQuery: (_rpc: unknown, address: string) =>
       queryOptions({
         queryKey: ["evm", "accountBinding", address],
-        queryFn: async () => true,
+        queryFn: () =>
+          h.bindingPending
+            ? new Promise<boolean>(() => {})
+            : Promise.resolve(true),
       }),
   }
 })
@@ -282,6 +298,7 @@ import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionSto
 import { TransactionManager } from "@/modules/transactions/TransactionManager"
 import { useStrictEvmLedger } from "@/modules/transactions/utils/strictEvm"
 import { strictEvmCall } from "@/modules/transactions/utils/strictEvm"
+import { useToastsStore } from "@/states/toasts"
 import { useTransactionsStore } from "@/states/transactions"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -350,7 +367,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
             status: "active",
             currency: "usd",
             accountType: "us",
-            last4: "6789",
+            last4: h.last4,
             bankName: null,
           },
         ],
@@ -452,6 +469,9 @@ beforeEach(() => {
   sent.length = 0
   h.estimateFeeArgs.length = 0
   h.paymentInfoArgs.length = 0
+  h.bindingPending = false
+  useToastsStore.setState({ toasts: {} })
+  h.last4 = "6789"
   buildAnswer = built()
   rampStatus = FIXTURE_RAMP_BUILT
   h.storage.clear()
@@ -533,8 +553,13 @@ describe("the approve receipt gates the redeem (guarantee 6)", () => {
       // close the modal: the redeem was never presented
       await click("modal-close")
       expect(signer.sendPreparedTransaction).toHaveBeenCalledTimes(1)
+      // only an observed revert says the approval reverted; an unobserved one reads Checking
       await waitFor(() =>
-        expect(text()).toContain("bank.cashOut.local.approvalIncomplete"),
+        expect(text()).toContain(
+          receipt === "reverted"
+            ? "bank.cashOut.local.approvalReverted"
+            : "bank.cashOut.local.approvalChecking",
+        ),
       )
     },
   )
@@ -646,11 +671,11 @@ describe("sender (guarantee 3)", () => {
     })
     await toReview()
     await handOver()
-    await waitFor(() => expect(button("transaction.sign").disabled).toBe(false))
-    await click("transaction.sign")
-    await waitFor(() =>
-      expect(text()).toContain("transaction.strict.status.notSent.title"),
-    )
+    await flush()
+    // known before the prompt: Sign is disabled with the reason, nothing is consumed
+    expect(text()).toContain("transaction.strict.refusal.sender")
+    expect(button("transaction.sign").disabled).toBe(true)
+    // (the send's own refusal of a wrong sender is pinned in strictEvm.test.ts)
     expect(signer.sendPreparedTransaction).not.toHaveBeenCalled()
   })
 })
@@ -856,5 +881,125 @@ describe("non-strict transactions keep master's review", () => {
     expect(text()).not.toContain("transaction.strict.description")
     expect(h.estimateFeeArgs).toContain(tx)
     expect(h.paymentInfoArgs).toContain(tx)
+  })
+})
+
+// ---- fix round 1 (review 3) ---------------------------------------------------
+const sendCount = () => signer.sendPreparedTransaction.mock.calls.length
+const stepName = () =>
+  document.querySelector("[data-step]")?.getAttribute("data-step")
+
+describe("fix round 1", () => {
+  it("B-2 (B5): a second cash-out of the SAME amount (same approve bytes) can be signed", async () => {
+    signer.script = [
+      { kind: "sent", hash: APPROVE_HASH, receipt: "success" },
+      { kind: "sent", hash: REDEEM_HASH, receipt: "success" },
+      { kind: "sent", hash: `0x${"c3".repeat(32)}`, receipt: "success" },
+      { kind: "sent", hash: `0x${"d4".repeat(32)}`, receipt: "success" },
+    ]
+    await toReview()
+    await handOver()
+    await signStep()
+    await waitFor(() => expect(stepName()).toBe("bank.cashOut.tx.redeemStep"))
+    await signStep()
+    await waitFor(() => expect(reports()).toHaveLength(1))
+    expect(sendCount()).toBe(2)
+    const RAMP_B = "00000000-0000-4000-8000-00000000bb02"
+    const REDEEM_B = `0x5f5f5f5f${"22".repeat(40)}`
+    buildAnswer = built({
+      ramp: {
+        ...FIXTURE_RAMP_BUILT,
+        id: RAMP_B,
+        validUntil: "2099-01-01T00:30:00.000Z",
+      },
+      redeemTx: unsigned(REDEEM_B),
+    })
+    await click("bank.cashOut.status.back")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+    const realNow = Date.now
+    vi.spyOn(Date, "now").mockImplementation(() => realNow() + 25_000)
+    // re-render past the quote cool-down
+    for (const value of ["25.50", "25.5"])
+      await act(async () => {
+        fireEvent.change(document.querySelector("input")!, {
+          target: { value },
+        })
+      })
+    await click("bank.cashOut.quote.get")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.confirm"))
+    await click("bank.cashOut.confirm")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.review.title"))
+    await flush()
+    await handOver()
+    expect(stepName()).toBe("bank.cashOut.tx.approveStep")
+    await signStep()
+    await waitFor(() => expect(stepName()).toBe("bank.cashOut.tx.redeemStep"))
+    await signStep()
+    expect(sendCount()).toBe(4)
+    // the same approve bytes went out once per ramp
+    expect(signer.sent[2]).toEqual(unsigned(APPROVE_DATA))
+    expect(signer.sent[3]).toEqual(unsigned(REDEEM_B))
+  })
+
+  it("R10 (B3): a double click on the review Sign hands over ONE transaction (the ref is cleared)", async () => {
+    buildAnswer = built({ approveTx: null })
+    await toReview()
+    const b = button("bank.cashOut.review.sign")
+    await act(async () => {
+      fireEvent.click(b)
+      fireEvent.click(b)
+    })
+    await flush()
+    expect(useTransactionsStore.getState().transactions).toHaveLength(1)
+  })
+
+  it("R12: Sign stays disabled while the binding read is pending (unknown is never ok)", async () => {
+    h.bindingPending = true
+    buildAnswer = built({ approveTx: null })
+    signer.script = [{ kind: "sent", hash: REDEEM_HASH, receipt: "success" }]
+    await toReview()
+    await handOver()
+    await flush()
+    expect(button("transaction.sign").disabled).toBe(true)
+    expect(text()).not.toContain("transaction.strict.wrapRefusal")
+    expect(sendCount()).toBe(0)
+  })
+
+  it("a speed-up of the redeem reports the NEW hash too", async () => {
+    const NEW = `0x${"e5".repeat(32)}`
+    buildAnswer = built({ approveTx: null })
+    signer.script = [{ kind: "repriced", hash: REDEEM_HASH, newHash: NEW }]
+    await toReview()
+    await handOver()
+    await signStep()
+    await waitFor(() => expect(reports()).toHaveLength(2))
+    expect(reports().map((r) => r.body)).toEqual([
+      { txHash: REDEEM_HASH },
+      { txHash: NEW },
+    ])
+  })
+
+  it("a cancelled redeem (receipt not followed) shows no success toast", async () => {
+    buildAnswer = built({ approveTx: null })
+    signer.script = [{ kind: "sent", hash: REDEEM_HASH, receipt: "unknown" }]
+    await toReview()
+    await handOver()
+    await signStep()
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.localChecking.label"),
+    )
+    const toasts = Object.values(useToastsStore.getState().toasts).flat()
+    const mine = toasts.filter((x) => x.meta?.txHash === REDEEM_HASH)
+    expect(mine.length).toBeGreaterThan(0)
+    expect(mine.some((x) => x.variant === "success")).toBe(false)
+    expect(mine.some((x) => x.title === "bank.cashOut.tx.success")).toBe(false)
+  })
+
+  it("a bank account without last4 reads its currency only, no '••'", async () => {
+    h.last4 = null
+    render(app())
+    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+    expect(text()).toContain("bank.cashOut.form.accountNoLast4.usd")
+    expect(text()).not.toContain('"last4"')
   })
 })

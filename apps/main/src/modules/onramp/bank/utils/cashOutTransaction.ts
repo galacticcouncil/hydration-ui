@@ -23,6 +23,9 @@ export const buildCashOutTransaction = (args: {
   const { prepared, sessionAddress, onRedeemHash, copy } = args
   const notAfter = Date.parse(prepared.validUntil)
   const approve = prepared.approveTx
+  // One ledger scope per cash-out: the same approve bytes in another ramp are
+  // another hand-over (strictEvmDigest).
+  const scope = prepared.rampId
   const redeemStep = {
     stepTitle: copy.redeemStep,
     title: copy.redeemTitle,
@@ -31,6 +34,7 @@ export const buildCashOutTransaction = (args: {
     strictEvm: {
       prepared: prepared.redeemTx,
       sessionAddress,
+      scope,
       after: approve,
       notAfter,
       onHash: onRedeemHash,
@@ -43,7 +47,7 @@ export const buildCashOutTransaction = (args: {
         stepTitle: copy.approveStep,
         title: copy.approveTitle,
         tx: strictEvmCall(approve),
-        strictEvm: { prepared: approve, sessionAddress, notAfter },
+        strictEvm: { prepared: approve, sessionAddress, scope, notAfter },
       },
       redeemStep,
     ],

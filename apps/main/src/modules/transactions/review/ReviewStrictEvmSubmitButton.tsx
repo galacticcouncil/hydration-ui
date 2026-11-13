@@ -20,7 +20,9 @@ export const ReviewStrictEvmSubmitButton = ({
     isLoading ||
     !strictSend ||
     !canPresentStrict(strictSend.state) ||
-    strictSend.wrapRefusal !== null
+    // every pre-prompt check must be KNOWN to pass: a pending binding read is not "ok"
+    strictSend.wrapRefusal !== null ||
+    strictSend.refusal !== null
 
   return (
     <LoadingButton

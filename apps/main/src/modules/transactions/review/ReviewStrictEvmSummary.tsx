@@ -12,6 +12,11 @@ export const ReviewStrictEvmSummary = () => {
   const { t } = useTranslation()
   const { tx, strictSend } = useTransaction()
   const refusal = strictSend?.wrapRefusal
+  // Shown only before the wallet was asked; after it the status view speaks.
+  const check =
+    strictSend && !refusal && strictSend.state === undefined
+      ? strictSend.refusal
+      : null
 
   return (
     <Stack gap="base">
@@ -22,6 +27,12 @@ export const ReviewStrictEvmSummary = () => {
         </>
       )}
       <Alert variant="info" description={t("transaction.strict.description")} />
+      {check && (
+        <Alert
+          variant="error"
+          description={t(`transaction.strict.refusal.${check}`)}
+        />
+      )}
       {refusal && refusal !== "pending" && (
         <Alert
           variant="error"

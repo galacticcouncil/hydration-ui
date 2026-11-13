@@ -133,8 +133,10 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
     if (!next || next.rampId !== stage.build.ramp.id) return
     const rampId = next.rampId
     useBankCashOutStore.getState().record(h160, rampId, {
-      approveDigest: next.approveTx ? strictEvmDigest(next.approveTx) : null,
-      redeemDigest: strictEvmDigest(next.redeemTx),
+      approveDigest: next.approveTx
+        ? strictEvmDigest(next.approveTx, rampId)
+        : null,
+      redeemDigest: strictEvmDigest(next.redeemTx, rampId),
     })
     const input = buildCashOutTransaction({
       prepared: next,
@@ -264,9 +266,16 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
               >
                 {cashOutAccounts.map((account) => (
                   <ToggleGroupItem key={account.id} value={account.id}>
-                    {t(`bank.cashOut.form.account.${currencyOf(account.id)}`, {
-                      last4: account.last4 ?? "-",
-                    })}
+                    {account.last4
+                      ? t(
+                          `bank.cashOut.form.account.${currencyOf(account.id)}`,
+                          {
+                            last4: account.last4,
+                          },
+                        )
+                      : t(
+                          `bank.cashOut.form.accountNoLast4.${currencyOf(account.id)}`,
+                        )}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
