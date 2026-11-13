@@ -246,7 +246,7 @@ const posts = () =>
   sent.filter((s) => s.method === "POST" && s.path === "/v1/bank-accounts")
 const type = async (name: string, value: string) =>
   act(async () => {
-    fireEvent.change(document.querySelector(`input[name="${name}"]`)!, {
+    fireEvent.change(document.querySelector(`[name="${name}"]`)!, {
       target: { value },
     })
   })
@@ -556,5 +556,73 @@ describe("rail switches (E2E-1)", () => {
     expect(
       errors.every((e) => e.startsWith("onramp:bank.accounts.form.error.")),
     ).toBe(true)
+  })
+})
+
+describe("address dropdowns (round 9)", () => {
+  beforeEach(() => {
+    bankQueue.length = 0
+    bankQueue.push(() =>
+      json(201, {
+        bankAccount: {
+          id: "00000000-0000-4000-8000-0000000000b1",
+          externalAccountId: "x",
+        },
+      }),
+    )
+  })
+  const pick = (rail: "ach" | "sepa") =>
+    act(async () => {
+      fireEvent.click(document.querySelector(`[data-toggle-item="${rail}"]`)!)
+    })
+  const selectValue = (name: string) =>
+    (document.querySelector(`select[name="${name}"]`) as HTMLSelectElement)
+      .value
+
+  it("SEPA preselects the address country from the IBAN", async () => {
+    await openForm()
+    await pick("sepa")
+    expect(selectValue("country")).toBe("")
+    await type("iban", "DE89370400440532013000")
+    expect(selectValue("country")).toBe("DEU")
+    await type("iban", "NL91ABNA0417164300")
+    expect(selectValue("country")).toBe("NLD")
+  })
+
+  it("a country the user picked is never overwritten by the IBAN", async () => {
+    await openForm()
+    await pick("sepa")
+    await type("country", "FRA")
+    await type("iban", "DE89370400440532013000")
+    expect(selectValue("country")).toBe("FRA")
+  })
+
+  it("submit sends the codes, not the names", async () => {
+    await openForm()
+    await pick("sepa")
+    await type("iban", "DE89370400440532013000")
+    await type("bic", "COBADEFFXXX")
+    await type("streetLine1", "Hauptstrasse 1")
+    await type("city", "Berlin")
+    await type("postalCode", "10115")
+    await type("country", "FRA")
+    await submit()
+    await flush()
+    expect(posts()).toHaveLength(1)
+    const body = posts()[0]!.body as { address: { country: string } }
+    expect(body.address.country).toBe("FRA")
+  })
+
+  it("ACH: the state dropdown sends the USPS code", async () => {
+    await openForm()
+    expect(selectValue("country")).toBe("USA")
+    await fillAch()
+    await type("state", "CA")
+    await submit()
+    await flush()
+    const body = posts()[0]!.body as {
+      address: { country: string; state: string }
+    }
+    expect(body.address).toMatchObject({ country: "USA", state: "CA" })
   })
 })

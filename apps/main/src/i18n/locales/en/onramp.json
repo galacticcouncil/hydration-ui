@@ -202,15 +202,15 @@
   "bank.accounts.form.streetLine1": "Street address",
   "bank.accounts.form.streetLine2": "Address line 2 (optional)",
   "bank.accounts.form.city": "City",
-  "bank.accounts.form.state": "State (2 letters)",
+  "bank.accounts.form.state": "State",
   "bank.accounts.form.postalCode": "Postal code",
-  "bank.accounts.form.country": "Country (3-letter code)",
+  "bank.accounts.form.country": "Country",
   "bank.accounts.form.submit": "Add bank account",
   "bank.accounts.form.cancel": "Cancel",
-  "bank.accounts.form.error.country": "Use the 3-letter country code, for example USA or DEU.",
+  "bank.accounts.form.error.country": "Choose a country.",
   "bank.accounts.form.error.accountNumber": "4 to 17 digits.",
   "bank.accounts.form.error.routingNumber": "9 digits.",
-  "bank.accounts.form.error.state": "Use the 2-letter state code, for example NY.",
+  "bank.accounts.form.error.state": "Choose a state, or enter its 2-letter code.",
   "bank.accounts.form.error.iban": "Enter a valid IBAN from a SEPA country.",
   "bank.accounts.form.error.bic": "8 or 11 characters, the first 6 letters.",
   "bank.accounts.error.uncertain": "We could not confirm the result yet. Send the same details again: you will not get a second account.",
@@ -395,5 +395,7 @@
   "bank.cashOut.history.amount": "{{ amount }} USDC",
   "bank.cashOut.history.open": "Details",
   "bank.cashOut.history.truncated": "Only the latest 50 are shown.",
-  "bank.cashOut.unlinked.title": "Redemptions not matched to a cash-out"
+  "bank.cashOut.unlinked.title": "Redemptions not matched to a cash-out",
+  "bank.accounts.form.countryPlaceholder": "Choose a country",
+  "bank.accounts.form.statePlaceholder": "Choose a state"
 }

@@ -249,3 +249,28 @@ describe("no raw zod message can reach the user", () => {
     )
   })
 })
+
+describe("country and state come from the offered lists", () => {
+  const ach = {
+    ...emptyBankAccountForm("ach"),
+    ...address,
+    bankName: "<placeholder bank>",
+    accountNumber: "1234567890",
+    routingNumber: "123456789",
+  }
+  const paths = (values: object) =>
+    (bankAccountFormSchema.safeParse(values).error?.issues ?? []).map((i) =>
+      String(i.path[0]),
+    )
+
+  it("refuses a country code that is not ISO 3166-1", () => {
+    expect(paths({ ...ach, state: "NY", country: "XYZ" })).toContain("country")
+    expect(paths({ ...ach, state: "NY", country: "USA" })).toEqual([])
+  })
+
+  it("a US address takes a USPS code only; another country two letters", () => {
+    expect(paths({ ...ach, state: "ZZ" })).toContain("state")
+    expect(paths({ ...ach, state: "DC" })).toEqual([])
+    expect(paths({ ...ach, country: "CAN", state: "ON" })).toEqual([])
+  })
+})

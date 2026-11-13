@@ -160,3 +160,33 @@ export const Spinner: FC = () => null
 export const Image: FC = () => null
 export const DEFAULT_AUTO_CLOSE_TIME = 5000
 export const Notification: FC = () => null
+
+type SelectStubProps = {
+  "data-field"?: string
+  items: ReadonlyArray<{ key: string; label: string }>
+  value?: string
+  placeholder?: string
+  onValueChange: (value: string) => void
+}
+
+/** The kit's Select as a native select: the option values are the item keys. */
+export const Select: FC<SelectStubProps> = ({
+  "data-field": name,
+  items,
+  value,
+  placeholder,
+  onValueChange,
+}) => (
+  <select
+    name={name}
+    value={value ?? ""}
+    onChange={(e) => onValueChange(e.target.value)}
+  >
+    <option value="">{placeholder}</option>
+    {items.map((item) => (
+      <option key={item.key} value={item.key}>
+        {item.label}
+      </option>
+    ))}
+  </select>
+)

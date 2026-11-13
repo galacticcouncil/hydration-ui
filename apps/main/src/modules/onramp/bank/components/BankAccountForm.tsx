@@ -6,23 +6,30 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import { FC, useRef, useState } from "react"
+import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import {
   BankRail,
   emptyBankAccountForm,
+  SEPA_IBAN_COUNTRIES,
   toBankAccountBody,
   useBankAccountForm,
 } from "@/modules/onramp/bank/components/BankAccountForm.form"
 import { BankAccountFormField } from "@/modules/onramp/bank/components/BankAccountFormField"
 import { BankAccountRailFields } from "@/modules/onramp/bank/components/BankAccountRailFields"
+import { BankAccountSelectField } from "@/modules/onramp/bank/components/BankAccountSelectField"
+import { BankAccountStateField } from "@/modules/onramp/bank/components/BankAccountStateField"
 import type { CreateBankAccountRequest } from "@/modules/onramp/bank/config/schemas"
 import {
   useHbrActionInFlight,
   useHbrCreateBankAccount,
 } from "@/modules/onramp/bank/hooks/useHbr"
+import {
+  alpha3FromAlpha2,
+  countryOptions,
+} from "@/modules/onramp/bank/utils/addressOptions"
 import {
   BankAccountSubmission,
   classifyCreateBankAccountError,
@@ -53,13 +60,30 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
   onDone,
   onCancel,
 }) => {
-  const { t } = useTranslation(["onramp"])
+  const { t, i18n } = useTranslation(["onramp"])
   const firstRail: BankRail = rails.usd ? "ach" : "sepa"
   const form = useBankAccountForm(firstRail)
   const create = useHbrCreateBankAccount(h160)
   const inFlight = useHbrActionInFlight(h160, "createBankAccount")
   const pending = useRef<BankAccountSubmission | null>(null)
   const rail = form.watch("rail")
+  const countries = useMemo(
+    () => countryOptions(i18n?.language || "en"),
+    [i18n?.language],
+  )
+
+  // SEPA: preselect the address country from the IBAN's first two letters,
+  // until the user picks one; a picked country is never changed for them.
+  const iban = form.watch("iban")
+  useEffect(() => {
+    if (rail !== "sepa") return
+    if (form.getFieldState("country").isDirty) return
+    const prefix = iban.replace(/\s+/g, "").slice(0, 2).toUpperCase()
+    const fromIban = SEPA_IBAN_COUNTRIES.has(prefix)
+      ? alpha3FromAlpha2(prefix)
+      : null
+    if (fromIban) form.setValue("country", fromIban, { shouldDirty: false })
+  }, [rail, iban, form])
 
   // A refused submit always says so, even when the failing field is not
   // rendered (it can never block silently).
@@ -124,9 +148,9 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
           <BankAccountFormField name="streetLine1" />
           <BankAccountFormField name="streetLine2" />
           <BankAccountFormField name="city" />
-          {rail === "ach" && <BankAccountFormField name="state" />}
+          {rail === "ach" && <BankAccountStateField />}
           <BankAccountFormField name="postalCode" />
-          <BankAccountFormField name="country" />
+          <BankAccountSelectField name="country" options={countries} />
           {invalid && (
             <Alert
               variant="warning"

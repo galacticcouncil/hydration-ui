@@ -3,6 +3,10 @@ import { Resolver, useForm } from "react-hook-form"
 import { z } from "zod/v4"
 
 import i18n from "@/i18n"
+import {
+  COUNTRY_CODES,
+  US_STATE_CODES,
+} from "@/modules/onramp/bank/utils/addressOptions"
 import type { BankAccountBody } from "@/modules/onramp/bank/utils/bankAccounts"
 
 export type BankRail = "ach" | "sepa"
@@ -88,7 +92,11 @@ export const bankAccountFormSchema = z
       fail("streetLine2", "text")
     if (!isText(text(v.city), MAX.city)) fail("city", "text")
     if (!isText(text(v.postalCode), MAX.postalCode)) fail("postalCode", "text")
-    if (!RULES.country.test(compact(v.country))) fail("country", "country")
+    // The server takes any three capitals (bankAccountRoutes.mjs:377-378); the
+    // form offers and accepts only ISO 3166-1 alpha-3 codes, a subset.
+    const country = compact(v.country)
+    if (!RULES.country.test(country) || !COUNTRY_CODES.has(country))
+      fail("country", "country")
     const bankName = text(v.bankName)
     if (v.rail === "ach") {
       if (!isText(bankName, MAX.bankName)) fail("bankName", "text")
@@ -96,7 +104,14 @@ export const bankAccountFormSchema = z
         fail("accountNumber", "accountNumber")
       if (!RULES.routingNumber.test(text(v.routingNumber)))
         fail("routingNumber", "routingNumber")
-      if (!RULES.state.test(compact(v.state))) fail("state", "state")
+      // Any two capitals for the server (bankAccountRoutes.mjs:377); for a US
+      // address, one of the USPS codes the dropdown offers.
+      const state = compact(v.state)
+      if (
+        !RULES.state.test(state) ||
+        (country === "USA" && !US_STATE_CODES.has(state))
+      )
+        fail("state", "state")
     } else {
       const iban = compact(v.iban)
       if (!RULES.iban.test(iban) || !SEPA_IBAN_COUNTRIES.has(iban.slice(0, 2)))
