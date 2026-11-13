@@ -112,10 +112,9 @@ export const hbrSignOutMutation = (
       try {
         await service.forWallet(h160).closeSession()
       } finally {
-        // Signed out locally whatever the answer; this wallet's token is gone.
-        const { session, discardToken } = useHbrSessionStore.getState()
-        if (session && session.h160 === h160.toLowerCase())
-          discardToken(session.token)
+        // Signed out locally whatever the answer: this wallet's token is gone
+        // from memory and from sessionStorage.
+        useHbrSessionStore.getState().signOut(h160)
         queryClient.removeQueries({ queryKey: hbrQueryKeys.wallet(h160) })
       }
     },

@@ -345,7 +345,35 @@ describe("lead question: identity crosses wallets", () => {
     expect(useHbrSessionStore.getState().session).toBeNull()
   })
 
-  it("L2b A -> Substrate -> A keeps A's in-memory session (no request while substrate)", async () => {
+  it("R6 a reload in the same tab with the same wallet keeps the session; another wallet does not get it", async () => {
+    setEvm(A)
+    mount()
+    await signInAs(A)
+    await flush()
+    expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
+    // Reload: the page and memory are gone, the tab's sessionStorage stays.
+    cleanup()
+    act(() => useHbrSessionStore.setState({ session: null }))
+    const before = log.length
+    mount()
+    await flush()
+    expect(screen.queryByText("bank.signIn.cta")).toBeNull()
+    expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
+    expect(
+      log.slice(before).every((e) => e.tokenOf === A || e.tokenOf === null),
+    ).toBe(true)
+    // Reload again, now with wallet B: A's stored token is never used for B.
+    cleanup()
+    act(() => useHbrSessionStore.setState({ session: null }))
+    const beforeB = log.length
+    setEvm(B)
+    mount()
+    await flush()
+    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(log.slice(beforeB).some((e) => e.tokenOf === A)).toBe(false)
+  })
+
+  it("L2b A -> Substrate -> A keeps A's session (no request while substrate)", async () => {
     setEvm(A)
     mount()
     await signInAs(A)

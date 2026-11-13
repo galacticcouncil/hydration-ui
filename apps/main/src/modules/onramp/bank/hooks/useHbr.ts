@@ -4,7 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 
 import { ENV } from "@/config/env"
 import {
@@ -31,6 +31,7 @@ import {
 import {
   hbrSessionAccess,
   liveSessionFor,
+  readStoredSession,
   useHbrSessionStore,
 } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import type { PreparedCashOut } from "@/modules/onramp/bank/utils/cashOut"
@@ -53,14 +54,21 @@ export const useHbrService = (): HbrService => hbrService
 export const useHbrSession = (h160: string) => {
   const session = useHbrSessionStore((state) => state.session)
   const clear = useHbrSessionStore((state) => state.clear)
+  const restore = useHbrSessionStore((state) => state.restore)
   const live = liveSessionFor(session, h160)
   const mismatched = !!session && !live
+  // After a reload in the same tab: this wallet's stored session, if any.
+  const restored = useMemo(
+    () => (session ? null : readStoredSession(h160)),
+    [session, h160],
+  )
 
   useEffect(() => {
     if (mismatched) clear()
-  }, [mismatched, clear])
+    else if (restored) restore(restored)
+  }, [mismatched, restored, clear, restore])
 
-  return live
+  return live ?? restored
 }
 
 export const useHbrMe = (h160: string) =>
