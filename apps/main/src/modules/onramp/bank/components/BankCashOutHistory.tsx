@@ -24,7 +24,7 @@ import {
 type BankCashOutHistoryProps = {
   h160: string
   onOpen: (rampId: string) => void
-  /** Portfolio's chip; unmatched redemptions show under All only. */
+  /** Portfolio's chip; unmatched redemptions show under All and Needs attention. */
   filter?: TransferFilter
 }
 
@@ -112,35 +112,36 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
           </Text>
         )}
       </Stack>
-      {filter === "all" && data.unlinkedRedeems.length > 0 && (
-        <Paper p="l" data-unlinked-redeems="1">
-          <Stack gap="m">
-            <Stack gap="xs">
-              <Text fs="p3" fw={500}>
-                {t("bank.cashOut.unlinked.title")}
-              </Text>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("bank.cashOut.unlinked.description")}
-              </Text>
-            </Stack>
-            {data.unlinkedRedeems.map((row) => (
-              <Stack key={row.id} gap="xs" align="start">
-                <BankStatusPill label={row.label} tone={row.tone} />
-                {row.detail && (
-                  <Text fs="p5" color={getToken("text.medium")}>
-                    {row.detail}
-                  </Text>
-                )}
+      {(filter === "all" || filter === "attention") &&
+        data.unlinkedRedeems.length > 0 && (
+          <Paper p="l" data-unlinked-redeems="1">
+            <Stack gap="m">
+              <Stack gap="xs">
+                <Text fs="p3" fw={500}>
+                  {t("bank.cashOut.unlinked.title")}
+                </Text>
+                <Text fs="p5" color={getToken("text.medium")}>
+                  {t("bank.cashOut.unlinked.description")}
+                </Text>
               </Stack>
-            ))}
-            {data.unlinkedRedeemsTruncated && (
-              <Text fs="p5" color={getToken("text.low")}>
-                {t("bank.cashOut.history.truncated")}
-              </Text>
-            )}
-          </Stack>
-        </Paper>
-      )}
+              {data.unlinkedRedeems.map((row) => (
+                <Stack key={row.id} gap="xs" align="start">
+                  <BankStatusPill label={row.label} tone={row.tone} />
+                  {row.detail && (
+                    <Text fs="p5" color={getToken("text.medium")}>
+                      {row.detail}
+                    </Text>
+                  )}
+                </Stack>
+              ))}
+              {data.unlinkedRedeemsTruncated && (
+                <Text fs="p5" color={getToken("text.low")}>
+                  {t("bank.cashOut.history.truncated")}
+                </Text>
+              )}
+            </Stack>
+          </Paper>
+        )}
     </Stack>
   )
 }

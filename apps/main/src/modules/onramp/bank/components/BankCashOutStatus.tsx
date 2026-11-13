@@ -38,7 +38,6 @@ type BankCashOutStatusProps = {
   rampId: string
   /** The bank account's line, when the account is still listed. */
   accountLine?: (bankAccountId: string) => string | null
-  onBack: () => void
   onViewTransfers: () => void
 }
 
@@ -63,13 +62,13 @@ const Progress: FC<{ h160: string; view: RampView }> = ({ h160, view }) => {
  * while shown (GET /v1/ramps/:id). The text is the server's (or the rule-11
  * local "Checking" while it says `built`); the timeline is the 5.5 visual.
  * It replaces the list, never sits above it, and offers no action on the
- * ramp: only the list and a new cash-out.
+ * ramp and no way to start a cash-out from it (a ramp in Checking must not
+ * read as "try again"): only back to the list of withdrawals.
  */
 export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
   h160,
   rampId,
   accountLine,
-  onBack,
   onViewTransfers,
 }) => {
   const { t } = useTranslation(["onramp"])
@@ -125,14 +124,9 @@ export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
         </Stack>
       </ModalBody>
       <ModalFooter>
-        <Stack gap="m" width="100%">
-          <Button size="large" onClick={onViewTransfers}>
-            {t("bank.cashOut.status.viewTransfers")}
-          </Button>
-          <Button size="large" variant="tertiary" onClick={onBack}>
-            {t("bank.cashOut.status.back")}
-          </Button>
-        </Stack>
+        <Button size="large" width="100%" onClick={onViewTransfers}>
+          {t("bank.cashOut.status.viewTransfers")}
+        </Button>
       </ModalFooter>
     </BankStepShell>
   )

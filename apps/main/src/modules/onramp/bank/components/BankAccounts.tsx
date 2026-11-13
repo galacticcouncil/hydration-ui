@@ -122,7 +122,6 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
           h160={h160}
           rampId={view.rampId}
           accountLine={accountLine}
-          onBack={() => setView({ kind: "amount" })}
           onViewTransfers={() => setView({ kind: "transfers" })}
         />
       )

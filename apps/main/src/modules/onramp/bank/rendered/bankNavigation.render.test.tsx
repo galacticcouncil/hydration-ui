@@ -156,6 +156,7 @@ let depositsAnswer: unknown
 let onrampFail: null | "500" | "429" | "net"
 let bankAccounts: { bankAccounts: unknown[] }
 let rampsList: unknown[]
+let unlinkedList: unknown[]
 let rampView: Record<string, unknown>
 let quoteCalls = 0
 const ready = () =>
@@ -197,7 +198,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
       return json(200, {
         ramps: rampsList,
         truncated: false,
-        unlinkedRedeems: [],
+        unlinkedRedeems: unlinkedList,
         unlinkedRedeemsTruncated: false,
       })
     case `GET /v1/ramps/${FIXTURE_RAMP_BUILT.id}`:
@@ -267,6 +268,7 @@ beforeEach(() => {
   onrampFail = null
   bankAccounts = FIXTURE_BANK_ACCOUNTS
   rampsList = []
+  unlinkedList = []
   rampView = { ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }
   quoteCalls = 0
   walletState.account = { rawAddress: A, address: A }
@@ -1108,5 +1110,40 @@ describe("delta 1: deposit details, rails, notice, Portfolio history", () => {
       `"wallet":"${A.toLowerCase().slice(0, 6)}…${A.slice(-4)}"`,
     )
     expect(notice).toContain('bank.deposit.instructions.minimum {"amount":"1"}')
+  })
+})
+
+describe("phase C fix: unmatched redemptions under Needs attention (C-R5)", () => {
+  it("shows under All and Needs attention, not under In progress or Completed", async () => {
+    unlinkedList = [
+      {
+        id: "00000000-0000-4000-8000-0000000000e1",
+        status: "unlinked_redeem",
+        label: "Checking (unmatched, server)",
+        tone: "pending",
+        detail: "Do not send again.",
+        retryable: false,
+      },
+    ]
+    rampsList = [FIXTURE_RAMP_BUILT]
+    signedIn()
+    render(
+      <QueryClientProvider client={client}>
+        <BankTransferHistory
+          h160={A.toLowerCase()}
+          onOpenDeposit={vi.fn()}
+          onOpenRamp={vi.fn()}
+        />
+      </QueryClientProvider>,
+    )
+    await waitFor(() =>
+      expect(document.querySelector("[data-unlinked-redeems]")).not.toBeNull(),
+    )
+    await click('[data-filter="attention"]')
+    expect(document.querySelector("[data-unlinked-redeems]")).not.toBeNull()
+    await click('[data-filter="inProgress"]')
+    expect(document.querySelector("[data-unlinked-redeems]")).toBeNull()
+    await click('[data-filter="completed"]')
+    expect(document.querySelector("[data-unlinked-redeems]")).toBeNull()
   })
 })

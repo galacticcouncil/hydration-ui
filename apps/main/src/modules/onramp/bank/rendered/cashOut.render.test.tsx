@@ -301,6 +301,7 @@ vi.mock("@/config/xcSwap", () => ({ XC_SWAP_CONFIG: {} }))
 import { CallType } from "@galacticcouncil/xc-core"
 
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
+import { BankTransferHistory } from "@/modules/onramp/bank/components/BankTransferHistory"
 import {
   buildFixtureOnboarding,
   FIXTURE_QUOTE,
@@ -333,6 +334,8 @@ const unsigned = (data: string, from = A) => ({
 
 let buildAnswer: () => Response
 let rampStatus: Record<string, unknown> = FIXTURE_RAMP_BUILT
+// The list of cash-outs (GET /v1/ramps): empty unless a test lists the ramp.
+let rampsList: Record<string, unknown>[] = []
 const sent: { method: string; path: string; body?: unknown }[] = []
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
@@ -391,7 +394,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
       return buildAnswer()
     case "GET /v1/ramps":
       return json(200, {
-        ramps: [],
+        ramps: rampsList,
         truncated: false,
         unlinkedRedeems: [],
         unlinkedRedeemsTruncated: false,
@@ -501,6 +504,7 @@ beforeEach(() => {
   h.last4 = "6789"
   buildAnswer = built()
   rampStatus = FIXTURE_RAMP_BUILT
+  rampsList = []
   h.storage.clear()
   useStrictEvmLedger.setState({ entries: {} })
   useBankCashOutStore.setState({ records: {} })
@@ -759,6 +763,62 @@ describe("local Checking (rule 11)", () => {
     await waitFor(() => expect(text()).toContain("bank.cashOut.local.declined"))
     expect(text()).toContain("Prepared - not yet seen on chain")
     expect(text()).not.toContain("bank.cashOut.localChecking.label")
+    // C-R3: the local note is this tab's fact about a `built` ramp only; once
+    // the server reports another status the note is gone.
+    rampStatus = {
+      ...FIXTURE_RAMP_BUILT,
+      status: "expired",
+      label: "Expired - no redemption found",
+      tone: "neutral",
+    }
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ["hbr"] })
+    })
+    await waitFor(() =>
+      expect(text()).toContain("Expired - no redemption found"),
+    )
+    expect(text()).not.toContain("bank.cashOut.local.declined")
+  })
+
+  it("C-B1 list rows (View withdrawals and Portfolio's rows) read the local Checking after a redeem the wallet may have sent", async () => {
+    rampsList = [{ ...FIXTURE_RAMP_BUILT }]
+    buildAnswer = built({ approveTx: null })
+    signer.script = [{ kind: "failed" }]
+    await toReview()
+    await handOver()
+    await signStep()
+    await click("modal-close")
+    // the status view offers only the list of withdrawals
+    expect(buttons().map((b) => b.textContent)).not.toContain(
+      "bank.cashOut.status.back",
+    )
+    await click("bank.cashOut.status.viewTransfers")
+    await waitFor(() =>
+      expect(
+        document.querySelector(`[data-ramp-row="${RAMP}"]`),
+      ).not.toBeNull(),
+    )
+    // Portfolio, Deposits renders the same rows (BankTransferHistory).
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BankTransferHistory
+          h160={A.toLowerCase()}
+          onOpenDeposit={() => {}}
+          onOpenRamp={() => {}}
+        />
+      </QueryClientProvider>,
+    )
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll(`[data-ramp-row="${RAMP}"]`),
+      ).toHaveLength(2),
+    )
+    for (const row of Array.from(
+      document.querySelectorAll(`[data-ramp-row="${RAMP}"]`),
+    )) {
+      expect(row.textContent).toContain("bank.cashOut.localChecking.label")
+      expect(row.textContent).not.toContain("Prepared - not yet seen on chain")
+    }
   })
 })
 
@@ -942,8 +1002,13 @@ describe("fix round 1", () => {
       },
       redeemTx: unsigned(REDEEM_B),
     })
-    // "Back to cash out" is a NEW cash-out: amount, account, a new quote.
-    await click("bank.cashOut.status.back")
+    // A NEW cash-out: from the status, the list of withdrawals, then back to
+    // W01 (the status view itself offers no cash-out), amount, account, quote.
+    await click("bank.cashOut.status.viewTransfers")
+    await act(async () => {
+      fireEvent.click(document.querySelector("[data-header-back]")!)
+    })
+    await flush()
     await amountToQuote("25.5")
     await waitFor(() => expect(text()).toContain("bank.cashOut.confirm"))
     await click("bank.cashOut.confirm")

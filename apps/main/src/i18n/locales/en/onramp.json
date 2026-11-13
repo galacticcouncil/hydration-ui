@@ -516,7 +516,6 @@
   "bank.cashOut.status.amount": "{{ amount }} USDC",
   "bank.cashOut.status.cashOut": "Cash-out",
   "bank.cashOut.status.viewTransfers": "View withdrawals",
-  "bank.cashOut.status.back": "Back to cash out",
   "bank.cashOut.localChecking.label": "Checking - do not send again",
   "bank.cashOut.localChecking.detail": "This cash-out is not confirmed yet. We are checking. Do not send again.",
   "bank.cashOut.local.checking": "We are checking what your wallet sent.",
