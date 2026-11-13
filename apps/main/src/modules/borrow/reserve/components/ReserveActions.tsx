@@ -17,6 +17,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import {
   getAssetIdFromAddress,
   MONEY_MARKET_STRATEGY_ASSETS,
+  VDOT_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -52,8 +53,11 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
 
   const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
   const aTokenId = getRelatedAToken(assetId)?.id
+  // vDOT's modal can also mint it from DOT, so it doesn't need a vDOT balance
   const isStrategyReserve =
-    (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) || reserve.isIsolated) &&
+    (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) ||
+      assetId === VDOT_ASSET_ID ||
+      reserve.isIsolated) &&
     !!aTokenId
 
   const onSupplyClick = () => {

@@ -1,6 +1,8 @@
 import { Modal } from "@galacticcouncil/ui/components"
+import { VDOT_ASSET_ID } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
+import { SupplyVdot } from "@/modules/borrow/components/SupplyVdot/SupplyVdot"
 import {
   AddStablepoolLiquidityProps,
   AddStablepoolLiquidityWrapper,
@@ -27,7 +29,10 @@ export const StrategySupplyModal = ({
 
   return (
     <Modal open={!!props} onOpenChange={onClose} variant="popup">
-      {props &&
+      {props?.id === VDOT_ASSET_ID ? (
+        <SupplyVdot onSubmitted={onClose} />
+      ) : (
+        props &&
         (!props.isIsolated ? (
           <AddStablepoolLiquidityWrapper
             {...props}
@@ -42,7 +47,8 @@ export const StrategySupplyModal = ({
           />
         ) : (
           <SupplyIsolatedLiquidity assetId={props.id} onSubmitted={onClose} />
-        ))}
+        ))
+      )}
     </Modal>
   )
 }

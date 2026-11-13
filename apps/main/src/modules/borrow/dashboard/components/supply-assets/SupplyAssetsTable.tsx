@@ -25,7 +25,7 @@ import { useNavigateToReserve } from "@/modules/borrow/hooks/useNavigateToReserv
 
 export const SupplyAssetsTable = () => {
   const [modalProps, setModalProps] = useState<StrategySupplyModalProps>()
-  const baseColumns = useSupplyAssetsTableColumns("base")
+  const baseColumns = useSupplyAssetsTableColumns("base", setModalProps)
   const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
 
   const { data, isLoading } = useSupplyAssetsData({ showAll: true })
