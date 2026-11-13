@@ -307,5 +307,6 @@
   "bank.history.receivedUsd": "{{ amount }} USD received by Bridge",
   "bank.history.transferUsd": "{{ amount }} USD bank transfer",
   "bank.accounts.form.error.text": "Required, without special characters, and not too long.",
-  "bank.deposit.readFailed": "We could not refresh your {{ currency }} bank details"
+  "bank.deposit.readFailed": "We could not refresh your {{ currency }} bank details",
+  "bank.accounts.form.saving": "Saving..."
 }

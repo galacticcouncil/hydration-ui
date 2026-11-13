@@ -133,13 +133,16 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
               }
             />
           )}
+          {/* Read from the mutation cache: a remount still sees the pending POST. */}
           <LoadingButton
             type="submit"
             size="large"
-            isLoading={create.isPending}
-            disabled={create.isPending}
+            isLoading={inFlight.pending}
+            disabled={inFlight.pending}
           >
-            {t("bank.accounts.form.submit")}
+            {inFlight.pending
+              ? t("bank.accounts.form.saving")
+              : t("bank.accounts.form.submit")}
           </LoadingButton>
           <Button
             type="button"

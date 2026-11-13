@@ -204,7 +204,8 @@ describe("the global react-query error log never prints HBR data", () => {
   // or `hbr*Mutation(` factory call. Bound: it does not see react-query reached
   // through another module that re-exports it, or code outside this directory;
   // such a query or mutation is still kept out of the log and the persister
-  // only if its key is under SENSITIVE_KEY_ROOTS.
+  // only if its key is under SENSITIVE_KEY_ROOTS. A dynamic
+  // `import("@tanstack/react-query")` is not seen either.
   it("react-query is reached only through hbrQueries.ts factories and useHbr.ts hooks", () => {
     const root = fileURLToPath(new URL("..", import.meta.url))
     const sources = readdirSync(root, { recursive: true, encoding: "utf8" })
@@ -272,6 +273,37 @@ describe("the global react-query error log never prints HBR data", () => {
       "COBADEFF",
     ])
       expect(logged()).not.toContain(secret)
+  })
+
+  it("a body the request schema refuses is not sent and its values are not logged (reviewer Z1)", async () => {
+    setSession(A, "A".repeat(43))
+    const fetchFn = vi.fn()
+    const service = createHbrService({
+      baseUrl: "/hbr",
+      session: hbrSessionAccess,
+      fetchFn,
+    })
+    const client = appQueryClient()
+    await runMutation(
+      client,
+      hbrCreateBankAccountMutation(service, client, A),
+      {
+        clientRequestId: "00000000-0000-4000-8000-0000000000a1",
+        rail: "sepa",
+        iban: "DE89370400440532013000",
+        bic: "SECRETBIC!!",
+        address: {
+          streetLine1: "<placeholder>",
+          city: "<placeholder>",
+          postalCode: "10115",
+          country: "deu-SECRETCOUNTRY",
+        },
+      },
+    ).catch(() => {})
+
+    expect(fetchFn).not.toHaveBeenCalled()
+    expect(logged()).not.toContain("SECRETBIC")
+    expect(logged()).not.toContain("SECRETCOUNTRY")
   })
 
   it("a failed on-ramp poll after a ready read logs no deposit instruction", async () => {

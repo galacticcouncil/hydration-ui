@@ -1,13 +1,19 @@
 import {
+  dehydrate,
   MutationCache,
   MutationObserver,
   onlineManager,
+  type Query,
   QueryCache,
   QueryClient,
 } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { setupPortfolioPersistence } from "@/api/portfolio/persistence"
+import {
+  setupPortfolioPersistence,
+  shouldDehydratePortfolioMutation,
+  shouldDehydratePortfolioQuery,
+} from "@/api/portfolio/persistence"
 import { hbrCreateBankAccountMutation } from "@/modules/onramp/bank/hooks/hbrQueries"
 import {
   hbrSessionAccess,
@@ -135,5 +141,87 @@ describe("the portfolio persister never stores HBR data", () => {
     await tick()
 
     expect(stored.join("\n")).toContain("kept-as-before")
+  })
+})
+
+describe("everything but HBR dehydrates exactly as before (reviewer D2)", () => {
+  // The query filter as on master: portfolio balances, success only.
+  const masterQueryFilter = (query: Query) =>
+    query.state.status === "success" &&
+    ["portfolio", "balances"].every((part, i) => query.queryKey[i] === part)
+  const strip = (d: ReturnType<typeof dehydrate>) =>
+    JSON.stringify(d, (_k, v: unknown) =>
+      typeof v === "bigint" ? `${v}n` : v,
+    ).replace(
+      /"(submittedAt|dataUpdatedAt|errorUpdatedAt|fetchFailureReason|dehydratedAt)":[^,}]*/g,
+      "",
+    )
+  const withoutHbr = (d: ReturnType<typeof dehydrate>) => ({
+    ...d,
+    queries: d.queries.filter((q) => q.queryKey[0] !== "hbr"),
+    mutations: d.mutations.filter(
+      (m) => (m.mutationKey as unknown[] | undefined)?.[0] !== "hbr",
+    ),
+  })
+
+  it("the same cache dehydrates to master's output minus the hbr-rooted entries", async () => {
+    const client = new QueryClient()
+    client.mount()
+    const balance = (key: string, amount: bigint) => [
+      { key, originSymbol: "X", amount, decimals: 6, symbol: "X" },
+    ]
+    client.setQueryData(["portfolio", "balances"], balance("1", 5n))
+    client.setQueryData(["portfolio", "balances", "0xabc"], balance("2", 7n))
+    client.setQueryData(["portfolio", "other"], [1])
+    client.setQueryData(["other"], { a: 1 })
+    client.setQueryData(["hbr", "0x1", "onramp-accounts"], { secret: "IBAN-Q" })
+    client.setQueryData(["HBR", "x"], { a: 2 })
+    await client
+      .fetchQuery({
+        queryKey: ["portfolio", "balances", "err"],
+        queryFn: async () => {
+          throw new Error("e")
+        },
+        retry: false,
+      })
+      .catch(() => {})
+    onlineManager.setOnline(false)
+    const keys: (unknown[] | undefined)[] = [
+      ["x"],
+      undefined,
+      [123],
+      ["HBR", "y"],
+      ["portfolio", "m"],
+      ["hbr", "0x1", "mutation", "createBankAccount"],
+      ["hbr"],
+      [" hbr"],
+    ]
+    for (const k of keys)
+      void new MutationObserver(client, {
+        mutationKey: k as never,
+        mutationFn: async (v: unknown) => v,
+      })
+        .mutate({ v: `VAR-${JSON.stringify(k)}` })
+        .catch(() => {})
+    await vi.waitFor(() =>
+      expect(
+        client
+          .getMutationCache()
+          .getAll()
+          .filter((m) => m.state.isPaused).length,
+      ).toBe(keys.length),
+    )
+
+    const master = dehydrate(client, {
+      shouldDehydrateQuery: masterQueryFilter,
+    })
+    const fixed = dehydrate(client, {
+      shouldDehydrateQuery: shouldDehydratePortfolioQuery,
+      shouldDehydrateMutation: shouldDehydratePortfolioMutation,
+    })
+    expect(master.mutations.length - withoutHbr(master).mutations.length).toBe(
+      2,
+    )
+    expect(strip(fixed)).toBe(strip(withoutHbr(master)))
   })
 })
