@@ -22,6 +22,7 @@ export type SignErrorKind =
   | "walletFailed"
   | "refused"
   | "bindTaken"
+  | "unconfirmed"
   | BankErrorKind
 
 export const classifySignError = (error: unknown): SignErrorKind => {
@@ -33,7 +34,8 @@ export const classifySignError = (error: unknown): SignErrorKind => {
       return "bindTaken"
     return classifyBankError(error)
   }
-  if (error instanceof HbrNetworkError) return "unavailable"
+  // No answer (network or timeout): the POST may have been carried out.
+  if (error instanceof HbrNetworkError) return "unconfirmed"
   // The server's answer could not be read: the wallet DID sign (doctrine 2).
   if (error instanceof HbrResponseError) return "unknown"
   // The provider's own error object (EthereumSigner.signMessage rethrows it).

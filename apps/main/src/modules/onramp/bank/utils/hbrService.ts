@@ -35,6 +35,7 @@ import {
   HbrApiError,
   HbrNetworkError,
   HbrResponseError,
+  HbrTimeoutError,
 } from "@/modules/onramp/bank/utils/hbrErrors"
 
 type Out<S extends z.ZodType> = z.output<S>
@@ -108,6 +109,18 @@ type RequestOptions<S extends z.ZodType | null> = {
   schema: S
 }
 
+/**
+ * Client timeouts. Reads: 20 s, so a hung read becomes a failed read and rule
+ * 5 hides instructions within one poll interval plus 20 s; cutting a slow but
+ * good read only hides instructions until the next read (the safe direction).
+ * Writes: 60 s, above three sequential Bridge calls at the server's own 15 s
+ * Bridge timeout (hydration-ramp server/lib/bridge/bridgeClient.mjs:376), so
+ * the client gives up only after the server would have; the outcome is then
+ * unknown (HbrTimeoutError), never "failed".
+ */
+export const HBR_READ_TIMEOUT_MS = 20_000
+export const HBR_WRITE_TIMEOUT_MS = 60_000
+
 /** The code of the refusal raised before sending when no session of the wallet exists. */
 export const NO_SESSION = "no_session"
 
@@ -148,36 +161,59 @@ export const createHbrHttpService = (args: {
     }
     if (options.body !== undefined) headers["Content-Type"] = "application/json"
 
-    let res: Response
+    const send = async (signal: AbortSignal): Promise<unknown> => {
+      let res: Response
+      try {
+        res = await fetchFn(`${baseUrl}${path}`, {
+          method,
+          headers,
+          body:
+            options.body === undefined
+              ? undefined
+              : JSON.stringify(options.body),
+          cache: "no-store",
+          credentials: "omit",
+          // The token never follows a redirect to another host.
+          redirect: "error",
+          signal,
+        })
+      } catch {
+        throw new HbrNetworkError()
+      }
+
+      // Rule 12: a 401 ends the session; the call is not repeated with this token.
+      if (res.status === 401 && token) session.onUnauthorized(token)
+
+      if (!res.ok) {
+        const json: unknown = await res.json().catch(() => null)
+        const code = errorBodySchema.safeParse(json).data?.error ?? "unknown"
+        throw new HbrApiError(res.status, code, json)
+      }
+      if (options.schema === null) return undefined
+
+      const json: unknown = await res.json().catch(() => undefined)
+      const parsed = options.schema.safeParse(json)
+      if (!parsed.success) throw new HbrResponseError(res.status)
+      return parsed.data
+    }
+
+    // A hung request ends as HbrTimeoutError (the race does not rely on the
+    // fetch honouring the abort).
+    const timeoutMs =
+      method === "GET" ? HBR_READ_TIMEOUT_MS : HBR_WRITE_TIMEOUT_MS
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timedOut = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort()
+        reject(new HbrTimeoutError(timeoutMs))
+      }, timeoutMs)
+    })
     try {
-      res = await fetchFn(`${baseUrl}${path}`, {
-        method,
-        headers,
-        body:
-          options.body === undefined ? undefined : JSON.stringify(options.body),
-        cache: "no-store",
-        credentials: "omit",
-        // The token never follows a redirect to another host.
-        redirect: "error",
-      })
-    } catch {
-      throw new HbrNetworkError()
+      return await Promise.race([send(controller.signal), timedOut])
+    } finally {
+      clearTimeout(timer)
     }
-
-    // Rule 12: a 401 ends the session; the call is not repeated with this token.
-    if (res.status === 401 && token) session.onUnauthorized(token)
-
-    if (!res.ok) {
-      const json: unknown = await res.json().catch(() => null)
-      const code = errorBodySchema.safeParse(json).data?.error ?? "unknown"
-      throw new HbrApiError(res.status, code, json)
-    }
-    if (options.schema === null) return undefined
-
-    const json: unknown = await res.json().catch(() => undefined)
-    const parsed = options.schema.safeParse(json)
-    if (!parsed.success) throw new HbrResponseError(res.status)
-    return parsed.data
   }
 
   return {

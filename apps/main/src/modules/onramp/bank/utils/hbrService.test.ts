@@ -1,14 +1,38 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   hbrSessionAccess,
   liveSessionFor,
   useHbrSessionStore,
 } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import {
+  classifyCreateBankAccountError,
+  classifyRemoveBankAccount,
+  isBankAccountSubmissionDone,
+} from "@/modules/onramp/bank/utils/bankAccounts"
 import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
-import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
+import {
+  HbrApiError,
+  HbrNetworkError,
+  HbrTimeoutError,
+} from "@/modules/onramp/bank/utils/hbrErrors"
 import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureService"
-import { getOpenRails } from "@/modules/onramp/bank/utils/onboarding"
+import {
+  HBR_READ_TIMEOUT_MS,
+  HBR_WRITE_TIMEOUT_MS,
+} from "@/modules/onramp/bank/utils/hbrService"
+import {
+  classifyBankError,
+  classifyCreateCustomerError,
+  getOpenRails,
+} from "@/modules/onramp/bank/utils/onboarding"
+import { classifyOnrampError } from "@/modules/onramp/bank/utils/onramp"
+import { classifySignError } from "@/modules/onramp/bank/utils/signing"
+
+vi.mock("@galacticcouncil/web3-connect", () => ({
+  EIP1193_USER_REJECTED: 4001,
+  getEip1193ErrorCode: () => null,
+}))
 
 const TOKEN = "A".repeat(43)
 const OTHER_TOKEN = "B".repeat(43)
@@ -308,5 +332,107 @@ describe("HBR fixture service, stage 2 walk", () => {
         "needs_attention",
       ]),
     )
+  })
+})
+
+describe("HBR HTTP client timeouts", () => {
+  afterEach(() => vi.useRealTimers())
+
+  const hung = () =>
+    vi.fn(
+      (_url: RequestInfo | URL, _init?: RequestInit) =>
+        new Promise<Response>(() => {}),
+    )
+
+  it("a hung GET fails as HbrTimeoutError after HBR_READ_TIMEOUT_MS, not before", async () => {
+    vi.useFakeTimers()
+    signIn()
+    const fetchFn = hung()
+    const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
+    const outcome = service
+      .forWallet(H160)
+      .listOnrampAccounts()
+      .catch((e: unknown) => e)
+    await vi.advanceTimersByTimeAsync(HBR_READ_TIMEOUT_MS - 1)
+    let settled = false
+    void outcome.then(() => (settled = true))
+    await Promise.resolve()
+    expect(settled).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    const error = await outcome
+    expect(error).toBeInstanceOf(HbrTimeoutError)
+    expect(error).toBeInstanceOf(HbrNetworkError)
+    expect(fetchFn.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
+  })
+
+  it("a hung POST or DELETE fails as HbrTimeoutError after HBR_WRITE_TIMEOUT_MS", async () => {
+    vi.useFakeTimers()
+    signIn()
+    const service = createHbrService({
+      baseUrl: "/hbr",
+      session,
+      fetchFn: hung(),
+    })
+    let postDone = false
+    let delDone = false
+    const post = service
+      .forWallet(H160)
+      .requestOnrampAccount("usd")
+      .catch((e: unknown) => e)
+      .finally(() => (postDone = true))
+    const del = service
+      .forWallet(H160)
+      .deleteBankAccount("00000000-0000-4000-8000-0000000000b1")
+      .catch((e: unknown) => e)
+      .finally(() => (delDone = true))
+    // Past the read timeout, a write is still waiting.
+    await vi.advanceTimersByTimeAsync(HBR_READ_TIMEOUT_MS + 1000)
+    await vi.advanceTimersByTimeAsync(0)
+    expect([postDone, delDone]).toEqual([false, false])
+    await vi.advanceTimersByTimeAsync(
+      HBR_WRITE_TIMEOUT_MS - HBR_READ_TIMEOUT_MS,
+    )
+    expect(await post).toBeInstanceOf(HbrTimeoutError)
+    expect(await del).toBeInstanceOf(HbrTimeoutError)
+  })
+
+  it("a body that never finishes also times out", async () => {
+    vi.useFakeTimers()
+    signIn()
+    const fetchFn = vi.fn(async () => {
+      const res = new Response(null, { status: 200 })
+      Object.defineProperty(res, "json", { value: () => new Promise(() => {}) })
+      return res
+    })
+    const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })
+    const outcome = service
+      .forWallet(H160)
+      .getMe()
+      .catch((e: unknown) => e)
+    await vi.advanceTimersByTimeAsync(HBR_READ_TIMEOUT_MS)
+    expect(await outcome).toBeInstanceOf(HbrTimeoutError)
+  })
+})
+
+describe("a timed-out write reads as unknown, never failed or not sent", () => {
+  const timeout = new HbrTimeoutError(HBR_WRITE_TIMEOUT_MS)
+
+  it("bank-account create: uncertain, and the clientRequestId is kept for the retry", () => {
+    expect(classifyCreateBankAccountError(timeout)).toEqual({
+      kind: "uncertain",
+    })
+    expect(isBankAccountSubmissionDone(timeout)).toBe(false)
+  })
+
+  it("every other mutation reads could not confirm", () => {
+    expect(classifyOnrampError(timeout)).toEqual({ kind: "unconfirmed" })
+    expect(classifyRemoveBankAccount({ error: timeout })).toBe("unconfirmed")
+    expect(classifySignError(timeout)).toBe("unconfirmed")
+    expect(classifyCreateCustomerError(timeout)).toBe("uncertain")
+  })
+
+  it("a timed-out read is a failed read (instructions hidden)", () => {
+    const read = new HbrTimeoutError(HBR_READ_TIMEOUT_MS)
+    expect(classifyBankError(read)).toBe("unavailable")
   })
 })

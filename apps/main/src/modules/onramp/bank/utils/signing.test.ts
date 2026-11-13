@@ -46,7 +46,7 @@ describe("sign error classification", () => {
     expect(classifySignError(new HbrApiError(429, "rate_limited"))).toBe(
       "rateLimited",
     )
-    expect(classifySignError(new HbrNetworkError())).toBe("unavailable")
+    expect(classifySignError(new HbrNetworkError())).toBe("unconfirmed")
   })
 
   it("an unreadable server answer never reads as the wallet not signing", () => {

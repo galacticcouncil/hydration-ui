@@ -6,7 +6,10 @@ import type {
   OnrampAccountView,
   OnrampCurrency,
 } from "@/modules/onramp/bank/config/schemas"
-import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
+import {
+  HbrApiError,
+  HbrNetworkError,
+} from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   BankErrorKind,
   classifyBankError,
@@ -51,7 +54,7 @@ export const canRequestOnrampAccount = (view: OnrampAccountView | null) =>
 export type OnrampErrorView =
   | { kind: "railUnavailable"; gate: string | null }
   | { kind: "retryNotAllowed"; reason: string | null }
-  | { kind: "notReady" | "support" | "conflict" }
+  | { kind: "notReady" | "support" | "conflict" | "unconfirmed" }
   | { kind: BankErrorKind }
 
 const refusalBodySchema = z.object({
@@ -61,6 +64,8 @@ const refusalBodySchema = z.object({
 
 /** How a failed on-ramp request or re-arm is shown (API doc 4). */
 export const classifyOnrampError = (error: unknown): OnrampErrorView => {
+  // No answer (network or timeout) to a POST: it may have been carried out.
+  if (error instanceof HbrNetworkError) return { kind: "unconfirmed" }
   if (error instanceof HbrApiError) {
     const body = refusalBodySchema.safeParse(error.body).data
     switch (error.code) {

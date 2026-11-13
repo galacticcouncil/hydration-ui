@@ -130,6 +130,7 @@ export const classifyCreateBankAccountError = (
 }
 
 export type RemoveBankAccountView =
+  | "unconfirmed"
   | "removed"
   | "removing"
   | "inFlight"
@@ -147,6 +148,8 @@ export const classifyRemoveBankAccount = (
     return "unknown"
   }
   const { error } = outcome
+  // No answer (network or timeout) to the DELETE: it may have been carried out.
+  if (error instanceof HbrNetworkError) return "unconfirmed"
   if (error instanceof HbrApiError) {
     if (error.code === "ramp_in_flight") return "inFlight"
     if (error.status === 409 && error.code === "conflict") return "conflict"

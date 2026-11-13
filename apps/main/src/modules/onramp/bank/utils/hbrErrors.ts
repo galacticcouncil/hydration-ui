@@ -24,6 +24,23 @@ export class HbrNetworkError extends Error {
   }
 }
 
+/**
+ * No complete answer within the client's timeout (HBR_READ_TIMEOUT_MS /
+ * HBR_WRITE_TIMEOUT_MS). Like every HbrNetworkError the outcome is unknown: a
+ * timed-out read is a failed read; a timed-out POST or DELETE may have been
+ * carried out, so it reads "could not confirm", never "failed" or "not sent".
+ */
+export class HbrTimeoutError extends HbrNetworkError {
+  readonly timeoutMs: number
+
+  constructor(timeoutMs: number) {
+    super()
+    this.name = "HbrTimeoutError"
+    this.message = `HBR request got no answer within ${timeoutMs} ms`
+    this.timeoutMs = timeoutMs
+  }
+}
+
 /** A success status whose body did not match the schema; nothing is assumed from it. */
 export class HbrResponseError extends Error {
   readonly status: number

@@ -84,6 +84,8 @@ vi.mock("@/config/env", () => ({
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import { buildFixtureOnboarding } from "@/modules/onramp/bank/config/fixtures"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import { HBR_READ_TIMEOUT_MS } from "@/modules/onramp/bank/utils/hbrService"
+import { ONRAMP_POLL_MS } from "@/modules/onramp/bank/utils/onramp"
 import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -162,7 +164,14 @@ let limited = 0
 let last: { status: number; usdReady: boolean } | null = null
 let t0 = 0
 
-const answerGet = () => {
+// GETs after this many answers never settle (a hung read); 0 = off.
+let hangAfter = 0
+
+const answerGet = (): Response | Promise<Response> => {
+  if (hangAfter && gets >= hangAfter) {
+    gets += 1
+    return new Promise<Response>(() => {})
+  }
   gets += 1
   if (!lim.list.hit()) {
     limited += 1
@@ -324,6 +333,7 @@ beforeEach(() => {
     retry: mkLimiter(3, 3_600_000),
   }
   scripted = {}
+  hangAfter = 0
   gets = 0
   limited = 0
   last = null
@@ -450,6 +460,21 @@ describe("rule 5 under polling, re-reads and 429s (no client limiter)", () => {
     expect(shown()).toBe(true)
     expect(violations).toEqual([])
     noFailureShown()
+  })
+})
+
+describe("a hung read (advisor item 8)", () => {
+  it("H1 a ready account whose next read never answers hides its instructions within one interval plus the read timeout", async () => {
+    st.usd = { status: "ready", retryAllowed: false }
+    hangAfter = 1
+    setWallet(A)
+    render(app())
+    await tick(1000)
+    expect(shown()).toBe(true)
+    const waited = await stepUntil(() => !shown(), 120_000)
+    expect(waited).toBeLessThanOrEqual(
+      ONRAMP_POLL_MS.settled + HBR_READ_TIMEOUT_MS + 250,
+    )
   })
 })
 
