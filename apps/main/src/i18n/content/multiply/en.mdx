@@ -1,15 +1,16 @@
-### What is Multiply?
+### Correlated vs volatile loops
 
-Multiply is leverage on a single asset. The position borrows against your collateral, swaps the loan for more collateral and supplies it, until it reaches your chosen leverage. It pays while the collateral earns more than the debt costs.
-
-### Your position
-
-Each position is its own contract, owned by whoever holds its NFT. It builds one swap at a time, so leverage climbs over a few minutes. Closing runs the swaps in reverse and pays out the rest. If a swap fails, the position pauses with your funds in it until you resume.
+- **Correlated** loops pair assets that move together, like a staked token and its base, in the same E-mode category. They allow higher leverage and are rarely liquidated by price, so the main risk is borrow rates.
+- **Volatile** loops pair assets that move independently. A price drop can liquidate them, so they need lower leverage and closer watching.
 
 ### Fees
 
-Each swap pays a small fee from a budget you fund at opening. What's left comes back when you close.
+When you open a position, you fund a small fee budget that pays for each automated step that builds, adjusts and unwinds it. Whatever is left is refunded when you close. Swaps also cost price impact, shown as entry and exit cost before you confirm.
 
-### Risks
+### Liquidation
 
-If the collateral falls against the borrowed asset and the health factor drops below 1, part of the position is liquidated. Higher leverage leaves less room, so check the liquidation price first.
+If the health factor drops below 1, part of the position is liquidated with a penalty. Positions don't deleverage automatically, so close if the liquidation price gets near.
+
+### Borrow rates
+
+You earn the gap between the deposit yield and the borrow rate. If borrowing costs more than the deposit earns, the position loses value.
