@@ -333,7 +333,9 @@ describe("lead question: identity crosses wallets", () => {
     expect(added.some((t) => t.includes("bank.signOut"))).toBe(false)
     // ... and no query was ever built for B under A's session (B has none yet).
     expect(
-      activeClient.getQueryCache().findAll({ queryKey: ["hbr", B.toLowerCase()] }),
+      activeClient
+        .getQueryCache()
+        .findAll({ queryKey: ["hbr", B.toLowerCase()] }),
     ).toEqual([])
     expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
     expect(screen.queryByText("bank.accountType.cta")).toBeNull()

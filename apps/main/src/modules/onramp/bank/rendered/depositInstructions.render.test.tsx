@@ -295,6 +295,59 @@ describe("lead: deposit instructions shown only when they must be", () => {
     expect(page()).not.toContain("ROUT-A1")
   })
 
+  it("L2b0 a failed (502) read after ready hides them and says the read failed", async () => {
+    signIn(A)
+    onrampQueue[A] = [
+      () =>
+        json(200, { accounts: [usdReady("A1"), view("eur", "not_requested")] }),
+      () => json(502, { error: "bridge_unavailable" }),
+    ]
+    setWallet(A)
+    render(app())
+    await flush()
+    await refetchOnramp(A)
+    await flush()
+    expect(page()).toContain("bank.deposit.readFailed")
+    expect(page()).not.toContain("bank.deposit.status.ready.title")
+    expect(page()).not.toContain("ACCT-A1")
+  })
+
+  it("P1 preparing lists the server's steps and says the page can be left", async () => {
+    signIn(A)
+    onrampQueue[A] = [
+      () =>
+        json(200, {
+          accounts: [view("usd", "preparing"), view("eur", "not_requested")],
+        }),
+    ]
+    setWallet(A)
+    render(app())
+    await flush()
+    for (const step of ["address", "bridge", "ready"])
+      expect(page()).toContain(`bank.deposit.preparing.steps.${step}`)
+    expect(page()).toContain("bank.deposit.preparing.leave")
+  })
+
+  it("P2 a 429 while preparing keeps the preparing copy, with no failure shown", async () => {
+    signIn(A)
+    onrampQueue[A] = [
+      () =>
+        json(200, {
+          accounts: [view("usd", "preparing"), view("eur", "not_requested")],
+        }),
+      () => json(429, { error: "rate_limited" }),
+    ]
+    setWallet(A)
+    render(app())
+    await flush()
+    await refetchOnramp(A)
+    await flush()
+    expect(page()).toContain("bank.deposit.status.preparing.title")
+    expect(page()).toContain("bank.deposit.preparing.leave")
+    expect(page()).not.toContain("bank.deposit.readFailed")
+    expect(document.querySelector("[data-alert]")).toBeNull()
+  })
+
   it("L2a a failed (429) read after ready hides them", async () => {
     signIn(A)
     onrampQueue[A] = [
@@ -309,6 +362,10 @@ describe("lead: deposit instructions shown only when they must be", () => {
     await refetchOnramp(A)
     await flush()
     expect(page()).not.toContain("bank.deposit.status.ready.title")
+    // A 429 is a backoff: a neutral "checking again" title, no failure alert.
+    expect(page()).toContain("bank.deposit.rechecking")
+    expect(page()).not.toContain("bank.deposit.readFailed")
+    expect(document.querySelector("[data-alert]")).toBeNull()
     expect(page()).not.toContain("ACCT-A1")
     // the instructions' copy buttons carry the value too
     expect(document.querySelector('[data-copy="ACCT-A1"]')).toBeNull()

@@ -15,7 +15,10 @@ import {
   formatUsdcBaseUnits,
   getDepositAmountLine,
   getDepositDetailKey,
+  getOnrampHeader,
+  getOnrampPollInterval,
   getVisibleInstructions,
+  ONRAMP_POLL_MS,
 } from "@/modules/onramp/bank/utils/onramp"
 
 const read = (
@@ -156,5 +159,66 @@ describe("deposit history", () => {
     )
     expect(deposits.map((d) => d.status)).not.toContain("unknown")
     expect(unattributed).toHaveLength(1)
+  })
+})
+
+describe("on-ramp polling and the 429 backoff", () => {
+  const accounts = (usd: object) => read(usd)
+
+  it("polls every 12 s while an account is preparing, 20 s otherwise", () => {
+    expect(
+      getOnrampPollInterval(
+        accounts(FIXTURE_ONRAMP_VIEWS.preparing("usd")),
+        null,
+      ),
+    ).toBe(12_000)
+    expect(
+      getOnrampPollInterval(accounts(FIXTURE_ONRAMP_VIEWS.ready("usd")), null),
+    ).toBe(20_000)
+    expect(getOnrampPollInterval(undefined, null)).toBe(20_000)
+  })
+
+  it("after a 429 the next poll waits a whole window, preparing or not", () => {
+    const limited = new HbrApiError(429, "rate_limited")
+    expect(
+      getOnrampPollInterval(
+        accounts(FIXTURE_ONRAMP_VIEWS.preparing("usd")),
+        limited,
+      ),
+    ).toBe(60_000)
+  })
+
+  it("the preparing interval plus the one re-read after a request fits 6 a minute", () => {
+    expect(
+      Math.ceil(60_000 / ONRAMP_POLL_MS.preparing) + 1,
+    ).toBeLessThanOrEqual(6)
+  })
+
+  it("a 429 is a backoff in the header, never a failure", () => {
+    const limited = new HbrApiError(429, "rate_limited")
+    expect(
+      getOnrampHeader(
+        {
+          data: accounts(FIXTURE_ONRAMP_VIEWS.preparing("usd")),
+          error: limited,
+        },
+        "usd",
+      ),
+    ).toMatchObject({ kind: "status", view: { status: "preparing" } })
+    expect(
+      getOnrampHeader(
+        { data: accounts(FIXTURE_ONRAMP_VIEWS.ready("usd")), error: limited },
+        "usd",
+      ),
+    ).toEqual({ kind: "rechecking" })
+    expect(
+      getOnrampHeader(
+        {
+          data: accounts(FIXTURE_ONRAMP_VIEWS.ready("usd")),
+          error: new HbrApiError(502, "bridge_unavailable"),
+        },
+        "usd",
+      ),
+    ).toEqual({ kind: "failed" })
   })
 })

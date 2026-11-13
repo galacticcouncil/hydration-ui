@@ -229,7 +229,6 @@
   "bank.deposit.status.not_requested.title": "Deposit {{ currency }} from your bank",
   "bank.deposit.status.not_requested.description": "Get bank details in your name. Money you send there arrives in this wallet as HOLLAR.",
   "bank.deposit.status.preparing.title": "Preparing your {{ currency }} bank details",
-  "bank.deposit.status.preparing.description": "This can take a few minutes. This page checks again by itself.",
   "bank.deposit.status.checking.title": "Checking your {{ currency }} bank details",
   "bank.deposit.status.checking.description": "We have not confirmed them yet. Do not send money until the details show here.",
   "bank.deposit.status.waiting_rail.title": "{{ currency }} deposits are not open for your account yet",
@@ -308,5 +307,10 @@
   "bank.history.transferUsd": "{{ amount }} USD bank transfer",
   "bank.accounts.form.error.text": "Required, without special characters, and not too long.",
   "bank.deposit.readFailed": "We could not refresh your {{ currency }} bank details",
-  "bank.accounts.form.saving": "Saving..."
+  "bank.accounts.form.saving": "Saving...",
+  "bank.deposit.preparing.steps.address": "Setting up your deposit address",
+  "bank.deposit.preparing.steps.bridge": "Creating your bank details with Bridge",
+  "bank.deposit.preparing.steps.ready": "Ready to receive",
+  "bank.deposit.preparing.leave": "You can leave this page. The setup continues, and your bank details will be here when you come back. It usually takes a few minutes.",
+  "bank.deposit.rechecking": "Checking your {{ currency }} bank details again shortly"
 }

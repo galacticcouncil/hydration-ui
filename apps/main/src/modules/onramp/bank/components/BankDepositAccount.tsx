@@ -9,6 +9,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BankDepositInstructions } from "@/modules/onramp/bank/components/BankDepositInstructions"
+import { BankDepositPreparing } from "@/modules/onramp/bank/components/BankDepositPreparing"
 import type {
   OnrampAccountsResponse,
   OnrampCurrency,
@@ -24,6 +25,7 @@ import {
   canRetryOnrampAccount,
   classifyOnrampError,
   findOnrampAccount,
+  getOnrampHeader,
   getVisibleInstructions,
   OnrampErrorView,
 } from "@/modules/onramp/bank/utils/onramp"
@@ -79,36 +81,45 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
   )
   const view = findOnrampAccount(query.data, currency)
   const visible = getVisibleInstructions(query, currency)
+  const header = getOnrampHeader(query, currency)
+  const currencyName = t(`bank.deposit.currency.${currency}`)
 
   return (
     <Stack gap="m">
-      {query.error ? (
+      {header?.kind === "failed" && (
         <Alert
           variant="warning"
           description={t(`bank.error.${classifyBankError(query.error)}`)}
         />
-      ) : null}
+      )}
       {/* After a failed read the last status is not restated (rule 5: its
-          instructions are hidden too); the title says the read failed. */}
-      {query.error ? (
+          instructions are hidden too); the title says the read failed. A 429
+          is a backoff (getOnrampHeader), not a failure. */}
+      {header?.kind === "failed" && (
         <Text fs="p3" fw={500}>
-          {t("bank.deposit.readFailed", {
-            currency: t(`bank.deposit.currency.${currency}`),
-          })}
+          {t("bank.deposit.readFailed", { currency: currencyName })}
         </Text>
-      ) : (
-        view && (
-          <Stack gap="s">
-            <Text fs="p3" fw={500}>
-              {t(`bank.deposit.status.${view.status}.title`, {
-                currency: t(`bank.deposit.currency.${currency}`),
-              })}
-            </Text>
+      )}
+      {header?.kind === "rechecking" && (
+        <Text fs="p3" fw={500}>
+          {t("bank.deposit.rechecking", { currency: currencyName })}
+        </Text>
+      )}
+      {header?.kind === "status" && (
+        <Stack gap="s">
+          <Text fs="p3" fw={500}>
+            {t(`bank.deposit.status.${header.view.status}.title`, {
+              currency: currencyName,
+            })}
+          </Text>
+          {header.view.status === "preparing" ? (
+            <BankDepositPreparing />
+          ) : (
             <Text fs="p5" color={getToken("text.medium")}>
-              {t(`bank.deposit.status.${view.status}.description`)}
+              {t(`bank.deposit.status.${header.view.status}.description`)}
             </Text>
-          </Stack>
-        )
+          )}
+        </Stack>
       )}
       {visible && (
         <BankDepositInstructions

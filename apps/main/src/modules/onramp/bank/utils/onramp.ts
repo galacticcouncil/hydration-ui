@@ -139,3 +139,53 @@ export const getDepositDetailKey = (
     : (DEPOSIT_DETAIL_CODES as readonly string[]).includes(detail)
       ? (detail as (typeof DEPOSIT_DETAIL_CODES)[number])
       : "other"
+
+// ---- On-ramp account polling and header ---------------------------------
+
+export const isRateLimited = (error: unknown) =>
+  error instanceof HbrApiError && error.status === 429
+
+/**
+ * GET /v1/onramp/accounts is limited to 6 a minute per wallet (API doc 1).
+ * The screen's only other caller of the route is the re-read after a request
+ * or re-arm. While an account is `preparing`, 12 s polls (5 a minute) plus
+ * that re-read stay within 6; otherwise 20 s. After a 429 the next poll waits
+ * a full window: a backoff, never shown as a failure.
+ */
+export const ONRAMP_POLL_MS = {
+  preparing: 12_000,
+  settled: 20_000,
+  rateLimited: 60_000,
+} as const
+
+export const getOnrampPollInterval = (
+  data: OnrampAccountsResponse | undefined,
+  error: unknown,
+) =>
+  isRateLimited(error)
+    ? ONRAMP_POLL_MS.rateLimited
+    : data?.accounts.some((account) => account.status === "preparing")
+      ? ONRAMP_POLL_MS.preparing
+      : ONRAMP_POLL_MS.settled
+
+/**
+ * What the account header says. A 429 is a backoff: a non-ready status stays
+ * as it was read; a ready one says it is being checked again (its
+ * instructions stay hidden, rule 5). Any other failed read says so.
+ */
+export const getOnrampHeader = (
+  query: { data: OnrampAccountsResponse | undefined; error: unknown },
+  currency: OnrampCurrency,
+):
+  | { kind: "status"; view: OnrampAccountView }
+  | { kind: "rechecking" }
+  | { kind: "failed" }
+  | null => {
+  const view = findOnrampAccount(query.data, currency)
+  if (!query.error) return view ? { kind: "status", view } : null
+  if (isRateLimited(query.error) && view)
+    return view.status === "ready"
+      ? { kind: "rechecking" }
+      : { kind: "status", view }
+  return { kind: "failed" }
+}

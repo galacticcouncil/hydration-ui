@@ -495,6 +495,25 @@ describe("bank data is not kept after the screen (rule 5)", () => {
   })
 })
 
+describe("the on-ramp accounts query polls by status and backs off", () => {
+  it("wires getOnrampPollInterval and reads nothing on window focus", () => {
+    const options = hbrOnrampAccountsQuery({} as HbrService, A)
+    const interval = options.refetchInterval as (q: unknown) => number
+    const state = (data: unknown, error: unknown) => ({
+      state: { data, error },
+    })
+    const preparing = {
+      accounts: [{ currency: "usd", status: "preparing" }],
+    }
+    expect(interval(state(preparing, null))).toBe(12_000)
+    expect(interval(state({ accounts: [] }, null))).toBe(20_000)
+    expect(
+      interval(state(preparing, new HbrApiError(429, "rate_limited"))),
+    ).toBe(60_000)
+    expect(options.refetchOnWindowFocus).toBe(false)
+  })
+})
+
 describe("one in-flight on-ramp action per currency, across a remount", () => {
   it("a pending re-arm for USD is seen by a new observer (a tab round-trip), not for EUR", async () => {
     setSession(A, "A".repeat(43))

@@ -17,6 +17,7 @@ import {
 } from "@/modules/onramp/bank/utils/hbrErrors"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
+import { getOnrampPollInterval } from "@/modules/onramp/bank/utils/onramp"
 import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 
 // About every 10 s while the user is in the hosted flow (API doc 2 step 5;
@@ -168,9 +169,8 @@ export const hbrBindWalletMutation = (
 
 // ---- Stage 2: bank accounts, on-ramp accounts, deposits -----------------
 
-// GET /v1/onramp/accounts is limited to 6 a minute and reads Bridge per ready
-// account; GET /v1/onramp/deposits to 30 a minute (API doc 1, rate limits).
-export const ONRAMP_ACCOUNTS_POLL_MS = 20_000
+// GET /v1/onramp/deposits is limited to 30 a minute (API doc 1, rate limits);
+// the on-ramp accounts interval is getOnrampPollInterval (utils/onramp.ts).
 export const DEPOSITS_POLL_MS = 30_000
 
 export const hbrBankAccountsQuery = (service: HbrService, h160: string) =>
@@ -225,8 +225,12 @@ export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
     staleTime: 0,
     // Deposit instructions: never kept past the screen (rule 5).
     gcTime: 0,
-    // Polled while shown, so a status change removes instructions at once.
-    refetchInterval: ONRAMP_ACCOUNTS_POLL_MS,
+    // Polled while shown, so a status change removes instructions at once;
+    // faster while preparing, backing off after a 429 (getOnrampPollInterval).
+    refetchInterval: (query) =>
+      getOnrampPollInterval(query.state.data, query.state.error),
+    // The route's budget is 6 a minute: no extra reads on window focus.
+    refetchOnWindowFocus: false,
   })
 
 const invalidateOnramp = (queryClient: QueryClient, h160: string) => () =>
