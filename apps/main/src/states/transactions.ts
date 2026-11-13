@@ -69,14 +69,24 @@ export type StrictEvmOptions = {
   /**
    * The hand-over this transaction belongs to (a cash-out: its ramp id). The
    * once-ledger is keyed by scope AND fields; `after` is read in the same scope.
+   * It must be STABLE for the hand-over and unique per server preparation: a
+   * scope that differs per call is another hand-over, so "once" holds only for
+   * a stable scope.
    */
   scope: string
   /** A strict transaction whose receipt must have succeeded before this one is presented. */
   after?: PreparedEvmTransaction | null
   /** Epoch ms from which the transaction is refused before the wallet is asked. */
   notAfter?: number
-  /** Receives the hash as soon as the wallet returns it, before the receipt wait. */
-  onHash?: (txHash: string) => void
+  /**
+   * Receives the hash only once its receipt is MINED (success or reverted):
+   * the final hash after a speed-up, also a hash a failed send's error surfaced
+   * once its receipt is seen. Never from the wallet's answer alone, never for a
+   * cancelled or replaced transaction, never for a hash that does not mine.
+   * Why: HBR pins the first reported hash (HBR #130), and a speed-up's
+   * original never mines; with no report, HBR links the burn by its ref.
+   */
+  onMined?: (txHash: string) => void
   /** Set by useWrapTransaction from the account; a caller's value is overwritten. */
   wrapRefusal?: StrictEvmWrapRefusal | null
 }

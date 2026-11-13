@@ -33,7 +33,9 @@ import { SingleTransaction, StrictEvmWrapRefusal } from "@/states/transactions"
  *    refusal before the prompt, is final. The review shows "Try again" on the
  *    same condition (ReviewStrictEvmStatus).
  * 6. Sequencing: `after` must have a successful receipt in the ledger.
- * 7. Hash out: `onHash` receives the hash the moment the wallet returns it.
+ * 7. Hash out: `onMined` receives the hash only once its receipt is mined
+ *    (the final hash after a speed-up; nothing for a cancel, a replacement or
+ *    a hash that never mines). HBR pins the first reported hash (HBR #130).
  * 8. Memory only: the ledger keeps digests, never a transaction; strict
  *    transactions skip the fee and payment-info queries (their keys carry the
  *    call) and the review shows no call data; error text is fixed.
@@ -274,11 +276,11 @@ export const signAndSubmitStrictEvmTx = async (
       onSubmitted: (txHash) => {
         prompted = true
         ledger.set(digest, "sent")
-        strict.onHash?.(txHash)
         txOptions.onSubmitted(txHash)
       },
-      // A speed-up: the same call under a new hash, which is reported too.
-      onRepriced: (txHash) => strict.onHash?.(txHash),
+      // A speed-up's new hash arrives through onMined once it is mined.
+      onRepriced: () => undefined,
+      onMined: (txHash) => strict.onMined?.(txHash),
       onReceipt: (status) =>
         ledger.set(
           digest,

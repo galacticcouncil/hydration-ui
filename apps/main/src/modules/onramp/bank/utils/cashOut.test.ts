@@ -7,6 +7,8 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
 import {
   buildFixtureQuote,
   FIXTURE_QUOTE,
+  FIXTURE_RAMP_BUILT,
+  FIXTURE_RAMP_LIST,
 } from "@/modules/onramp/bank/config/fixtures"
 import { RAMP_STATUSES } from "@/modules/onramp/bank/config/schemas"
 import {
@@ -202,10 +204,10 @@ describe("the createTransaction input", () => {
     const steps = input.tx as { strictEvm: Record<string, unknown> }[]
     expect(steps).toHaveLength(2)
     expect(steps[0]!.strictEvm.prepared).toBe(prepared.approveTx)
-    expect(steps[0]!.strictEvm.onHash).toBeUndefined()
+    expect(steps[0]!.strictEvm.onMined).toBeUndefined()
     expect(steps[1]!.strictEvm.prepared).toBe(prepared.redeemTx)
     expect(steps[1]!.strictEvm.after).toBe(prepared.approveTx)
-    expect(steps[1]!.strictEvm.onHash).toBe(onRedeemHash)
+    expect(steps[1]!.strictEvm.onMined).toBe(onRedeemHash)
     expect(steps[1]!.strictEvm.notAfter).toBe(Date.parse(prepared.validUntil))
     expect(steps.every((s) => s.strictEvm.sessionAddress === A)).toBe(true)
   })
@@ -290,5 +292,49 @@ describe("fixtures (testnet): quote from the server's formula", () => {
   it("the doc example comes out of the formula; below the floor is refused", () => {
     expect(buildFixtureQuote("25.5")).toEqual(FIXTURE_QUOTE)
     expect(buildFixtureQuote("2")).toBeNull()
+  })
+})
+
+describe("fixture ramps carry the 5.1 label of their status (fix round 2, item 5)", () => {
+  // API doc 5.1 rows, verbatim, for the statuses the fixtures use.
+  const TABLE: Record<string, [string, string, string | null]> = {
+    built: ["Prepared - not yet seen on chain", "pending", null],
+    submitted: ["Checking", "pending", null],
+    credited: [
+      "Queued on Base",
+      "pending",
+      "A queue position is not a payout date.",
+    ],
+    bridge_payment_submitted: ["Bank payout submitted", "pending", null],
+    paid: ["Paid", "success", null],
+    redeem_reverted: [
+      "Transaction reverted - nothing was redeemed",
+      "neutral",
+      null,
+    ],
+    expired: [
+      "Expired - no redemption found",
+      "neutral",
+      "No redemption with this transaction's reference was found on Hydration before its deadline, and the transaction can no longer be used. If you approved HOLLAR for it, that approval stays in place unused; only a redeem you sign yourself can spend it.",
+    ],
+    unpayable: [
+      "Needs attention",
+      "attention",
+      "The vault could not pay the payout address; the amount is held for it.",
+    ],
+  }
+  it("every listed ramp and the built ramp read their own status's row", () => {
+    for (const ramp of [FIXTURE_RAMP_BUILT, ...FIXTURE_RAMP_LIST]) {
+      const row = TABLE[ramp.status]
+      expect(row, ramp.status).toBeDefined()
+      expect([ramp.label, ramp.tone, ramp.detail]).toEqual(row)
+    }
+  })
+  it("the 25.5 USDC listed ramp is `submitted` (the doc's GET /v1/ramps example), so it reads Checking", () => {
+    expect(FIXTURE_RAMP_LIST[0]).toMatchObject({
+      usdcAmount: "25500000",
+      status: "submitted",
+      label: "Checking",
+    })
   })
 })

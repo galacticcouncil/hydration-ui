@@ -269,8 +269,9 @@ export const REPORT_RETRY_DELAYS_MS = [5_000, 15_000] as const
  * POST /v1/ramps/:id/report with the REDEEM hash. Advisory and idempotent
  * (the same hash answers 200 again), so a failure with no answer, a 5xx or a
  * 429 is repeated with the same hash a bounded number of times; a 4xx other
- * than 429 is final. Not tied to a screen: a hash the wallet returns late is
- * reported too.
+ * than 429 is final. Called only with a hash whose receipt is mined
+ * (strict `onMined`), never from the wallet's answer alone. Not tied to a
+ * screen: a late hash is reported once it mines.
  */
 export const reportRedeemHash = async (args: {
   service: HbrService

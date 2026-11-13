@@ -130,6 +130,10 @@ class FakeEthSigner {
       )
       o.onReceipt("success")
       o.onSuccess({ status: "success", blockNumber: 1n })
+      ;(o as unknown as { onMined: (h: string, s: string) => void }).onMined(
+        step.newHash,
+        "success",
+      )
       return { kind: "sent", hash: step.newHash, receipt: "success" }
     }
     if (step.kind !== "sent") throw new Error("bad script")
@@ -138,6 +142,12 @@ class FakeEthSigner {
     if (step.receipt === "success")
       o.onSuccess({ status: "success", blockNumber: 1n })
     else o.onError("receipt")
+    // as EthereumSigner.sendPreparedTransaction: mined only for an observed receipt
+    if (step.receipt !== "unknown")
+      (o as unknown as { onMined: (h: string, s: string) => void }).onMined(
+        step.hash,
+        step.receipt,
+      )
     return { kind: "sent", hash: step.hash, receipt: step.receipt }
   })
 }
@@ -641,6 +651,11 @@ describe("once (guarantee 5), counted at the signer", () => {
       "transaction.status.error.tryAgain",
     )
     expect(signer.sendPreparedTransaction).toHaveBeenCalledTimes(2)
+    // J15: reported only once a receipt is mined (a revert is mined)
+    await flush()
+    expect(reports()).toHaveLength(
+      step.kind === "sent" && step.receipt === "reverted" ? 1 : 0,
+    )
   })
 
   it("a refusal before the prompt (wrong chain) reads not sent and is never re-presented", async () => {
@@ -965,18 +980,16 @@ describe("fix round 1", () => {
     expect(sendCount()).toBe(0)
   })
 
-  it("a speed-up of the redeem reports the NEW hash too", async () => {
+  it("J15: a speed-up of the redeem reports exactly once, with the replacement hash", async () => {
     const NEW = `0x${"e5".repeat(32)}`
     buildAnswer = built({ approveTx: null })
     signer.script = [{ kind: "repriced", hash: REDEEM_HASH, newHash: NEW }]
     await toReview()
     await handOver()
     await signStep()
-    await waitFor(() => expect(reports()).toHaveLength(2))
-    expect(reports().map((r) => r.body)).toEqual([
-      { txHash: REDEEM_HASH },
-      { txHash: NEW },
-    ])
+    await waitFor(() => expect(reports()).toHaveLength(1))
+    await flush()
+    expect(reports().map((r) => r.body)).toEqual([{ txHash: NEW }])
   })
 
   it("a cancelled redeem (receipt not followed) shows no success toast", async () => {
@@ -988,6 +1001,8 @@ describe("fix round 1", () => {
     await waitFor(() =>
       expect(text()).toContain("bank.cashOut.localChecking.label"),
     )
+    // J15: a hash that never mines (cancelled, replaced, not observed) is never reported
+    expect(reports()).toHaveLength(0)
     const toasts = Object.values(useToastsStore.getState().toasts).flat()
     const mine = toasts.filter((x) => x.meta?.txHash === REDEEM_HASH)
     expect(mine.length).toBeGreaterThan(0)

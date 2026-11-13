@@ -116,6 +116,13 @@ export type PreparedSendOptions = {
    * replacement is not followed: it reads `unknown`.
    */
   onRepriced: (txHash: string) => void
+  /**
+   * The hash whose receipt is MINED (success or reverted): the final hash after
+   * a speed-up, once. Never for a cancelled or replaced transaction, one whose
+   * receipt was not observed, or a hash that never mines. Also for a hash a
+   * failed send's error surfaced, once that hash's receipt is seen.
+   */
+  onMined: (txHash: string, status: "success" | "reverted") => void
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
@@ -133,14 +140,23 @@ export const PREPARED_SEND_ERRORS = {
 
 const TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/
 const TX_HASH_IN_TEXT_RE = /0x[0-9a-fA-F]{64}(?![0-9a-fA-F])/
-const HASH_KEY_RE = /hash/i
+// Only these keys name a TRANSACTION hash (viem receipts and transactions use
+// `hash`/`transactionHash`; wallets surface `txHash`). Never `blockHash`,
+// `parentHash` or another *hash: a false report pins the ramp to a hash that
+// never mines.
+const TX_HASH_KEYS: ReadonlySet<string> = new Set([
+  "hash",
+  "txHash",
+  "transactionHash",
+])
 
 /**
- * Hash-shaped values inside a thrown provider error (own enumerable props,
- * `data`, `cause`, `message`; depth 4). `any` is true for any 0x+64-hex string
- * anywhere, which is enough to refuse "no hash returned"; `keyed` is the first
- * one found under a key named like a hash, the only one worth reporting (a
- * 64-hex word in a message may be calldata).
+ * Hash-shaped values inside a thrown provider error (own enumerable props plus
+ * `message`, `data` and `cause`, which a real Error keeps non-enumerable;
+ * depth 4). `any` is true for any 0x+64-hex string anywhere: enough to refuse
+ * "no hash returned" (the safe direction, even for a block hash or a request
+ * id). `keyed` is the first one under an exact transaction-hash key: the only
+ * one ever watched for a receipt and reported.
  */
 const findHashes = (value: unknown): { any: boolean; keyed: Hex | null } => {
   let any = false
@@ -150,7 +166,7 @@ const findHashes = (value: unknown): { any: boolean; keyed: Hex | null } => {
     if (typeof v === "string") {
       if (TX_HASH_IN_TEXT_RE.test(v)) {
         any = true
-        if (!keyed && HASH_KEY_RE.test(key) && TX_HASH_RE.test(v))
+        if (!keyed && TX_HASH_KEYS.has(key) && TX_HASH_RE.test(v))
           keyed = v as Hex
       }
       return
@@ -537,9 +553,13 @@ export class EthereumSigner {
         return { kind: "rejected" }
       }
       if (hashes.keyed) {
-        options.onSubmitted(hashes.keyed)
+        // Checking either way; the hash counts only once its receipt is seen.
+        const surfaced = hashes.keyed
+        void this.waitForMined(reader, surfaced).then(
+          (mined) => mined && options.onMined(mined.hash, mined.status),
+        )
         options.onError(PREPARED_SEND_ERRORS.failed)
-        return { kind: "failed", code, hash: hashes.keyed }
+        return { kind: "failed", code, hash: surfaced }
       }
       options.onError(PREPARED_SEND_ERRORS.failed)
       return { kind: "failed", code }
@@ -576,6 +596,10 @@ export class EthereumSigner {
       this.reportReceipt(r, options)
     }
     report(receipt)
+    options.onMined(
+      finalHash,
+      receipt.status === "success" ? "success" : "reverted",
+    )
 
     void this.waitForFinalReceipt(finalHash, {}, reader).then((final) => {
       if (final && final.status !== receipt.status) report(final)
@@ -586,6 +610,30 @@ export class EthereumSigner {
       kind: "sent",
       hash: finalHash,
       receipt: receipt.status === "success" ? "success" : "reverted",
+    }
+  }
+
+  /** The mined receipt of `hash` (following a speed-up), or null: cancelled, replaced or not seen. */
+  private async waitForMined(
+    reader: PublicClient,
+    hash: Hex,
+  ): Promise<{ hash: Hex; status: "success" | "reverted" } | null> {
+    let replaced: { reason: string; hash: Hex } | null = null
+    try {
+      const receipt = await reader.waitForTransactionReceipt({
+        hash,
+        onReplaced: (r) => {
+          replaced = { reason: r.reason, hash: r.transaction.hash }
+        },
+      })
+      const r = replaced as { reason: string; hash: Hex } | null
+      if (r && r.reason !== "repriced") return null
+      return {
+        hash: r ? r.hash : hash,
+        status: receipt.status === "success" ? "success" : "reverted",
+      }
+    } catch {
+      return null
     }
   }
 

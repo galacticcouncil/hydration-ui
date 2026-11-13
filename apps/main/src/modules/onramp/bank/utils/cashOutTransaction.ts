@@ -6,7 +6,10 @@ import { TransactionInput } from "@/states/transactions"
  * The createTransaction input of a cash-out: approve (when not null), then
  * redeem, both strict. The redeem requires the approve's successful receipt
  * (`after`), is refused from `validUntil` on, and hands its hash, never the
- * approve's, to `onRedeemHash`.
+ * approve's, to `onRedeemHash` only once the redeem's receipt is MINED (the
+ * final hash after a speed-up; nothing for a cancel or a hash that never
+ * mines). HBR pins the first reported hash (HBR #130); with no report it links
+ * the burn by its ref, which is safe.
  */
 export const buildCashOutTransaction = (args: {
   prepared: PreparedCashOut
@@ -37,7 +40,7 @@ export const buildCashOutTransaction = (args: {
       scope,
       after: approve,
       notAfter,
-      onHash: onRedeemHash,
+      onMined: onRedeemHash,
     },
   }
   if (!approve) return { tx: [redeemStep] }

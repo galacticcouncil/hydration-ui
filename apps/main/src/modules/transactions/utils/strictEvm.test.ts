@@ -76,6 +76,12 @@ const fakeSigner = (script: Script[], address = A) => {
         o.onReceipt(step.receipt)
         if (step.receipt === "success") o.onSuccess({ status: "success" })
         else o.onError("receipt")
+        // as the real signer: mined only for an observed receipt
+        if (step.receipt !== "unknown")
+          (o as unknown as { onMined: (h: string, s: string) => void }).onMined(
+            HASH,
+            step.receipt,
+          )
         return { kind: "sent", hash: HASH, receipt: step.receipt }
       },
     ),
@@ -338,17 +344,29 @@ describe("strict send: refusals before the prompt", () => {
 })
 
 describe("strict send: hash out (guarantee 7) and the route (guarantee 1)", () => {
-  it("onHash gets the hash before the receipt is reported", async () => {
+  it("onMined gets the hash only after the receipt, never at onSubmitted", async () => {
     const order: string[] = []
     const signer = fakeSigner([{ kind: "sent", receipt: "success" }])
     const { options } = txOptions()
+    options.onSubmitted = vi.fn(() => order.push("submitted"))
     options.onSuccess = vi.fn(() => order.push("success"))
     await signAndSubmitStrictEvmTx(
-      strictTx(redeem, { onHash: (h) => order.push(`hash:${h}`) }),
+      strictTx(redeem, { onMined: (h) => order.push(`mined:${h}`) }),
       signer,
       options,
     )
-    expect(order).toEqual([`hash:${HASH}`, "success"])
+    expect(order).toEqual(["submitted", "success", `mined:${HASH}`])
+  })
+
+  it("a hash whose receipt is not observed is never handed out", async () => {
+    const hashes: string[] = []
+    const signer = fakeSigner([{ kind: "sent", receipt: "unknown" }])
+    await signAndSubmitStrictEvmTx(
+      strictTx(redeem, { onMined: (h) => hashes.push(h) }),
+      signer,
+      txOptions().options,
+    )
+    expect(hashes).toEqual([])
   })
 
   it.each(["0", "5", "20"])(
@@ -488,7 +506,7 @@ describe("fix round 1 (review 3)", () => {
     expect(signer.sendPreparedTransaction).not.toHaveBeenCalled()
   })
 
-  it("a speed-up's new hash also goes to onHash", async () => {
+  it("a speed-up: only the final (replacement) hash, once mined", async () => {
     const hashes: string[] = []
     const H2 = `0x${"cd".repeat(32)}`
     const signer = {
@@ -510,15 +528,18 @@ describe("fix round 1 (review 3)", () => {
           o.onRepriced(H2)
           o.onReceipt("success")
           o.onSuccess({})
+          ;(
+            o as unknown as { onMined: (h: string, s: string) => void }
+          ).onMined(H2, "success")
           return { kind: "sent", hash: H2, receipt: "success" }
         },
       ),
     }
     await signAndSubmitStrictEvmTx(
-      strictTx(redeem, { onHash: (h) => hashes.push(h) }),
+      strictTx(redeem, { onMined: (h) => hashes.push(h) }),
       signer,
       txOptions().options,
     )
-    expect(hashes).toEqual([HASH, H2])
+    expect(hashes).toEqual([H2])
   })
 })

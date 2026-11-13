@@ -200,6 +200,7 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
       onError: vi.fn((m: string) => order.push(`error:${m}`)),
       onFinalized: vi.fn(),
       onRepriced: vi.fn((h: string) => order.push(`repriced:${h}`)),
+      onMined: vi.fn((h: string, st: string) => order.push(`mined:${h}:${st}`)),
     }
     const sends = () =>
       calls.filter((c) => c.method.endsWith("sendTransaction"))
@@ -368,6 +369,7 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     expect(outcome).toEqual({ kind: "sent", hash: HASH, receipt: "unknown" })
     expect(options.onReceipt).toHaveBeenCalledWith("unknown")
     expect(options.onSuccess).not.toHaveBeenCalled()
+    expect(options.onMined).not.toHaveBeenCalled()
   })
 
   it("onError text never carries the provider's message", async () => {
@@ -403,7 +405,7 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     expect(outcome.kind).not.toBe("refused")
   })
 
-  it("a 4001 whose error carries a hash under a hash key is not a decline: failed, and the hash goes out", async () => {
+  it("a 4001 whose error carries a tx hash is not a decline: failed; the hash goes out only once its receipt is mined", async () => {
     const { signer, options, sends } = setupPrepared({
       eth_sendTransaction: () => {
         throw { code: 4001, message: "User rejected", data: { txHash: HASH } }
@@ -411,8 +413,67 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     })
     const outcome = await signer.sendPreparedTransaction(prepared, options)
     expect(outcome).toEqual({ kind: "failed", code: 4001, hash: HASH })
-    expect(options.onSubmitted).toHaveBeenCalledWith(HASH)
+    expect(options.onSubmitted).not.toHaveBeenCalled()
+    await vi.waitFor(() =>
+      expect(options.onMined).toHaveBeenCalledWith(HASH, "success"),
+    )
     expect(sends()).toHaveLength(1)
+  })
+
+  it("D1-B1: a real Error whose non-enumerable cause holds the hash is not a decline", async () => {
+    const thrown = Object.assign(
+      new Error("x", { cause: { reason: { transactionHash: HASH } } }),
+      { code: 4001 },
+    )
+    expect(Object.keys(thrown)).not.toContain("cause")
+    const { signer, options } = setupPrepared({
+      eth_sendTransaction: () => {
+        throw thrown
+      },
+    })
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome.kind).toBe("failed")
+  })
+
+  it("D1-B1: a hash at depth 3 (data.originalError.data.hash) is not a decline", async () => {
+    const { signer, options } = setupPrepared({
+      eth_sendTransaction: () => {
+        throw {
+          code: 4001,
+          message: "x",
+          data: { originalError: { data: { hash: HASH } } },
+        }
+      },
+    })
+    const outcome = await signer.sendPreparedTransaction(prepared, options)
+    expect(outcome.kind).toBe("failed")
+  })
+
+  it("a blockHash in a 4001 refuses the decline but is never watched or reported", async () => {
+    const BLOCK = `0x${"77".repeat(32)}`
+    for (const key of ["blockHash", "parentHash", "requestHash"]) {
+      const { signer, options, calls } = setupPrepared({
+        eth_sendTransaction: () => {
+          throw { code: 4001, message: "x", data: { [key]: BLOCK } }
+        },
+      })
+      const outcome = await signer.sendPreparedTransaction(prepared, options)
+      expect(outcome).toEqual({ kind: "failed", code: 4001 })
+      await new Promise((r) => setTimeout(r, 20))
+      expect(options.onMined).not.toHaveBeenCalled()
+      expect(
+        calls.filter((c) => c.method === "eth_getTransactionReceipt"),
+      ).toHaveLength(0)
+    }
+  })
+
+  it("a normal send hands its hash out as mined exactly once, after the receipt", async () => {
+    const { signer, options, order } = setupPrepared()
+    await signer.sendPreparedTransaction(prepared, options)
+    expect(options.onMined).toHaveBeenCalledTimes(1)
+    expect(order.indexOf(`mined:${HASH}:success`)).toBeGreaterThan(
+      order.indexOf("receipt:success"),
+    )
   })
 
   it("a 4001 with a hash-shaped value anywhere (message, cause) is not a decline; an unkeyed value is not reported", async () => {
@@ -509,6 +570,7 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     expect(options.onReceipt).toHaveBeenCalledWith("unknown")
     expect(options.onSuccess).not.toHaveBeenCalled()
     expect(options.onRepriced).not.toHaveBeenCalled()
+    expect(options.onMined).not.toHaveBeenCalled()
   }, 30_000)
 
   it("a replacement by another call reads unknown", async () => {
@@ -525,13 +587,15 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     )
     const outcome = await signer.sendPreparedTransaction(prepared, options)
     expect(outcome).toEqual({ kind: "sent", hash: H2, receipt: "success" })
-    expect(order.slice(0, 5)).toEqual([
+    expect(order.slice(0, 6)).toEqual([
       "prompt",
       "submitted",
       `repriced:${H2}`,
       "receipt:success",
       "success",
+      `mined:${H2}:success`,
     ])
+    expect(options.onMined).toHaveBeenCalledTimes(1)
   }, 30_000)
 })
 
