@@ -337,6 +337,25 @@ describe("Q4 remove", () => {
     render(app())
     await flush()
   }
+  it("with no bank account, adding one is the primary action", async () => {
+    bankList = { bankAccounts: [] }
+    await open()
+    const add = Array.from(document.querySelectorAll("button")).find(
+      (b) => b.textContent === "bank.accounts.add",
+    )
+    expect(add?.getAttribute("data-variant")).toBe("primary")
+    expect(buttons()).not.toContain("bank.accounts.addAnother")
+  })
+
+  it("with an account listed, 'Add another bank account' is a secondary action", async () => {
+    await open()
+    const add = Array.from(document.querySelectorAll("button")).find(
+      (b) => b.textContent === "bank.accounts.addAnother",
+    )
+    expect(add?.getAttribute("data-variant")).toBe("secondary")
+    expect(buttons()).not.toContain("bank.accounts.add")
+  })
+
   it("R1 the row stays until the server answers; 202 reads removing; list re-read", async () => {
     delQueue.push(hold())
     await open()

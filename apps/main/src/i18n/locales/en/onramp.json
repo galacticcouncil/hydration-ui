@@ -397,5 +397,6 @@
   "bank.cashOut.history.truncated": "Only the latest 50 are shown.",
   "bank.cashOut.unlinked.title": "Redemptions not matched to a cash-out",
   "bank.accounts.form.countryPlaceholder": "Choose a country",
-  "bank.accounts.form.statePlaceholder": "Choose a state"
+  "bank.accounts.form.statePlaceholder": "Choose a state",
+  "bank.accounts.addAnother": "Add another bank account"
 }

@@ -82,9 +82,21 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
                 description={t(`bank.accounts.removeResult.${removeView}`)}
               />
             )}
-            <Button size="large" onClick={() => setAdding(true)}>
-              {t("bank.accounts.add")}
-            </Button>
+            {/* With an account listed, adding another is a secondary action:
+                the cash-out below stays the screen's primary action. */}
+            {(list.data?.bankAccounts.length ?? 0) > 0 ? (
+              <Button
+                size="medium"
+                variant="secondary"
+                onClick={() => setAdding(true)}
+              >
+                {t("bank.accounts.addAnother")}
+              </Button>
+            ) : (
+              <Button size="large" onClick={() => setAdding(true)}>
+                {t("bank.accounts.add")}
+              </Button>
+            )}
             <BankCashOut h160={h160} accounts={list.data?.bankAccounts ?? []} />
           </>
         )}

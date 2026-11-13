@@ -41,6 +41,7 @@ type ButtonProps = ChildrenProps & {
   onClick?: () => void
   disabled?: boolean
   type?: "submit" | "button"
+  variant?: string
 }
 
 export const Button: FC<ButtonProps> = ({
@@ -48,13 +49,24 @@ export const Button: FC<ButtonProps> = ({
   onClick,
   disabled,
   type,
+  variant,
 }) =>
   type === "submit" ? (
-    <button type="submit" onClick={onClick} disabled={disabled}>
+    <button
+      type="submit"
+      data-variant={variant ?? "primary"}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   ) : (
-    <button type="button" onClick={onClick} disabled={disabled}>
+    <button
+      type="button"
+      data-variant={variant ?? "primary"}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   )
