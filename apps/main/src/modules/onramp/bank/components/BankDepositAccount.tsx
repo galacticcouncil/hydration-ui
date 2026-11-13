@@ -154,6 +154,7 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
           <Stack gap="l">
             {top}
             <BankDepositInstructions
+              wallet={h160}
               currency={currency}
               instructions={visible.instructions}
               minimumDeposit={visible.minimumDeposit}

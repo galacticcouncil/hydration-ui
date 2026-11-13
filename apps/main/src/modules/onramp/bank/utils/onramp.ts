@@ -225,7 +225,8 @@ export const getRailLabels = (rails: ReadonlyArray<string>): string[] => [
  * The deposit timeline (Figma D08-D13, pattern P04): the 5.3 statuses a
  * deposit moves through, in order, with the 5.3 labels as stage names
  * (`DEPOSIT_LABELS`, server/lib/onramp/depositAttribution.mjs:89, copied, not
- * ours). `waiting_deposit_limit` stands on the Depositing stage (arrived on
+ * ours; orchestrator decision 2026-11-13: the API doc has no deposit stage
+ * table, and the Figma D08-D13 frames use these same names). `waiting_deposit_limit` stands on the Depositing stage (arrived on
  * Base, not deposited yet). `returned`, `checking`, `needs_attention` and any
  * status not listed are off-timeline: no stage is lit, the label says it.
  */
@@ -258,7 +259,11 @@ export const getDepositStage = (
   return { lit, complete: status === "credited" }
 }
 
-/** A pill colour per deposit status (5.3 has labels, no tones); unknown is neutral. */
+/**
+ * A pill colour per deposit status. OUR mapping, not the server's: 5.3 gives
+ * deposits a label and no tone. Credited success, needs_attention attention,
+ * returned and any unknown status neutral, the rest pending.
+ */
 export const getDepositTone = (
   status: string,
 ): "pending" | "attention" | "neutral" | "success" =>
@@ -272,3 +277,41 @@ export const getDepositTone = (
             status === "checking"
           ? "pending"
           : "neutral"
+
+// ---- Portfolio, Deposits filter chips -----------------------------------
+
+export type TransferFilter = "all" | "inProgress" | "completed" | "attention"
+
+/**
+ * The chip a transfer falls under, derived from the server's status (ours: the
+ * API has no grouping). Deposits: credited is completed, needs_attention needs
+ * attention, returned is a final state under All only, every other status
+ * (the pipeline, checking, an unknown later one: never an ending, rule 13) is
+ * in progress. Cash-outs by the server's tone: success completed, attention
+ * needs attention, neutral (cancelled, returned, not redeemed) All only,
+ * pending and unknown in progress.
+ */
+export const getTransferGroup = (
+  item: { kind: "deposit"; status: string } | { kind: "ramp"; tone: string },
+): Exclude<TransferFilter, "all"> | null => {
+  if (item.kind === "deposit")
+    return item.status === "credited"
+      ? "completed"
+      : item.status === "needs_attention"
+        ? "attention"
+        : item.status === "returned"
+          ? null
+          : "inProgress"
+  return item.tone === "success"
+    ? "completed"
+    : item.tone === "attention"
+      ? "attention"
+      : item.tone === "neutral"
+        ? null
+        : "inProgress"
+}
+
+export const matchesTransferFilter = (
+  filter: TransferFilter,
+  group: Exclude<TransferFilter, "all"> | null,
+) => filter === "all" || group === filter

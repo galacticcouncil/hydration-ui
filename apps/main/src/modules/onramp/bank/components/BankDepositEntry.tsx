@@ -1,5 +1,7 @@
+import { DollarSignIcon, EuroIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
+  Icon,
   Paper,
   Separator,
   Stack,
@@ -52,13 +54,33 @@ export const BankDepositEntry: FC<BankDepositEntryProps> = ({
     <Paper p="l" data-deposit-row={isDeposit ? entry.id : "unattributed"}>
       <Stack gap="s">
         <Flex justify="space-between" align="center" gap="m">
-          <Text fs="p2" fw={500} color={getToken("text.high")}>
-            {amountLine
-              ? t("bank.history.amountUsd", { amount: amountLine.amount })
-              : t("bank.history.amountUsdc", {
-                  amount: usdc(progress.arrived),
-                })}
-          </Text>
+          <Flex align="center" gap="s">
+            {isDeposit && entry.currency !== "unknown" && (
+              <Flex
+                align="center"
+                justify="center"
+                borderRadius="full"
+                bg={getToken("accents.info.primary")}
+                sx={{ width: 28, height: 28 }}
+                data-currency-badge={entry.currency}
+              >
+                <Icon
+                  component={
+                    entry.currency === "eur" ? EuroIcon : DollarSignIcon
+                  }
+                  size="s"
+                  color={getToken("accents.info.onPrimary")}
+                />
+              </Flex>
+            )}
+            <Text fs="p2" fw={500} color={getToken("text.high")}>
+              {amountLine
+                ? t("bank.history.amountUsd", { amount: amountLine.amount })
+                : t("bank.history.amountUsdc", {
+                    amount: usdc(progress.arrived),
+                  })}
+            </Text>
+          </Flex>
           <BankStatusPill
             label={entry.label}
             tone={getDepositTone(entry.status)}

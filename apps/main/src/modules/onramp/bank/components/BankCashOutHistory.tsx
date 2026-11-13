@@ -14,11 +14,18 @@ import { useRampLabel } from "@/modules/onramp/bank/components/BankRampLabel"
 import { BankStatusPill } from "@/modules/onramp/bank/components/BankStatusPill"
 import type { RampView } from "@/modules/onramp/bank/config/schemas"
 import { useHbrRamps } from "@/modules/onramp/bank/hooks/useHbr"
-import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
+import {
+  formatUsdcBaseUnits,
+  getTransferGroup,
+  matchesTransferFilter,
+  TransferFilter,
+} from "@/modules/onramp/bank/utils/onramp"
 
 type BankCashOutHistoryProps = {
   h160: string
   onOpen: (rampId: string) => void
+  /** Portfolio's chip; unmatched redemptions show under All only. */
+  filter?: TransferFilter
 }
 
 const RampRow: FC<{
@@ -71,6 +78,7 @@ const RampRow: FC<{
 export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   h160,
   onOpen,
+  filter = "all",
 }) => {
   const { t } = useTranslation(["onramp"])
   const list = useHbrRamps(h160)
@@ -88,16 +96,23 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
             {t("bank.cashOut.history.empty")}
           </Text>
         )}
-        {data.ramps.map((ramp) => (
-          <RampRow key={ramp.id} h160={h160} ramp={ramp} onOpen={onOpen} />
-        ))}
+        {data.ramps
+          .filter((ramp) =>
+            matchesTransferFilter(
+              filter,
+              getTransferGroup({ kind: "ramp", tone: ramp.tone }),
+            ),
+          )
+          .map((ramp) => (
+            <RampRow key={ramp.id} h160={h160} ramp={ramp} onOpen={onOpen} />
+          ))}
         {data.truncated && (
           <Text fs="p5" color={getToken("text.low")}>
             {t("bank.cashOut.history.truncated")}
           </Text>
         )}
       </Stack>
-      {data.unlinkedRedeems.length > 0 && (
+      {filter === "all" && data.unlinkedRedeems.length > 0 && (
         <Paper p="l" data-unlinked-redeems="1">
           <Stack gap="m">
             <Stack gap="xs">

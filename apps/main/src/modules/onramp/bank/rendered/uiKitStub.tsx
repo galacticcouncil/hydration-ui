@@ -62,6 +62,7 @@ export const Button: FC<ButtonProps> = ({
   disabled,
   type,
   variant,
+  ...rest
 }) =>
   type === "submit" ? (
     <button
@@ -69,6 +70,7 @@ export const Button: FC<ButtonProps> = ({
       data-variant={variant ?? "primary"}
       onClick={onClick}
       disabled={disabled}
+      {...dataProps(rest)}
     >
       {children}
     </button>
@@ -78,6 +80,7 @@ export const Button: FC<ButtonProps> = ({
       data-variant={variant ?? "primary"}
       onClick={onClick}
       disabled={disabled}
+      {...dataProps(rest)}
     >
       {children}
     </button>

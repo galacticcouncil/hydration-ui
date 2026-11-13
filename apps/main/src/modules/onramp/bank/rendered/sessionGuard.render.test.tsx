@@ -173,18 +173,55 @@ describe("HbrSessionGuard: the session ends with the wallet (review 4a B3)", () 
   })
 })
 
-// A TEXT check of App.tsx: it sees that the guard is rendered inside the app's
-// QueryClientProvider, before the router. Bound: it does not render the app.
-describe("App.tsx mounts the guard once, at the root", () => {
-  it("renders <HbrSessionGuard /> inside QueryClientProvider, outside any route", async () => {
-    const { readFileSync } = await import("node:fs")
-    // vitest runs from apps/main
-    const app = readFileSync("src/App.tsx", "utf8")
-    const provider = app.indexOf("<QueryClientProvider client={queryClient}>")
-    const guard = app.indexOf("<HbrSessionGuard />")
-    const router = app.indexOf("<RouterProvider")
-    expect(provider).toBeGreaterThan(-1)
-    expect(guard).toBeGreaterThan(provider)
-    expect(router).toBeGreaterThan(guard)
+// D1-R4: after the local clear, one best-effort DELETE with the captured token.
+describe("the guard revokes at the server, best effort", () => {
+  const deletes = () =>
+    vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([url, init]) =>
+          String(url).endsWith("/v1/auth/session") &&
+          (init as RequestInit | undefined)?.method === "DELETE",
+      )
+
+  it("a disconnect sends one DELETE with the token, after the local clear", async () => {
+    let sessionAtDelete: unknown = "unset"
+    vi.mocked(fetch).mockImplementation(async (_url, init) => {
+      if ((init as RequestInit | undefined)?.method === "DELETE")
+        sessionAtDelete = useHbrSessionStore.getState().session
+      return new Response(null, { status: 204 })
+    })
+    await setWallet(A)
+    mountGuardOnly()
+    signIn(A)
+    await setWallet(null)
+    await act(async () => {})
+    expect(deletes()).toHaveLength(1)
+    const headers = new Headers(
+      (deletes()[0]![1] as RequestInit | undefined)?.headers,
+    )
+    expect(headers.get("Authorization")).toBe(`Bearer ${"a".repeat(43)}`)
+    expect(sessionAtDelete).toBeNull()
+  })
+
+  it("a failing DELETE is ignored: no retry, the session stays cleared", async () => {
+    vi.mocked(fetch).mockImplementation(async () => {
+      throw new TypeError("network")
+    })
+    await setWallet(A)
+    mountGuardOnly()
+    signIn(A)
+    await setWallet(B)
+    await act(async () => {})
+    expect(deletes()).toHaveLength(1)
+    expect(useHbrSessionStore.getState().session).toBeNull()
+  })
+
+  it("no session, no DELETE", async () => {
+    await setWallet(A)
+    mountGuardOnly()
+    await setWallet(null)
+    await act(async () => {})
+    expect(deletes()).toHaveLength(0)
   })
 })

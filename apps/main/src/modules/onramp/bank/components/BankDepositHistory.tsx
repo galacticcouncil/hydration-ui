@@ -6,11 +6,18 @@ import { useTranslation } from "react-i18next"
 import { BankDepositEntry } from "@/modules/onramp/bank/components/BankDepositEntry"
 import { useHbrDeposits } from "@/modules/onramp/bank/hooks/useHbr"
 import { classifyBankError } from "@/modules/onramp/bank/utils/onboarding"
+import {
+  getTransferGroup,
+  matchesTransferFilter,
+  TransferFilter,
+} from "@/modules/onramp/bank/utils/onramp"
 
 type BankDepositHistoryProps = {
   h160: string
   /** Opens one deposit's timeline in place of this list. */
   onOpen?: (id: string) => void
+  /** Portfolio's chip; unattributed entries show under All only. */
+  filter?: TransferFilter
 }
 
 /**
@@ -21,6 +28,7 @@ type BankDepositHistoryProps = {
 export const BankDepositHistory: FC<BankDepositHistoryProps> = ({
   h160,
   onOpen,
+  filter = "all",
 }) => {
   const { t } = useTranslation(["onramp"])
   const deposits = useHbrDeposits(h160)
@@ -42,10 +50,17 @@ export const BankDepositHistory: FC<BankDepositHistoryProps> = ({
           {t("bank.history.empty")}
         </Text>
       )}
-      {data?.deposits.map((entry) => (
-        <BankDepositEntry key={entry.id} entry={entry} onOpen={onOpen} />
-      ))}
-      {data && data.unattributed.length > 0 && (
+      {data?.deposits
+        .filter((entry) =>
+          matchesTransferFilter(
+            filter,
+            getTransferGroup({ kind: "deposit", status: entry.status }),
+          ),
+        )
+        .map((entry) => (
+          <BankDepositEntry key={entry.id} entry={entry} onOpen={onOpen} />
+        ))}
+      {data && filter === "all" && data.unattributed.length > 0 && (
         <Stack gap="s" data-unattributed="1">
           <Text fs="p4" fw={500}>
             {t("bank.history.unattributed.title")}

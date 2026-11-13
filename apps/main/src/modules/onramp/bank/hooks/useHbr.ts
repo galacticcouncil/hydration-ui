@@ -163,7 +163,16 @@ export const useHbrActionInFlight = (
 export const useHbrClearSession = () => {
   const queryClient = useQueryClient()
   return useCallback(() => {
+    // Local first (as hbrSignOutMutation): capture the token, clear memory,
+    // sessionStorage and queries, and only then revoke at the server. The
+    // DELETE is best effort: one try, every outcome ignored, never awaited.
+    const session = useHbrSessionStore.getState().session
     useHbrSessionStore.getState().clear()
     queryClient.removeQueries({ queryKey: hbrQueryKeys.all() })
+    if (!session) return
+    void hbrService
+      .forWallet(session.h160)
+      .closeSession(session.token)
+      .catch(() => undefined)
   }, [queryClient])
 }

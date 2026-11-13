@@ -108,6 +108,7 @@ vi.mock("@/config/env", () => ({
 
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
+import { BankTransferHistory } from "@/modules/onramp/bank/components/BankTransferHistory"
 import {
   buildFixtureOnboarding,
   FIXTURE_BANK_ACCOUNTS,
@@ -929,5 +930,159 @@ describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
     expect(document.querySelector("[data-timeline-lit]")).toBeNull()
     expect(text()).toContain("Expired - no redemption found")
     expect(text()).toContain("server detail words")
+  })
+})
+
+// ---- review 4a delta 1 follow-ups ------------------------------------------
+
+describe("delta 1: deposit details, rails, notice, Portfolio history", () => {
+  const mountTiles = () =>
+    render(
+      <QueryClientProvider client={client}>
+        <BankPortfolio
+          onOpen={vi.fn()}
+          history={(h160) => (
+            <BankTransferHistory
+              h160={h160}
+              onOpenDeposit={vi.fn()}
+              onOpenRamp={vi.fn()}
+            />
+          )}
+        />
+      </QueryClientProvider>,
+    )
+  const entry = (id: string, status: string, label: string) => ({
+    ...deposit(status, label),
+    id,
+  })
+
+  it("D1-R8 an off-timeline deposit shows the server's label verbatim as its pill", async () => {
+    depositsAnswer = {
+      deposits: [entry(DEP, "needs_attention", "Needs attention (server)")],
+      unattributed: [],
+    }
+    signedIn()
+    useBankEntryStore.getState().open({
+      direction: "deposit",
+      target: { kind: "deposit", id: DEP },
+    })
+    mountFlow("deposit")
+    await waitFor(() =>
+      expect(document.querySelector("[data-off-timeline]")).not.toBeNull(),
+    )
+    const pill = document.querySelector("[data-off-timeline] [data-chip]")
+    expect(pill?.textContent).toBe("Needs attention (server)")
+    expect(pill?.getAttribute("data-chip")).toBe("attention")
+  })
+
+  it("D1-R9 the deposit pill colour is our per-status mapping", async () => {
+    depositsAnswer = {
+      deposits: [
+        entry("00000000-0000-4000-8000-0000000000a1", "credited", "Credited"),
+        entry(
+          "00000000-0000-4000-8000-0000000000a2",
+          "needs_attention",
+          "Needs attention",
+        ),
+        entry("00000000-0000-4000-8000-0000000000a3", "returned", "Returned"),
+        entry("00000000-0000-4000-8000-0000000000a4", "arrived", "Arrived"),
+      ],
+      unattributed: [],
+    }
+    signedIn()
+    mountTiles()
+    await waitFor(() =>
+      expect(document.querySelectorAll("[data-deposit-row]")).toHaveLength(4),
+    )
+    expect(
+      Array.from(
+        document.querySelectorAll("[data-deposit-row] [data-chip]"),
+      ).map((c) => c.getAttribute("data-chip")),
+    ).toEqual(["success", "attention", "neutral", "pending"])
+    expect(
+      Array.from(document.querySelectorAll("[data-currency-badge]")).map((b) =>
+        b.getAttribute("data-currency-badge"),
+      ),
+    ).toEqual(["usd", "usd", "usd", "usd"])
+  })
+
+  it("filter chips group by the server's status", async () => {
+    depositsAnswer = {
+      deposits: [
+        entry("00000000-0000-4000-8000-0000000000a1", "credited", "Credited"),
+        entry(
+          "00000000-0000-4000-8000-0000000000a2",
+          "needs_attention",
+          "Needs attention",
+        ),
+        entry("00000000-0000-4000-8000-0000000000a3", "returned", "Returned"),
+        entry("00000000-0000-4000-8000-0000000000a4", "checking", "Checking"),
+      ],
+      unattributed: [],
+    }
+    signedIn()
+    mountTiles()
+    await waitFor(() =>
+      expect(document.querySelectorAll("[data-deposit-row]")).toHaveLength(4),
+    )
+    const rows = () =>
+      Array.from(document.querySelectorAll("[data-deposit-row]")).map((r) =>
+        r.getAttribute("data-deposit-row")!.slice(-2),
+      )
+    await click('[data-filter="inProgress"]')
+    expect(rows()).toEqual(["a4"])
+    await click('[data-filter="completed"]')
+    expect(rows()).toEqual(["a1"])
+    await click('[data-filter="attention"]')
+    expect(rows()).toEqual(["a2"])
+    await click('[data-filter="all"]')
+    expect(rows()).toEqual(["a1", "a2", "a3", "a4"])
+  })
+
+  it("nothing tracked: the empty card, no chips", async () => {
+    signedIn()
+    mountTiles()
+    await waitFor(() =>
+      expect(document.querySelector("[data-transfers-empty]")).not.toBeNull(),
+    )
+    expect(document.querySelector("[data-filter]")).toBeNull()
+  })
+
+  it("D1-R5 the singular paymentRail joins the rails row as a name, never a raw copy row", async () => {
+    onrampAccounts = {
+      accounts: [
+        {
+          ...usdReady,
+          instructions: {
+            ...usdReady.instructions,
+            paymentRails: ["wire"],
+            paymentRail: "ach_push",
+          },
+        },
+        view("eur", "not_requested"),
+      ],
+    }
+    signedIn()
+    mountFlow("deposit")
+    await waitFor(() =>
+      expect(document.querySelector("[data-rails]")).not.toBeNull(),
+    )
+    expect(
+      document.querySelector("[data-rails]")!.getAttribute("data-rails"),
+    ).toBe("Wire|ACH")
+    expect(text()).not.toContain("ach_push")
+  })
+
+  it("the D06 notice names the receiving wallet and the minimum", async () => {
+    signedIn()
+    mountFlow("deposit")
+    await waitFor(() =>
+      expect(document.querySelector("[data-alert]")).not.toBeNull(),
+    )
+    const notice = document.querySelector("[data-alert]")!.textContent ?? ""
+    expect(notice).toContain(
+      `"wallet":"${A.toLowerCase().slice(0, 6)}…${A.slice(-4)}"`,
+    )
+    expect(notice).toContain('bank.deposit.instructions.minimum {"amount":"1"}')
   })
 })

@@ -22,9 +22,12 @@ type BankDepositInstructionsProps = {
   currency: OnrampCurrency
   instructions: Instructions
   minimumDeposit: string | null
+  /** The session's wallet the deposits mint to (shown shortened in the notice). */
+  wallet: string
 }
 
-// Display order of INSTRUCTION_FIELDS (onrampAccountView.mjs); rails apart.
+// Display order of INSTRUCTION_FIELDS (onrampAccountView.mjs). The rails
+// (paymentRails and the USD singular paymentRail) are one labelled row apart.
 const FIELDS = [
   "bankName",
   "routingNumber",
@@ -35,7 +38,6 @@ const FIELDS = [
   "accountHolderName",
   "bankAddress",
   "beneficiaryAddress",
-  "paymentRail",
 ] as const
 
 /**
@@ -48,17 +50,32 @@ export const BankDepositInstructions: FC<BankDepositInstructionsProps> = ({
   currency,
   instructions,
   minimumDeposit,
+  wallet,
 }) => {
   const { t } = useTranslation(["onramp"])
   const rails = instructions.paymentRails
-  const railNames = Array.isArray(rails) ? getRailLabels(rails) : []
+  const single = instructions.paymentRail
+  const railNames = getRailLabels([
+    ...(Array.isArray(rails) ? rails : []),
+    ...(typeof single === "string" ? [single] : []),
+  ])
   const minimum = minimumDeposit ? formatUsdcBaseUnits(minimumDeposit) : null
+  const shortWallet = `${wallet.slice(0, 6)}…${wallet.slice(-4)}`
 
   return (
     <Stack gap="m">
       <Alert
         variant="info"
-        description={t(`bank.deposit.instructions.notice.${currency}`)}
+        description={[
+          t(`bank.deposit.instructions.notice.${currency}`, {
+            wallet: shortWallet,
+          }),
+          minimum
+            ? t("bank.deposit.instructions.minimum", { amount: minimum })
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" ")}
       />
       <Flex justify="space-between" gap="m">
         <Text fs="p5" color={getToken("text.medium")}>
@@ -99,11 +116,6 @@ export const BankDepositInstructions: FC<BankDepositInstructionsProps> = ({
           </Stack>
         )
       })}
-      {minimum && (
-        <Text fs="p5" color={getToken("text.low")}>
-          {t("bank.deposit.instructions.minimum", { amount: minimum })}
-        </Text>
-      )}
     </Stack>
   )
 }
