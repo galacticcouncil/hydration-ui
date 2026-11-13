@@ -243,3 +243,26 @@ export const Select: FC<SelectStubProps> = ({
     ))}
   </select>
 )
+
+// ---- stage 4: a row's overflow menu (always open in the stub) ------------
+
+export const DropdownMenu: FC<ChildrenProps> = ({ children }) => (
+  <div data-menu="1">{children}</div>
+)
+export const DropdownMenuTrigger: FC<ChildrenProps> = () => null
+export const DropdownMenuContent: FC<ChildrenProps> = ({ children }) => (
+  <div>{children}</div>
+)
+export const DropdownMenuItem: FC<
+  ChildrenProps & { onSelect?: () => void; disabled?: boolean }
+> = ({ children, onSelect, disabled }) => (
+  <button type="button" disabled={disabled} onClick={() => onSelect?.()}>
+    {children}
+  </button>
+)
+export const MenuItem: FC<ChildrenProps> = ({ children }) => <>{children}</>
+export const MenuItemIcon: FC = () => null
+export const MenuItemLabel: FC<ChildrenProps> = ({ children }) => (
+  <>{children}</>
+)
+export const Box: FC<ChildrenProps> = ({ children }) => <div>{children}</div>

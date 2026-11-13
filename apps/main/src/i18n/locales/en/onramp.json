@@ -289,6 +289,7 @@
   "bank.accounts.empty": "No bank account added yet.",
   "bank.accounts.add": "Add a bank account",
   "bank.accounts.remove": "Remove",
+  "bank.accounts.actions": "Account actions",
   "bank.accounts.row.last4": "••{{ last4 }}",
   "bank.accounts.row.currency.usd": "USD · ACH",
   "bank.accounts.row.currency.eur": "EUR · SEPA",

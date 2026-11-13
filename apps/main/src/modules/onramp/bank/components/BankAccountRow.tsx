@@ -1,15 +1,10 @@
 import { LandmarkIcon } from "@galacticcouncil/ui/assets/icons"
-import {
-  Flex,
-  Icon,
-  Stack,
-  Text,
-  TextButton,
-} from "@galacticcouncil/ui/components"
+import { Flex, Icon, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BankAccountMenu } from "@/modules/onramp/bank/components/BankAccountMenu"
 import type { ListBankAccountsResponse } from "@/modules/onramp/bank/config/schemas"
 
 type BankAccountRowProps = {
@@ -48,9 +43,7 @@ export const BankAccountRow: FC<BankAccountRowProps> = ({
           </Text>
         )}
       </Stack>
-      <TextButton disabled={isRemoving} onClick={onRemove}>
-        {t("bank.accounts.remove")}
-      </TextButton>
+      <BankAccountMenu isRemoving={isRemoving} onRemove={onRemove} />
     </Flex>
   )
 }

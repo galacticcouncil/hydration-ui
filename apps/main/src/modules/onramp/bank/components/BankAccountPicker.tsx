@@ -1,19 +1,21 @@
 import { LandmarkIcon, PencilIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
+  Box,
   Button,
   Chip,
+  Flex,
   ModalBody,
   ModalFooter,
   OptionCard,
   Stack,
   Text,
-  TextButton,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { BankAccountMenu } from "@/modules/onramp/bank/components/BankAccountMenu"
 import { BankAccountRow } from "@/modules/onramp/bank/components/BankAccountRow"
 import type { BankAccountView } from "@/modules/onramp/bank/config/schemas"
 import { getCashOutAccounts } from "@/modules/onramp/bank/utils/cashOut"
@@ -86,19 +88,28 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
             </Text>
           )}
           {usable.map((account) => (
-            <OptionCard
-              key={account.id}
-              icon={LandmarkIcon}
-              label={account.bankName ?? t("bank.accounts.row.status.active")}
-              description={line({ ...account, bankName: null })}
-              value={
-                <Chip variant="green" size="small">
-                  {t("bank.accounts.row.chip.active")}
-                </Chip>
-              }
-              isActive={account.id === selectedId}
-              onClick={() => onSelect(account.id)}
-            />
+            <Flex key={account.id} align="center" gap="s">
+              <Box flex={1}>
+                <OptionCard
+                  icon={LandmarkIcon}
+                  label={
+                    account.bankName ?? t("bank.accounts.row.status.active")
+                  }
+                  description={line({ ...account, bankName: null })}
+                  value={
+                    <Chip variant="green" size="small">
+                      {t("bank.accounts.row.chip.active")}
+                    </Chip>
+                  }
+                  isActive={account.id === selectedId}
+                  onClick={() => onSelect(account.id)}
+                />
+              </Box>
+              <BankAccountMenu
+                isRemoving={isRemoving}
+                onRemove={() => onRemove(account.id)}
+              />
+            </Flex>
           ))}
           <OptionCard
             icon={PencilIcon}
@@ -112,14 +123,6 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
             isActive={false}
             onClick={onAdd}
           />
-          {selected && (
-            <TextButton
-              disabled={isRemoving}
-              onClick={() => onRemove(selected.id)}
-            >
-              {t("bank.accounts.remove")}
-            </TextButton>
-          )}
           {others.length > 0 && (
             <Stack gap="s">
               <Text fs="p5" color={getToken("text.medium")}>
