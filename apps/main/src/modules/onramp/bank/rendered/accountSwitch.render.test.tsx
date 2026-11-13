@@ -121,7 +121,6 @@ vi.mock("@/config/env", () => ({
 
 // ---- fake HBR server over fetch -----------------------------------------
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
-import { onrampReadBudget } from "@/modules/onramp/bank/hooks/hbrQueries"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureService"
@@ -276,7 +275,6 @@ const signInAs = async (addr: string) => {
 }
 
 beforeEach(() => {
-  onrampReadBudget.reset()
   vi.stubGlobal("fetch", fakeFetch)
   useHbrSessionStore.getState().clear()
   log = []

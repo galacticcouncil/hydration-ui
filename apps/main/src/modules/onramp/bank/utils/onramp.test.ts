@@ -13,14 +13,13 @@ import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   canRequestOnrampAccount,
   canRetryOnrampAccount,
-  createReadBudget,
   formatUsdcBaseUnits,
   getDepositAmountLine,
   getDepositDetailKey,
   getOnrampHeader,
   getOnrampPollInterval,
   getVisibleInstructions,
-  ONRAMP_READ_BUDGET,
+  ONRAMP_POLL_MS,
 } from "@/modules/onramp/bank/utils/onramp"
 
 const read = (
@@ -167,13 +166,13 @@ describe("deposit history", () => {
 describe("on-ramp polling and the 429 backoff", () => {
   const accounts = (usd: object) => read(usd)
 
-  it("polls every 12 s while an account is preparing, 20 s otherwise", () => {
+  it("polls every 15 s while an account is preparing, 20 s otherwise", () => {
     expect(
       getOnrampPollInterval(
         accounts(FIXTURE_ONRAMP_VIEWS.preparing("usd")),
         null,
       ),
-    ).toBe(12_000)
+    ).toBe(15_000)
     expect(
       getOnrampPollInterval(accounts(FIXTURE_ONRAMP_VIEWS.ready("usd")), null),
     ).toBe(20_000)
@@ -190,18 +189,17 @@ describe("on-ramp polling and the 429 backoff", () => {
     ).toBe(60_000)
   })
 
-  it("the read budget allows 6 reads per wallet in any sliding 60 s window", () => {
-    let now = 0
-    const budget = createReadBudget(ONRAMP_READ_BUDGET, () => now)
-    const taken = () => budget.tryTake("0xa")
-    for (let i = 0; i < 6; i++) expect(taken()).toBe(true)
-    expect(taken()).toBe(false) // the 7th in the window sends nothing
-    expect(budget.tryTake("0xb")).toBe(true) // per wallet
-    now = 59_999
-    expect(taken()).toBe(false)
-    now = 60_001 // the six reads at 0 left the window
-    for (let i = 0; i < 6; i++) expect(taken()).toBe(true)
-    expect(taken()).toBe(false)
+  it("pins the three intervals: 15 s preparing, 20 s otherwise, 60 s after a 429", () => {
+    expect(ONRAMP_POLL_MS).toEqual({
+      preparing: 15_000,
+      settled: 20_000,
+      rateLimited: 60_000,
+    })
+  })
+
+  it("the schedule alone is at most 4 reads a minute while preparing and 3 otherwise", () => {
+    expect(60_000 / ONRAMP_POLL_MS.preparing).toBeLessThanOrEqual(4)
+    expect(60_000 / ONRAMP_POLL_MS.settled).toBeLessThanOrEqual(3)
   })
 
   it("a 429 is a backoff in the header, never a failure", () => {

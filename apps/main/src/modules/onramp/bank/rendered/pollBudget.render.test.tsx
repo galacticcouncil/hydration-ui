@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-/* Ported from the review-2 Delta 2 budget harness (BUD2, BUD5) plus a stress case. Renders the REAL BankFlow tree
- * (direction "deposit") with the REAL hooks, session store, react-query
- * factories and HTTP client. Only the wallet, the UI kit, i18n and fetch are
- * replaced. fetch answers are scripted per test, and can be held (deferred). */
+/* On-ramp polling on the real BankFlow tree, against a fake server that runs a
+ * port of the HBR rate limiter (advisor-b30-budget appendix). Rule 5 oracle:
+ * whenever instructions are on screen, the last answer the server gave to
+ * GET /v1/onramp/accounts was a 200 with usd `ready`. No count bound is
+ * asserted: the server is the only limiter. */
 import {
   MutationCache,
   QueryCache,
@@ -82,8 +83,8 @@ vi.mock("@/config/env", () => ({
 
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import { buildFixtureOnboarding } from "@/modules/onramp/bank/config/fixtures"
-import { onrampReadBudget } from "@/modules/onramp/bank/hooks/hbrQueries"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
 const A = "0x1111111111111111111111111111111111111111"
@@ -106,6 +107,20 @@ const view = (
   retryAllowed: false,
   ...extra,
 })
+const usdReady = () => ({
+  currency: "usd",
+  status: "ready",
+  onrampAvailable: true,
+  retryAllowed: false,
+  instructions: {
+    accountNumber: "ACCT-A1",
+    routingNumber: "ROUT-A1",
+    bankName: "BANK-A1",
+    beneficiaryName: "BENE-A1",
+    paymentRails: ["ach_push"],
+  },
+  minimumDeposit: "1000000",
+})
 
 const json = (status: number, body: unknown) =>
   new Response(body === undefined ? null : JSON.stringify(body), {
@@ -113,12 +128,65 @@ const json = (status: number, body: unknown) =>
     headers: { "Content-Type": "application/json" },
   })
 
-// The fake server's account states; a request moves USD to preparing and EUR
-// to refused (re-arm allowed), a re-arm moves a refused account to preparing.
+// Port of hydration-ramp server/lib/http/apiMiddleware.mjs createRateLimiter
+// (one key): a fixed window from the first hit after the last window ended; a
+// refused hit is not counted.
+const mkLimiter = (limit: number, windowMs: number) => {
+  let w: { start: number; count: number } | undefined
+  return {
+    hit: () => {
+      const t = Date.now()
+      if (w && t - w.start < windowMs && t >= w.start) {
+        if (w.count >= limit) return false
+        w.count++
+        return true
+      }
+      w = { start: t, count: 1 }
+      return true
+    },
+  }
+}
+
+// Fake server state. A request moves USD to preparing and EUR to refused
+// (re-arm allowed); a re-arm moves a refused account to preparing.
 const st: Record<string, { status: string; retryAllowed: boolean }> = {}
-let firstReadStatus = 200
-const reads: number[] = []
+let lim = {
+  list: mkLimiter(6, 60_000),
+  request: mkLimiter(5, 600_000),
+  retry: mkLimiter(3, 3_600_000),
+}
+// Scripted status of the n-th GET (1-based), before the normal answer.
+let scripted: Record<number, number> = {}
+let gets = 0
+let limited = 0
+let last: { status: number; usdReady: boolean } | null = null
 let t0 = 0
+
+const answerGet = () => {
+  gets += 1
+  if (!lim.list.hit()) {
+    limited += 1
+    last = { status: 429, usdReady: false }
+    return json(429, { error: "rate_limited" })
+  }
+  const forced = scripted[gets]
+  if (forced) {
+    last = { status: forced, usdReady: false }
+    return json(forced, {
+      error: forced === 429 ? "rate_limited" : "bridge_unavailable",
+    })
+  }
+  const accounts = (["usd", "eur"] as const).map((c) =>
+    c === "usd" && st.usd!.status === "ready"
+      ? usdReady()
+      : view(c, st[c]!.status, {
+          retryAllowed: st[c]!.retryAllowed,
+          reason: null,
+        }),
+  )
+  last = { status: 200, usdReady: st.usd!.status === "ready" }
+  return json(200, { accounts })
+}
 
 const fakeFetch = async (url: string, init: RequestInit) => {
   const path = url.replace("https://hbr.test", "")
@@ -129,6 +197,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
   const body = init.body ? JSON.parse(init.body as string) : undefined
   const retry = path.match(/^\/v1\/onramp\/accounts\/(usd|eur)\/retry$/)
   if (method === "POST" && retry) {
+    if (!lim.retry.hit()) return json(429, { error: "rate_limited" })
     const c = retry[1]!
     st[c] = { status: "preparing", retryAllowed: false }
     return json(202, { account: view(c, "preparing") })
@@ -151,20 +220,10 @@ const fakeFetch = async (url: string, init: RequestInit) => {
       )
     case "GET /v1/onramp/deposits":
       return json(200, { deposits: [], unattributed: [] })
-    case "GET /v1/onramp/accounts": {
-      reads.push(Date.now() - t0)
-      if (reads.length === 1 && firstReadStatus === 429)
-        return json(429, { error: "rate_limited" })
-      return json(200, {
-        accounts: (["usd", "eur"] as const).map((c) =>
-          view(c, st[c]!.status, {
-            retryAllowed: st[c]!.retryAllowed,
-            reason: null,
-          }),
-        ),
-      })
-    }
+    case "GET /v1/onramp/accounts":
+      return answerGet()
     case "POST /v1/onramp/accounts": {
+      if (!lim.request.hit()) return json(429, { error: "rate_limited" })
       const c = body.currency as string
       st[c] =
         c === "eur"
@@ -178,24 +237,53 @@ const fakeFetch = async (url: string, init: RequestInit) => {
 }
 
 let queryClient: QueryClient
+let settles = 0
 const setWallet = (w: string | null) => {
   walletState.account = w ? { rawAddress: w, address: w } : null
   walletState.signer = w ? new FakeEthSigner(w) : null
   emit()
 }
 const page = () => document.body.innerHTML
+const shown = () => page().includes("ACCT-A1")
 const app = () => (
   <QueryClientProvider client={queryClient}>
     <BankFlow direction="deposit" />
   </QueryClientProvider>
 )
+
+// The rule 5 oracle, sampled after every 250 ms step: instructions on screen
+// while the last GET answer was not a 200 with usd ready, for more than two
+// steps in a row (the body and the render can land one step apart).
+let badRun = 0
+let violations: number[] = []
+const check = () => {
+  const bad = shown() && !(last && last.status === 200 && last.usdReady)
+  badRun = bad ? badRun + 1 : 0
+  if (badRun >= 3) violations.push(Date.now() - t0)
+}
 // Fake time only: no real waiting.
 const tick = async (ms: number) => {
-  for (let i = 0; i < ms / 250; i++)
+  for (let i = 0; i < ms / 250; i++) {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(250)
     })
+    check()
+  }
 }
+const stepUntil = async (done: () => boolean, maxMs: number) => {
+  let waited = 0
+  while (!done() && waited < maxMs) {
+    await tick(250)
+    waited += 250
+  }
+  return waited
+}
+const reread = () =>
+  act(async () => {
+    void queryClient.invalidateQueries({
+      queryKey: hbrQueryKeys.onrampAccounts(A),
+    })
+  })
 const clickStart = (text: string) =>
   act(async () => {
     const b = Array.from(document.querySelectorAll("button")).find(
@@ -207,15 +295,17 @@ const pickCurrency = (c: "usd" | "eur") =>
   act(async () => {
     fireEvent.click(document.querySelector(`[data-toggle-item="${c}"]`)!)
   })
-/** The most reads of GET /v1/onramp/accounts in any sliding 60 s window. */
-const maxIn60 = () =>
-  Math.max(
-    0,
-    ...reads.map((a) => reads.filter((b) => b >= a && b < a + 60_000).length),
+// No failure title and no error alert (the instructions' info notice is an
+// alert too, so only error copy counts).
+const noFailureShown = () => {
+  expect(page()).not.toContain("bank.deposit.readFailed")
+  const alerts = Array.from(document.querySelectorAll("[data-alert]")).map(
+    (a) => a.textContent ?? "",
   )
+  expect(alerts.filter((a) => a.startsWith("bank.error."))).toEqual([])
+}
 
 beforeEach(() => {
-  onrampReadBudget.reset()
   vi.useFakeTimers({
     toFake: [
       "setTimeout",
@@ -226,14 +316,33 @@ beforeEach(() => {
     ],
   })
   t0 = Date.now()
-  reads.length = 0
-  firstReadStatus = 200
   st.usd = { status: "not_requested", retryAllowed: false }
   st.eur = { status: "not_requested", retryAllowed: false }
+  lim = {
+    list: mkLimiter(6, 60_000),
+    request: mkLimiter(5, 600_000),
+    retry: mkLimiter(3, 3_600_000),
+  }
+  scripted = {}
+  gets = 0
+  limited = 0
+  last = null
+  settles = 0
+  badRun = 0
+  violations = []
   vi.stubGlobal("fetch", vi.fn(fakeFetch))
   queryClient = new QueryClient({
     queryCache: new QueryCache({ onError: logQueryError }),
     mutationCache: new MutationCache({ onError: logMutationError }),
+  })
+  // Count every settled read of the on-ramp accounts query.
+  queryClient.getQueryCache().subscribe((event) => {
+    if (
+      event.type === "updated" &&
+      (event.action.type === "success" || event.action.type === "error") &&
+      event.query.queryKey[2] === "onramp-accounts"
+    )
+      settles += 1
   })
   vi.spyOn(console, "error").mockImplementation(() => {})
   useHbrSessionStore.getState().clear()
@@ -251,8 +360,46 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe("GET /v1/onramp/accounts stays within 6 reads in any 60 s window", () => {
-  it("BUD2 request USD, switch to EUR and request EUR within one minute", async () => {
+describe("rule 5 under polling, re-reads and 429s (no client limiter)", () => {
+  it.each([502, 429])(
+    "P3 after a %s read, no trigger shows the earlier instructions until a read answers ready",
+    async (code) => {
+      st.usd = { status: "ready", retryAllowed: false }
+      scripted = { 6: code }
+      setWallet(A)
+      render(app())
+      await tick(1000)
+      expect(shown()).toBe(true)
+      for (let i = 0; i < 5; i++) {
+        await reread()
+        await tick(500)
+      }
+      await reread()
+      await tick(500)
+      await tick(70_000)
+      expect(violations).toEqual([])
+      expect(gets).toBe(settles)
+    },
+  )
+
+  it("P4 after 5 quick re-reads the server leaves ready: instructions are gone within 20 s", async () => {
+    st.usd = { status: "ready", retryAllowed: false }
+    setWallet(A)
+    render(app())
+    await tick(1000)
+    for (let i = 0; i < 5; i++) {
+      await reread()
+      await tick(250)
+    }
+    expect(shown()).toBe(true)
+    st.usd = { status: "checking", retryAllowed: false }
+    const waited = await stepUntil(() => !shown(), 70_000)
+    expect(waited).toBeLessThanOrEqual(20_250)
+    expect(violations).toEqual([])
+    expect(gets).toBe(settles)
+  })
+
+  it("P6 USD at 3 s, EUR at 18 s: the server refuses no read and ready shows within 15 s of the server reading ready", async () => {
     setWallet(A)
     render(app())
     await tick(3000)
@@ -261,12 +408,17 @@ describe("GET /v1/onramp/accounts stays within 6 reads in any 60 s window", () =
     await pickCurrency("eur")
     await tick(1000)
     await clickStart("bank.deposit.request")
-    await tick(90_000)
-    expect(reads.length).toBeGreaterThan(6)
-    expect(maxIn60()).toBeLessThanOrEqual(6)
+    await pickCurrency("usd")
+    await tick(58_000 - (Date.now() - t0))
+    st.usd = { status: "ready", retryAllowed: false }
+    const waited = await stepUntil(shown, 60_000)
+    expect(waited).toBeLessThanOrEqual(15_250)
+    expect(limited).toBe(0)
+    expect(violations).toEqual([])
+    expect(gets).toBe(settles)
   })
 
-  it("stress: requests, a re-arm and tab switches every 2 s for 3 minutes", async () => {
+  it("P7 stress: requests, a re-arm and tab switches every 2 s for 3 minutes", async () => {
     setWallet(A)
     render(app())
     await tick(1000)
@@ -277,20 +429,37 @@ describe("GET /v1/onramp/accounts stays within 6 reads in any 60 s window", () =
       await clickStart("bank.deposit.retry")
       await tick(2000)
     }
-    expect(maxIn60()).toBeLessThanOrEqual(6)
-    // Still reading: the budget delays reads, it does not stop them.
-    expect(reads.length).toBeGreaterThanOrEqual(15)
+    expect(violations).toEqual([])
+    noFailureShown()
+    // Reads continue: the server limits them, the screen never stops reading.
+    expect(gets).toBeGreaterThanOrEqual(9)
+    expect(gets).toBe(settles)
+  })
+
+  it("S5b 8 mounts in 14 s on a ready account: no instructions without a ready answer", async () => {
+    st.usd = { status: "ready", retryAllowed: false }
+    setWallet(A)
+    for (let i = 0; i < 8; i++) {
+      const { unmount } = render(app())
+      await tick(2000)
+      unmount()
+      await tick(250)
+    }
+    render(app())
+    await stepUntil(shown, 90_000)
+    expect(shown()).toBe(true)
+    expect(violations).toEqual([])
+    noFailureShown()
   })
 })
 
 describe("a 429 is a backoff, never a failure display", () => {
   it("BUD5 a 429 on the first read (no answer yet) reads 'checking again shortly', no alert", async () => {
-    firstReadStatus = 429
+    scripted = { 1: 429 }
     setWallet(A)
     render(app())
     await tick(1000)
     expect(page()).toContain("bank.deposit.rechecking")
-    expect(page()).not.toContain("bank.deposit.readFailed")
-    expect(document.querySelector("[data-alert]")).toBeNull()
+    noFailureShown()
   })
 })

@@ -22,7 +22,6 @@ import {
   hbrRequestOnrampAccountMutation,
   hbrRetryOnrampAccountMutation,
   hbrSignInMutation,
-  onrampReadBudget,
 } from "@/modules/onramp/bank/hooks/hbrQueries"
 import * as hbrQueries from "@/modules/onramp/bank/hooks/hbrQueries"
 import {
@@ -112,7 +111,6 @@ const logged = () =>
     .join("\n")
 
 beforeEach(() => {
-  onrampReadBudget.reset()
   useHbrSessionStore.getState().clear()
   consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
 })
@@ -507,12 +505,35 @@ describe("the on-ramp accounts query polls by status and backs off", () => {
     const preparing = {
       accounts: [{ currency: "usd", status: "preparing" }],
     }
-    expect(interval(state(preparing, null))).toBe(12_000)
+    expect(interval(state(preparing, null))).toBe(15_000)
     expect(interval(state({ accounts: [] }, null))).toBe(20_000)
     expect(
       interval(state(preparing, new HbrApiError(429, "rate_limited"))),
     ).toBe(60_000)
     expect(options.refetchOnWindowFocus).toBe(false)
+  })
+})
+
+describe("the on-ramp accounts query function", () => {
+  it("every call of the on-ramp accounts query function is one request", async () => {
+    const answer = { accounts: [] }
+    const list = vi.fn(async () => answer)
+    const service = {
+      forWallet: () => ({ listOnrampAccounts: list }),
+    } as unknown as HbrService
+    const queryFn = hbrOnrampAccountsQuery(service, A).queryFn as unknown as (
+      ctx: unknown,
+    ) => Promise<unknown>
+    const ctx = { client: appQueryClient(), queryKey: [], meta: undefined }
+    const results = await Promise.all(
+      Array.from({ length: 8 }, () => queryFn(ctx)),
+    )
+    expect(list).toHaveBeenCalledTimes(8)
+    expect(results.every((r) => r === answer)).toBe(true)
+
+    const failure = new HbrApiError(502, "bridge_unavailable")
+    list.mockRejectedValueOnce(failure)
+    await expect(queryFn(ctx)).rejects.toBe(failure)
   })
 })
 

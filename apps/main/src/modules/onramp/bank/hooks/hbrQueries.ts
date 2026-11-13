@@ -8,7 +8,6 @@ import {
 import type {
   CreateBankAccountRequest,
   CustomerType,
-  OnrampAccountsResponse,
   OnrampCurrency,
 } from "@/modules/onramp/bank/config/schemas"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
@@ -18,11 +17,7 @@ import {
 } from "@/modules/onramp/bank/utils/hbrErrors"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
-import {
-  createReadBudget,
-  getOnrampPollInterval,
-  ONRAMP_READ_BUDGET,
-} from "@/modules/onramp/bank/utils/onramp"
+import { getOnrampPollInterval } from "@/modules/onramp/bank/utils/onramp"
 import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 
 // About every 10 s while the user is in the hosted flow (API doc 2 step 5;
@@ -221,22 +216,12 @@ export const hbrRemoveBankAccountMutation = (
       }),
   })
 
-/** Reads of GET /v1/onramp/accounts per wallet (module-wide, like the session store). */
-export const onrampReadBudget = createReadBudget(ONRAMP_READ_BUDGET)
-
 export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
   queryOptions({
     networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.onrampAccounts(h160),
-    // The read budget (ONRAMP_READ_BUDGET, utils/onramp.ts) is taken before
-    // every send; past it nothing is sent and the last answer stays.
-    queryFn: async ({ client, queryKey }) => {
-      if (onrampReadBudget.tryTake(h160.toLowerCase()))
-        return service.forWallet(h160).listOnrampAccounts()
-      const last = client.getQueryData<OnrampAccountsResponse>(queryKey)
-      if (last) return last
-      throw new HbrApiError(429, "rate_limited", { error: "rate_limited" })
-    },
+    // Every call is one real request; the server is the only limiter.
+    queryFn: () => service.forWallet(h160).listOnrampAccounts(),
     retry: false,
     staleTime: 0,
     // Deposit instructions: never kept past the screen (rule 5).
@@ -245,7 +230,8 @@ export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
     // faster while preparing, backing off after a 429 (getOnrampPollInterval).
     refetchInterval: (query) =>
       getOnrampPollInterval(query.state.data, query.state.error),
-    // The route's budget is 6 a minute: no extra reads on window focus.
+    // No extra read on window focus (the server limits this route; the
+    // screen does not hold that limit, see ONRAMP_POLL_MS).
     refetchOnWindowFocus: false,
   })
 
