@@ -24,8 +24,5 @@ export const BIL_ATOKEN_ADDRESS: Hex =
 export const DCL_PRECOMPILE_ADDRESS: Hex =
   "0x0000000000000000000000000000000100000226"
 
-// Aave V3 interestRateMode for borrows: 2 = variable (GhoAToken path).
-export const AAVE_INTEREST_RATE_MODE_VARIABLE = 2n
-
 // Gas limit for every EVM call the strategy wraps into a substrate batch.
 export const EVM_CALL_GAS = 2_000_000n

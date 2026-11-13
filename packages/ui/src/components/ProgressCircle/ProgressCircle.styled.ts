@@ -31,7 +31,7 @@ export const SText = styled.span<{ position: LabelPosition }>(
     `
 
     return css`
-      color: ${theme.text.high};
+      color: ${theme.text.medium};
       font-weight: 500;
       line-height: 1;
       display: flex;

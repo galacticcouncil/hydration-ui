@@ -1,19 +1,14 @@
 {
   "extends": "@galacticcouncil/typescript-config/base.json",
-  "include": ["src"],
-  "references": [
-    { "path": "../indexer" },
-    { "path": "../utils" },
-    { "path": "../web3-connect" }
-  ],
+  "include": ["src", "src/**/*.json"],
   "compilerOptions": {
     "composite": true,
+    "resolveJsonModule": true,
     "outDir": "./build",
     "baseUrl": ".",
-    "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
-    },
+    }
   }
 }

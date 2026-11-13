@@ -1,4 +1,3 @@
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { HYDRATION_CHAIN_KEY, isH160Address } from "@galacticcouncil/utils"
 import { useAccount, WalletMode } from "@galacticcouncil/web3-connect"
 import { XcSwapClient } from "@galacticcouncil/xc-swap"
@@ -7,6 +6,7 @@ import Big from "big.js"
 import { createContext, useContext, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 
+import { HealthFactorResult } from "@/api/aave"
 import { useKrakenSpotPrice } from "@/api/external/kraken"
 import { useMaxSellAmount } from "@/modules/trade/swap/sections/XcSwap/hooks/useMaxSellAmount"
 import { useSubmitByQuote } from "@/modules/trade/swap/sections/XcSwap/hooks/useSubmitByQuote"

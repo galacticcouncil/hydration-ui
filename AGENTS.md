@@ -19,7 +19,7 @@ Web app for the Hydration parachain. `apps/main` is the one deployable (a React 
 - **Data.** Modules read chain, SDK and indexer data through `apps/main/src/api/`.
 - **UI components.** `@galacticcouncil/ui`, source in `packages/ui/src/components/`, each with a `*.stories.tsx` showing its props. JSX compiles through `@galacticcouncil/ui/jsx`, so component files import only what they use.
 - **Wallets.** `packages/web3-connect`, one connector per wallet in `src/wallets/`. Signing and submission live in `apps/main/src/modules/transactions/` and `modules/submit-transaction/`.
-- **Lending.** `packages/money-market` (Aave integration), used by `apps/main/src/modules/borrow/`, `api/borrow/` and `api/aave.ts`.
+- **Lending.** `packages/money-market` (reads, derived figures, assessments and action plans for the Aave-based markets, over viem), used by `apps/main/src/modules/money-market/` (the `/borrow` pages), `api/borrow/` and `api/aave.ts`.
 - **Indexer and API clients.** `packages/indexer`, one client per backend under `src/`, imported by subpath (`@galacticcouncil/indexer/<backend>`).
 - **Cross-chain.** The external `@galacticcouncil/xc*` packages, used by `apps/main/src/modules/xcm/` and `api/xcm.ts`.
 

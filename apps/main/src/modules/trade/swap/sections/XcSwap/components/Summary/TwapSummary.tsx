@@ -1,5 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { math } from "@galacticcouncil/sdk-next"
 import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import {
@@ -18,10 +16,12 @@ import { produce } from "immer"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { DynamicFee } from "@/components/DynamicFee"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/XcSwap/components/Summary/CalculatedAmountSummaryRow"
@@ -148,7 +148,12 @@ export const TwapSummary: FC<Props> = ({
         <>
           <SwapSummaryRow
             label={t("healthFactor")}
-            content={<HealthFactorChange {...healthFactor} />}
+            content={
+              <HealthFactorChange
+                current={healthFactor.current}
+                projected={healthFactor.future}
+              />
+            }
           />
           <SwapSectionSeparator />
         </>

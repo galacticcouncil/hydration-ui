@@ -61,4 +61,5 @@ export const HIDDEN_DESKTOP_NAV_ROUTES = [LINKS.submitTransaction]
 export const HIDDEN_MOBILE_NAV_ROUTES = [
   LINKS.submitTransaction,
   "/liquidity/$id",
+  "/borrow/markets/$address",
 ]
