@@ -231,9 +231,9 @@ export const createHbrFixtureService = (args: {
       })
     },
     forWallet: (forH160) => ({
-      closeSession: async () => {
+      closeSession: async (captured) => {
         await settle()
-        const token = session.getToken(forH160.toLowerCase())
+        const token = captured ?? session.getToken(forH160.toLowerCase())
         if (token) sessions.delete(token)
       },
       getMe: async () => {

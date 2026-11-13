@@ -11,7 +11,10 @@ import type {
   OnrampCurrency,
   RampRequest,
 } from "@/modules/onramp/bank/config/schemas"
-import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import {
+  hbrSessionAccess,
+  useHbrSessionStore,
+} from "@/modules/onramp/bank/store/useHbrSessionStore"
 import {
   PreparedCashOut,
   toPreparedCashOut,
@@ -109,13 +112,19 @@ export const hbrSignOutMutation = (
     networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "signOut"),
     mutationFn: async () => {
+      // Local first: capture the token, then drop this wallet's session from
+      // memory and sessionStorage and its queries BEFORE any network call, so
+      // a reload or crash while the DELETE is pending cannot undo the sign-out.
+      const token = hbrSessionAccess.getToken(h160)
+      useHbrSessionStore.getState().signOut(h160)
+      queryClient.removeQueries({ queryKey: hbrQueryKeys.wallet(h160) })
+      if (!token) return
       try {
-        await service.forWallet(h160).closeSession()
-      } finally {
-        // Signed out locally whatever the answer: this wallet's token is gone
-        // from memory and from sessionStorage.
-        useHbrSessionStore.getState().signOut(h160)
-        queryClient.removeQueries({ queryKey: hbrQueryKeys.wallet(h160) })
+        // Revoke with the captured token; a 401, an error or a timeout leaves
+        // the user signed out all the same.
+        await service.forWallet(h160).closeSession(token)
+      } catch {
+        // Already signed out locally.
       }
     },
   })

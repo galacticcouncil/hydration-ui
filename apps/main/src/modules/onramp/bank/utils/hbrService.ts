@@ -56,8 +56,12 @@ export type HbrService = {
 }
 
 export type HbrWalletApi = {
-  /** Resolves on 204 and on 401 (a 401 after logout counts as done). */
-  closeSession: () => Promise<void>
+  /**
+   * Resolves on 204 and on 401 (a 401 after logout counts as done). Sign-out
+   * passes the token it captured before it dropped the local session; without
+   * one the call reads the store as every other route does.
+   */
+  closeSession: (token?: string) => Promise<void>
   getMe: () => Promise<Out<typeof meResponseSchema>>
   createCustomer: (
     type: CustomerType,
@@ -105,6 +109,8 @@ export type HbrSessionAccess = {
 type RequestOptions<S extends z.ZodType | null> = {
   /** The wallet whose session must carry the call, or false for a sign-in route. */
   auth: string | false
+  /** A token captured by the caller, used instead of the store's (sign-out only). */
+  token?: string
   body?: unknown
   schema: S
 }
@@ -157,7 +163,7 @@ export const createHbrHttpService = (args: {
     const headers: Record<string, string> = {}
     let token: string | null = null
     if (options.auth !== false) {
-      token = session.getToken(options.auth.toLowerCase())
+      token = options.token ?? session.getToken(options.auth.toLowerCase())
       // Nothing sent: no session of this wallet (none, or another wallet's).
       if (!token) throw new HbrApiError(401, NO_SESSION)
       headers.Authorization = `Bearer ${token}`
@@ -234,10 +240,11 @@ export const createHbrHttpService = (args: {
         schema: sessionResponseSchema,
       }),
     forWallet: (wallet) => ({
-      closeSession: async () => {
+      closeSession: async (token) => {
         try {
           await request("DELETE", "/v1/auth/session", {
             auth: wallet,
+            token,
             schema: null,
           })
         } catch (error) {

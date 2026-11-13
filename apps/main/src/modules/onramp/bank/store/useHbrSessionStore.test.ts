@@ -64,6 +64,54 @@ describe("the HBR session token in sessionStorage", () => {
     })
   })
 
+  it("at most one entry is stored: a sign-in of B leaves only B's entry", () => {
+    useHbrSessionStore
+      .getState()
+      .setSession({ token: TOKEN_A, h160: A, expiresAt: FUTURE })
+    useHbrSessionStore
+      .getState()
+      .setSession({ token: "B".repeat(43), h160: B, expiresAt: FUTURE })
+    expect([...storage.data.keys()]).toEqual([`hbr-session:${B}`])
+  })
+
+  it("sign-out drops the session before the DELETE and sends it with the captured token", async () => {
+    useHbrSessionStore
+      .getState()
+      .setSession({ token: TOKEN_A, h160: A, expiresAt: FUTURE })
+    reload() // the token is only in storage
+    const client = new QueryClient()
+    client.setQueryData(["hbr", A, "me"], { h160: A })
+    const seen: {
+      storage: number
+      queries: number
+      auth: string | undefined
+    }[] = []
+    const fetchFn = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      seen.push({
+        storage: storage.data.size,
+        queries: client.getQueryCache().findAll({ queryKey: ["hbr", A] })
+          .length,
+        auth: (init?.headers as Record<string, string> | undefined)
+          ?.Authorization,
+      })
+      return new Response(null, { status: 204 })
+    })
+    const service = createHbrService({
+      baseUrl: "/hbr",
+      session: hbrSessionAccess,
+      fetchFn: fetchFn as unknown as typeof fetch,
+    })
+    await new MutationObserver(
+      client,
+      hbrSignOutMutation(service, client, A),
+    ).mutate()
+    // At the moment the DELETE goes out: no stored entry, no wallet query left.
+    expect(seen).toEqual([
+      { storage: 0, queries: 0, auth: `Bearer ${TOKEN_A}` },
+    ])
+    expect(client.getQueryCache().findAll({ queryKey: ["hbr", A] })).toEqual([])
+  })
+
   it("another wallet's stored token is ignored", () => {
     useHbrSessionStore
       .getState()

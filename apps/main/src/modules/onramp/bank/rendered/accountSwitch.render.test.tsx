@@ -127,6 +127,8 @@ import { createHbrFixtureService } from "@/modules/onramp/bank/utils/hbrFixtureS
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
 let reqToken: string | null = null
+// When set, DELETE /v1/auth/session never answers (a hung revoke).
+let deleteHangs = false
 const newBackend = () =>
   createHbrFixtureService({
     session: { getToken: () => reqToken, onUnauthorized: () => {} },
@@ -183,6 +185,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
           return json(200, s)
         }
         case "DELETE /v1/auth/session":
+          if (deleteHangs) return await new Promise<Response>(() => {})
           await api.closeSession()
           return new Response(null, { status: 204 })
         case "GET /v1/me":
@@ -280,6 +283,7 @@ beforeEach(() => {
   log = []
   backend = newBackend()
   pendingSigns.length = 0
+  deleteHangs = false
   openSigns = 0
   onboardingOverride = null
   errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
@@ -371,6 +375,30 @@ describe("lead question: identity crosses wallets", () => {
     await flush()
     expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
     expect(log.slice(beforeB).some((e) => e.tokenOf === A)).toBe(false)
+  })
+
+  it("B3 sign-out while its DELETE hangs, then a reload: signed out, no authed request", async () => {
+    setEvm(A)
+    mount()
+    await signInAs(A)
+    await flush()
+    expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
+    deleteHangs = true
+    fireEvent.click(screen.getByText("bank.signOut"))
+    await act(async () => {})
+    // Before the DELETE answers, nothing of the session is left locally.
+    expect(sessionStorage.length).toBe(0)
+    expect(useHbrSessionStore.getState().session).toBeNull()
+    // The revoke went out with the captured token.
+    expect(log.some((e) => e.method === "DELETE" && e.tokenOf === A)).toBe(true)
+    // Reload while the DELETE is still pending.
+    cleanup()
+    act(() => useHbrSessionStore.setState({ session: null }))
+    const before = log.length
+    mount()
+    await flush()
+    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(log.slice(before).some((e) => e.tokenOf !== null)).toBe(false)
   })
 
   it("L2b A -> Substrate -> A keeps A's session (no request while substrate)", async () => {
