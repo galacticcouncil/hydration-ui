@@ -20,7 +20,7 @@ import {
 import { neckwork } from "@galacticcouncil/utils"
 import { TFunction } from "i18next"
 
-import { ENV } from "@/config/env"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { FileRouteTypes } from "@/routeTree.gen"
 import { getDeployPreviewId } from "@/utils/deploy"
 
@@ -208,8 +208,8 @@ export const NAVIGATION: NavigationItem[] = [
         key: "portfolioDeposits",
         to: LINKS.portfolioDeposits,
         icon: LandmarkIcon,
-        // The bank flows are not offered in production yet (DepositMethodSelect).
-        enabled: ENV.VITE_ENV !== "production",
+        // The bank flows are not offered in production yet.
+        enabled: isBankFlowEnabled(),
       },
       {
         key: "portfolioTracked",

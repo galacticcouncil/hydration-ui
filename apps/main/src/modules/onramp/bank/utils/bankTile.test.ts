@@ -5,6 +5,10 @@ import {
   BankTileKind,
   deriveBankTiles,
 } from "@/modules/onramp/bank/utils/bankTile"
+import {
+  HbrApiError,
+  HbrNetworkError,
+} from "@/modules/onramp/bank/utils/hbrErrors"
 import type { OnboardingStep } from "@/modules/onramp/bank/utils/onboarding"
 
 const link = { url: null, readable: false }
@@ -140,6 +144,7 @@ describe("deriveBankTiles", () => {
       "paused",
       "verifyUnknown",
       "setUp",
+      "rechecking",
     ]
     const prefixes = [
       ...kinds.map((k) => `bank.tile.${k}`),
@@ -159,5 +164,41 @@ describe("deriveBankTiles", () => {
         .filter((k) => !copy[k]),
     )
     expect(missing).toEqual([])
+  })
+
+  // Review 4a B2: the latest read's failure wins over older data.
+  it("a failed on-ramp read never yields an account or set-up tile", () => {
+    const base = {
+      walletOk: true,
+      hasSession: true,
+      step: ready,
+      onramp: { accounts: [account("usd", "ready")] },
+    }
+    const http = (status: number) =>
+      new HbrApiError(status, status === 429 ? "rate_limited" : "internal")
+    expect(deriveBankTiles({ ...base, onrampError: http(429) })).toEqual([
+      { kind: "rechecking", tone: "neutral" },
+    ])
+    expect(deriveBankTiles({ ...base, onrampError: http(500) })).toEqual([
+      { kind: "error", tone: "attention" },
+    ])
+    expect(
+      deriveBankTiles({ ...base, onrampError: new HbrNetworkError() }),
+    ).toEqual([{ kind: "error", tone: "attention" }])
+    expect(deriveBankTiles({ ...base, onrampError: http(401) })).toEqual([
+      { kind: "signIn", tone: "attention" },
+    ])
+  })
+
+  it("a 429 on the onboarding read restates no older stage", () => {
+    const limited = { ...(verify("review") as object), rateLimited: true }
+    expect(
+      deriveBankTiles({
+        walletOk: true,
+        hasSession: true,
+        step: limited as OnboardingStep,
+        onramp: undefined,
+      }),
+    ).toEqual([{ kind: "rechecking", tone: "neutral" }])
   })
 })

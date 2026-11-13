@@ -277,3 +277,6 @@ export const MenuItemLabel: FC<ChildrenProps> = ({ children }) => (
   <>{children}</>
 )
 export const Box: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
+export const ModalContainer: FC<ChildrenProps> = ({ children }) => (
+  <div>{children}</div>
+)

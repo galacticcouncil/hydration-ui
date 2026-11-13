@@ -1,10 +1,15 @@
-import { LandmarkIcon, PencilIcon } from "@galacticcouncil/ui/assets/icons"
+import {
+  CheckIcon,
+  LandmarkIcon,
+  PencilIcon,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Box,
   Button,
   Chip,
   Flex,
+  Icon,
   ModalBody,
   ModalFooter,
   OptionCard,
@@ -97,9 +102,18 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
                   }
                   description={line({ ...account, bankName: null })}
                   value={
-                    <Chip variant="green" size="small">
-                      {t("bank.accounts.row.chip.active")}
-                    </Chip>
+                    <Flex align="center" gap="m">
+                      <Chip variant="green" size="small">
+                        {t("bank.accounts.row.chip.active")}
+                      </Chip>
+                      {account.id === selectedId && (
+                        <Icon
+                          component={CheckIcon}
+                          size="m"
+                          data-selected-check={account.id}
+                        />
+                      )}
+                    </Flex>
                   }
                   isActive={account.id === selectedId}
                   onClick={() => onSelect(account.id)}

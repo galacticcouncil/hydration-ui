@@ -11,6 +11,7 @@ import {
   useHbrSession,
 } from "@/modules/onramp/bank/hooks/useHbr"
 import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { getBankWalletGate } from "@/modules/onramp/bank/utils/walletGate"
 
 type BankSessionProps = {
@@ -63,6 +64,7 @@ export const BankFlow: FC<BankFlowProps> = ({ direction, onExit, onClose }) => {
     [direction, onExit, onClose, entry],
   )
 
+  if (!isBankFlowEnabled()) return null
   return (
     <BankFlowContext.Provider value={nav}>
       {gate.ok ? (

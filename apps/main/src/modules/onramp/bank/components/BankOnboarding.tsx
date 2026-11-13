@@ -39,8 +39,11 @@ type BankOnboardingProps = {
 /**
  * API doc 2 steps 2-5 as the Figma set-up steps S02-S07, each screen derived
  * from the latest onboarding read. No sign-out here (owner decision
- * 2026-11-13): the session ends on a wallet switch or disconnect, a 401 and
- * expiry.
+ * 2026-11-13). The session ends locally on a wallet disconnect or change
+ * (HbrSessionGuard, mounted at the app root, with or without a bank screen),
+ * on a 401 for its token, and when its expiry has passed on a read back from
+ * sessionStorage; closing the tab ends sessionStorage. The server token is
+ * not revoked (no DELETE is sent): it stays valid there until it expires.
  */
 export const BankOnboarding: FC<BankOnboardingProps> = ({
   h160,

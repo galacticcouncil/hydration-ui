@@ -19,6 +19,7 @@ import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
+import { HbrSessionGuard } from "@/modules/onramp/bank/components/HbrSessionGuard"
 import { applyResetTutorialsParam } from "@/modules/tutorials/utils/resetTutorials"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -67,6 +68,7 @@ export const App = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
+        <HbrSessionGuard />
         <DataProviderResolver>
           <ThemeProvider>
             <TooltipProvider>

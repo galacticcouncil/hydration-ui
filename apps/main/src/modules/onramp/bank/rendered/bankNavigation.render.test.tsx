@@ -111,6 +111,7 @@ import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
 import {
   buildFixtureOnboarding,
   FIXTURE_BANK_ACCOUNTS,
+  FIXTURE_RAMP_BUILT,
 } from "@/modules/onramp/bank/config/fixtures"
 import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
@@ -149,6 +150,9 @@ const view = (currency: string, status: string) => ({
 let onboarding: () => Response
 let onrampAccounts: unknown
 let depositsAnswer: unknown
+let onrampFail: null | "500" | "429" | "net"
+let bankAccounts: { bankAccounts: unknown[] }
+let rampsList: unknown[]
 const ready = () =>
   json(
     200,
@@ -176,17 +180,24 @@ const fakeFetch = async (url: string, init: RequestInit) => {
     case "GET /v1/customers/me/onboarding":
       return onboarding()
     case "GET /v1/onramp/accounts":
+      if (onrampFail === "net") throw new TypeError("network")
+      if (onrampFail === "429") return json(429, { error: "rate_limited" })
+      if (onrampFail === "500") return json(500, { error: "internal" })
       return json(200, onrampAccounts)
     case "GET /v1/onramp/deposits":
       return json(200, depositsAnswer)
     case "GET /v1/bank-accounts":
-      return json(200, FIXTURE_BANK_ACCOUNTS)
+      return json(200, bankAccounts)
     case "GET /v1/ramps":
       return json(200, {
-        ramps: [],
+        ramps: rampsList,
         truncated: false,
         unlinkedRedeems: [],
         unlinkedRedeemsTruncated: false,
+      })
+    case `GET /v1/ramps/${FIXTURE_RAMP_BUILT.id}`:
+      return json(200, {
+        ramp: { ...FIXTURE_RAMP_BUILT, label: "Checking (server)" },
       })
   }
   return json(404, { error: "not_found" })
@@ -247,6 +258,9 @@ beforeEach(() => {
   onboarding = ready
   onrampAccounts = { accounts: [usdReady, view("eur", "not_requested")] }
   depositsAnswer = { deposits: [], unattributed: [] }
+  onrampFail = null
+  bankAccounts = FIXTURE_BANK_ACCOUNTS
+  rampsList = []
   walletState.account = { rawAddress: A, address: A }
   walletState.signer = new FakeEthSigner(A)
   emit()
@@ -648,5 +662,99 @@ describe("deposit: details, transfers, one deposit's timeline", () => {
     )
     expect(stepper()).toBeNull()
     expect(text()).toContain("Arrived")
+  })
+})
+
+// ---- review 4a fix round ---------------------------------------------------
+
+describe("tiles never show the last good read after a failed refetch (review 4a B2)", () => {
+  it.each([
+    ["500", "error"],
+    ["429", "rechecking"],
+    ["net", "error"],
+  ] as const)(
+    "a good ready read, then %s: tile %s, no Ready",
+    async (fail, kind) => {
+      signedIn()
+      render(
+        <QueryClientProvider client={client}>
+          <BankPortfolio onOpen={vi.fn()} />
+        </QueryClientProvider>,
+      )
+      await waitFor(() =>
+        expect(text()).toContain("bank.tile.account.ready.title"),
+      )
+      onrampFail = fail
+      await act(async () => {
+        await client.refetchQueries({ queryKey: ["hbr"] })
+      })
+      await waitFor(() =>
+        expect(
+          Array.from(document.querySelectorAll("[data-bank-tile]")).map((t) =>
+            t.getAttribute("data-bank-tile"),
+          ),
+        ).toEqual([kind]),
+      )
+      expect(text()).not.toContain("bank.tile.account.ready")
+      expect(text()).not.toContain("bank.tile.setUp")
+      expect(document.querySelector('[data-chip="success"]')).toBeNull()
+    },
+  )
+})
+
+describe("the cash-out stays on the account chosen at Continue (review 4a B4)", () => {
+  const X = FIXTURE_BANK_ACCOUNTS.bankAccounts[0]!
+  const Y = {
+    ...X,
+    id: "00000000-0000-4000-8000-0000000000c2",
+    last4: "9999",
+    bankName: "Other bank",
+  }
+  const desc = () =>
+    document.querySelector("[data-header-description]")?.textContent ?? ""
+  const toCashOut = async () => {
+    signedIn()
+    rampsList = [{ ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }]
+    bankAccounts = { bankAccounts: [X] }
+    mountFlow("withdraw")
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll("button")).find(
+          (b) => b.textContent === "bank.flow.continue",
+        )?.disabled,
+      ).toBe(false),
+    )
+    await clickText("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.title"))
+  }
+
+  it("c1 the list reorders after Continue: still X's cash-out, and a ramp's status stays", async () => {
+    await toCashOut()
+    expect(desc()).toContain("1234")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.history.open"))
+    await clickText("bank.cashOut.history.open")
+    await waitFor(() =>
+      expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+    )
+    bankAccounts = { bankAccounts: [Y, X] }
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ["hbr"] })
+    })
+    await flush()
+    expect(document.querySelector("[data-cash-out-status]")).not.toBeNull()
+    expect(text()).toContain("Checking (server)")
+    expect(text()).not.toContain("9999")
+  })
+
+  it("c2 the chosen account leaves the list: the cash-out of X stays, no jump to the picker", async () => {
+    await toCashOut()
+    bankAccounts = { bankAccounts: [Y] }
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ["hbr"] })
+    })
+    await flush()
+    expect(text()).toContain("bank.cashOut.title")
+    expect(desc()).toContain("1234")
+    expect(text()).not.toContain("bank.accounts.title")
   })
 })

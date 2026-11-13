@@ -5,6 +5,7 @@ import { BankAccountPicker } from "@/modules/onramp/bank/components/BankAccountP
 import { BankAddAccount } from "@/modules/onramp/bank/components/BankAddAccount"
 import { BankCashOut } from "@/modules/onramp/bank/components/BankCashOut"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
+import type { BankAccountView } from "@/modules/onramp/bank/config/schemas"
 import {
   useHbrBankAccounts,
   useHbrRemoveBankAccount,
@@ -18,7 +19,13 @@ type BankAccountsProps = {
   rails: { usd: boolean; eur: boolean }
 }
 
-type View = { kind: "pick" } | { kind: "add" } | { kind: "cashOut" }
+// The cash-out is pinned to the account object captured at Continue: a later
+// list read that reorders or drops accounts never swaps the cash-out (or the
+// status of a ramp in flight) for another account's screen.
+type View =
+  | { kind: "pick" }
+  | { kind: "add" }
+  | { kind: "cashOut"; account: BankAccountView }
 
 /**
  * The withdraw flow after set-up: choose a saved bank account (Figma W02) or
@@ -73,12 +80,12 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
       />
     )
 
-  if (view.kind === "cashOut" && selected)
+  if (view.kind === "cashOut")
     return (
       <BankCashOut
-        key={selected.id}
+        key={view.account.id}
         h160={h160}
-        account={selected}
+        account={view.account}
         onBack={() => setView({ kind: "pick" })}
       />
     )
@@ -97,7 +104,11 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
         onRemove={(id) => remove.mutate(id)}
         isRemoving={remove.isPending}
         notices={notices}
-        onContinue={() => setView({ kind: "cashOut" })}
+        onContinue={() => {
+          if (!selected) return
+          setChosenId(selected.id)
+          setView({ kind: "cashOut", account: selected })
+        }}
       />
     </BankStepShell>
   )

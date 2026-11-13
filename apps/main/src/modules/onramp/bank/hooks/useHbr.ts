@@ -4,7 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
 import { ENV } from "@/config/env"
 import {
@@ -37,6 +37,7 @@ import {
 import type { PreparedCashOut } from "@/modules/onramp/bank/utils/cashOut"
 import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
+import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 
 export type { MessageSigner } from "@/modules/onramp/bank/hooks/hbrQueries"
 
@@ -153,4 +154,16 @@ export const useHbrActionInFlight = (
   const pending = useIsMutating(filter) > 0
   const isFree = () => queryClient.isMutating(filter) === 0
   return { pending, isFree }
+}
+
+/**
+ * Ends the bank session locally: the token in memory and in sessionStorage,
+ * and every HBR query of every wallet (HbrSessionGuard, on a wallet change).
+ */
+export const useHbrClearSession = () => {
+  const queryClient = useQueryClient()
+  return useCallback(() => {
+    useHbrSessionStore.getState().clear()
+    queryClient.removeQueries({ queryKey: hbrQueryKeys.all() })
+  }, [queryClient])
 }

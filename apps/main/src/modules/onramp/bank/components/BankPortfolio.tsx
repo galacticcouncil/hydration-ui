@@ -19,6 +19,7 @@ import {
   useHbrSignIn,
 } from "@/modules/onramp/bank/hooks/useHbr"
 import type { BankEntry } from "@/modules/onramp/bank/store/useBankEntryStore"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { BankTile, deriveBankTiles } from "@/modules/onramp/bank/utils/bankTile"
 import {
   classifyBankError,
@@ -92,6 +93,7 @@ const ReadyTiles: FC<{
         hasSession: true,
         step: { kind: "ready", rails: { usd: true, eur: true } },
         onramp: onramp.data,
+        onrampError: onramp.error,
       })}
       onOpen={onOpen}
       onRetry={() => void onramp.refetch()}
@@ -164,6 +166,7 @@ export const BankPortfolio: FC<BankPortfolioProps> = (props) => {
   const wallet = useWallet()
   const { toggle } = useWeb3ConnectModal()
   const gate = getBankWalletGate(account, wallet?.signer)
+  if (!isBankFlowEnabled()) return null
 
   return (
     <Stack gap="l">
