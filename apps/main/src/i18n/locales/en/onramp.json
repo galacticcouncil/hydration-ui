@@ -299,7 +299,7 @@
   "bank.deposit.error.rateLimited": "Too many requests. Wait a moment, then try again.",
   "bank.accounts.removeResult.unavailable": "We could not check right now. Try again.",
   "bank.accounts.error.unavailable": "We could not check right now. Try again.",
-  "bank.deposit.error.unavailable": "We could not check right now. Try again.",
+  "bank.deposit.error.unavailable": "We could not set up your bank details right now. Try again later.",
   "bank.accounts.removeResult.unknown": "We could not read the server's answer. Try again.",
   "bank.accounts.error.unknown": "We could not read the server's answer. Try again.",
   "bank.deposit.error.unknown": "We could not read the server's answer. Try again.",

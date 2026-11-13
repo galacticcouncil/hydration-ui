@@ -486,15 +486,6 @@ describe("rail switches (E2E-1)", () => {
     await fillSepa()
     await submit()
     await flush()
-    console.warn(
-      "DBG0 errors",
-      JSON.stringify(fieldErrors()),
-      Array.from(document.querySelectorAll("input"))
-        .map(
-          (i) => `${i.getAttribute("name")}=${(i as HTMLInputElement).value}`,
-        )
-        .join(","),
-    )
     expect(fieldErrors()).toEqual([])
     onlySepaKeys()
   })
@@ -505,15 +496,6 @@ describe("rail switches (E2E-1)", () => {
     await fillSepa("Commerzbank")
     await submit()
     await flush()
-    console.warn(
-      "DBG errors",
-      JSON.stringify(fieldErrors()),
-      Array.from(document.querySelectorAll("input"))
-        .map(
-          (i) => `${i.getAttribute("name")}=${(i as HTMLInputElement).value}`,
-        )
-        .join(","),
-    )
     expect(fieldErrors()).toEqual([])
     onlySepaKeys()
     expect((posts()[0]!.body as { bankName?: string }).bankName).toBe(

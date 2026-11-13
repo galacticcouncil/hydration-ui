@@ -113,10 +113,13 @@ type RequestOptions<S extends z.ZodType | null> = {
  * Client timeouts. Reads: 20 s, so a hung read becomes a failed read and rule
  * 5 hides instructions within one poll interval plus 20 s; cutting a slow but
  * good read only hides instructions until the next read (the safe direction).
- * Writes: 60 s, above three sequential Bridge calls at the server's own 15 s
- * Bridge timeout (hydration-ramp server/lib/bridge/bridgeClient.mjs:376), so
- * the client gives up only after the server would have; the outcome is then
- * unknown (HbrTimeoutError), never "failed".
+ * Writes: 60 s. This does NOT order the client after the server: POST
+ * /v1/bank-accounts can make up to four sequential Bridge calls at the
+ * server's own 15 s Bridge timeout (hydration-ramp
+ * server/lib/bridge/bridgeClient.mjs:376) plus a Base RPC read, so the client
+ * can give up while the server is still working. Safety rests on two things
+ * only: a timed-out write is unknown (HbrTimeoutError, never "failed"), and a
+ * bank-account create is repeated with the same clientRequestId.
  */
 export const HBR_READ_TIMEOUT_MS = 20_000
 export const HBR_WRITE_TIMEOUT_MS = 60_000

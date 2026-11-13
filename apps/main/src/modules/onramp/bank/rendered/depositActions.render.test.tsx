@@ -92,6 +92,7 @@ import {
   FIXTURE_BANK_ACCOUNTS,
   FIXTURE_DEPOSIT_HISTORY,
 } from "@/modules/onramp/bank/config/fixtures"
+import onrampCopy from "@/i18n/locales/en/onramp.json"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -150,6 +151,7 @@ const delQueue: Answer[] = []
 let depositsAnswer: unknown = { deposits: [], unattributed: [] }
 let bankList: unknown = { bankAccounts: [] }
 let held: { resolve: (r: Response) => void; wallet: string | null }[] = []
+let onrampRequestAnswer: Answer | null = null
 
 const hold = (): Answer => () =>
   new Promise<Response>((resolve) => held.push({ resolve, wallet: null }))
@@ -206,6 +208,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
         return json(202, { account: view(path.split("/")[4]!, "preparing") })
       break
     case "POST /v1/onramp/accounts":
+      if (onrampRequestAnswer) return onrampRequestAnswer()
       return json(202, { account: view(body.currency, "preparing") })
   }
   return json(404, { error: "not_found" })
@@ -261,6 +264,7 @@ beforeEach(() => {
   held = []
   logs.length = 0
   for (const k of Object.keys(onrampQueue)) delete onrampQueue[k]
+  onrampRequestAnswer = null
   useHbrSessionStore.getState().clear()
 })
 afterEach(() => {
@@ -495,5 +499,32 @@ describe("Q5 retry lever", () => {
     release(json(202, { account: view("usd", "preparing") }))
     await flush()
     expect(sent.filter((s) => s.path.endsWith("/retry")).length).toBe(1)
+  })
+})
+
+describe("E2E-4 a refused on-ramp request", () => {
+  it("503 onramp_unavailable reads the request copy, with no claim about what happened", async () => {
+    direction = "deposit"
+    depositsAnswer = { deposits: [], unattributed: [] }
+    onrampRequestAnswer = () => json(503, { error: "onramp_unavailable" })
+    signIn(A)
+    onrampQueue[A] = [
+      () =>
+        json(200, {
+          accounts: [view("usd", "not_requested"), view("eur", "not_requested")],
+        }),
+    ]
+    setWallet(A)
+    render(app())
+    await flush()
+    const request = buttons().find((b) => b?.startsWith("bank.deposit.request"))
+    expect(request).toBeDefined()
+    await clickText(request!)
+    await flush()
+    expect(alerts()).toContain("bank.deposit.error.unavailable")
+    const copy = onrampCopy as Record<string, string>
+    expect(copy["bank.deposit.error.unavailable"]).toBe(
+      "We could not set up your bank details right now. Try again later.",
+    )
   })
 })
