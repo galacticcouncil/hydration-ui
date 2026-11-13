@@ -64,7 +64,7 @@
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^6.0.1",
-    "jsdom": "31.0.0",
+    "jsdom": "29.1.1",
     "remark-gfm": "4.0.1",
     "vite": "^8.0.10",
     "vite-plugin-html": "^3.2.2",

@@ -239,6 +239,25 @@ describe("unknown enum values fail closed", () => {
     expect(view.instructions).toBeNull()
   })
 
+  it("a hosted link is kept only when it parses as https without userinfo", () => {
+    const linkOf = (url: string) =>
+      onboarding({
+        links: { kyc: { url, readable: true }, tos: { url, readable: true } },
+      }).links.kyc
+    expect(linkOf("https://example.org/kyc")).toEqual({
+      url: "https://example.org/kyc",
+      readable: true,
+    })
+    for (const bad of [
+      "https://user:pass@example.org/",
+      "https://",
+      "https//example.org",
+      "javascript:alert(1)//https://",
+      "HTTP://example.org/",
+    ])
+      expect(linkOf(bad)).toEqual({ url: null, readable: false })
+  })
+
   it("an unreadable or non-https hosted link carries no url", () => {
     const parsed = onboarding({
       links: {

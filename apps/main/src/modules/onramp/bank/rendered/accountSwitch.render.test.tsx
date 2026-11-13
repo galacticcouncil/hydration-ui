@@ -502,7 +502,22 @@ describe("lead question: identity crosses wallets", () => {
         .join(" | "),
     )
     expect(errorSpy).toHaveBeenCalled()
-    expect(logged.some((l) => l.includes("https://example.org/"))).toBe(false)
+    // Every URL in the log, parsed: none is the bearer link (exact origin and
+    // path, not a substring match).
+    const urls = logged.flatMap((l) => l.match(/https?:\/\/[^\s"'|\\]+/g) ?? [])
+    const link = new URL("https://example.org/")
+    expect(
+      urls.some((u) => {
+        try {
+          const parsed = new URL(u)
+          return (
+            parsed.origin === link.origin && parsed.pathname === link.pathname
+          )
+        } catch {
+          return false
+        }
+      }),
+    ).toBe(false)
   })
 
   it("Q3 a 401 on the onboarding read discards the token, returns to sign-in, no repeat", async () => {

@@ -94,11 +94,25 @@ export const ONBOARDING_STAGES = [
   "active",
 ] as const
 
-// A hosted link is a bearer link: keep it only when readable and https.
+// A hosted link is a bearer link: keep it only when readable and, parsed as a
+// URL, https with no userinfo (the server's own rule, customerRoutes C6).
+const isHttpsLink = (url: string) => {
+  try {
+    const parsed = new URL(url)
+    return (
+      parsed.protocol === "https:" &&
+      parsed.username === "" &&
+      parsed.password === ""
+    )
+  } catch {
+    return false
+  }
+}
+
 const hostedLinkSchema = z
   .object({ url: nullableString, readable: z.boolean() })
   .transform(({ url, readable }) =>
-    readable && url !== null && url.startsWith("https://")
+    readable && url !== null && isHttpsLink(url)
       ? { url, readable: true as const }
       : { url: null, readable: false as const },
   )
