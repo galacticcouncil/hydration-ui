@@ -9,12 +9,17 @@ import type {
   CreateBankAccountRequest,
   CustomerType,
   OnrampCurrency,
+  RampRequest,
 } from "@/modules/onramp/bank/config/schemas"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import {
   HbrApiError,
   HbrResponseError,
 } from "@/modules/onramp/bank/utils/hbrErrors"
+import {
+  PreparedCashOut,
+  toPreparedCashOut,
+} from "@/modules/onramp/bank/utils/cashOut"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
 import { getOnrampPollInterval } from "@/modules/onramp/bank/utils/onramp"
@@ -274,6 +279,77 @@ export const hbrDepositsQuery = (service: HbrService, h160: string) =>
     staleTime: 0,
     gcTime: 0,
     refetchInterval: DEPOSITS_POLL_MS,
+  })
+
+// ---- Stage 3: cash-out ---------------------------------------------------
+
+// GET /v1/ramps/:id is limited to 60 a minute, GET /v1/ramps to 30 (API doc 1).
+export const RAMP_POLL_MS = 5_000
+export const RAMPS_POLL_MS = 30_000
+export const RAMP_BACKOFF_MS = 60_000
+
+const isRateLimited = (error: unknown) =>
+  error instanceof HbrApiError && error.status === 429
+
+/** POST /v1/ramps/quote: read-only; records nothing (API doc 4). */
+export const hbrQuoteRampMutation = (service: HbrService, h160: string) =>
+  mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
+    mutationKey: hbrQueryKeys.mutation(h160, "quoteRamp"),
+    mutationFn: (body: RampRequest) =>
+      service.forWallet(h160).quoteRamp(body),
+  })
+
+/**
+ * POST /v1/ramps, the binding build. The unsigned transactions go to
+ * `onPrepared` and nowhere else: the mutation's data (kept in the mutation
+ * cache) is the answer WITHOUT approveTx and redeemTx. Never repeated
+ * automatically (rule 12).
+ */
+export const hbrBuildRampMutation = (
+  service: HbrService,
+  queryClient: QueryClient,
+  h160: string,
+  onPrepared: (prepared: PreparedCashOut) => void,
+) =>
+  mutationOptions({
+    networkMode: HBR_NETWORK_MODE,
+    mutationKey: hbrQueryKeys.mutation(h160, "buildRamp"),
+    mutationFn: async (body: RampRequest) => {
+      const res = await service.forWallet(h160).buildRamp(body)
+      onPrepared(toPreparedCashOut(res))
+      const { approveTx: _approve, redeemTx: _redeem, ...view } = res
+      return view
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: hbrQueryKeys.ramps(h160) }),
+  })
+
+export const hbrRampsQuery = (service: HbrService, h160: string) =>
+  queryOptions({
+    networkMode: HBR_NETWORK_MODE,
+    queryKey: hbrQueryKeys.ramps(h160),
+    queryFn: () => service.forWallet(h160).listRamps(),
+    retry: false,
+    staleTime: 0,
+    refetchInterval: (query) =>
+      isRateLimited(query.state.error) ? RAMP_BACKOFF_MS : RAMPS_POLL_MS,
+  })
+
+/** One ramp, polled while shown: no status is an ending the screen may stop on (rule 13). */
+export const hbrRampQuery = (
+  service: HbrService,
+  h160: string,
+  rampId: string,
+) =>
+  queryOptions({
+    networkMode: HBR_NETWORK_MODE,
+    queryKey: hbrQueryKeys.ramp(h160, rampId),
+    queryFn: () => service.forWallet(h160).getRamp(rampId),
+    retry: false,
+    staleTime: 0,
+    refetchInterval: (query) =>
+      isRateLimited(query.state.error) ? RAMP_BACKOFF_MS : RAMP_POLL_MS,
   })
 
 /**

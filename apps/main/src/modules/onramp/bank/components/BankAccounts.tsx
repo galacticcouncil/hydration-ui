@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 
 import { BankAccountForm } from "@/modules/onramp/bank/components/BankAccountForm"
 import { BankAccountRow } from "@/modules/onramp/bank/components/BankAccountRow"
+import { BankCashOut } from "@/modules/onramp/bank/components/BankCashOut"
 import {
   useHbrBankAccounts,
   useHbrRemoveBankAccount,
@@ -23,7 +24,7 @@ type BankAccountsProps = {
   rails: { usd: boolean; eur: boolean }
 }
 
-/** Bank accounts for cash-out: list, add, remove (API doc 4). Cash-out itself is stage 3. */
+/** Bank accounts for cash-out: list, add, remove (API doc 4), then the cash-out itself. */
 export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
   const { t } = useTranslation(["onramp"])
   const [adding, setAdding] = useState(false)
@@ -84,9 +85,7 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
             <Button size="large" onClick={() => setAdding(true)}>
               {t("bank.accounts.add")}
             </Button>
-            <Text fs="p5" align="center" color={getToken("text.low")}>
-              {t("bank.accounts.next")}
-            </Text>
+            <BankCashOut h160={h160} accounts={list.data?.bankAccounts ?? []} />
           </>
         )}
       </Stack>

@@ -7,6 +7,8 @@ import {
 import { useTranslation } from "react-i18next"
 
 import { ReviewTransactionFeePaymentAssetModal } from "@/modules/transactions/review/ReviewTransactionFeePaymentAssetModal"
+import { ReviewStrictEvmStatus } from "@/modules/transactions/review/ReviewStrictEvmStatus"
+import { ReviewStrictEvmSummary } from "@/modules/transactions/review/ReviewStrictEvmSummary"
 import { ReviewTransactionFooter } from "@/modules/transactions/review/ReviewTransactionFooter"
 import { ReviewTransactionJsonView } from "@/modules/transactions/review/ReviewTransactionJsonView"
 import { ReviewTransactionStatus } from "@/modules/transactions/review/ReviewTransactionStatus"
@@ -14,7 +16,17 @@ import { ReviewTransactionSummary } from "@/modules/transactions/review/ReviewTr
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
 export const ReviewTransactionContent = () => {
-  const { isIdle } = useTransaction()
+  const { isIdle, strictSend } = useTransaction()
+
+  // Strict: no call data view or copy (it would put the call in the query
+  // cache and the clipboard), and no "Try again" except after a 4001.
+  if (strictSend) {
+    return (
+      <ModalBody>
+        {isIdle ? <ReviewStrictEvmSummary /> : <ReviewStrictEvmStatus />}
+      </ModalBody>
+    )
+  }
 
   if (isIdle) {
     return (

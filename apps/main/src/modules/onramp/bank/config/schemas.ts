@@ -478,6 +478,7 @@ export type ListBankAccountsResponse = z.infer<
 export type DeleteBankAccountResponse = z.infer<
   typeof deleteBankAccountResponseSchema
 >
+export type BankAccountView = ListBankAccountsResponse["bankAccounts"][number]
 export type RampRequest = z.infer<typeof rampRequestSchema>
 export type RampView = z.infer<typeof rampViewSchema>
 export type RampBuildResponse = z.infer<typeof rampBuildResponseSchema>

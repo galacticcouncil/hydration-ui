@@ -4,6 +4,7 @@ import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSign
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { ZecTxStatus } from "@galacticcouncil/web3-connect/src/signers/ZecSigner"
+import type { PreparedEvmTransaction } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
 import { Asset } from "@galacticcouncil/xc-core"
 import { ComponentType } from "react"
@@ -49,6 +50,32 @@ export type TExecutedAmount = {
   assetId: string
 }
 
+/** Why a strict transaction would need wrapping (useWrapTransaction), or null. */
+export type StrictEvmWrapRefusal = "pending" | "unbound" | "multisig"
+
+/**
+ * The strict option (owner decision 2026-11-12) for a transaction a server
+ * prepared and that must reach the wallet ONCE, exactly as given: one plain
+ * `eth_sendTransaction` from the wallet's own H160, never a Call Permit, an
+ * EVM.call through a Polkadot signer, the dispatch precompile or a wrapping
+ * batch. `tx` must be `strictEvmCall(prepared)`. Every guarantee is enforced
+ * in `modules/transactions/utils/strictEvm.ts` and the pipeline code it names.
+ */
+export type StrictEvmOptions = {
+  /** Sent with to, data, value and chainId exactly as given. */
+  prepared: PreparedEvmTransaction
+  /** The app session's H160: the wallet's active address and `prepared.from` must equal it. */
+  sessionAddress: string
+  /** A strict transaction whose receipt must have succeeded before this one is presented. */
+  after?: PreparedEvmTransaction | null
+  /** Epoch ms from which the transaction is refused before the wallet is asked. */
+  notAfter?: number
+  /** Receives the hash as soon as the wallet returns it, before the receipt wait. */
+  onHash?: (txHash: string) => void
+  /** Set by useWrapTransaction from the account; a caller's value is overwritten. */
+  wrapRefusal?: StrictEvmWrapRefusal | null
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
@@ -66,6 +93,8 @@ export type TransactionCommon = {
   initialError?: string
   /** Shown in the review modal's error state instead of the generic description. */
   errorMessage?: string
+  /** See StrictEvmOptions. */
+  strictEvm?: StrictEvmOptions
 }
 
 interface SingleTransactionInput extends TransactionCommon {

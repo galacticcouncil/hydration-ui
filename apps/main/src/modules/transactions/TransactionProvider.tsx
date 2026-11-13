@@ -6,7 +6,13 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
-import { createContext, useCallback, useContext, useReducer } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useReducer,
+} from "react"
 import { useLatest } from "react-use"
 
 import { MAX_WITHDRAW_ALL_QUERY_KEY } from "@/api/balances"
@@ -31,12 +37,19 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import {
+  canPresentStrict,
+  StrictSendState,
+  strictEvmDigest,
+  useStrictEvmLedger,
+} from "@/modules/transactions/utils/strictEvm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useProviderRpcUrlStore } from "@/states/provider"
 import {
   getTxResultBlockHeight,
   SingleTransaction,
+  StrictEvmWrapRefusal,
   useTransactionsStore,
 } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
@@ -61,6 +74,12 @@ export type TransactionContext = SingleTransaction &
 
     isLoading: boolean
     isUsingPermit: boolean
+
+    /** Set for a strict transaction: its ledger state and wrap refusal. */
+    strictSend: {
+      state: StrictSendState | undefined
+      wrapRefusal: StrictEvmWrapRefusal | null
+    } | null
 
     setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
@@ -106,7 +125,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         }
       : INITIAL_STATUS,
   )
-  const ecosystem = useTransactionEcosystem(transaction)
+  const strict = transaction.strictEvm
+  const strictDigest = useMemo(
+    () => (strict ? strictEvmDigest(strict.prepared) : null),
+    [strict],
+  )
+  const strictState = useStrictEvmLedger((ledger) =>
+    strictDigest ? ledger.entries[strictDigest] : undefined,
+  )
+
+  // A strict transaction is a plain EVM send; the fee asset does not route it.
+  const detectedEcosystem = useTransactionEcosystem(transaction)
+  const ecosystem = strict ? CallType.Evm : detectedEcosystem
   const toasts = useTransactionToasts(transaction, ecosystem)
 
   const hasRendered = useAfterFirstRender()
@@ -116,8 +146,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     isLoading: isLoadingFeeEstimate,
     isError: isFeeEstimateError,
   } = useEstimateFee(
+    // Not for a strict transaction: the estimate's query key holds the call.
     hasRendered &&
       !hasInitialError &&
+      !strict &&
       transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
       ? transaction.tx
       : null,
@@ -126,7 +158,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
     useTransactionPaymentInfo(
-      !hasRendered || hasInitialError ? undefined : transaction.tx,
+      !hasRendered || hasInitialError || strict ? undefined : transaction.tx,
     )
 
   const feeEstimateNative = fee?.feeEstimateNative
@@ -155,9 +187,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     transaction.onClose?.()
   }, [cancelTransaction, transaction])
 
+  // A strict transaction goes back to the wallet only after a 4001 with no hash.
   const reset = useCallback(() => {
+    if (strict && !canPresentStrict(strictState)) return
     dispatch(doReset())
-  }, [])
+  }, [strict, strictState])
 
   const setStatus = useCallback((status: TxStatus) => {
     dispatch(doSetStatus(status))
@@ -273,9 +307,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     })
   }
 
-  const isLoading =
-    !hasRendered ||
-    (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
+  const isLoading = strict
+    ? !hasRendered || strict.wrapRefusal === "pending"
+    : !hasRendered ||
+      (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
       // a failed estimate must not block submit; it leaves the fee unknown
       (!isReady || (!hasInitialError && !fee && !isFeeEstimateError))) ||
     isLoadingNonce ||
@@ -306,6 +341,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
         isLoading,
         isUsingPermit,
+
+        strictSend: strict
+          ? { state: strictState, wrapRefusal: strict.wrapRefusal ?? null }
+          : null,
 
         setTip,
         setFeePaymentModalOpen,

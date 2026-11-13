@@ -8,10 +8,11 @@ import {
   FIXTURE_DEPOSIT_HISTORY,
   FIXTURE_ONBOARDING_SEQUENCE,
   FIXTURE_ONRAMP_VIEWS,
-  FIXTURE_QUOTE,
+  buildFixtureQuote,
   FIXTURE_RAMP_BUILD_REFUSAL,
   FIXTURE_RAMP_BUILT,
-  FIXTURE_RAMPS,
+  FIXTURE_RAMP_LIST,
+  FIXTURE_RAMPS_LIST_RESPONSE,
   FIXTURE_UNBOUND_ONBOARDING,
   renderFixtureBindMessage,
   renderFixtureLoginMessage,
@@ -359,7 +360,10 @@ export const createHbrFixtureService = (args: {
         await withCustomer(forH160)
         if (!rampRequestSchema.safeParse(body).success)
           return refuse(400, "bad_request", { nothingBroadcast: true })
-        return rampQuoteResponseSchema.parse(FIXTURE_QUOTE)
+        const quote = buildFixtureQuote(body.usdcAmount)
+        if (!quote)
+          return refuse(422, "below_floor", { nothingBroadcast: true })
+        return rampQuoteResponseSchema.parse(quote)
       },
       buildRamp: async () => {
         await withCustomer(forH160)
@@ -375,12 +379,16 @@ export const createHbrFixtureService = (args: {
       },
       listRamps: async () => {
         await withCustomer(forH160)
-        return listRampsResponseSchema.parse(FIXTURE_RAMPS)
+        return listRampsResponseSchema.parse(FIXTURE_RAMPS_LIST_RESPONSE)
       },
       getRamp: async (id) => {
         await withCustomer(forH160)
-        if (id !== FIXTURE_RAMP_BUILT.id) return refuse(404, "ramp_not_found")
-        return rampResponseSchema.parse({ ramp: FIXTURE_RAMP_BUILT })
+        const ramp =
+          id === FIXTURE_RAMP_BUILT.id
+            ? FIXTURE_RAMP_BUILT
+            : FIXTURE_RAMP_LIST.find((r) => r.id === id)
+        if (!ramp) return refuse(404, "ramp_not_found")
+        return rampResponseSchema.parse({ ramp })
       },
       requestOnrampAccount: async (currency) => {
         const { wallet } = await withCustomer(forH160)

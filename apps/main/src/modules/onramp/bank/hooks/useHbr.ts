@@ -10,6 +10,7 @@ import { ENV } from "@/config/env"
 import {
   hbrBankAccountsQuery,
   hbrBindWalletMutation,
+  hbrBuildRampMutation,
   hbrCreateBankAccountMutation,
   hbrCreateCustomerMutation,
   hbrDepositsQuery,
@@ -17,6 +18,9 @@ import {
   hbrOnboardingQuery,
   hbrOnrampAccountsQuery,
   hbrPendingFilter,
+  hbrQuoteRampMutation,
+  hbrRampQuery,
+  hbrRampsQuery,
   hbrRemoveBankAccountMutation,
   hbrRequestOnrampAccountMutation,
   hbrRetryOnrampAccountMutation,
@@ -30,6 +34,7 @@ import {
   useHbrSessionStore,
 } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
+import type { PreparedCashOut } from "@/modules/onramp/bank/utils/cashOut"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 
 export type { MessageSigner } from "@/modules/onramp/bank/hooks/hbrQueries"
@@ -108,6 +113,23 @@ export const useHbrRetryOnrampAccount = (h160: string) =>
 
 export const useHbrDeposits = (h160: string) =>
   useQuery(hbrDepositsQuery(useHbrService(), h160))
+
+export const useHbrQuoteRamp = (h160: string) =>
+  useMutation(hbrQuoteRampMutation(useHbrService(), h160))
+
+export const useHbrBuildRamp = (
+  h160: string,
+  onPrepared: (prepared: PreparedCashOut) => void,
+) =>
+  useMutation(
+    hbrBuildRampMutation(useHbrService(), useQueryClient(), h160, onPrepared),
+  )
+
+export const useHbrRamps = (h160: string) =>
+  useQuery(hbrRampsQuery(useHbrService(), h160))
+
+export const useHbrRamp = (h160: string, rampId: string) =>
+  useQuery(hbrRampQuery(useHbrService(), h160, rampId))
 
 /**
  * Whether an HBR action is pending, read from the mutation cache (so it holds

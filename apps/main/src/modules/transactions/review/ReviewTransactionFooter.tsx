@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 
 import { useTransactionAlerts } from "@/modules/transactions/hooks/useTransactionAlerts"
+import { ReviewStrictEvmSubmitButton } from "@/modules/transactions/review/ReviewStrictEvmSubmitButton"
 import { ReviewTransactionSubmitButton } from "@/modules/transactions/review/ReviewTransactionSubmitButton"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
@@ -30,9 +31,12 @@ export const ReviewTransactionFooter: React.FC<
     isSigning,
     isSubmitted,
     alerts: txAlerts,
+    strictSend,
   } = useTransaction()
 
-  const { alerts: genericAlerts } = useTransactionAlerts()
+  const { alerts: feeAlerts } = useTransactionAlerts()
+  // The fee and permit alerts describe the routes a strict transaction never takes.
+  const genericAlerts = strictSend ? [] : feeAlerts
 
   const [consented, setConsented] = useState<boolean[]>([])
 
@@ -100,7 +104,11 @@ export const ReviewTransactionFooter: React.FC<
             {t("close")}
           </Button>
 
-          <ReviewTransactionSubmitButton disabled={isConsentPending} />
+          {strictSend ? (
+            <ReviewStrictEvmSubmitButton disabled={isConsentPending} />
+          ) : (
+            <ReviewTransactionSubmitButton disabled={isConsentPending} />
+          )}
         </Flex>
       </Stack>
     )

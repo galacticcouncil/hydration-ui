@@ -522,7 +522,7 @@ describe("E2E-4 a refused on-ramp request", () => {
     await clickText(request!)
     await flush()
     expect(alerts()).toContain("bank.deposit.error.unavailable")
-    const copy = onrampCopy as Record<string, string>
+    const copy = onrampCopy as unknown as Record<string, string>
     expect(copy["bank.deposit.error.unavailable"]).toBe(
       "We could not set up your bank details right now. Try again later.",
     )

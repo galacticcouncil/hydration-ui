@@ -17,7 +17,9 @@ import {
   ExecutionRevertedError,
   getContract,
   Hex,
+  hexToBigInt,
   http,
+  numberToHex,
   parseSignature,
   PublicClient,
   stringToHex,
@@ -33,6 +35,7 @@ import {
   EVM_DISPATCH_ADDRESS,
 } from "@/config/evm"
 import { requestNetworkSwitch } from "@/utils"
+import { EIP1193_USER_REJECTED, getEip1193ErrorCode } from "@/utils/ethereum"
 import {
   getPermitGasFromWeight,
   getPermitGasLimit,
@@ -66,6 +69,59 @@ type EthereumSignerOptions = {
   onError: (error: string) => void
   onFinalized: (receipt: TransactionReceipt) => void
 }
+
+/**
+ * A transaction a server prepared for this wallet. `sendPreparedTransaction`
+ * sends `to`, `data`, `value` and `chainId` exactly as given.
+ */
+export type PreparedEvmTransaction = {
+  chainId: number
+  from: string
+  to: string
+  data: string
+  value: string
+}
+
+/** Why a prepared transaction was refused before `eth_sendTransaction`. */
+export type PreparedSendRefusal = "account" | "chain" | "read_chain" | "estimate"
+
+export type PreparedReceiptStatus = "success" | "reverted" | "unknown"
+
+/**
+ * - `refused`: refused before `eth_sendTransaction`; nothing reached the wallet's send.
+ * - `rejected`: the provider's own error carried code 4001 and no hash came back.
+ * - `failed`: `eth_sendTransaction` failed otherwise, or answered no readable hash;
+ *   the wallet may have broadcast.
+ * - `sent`: a hash came back; `receipt` is what the receipt wait observed.
+ */
+export type PreparedSendOutcome =
+  | { kind: "refused"; reason: PreparedSendRefusal }
+  | { kind: "rejected" }
+  | { kind: "failed"; code: number | null }
+  | { kind: "sent"; hash: Hex; receipt: PreparedReceiptStatus }
+
+export type PreparedSendOptions = {
+  priorityRpcUrl?: string
+  /** Called right before `eth_sendTransaction`, the one wallet send of this call. */
+  onPrompt: () => void
+  /** Called before the matching onSuccess/onError, also for the finality re-report. */
+  onReceipt: (status: PreparedReceiptStatus) => void
+  onSubmitted: (txHash: string) => void
+  onSuccess: (receipt: TransactionReceipt) => void
+  onError: (error: string) => void
+  onFinalized: (receipt: TransactionReceipt) => void
+}
+
+// Fixed messages: a provider's own message can echo the request, calldata
+// included, and onError text reaches toasts that are persisted.
+export const PREPARED_SEND_ERRORS = {
+  refused: "Prepared transaction refused before sending",
+  rejected: "User rejected the request.",
+  failed: "Prepared transaction: the wallet did not confirm a send",
+  receipt: "Prepared transaction: receipt not observed",
+} as const
+
+const TX_HASH_RE = /^0x[0-9a-fA-F]{64}$/
 
 export class EthereumSigner {
   address: string
@@ -329,9 +385,137 @@ export class EthereumSigner {
     }
   }
 
+  /**
+   * Sends a server-prepared transaction as ONE plain `eth_sendTransaction` from
+   * the wallet's own address: never a Call Permit, never the dispatch
+   * precompile, never `wallet_sendTransaction` (viem's walletClient falls back
+   * to it after some errors, a second send), and no chain switch. `to`, `data`,
+   * `value` and `chainId` go out exactly as given; gas, fees and nonce are
+   * estimated as on the plain route. Everything before `onPrompt` is a refusal:
+   * nothing reached the wallet's send. The provider's error is read for its
+   * own `code` before anything wraps it. It never throws.
+   */
+  async sendPreparedTransaction(
+    prepared: PreparedEvmTransaction,
+    options: PreparedSendOptions,
+  ): Promise<PreparedSendOutcome> {
+    const refuse = (reason: PreparedSendRefusal): PreparedSendOutcome => {
+      options.onError(PREPARED_SEND_ERRORS.refused)
+      return { kind: "refused", reason }
+    }
+
+    const from = prepared.from.toLowerCase()
+    let reader: PublicClient
+    let request: Record<string, string>
+    try {
+      const accounts: unknown = await this.provider.request({
+        method: "eth_accounts",
+      })
+      const active =
+        Array.isArray(accounts) && typeof accounts[0] === "string"
+          ? accounts[0].toLowerCase()
+          : null
+      if (active !== from || this.address.toLowerCase() !== from)
+        return refuse("account")
+
+      const walletChainId: unknown = await this.provider.request({
+        method: "eth_chainId",
+      })
+      if (
+        typeof walletChainId !== "string" ||
+        Number(walletChainId) !== prepared.chainId
+      )
+        return refuse("chain")
+
+      reader = (
+        options.priorityRpcUrl
+          ? createPublicClient({
+              transport: http(wsToHttp(options.priorityRpcUrl)),
+            })
+          : createPublicClient({ transport: custom(this.provider) })
+      ) as PublicClient
+      if ((await reader.getChainId()) !== prepared.chainId)
+        return refuse("read_chain")
+
+      const [gas, gasPriceBase, nonce] = await Promise.all([
+        reader.estimateGas({
+          account: from as Address,
+          to: prepared.to as Address,
+          data: prepared.data as Hex,
+          value: hexToBigInt(prepared.value as Hex),
+        }),
+        reader.getGasPrice(),
+        reader.getTransactionCount({ address: from as Address }),
+      ])
+      const gasPrice = getPermitGasPrice(gasPriceBase)
+      request = {
+        from: prepared.from,
+        to: prepared.to,
+        data: prepared.data,
+        value: prepared.value,
+        chainId: numberToHex(prepared.chainId),
+        gas: numberToHex(getPermitGasLimit(gas, 0n)),
+        maxFeePerGas: numberToHex(gasPrice),
+        maxPriorityFeePerGas: numberToHex(gasPrice),
+        nonce: numberToHex(nonce),
+      }
+    } catch {
+      return refuse("estimate")
+    }
+
+    options.onPrompt()
+    let hash: Hex
+    try {
+      const answer: unknown = await this.provider.request({
+        method: "eth_sendTransaction",
+        params: [request as never],
+      })
+      if (typeof answer !== "string" || !TX_HASH_RE.test(answer)) {
+        options.onError(PREPARED_SEND_ERRORS.failed)
+        return { kind: "failed", code: null }
+      }
+      hash = answer as Hex
+    } catch (error) {
+      const code = getEip1193ErrorCode(error)
+      if (code === EIP1193_USER_REJECTED) {
+        options.onError(PREPARED_SEND_ERRORS.rejected)
+        return { kind: "rejected" }
+      }
+      options.onError(PREPARED_SEND_ERRORS.failed)
+      return { kind: "failed", code }
+    }
+
+    options.onSubmitted(hash)
+
+    let receipt: TransactionReceipt
+    try {
+      receipt = await reader.waitForTransactionReceipt({ hash })
+    } catch {
+      options.onReceipt("unknown")
+      options.onError(PREPARED_SEND_ERRORS.receipt)
+      return { kind: "sent", hash, receipt: "unknown" }
+    }
+    const report = (r: TransactionReceipt) => {
+      options.onReceipt(r.status === "success" ? "success" : "reverted")
+      this.reportReceipt(r, options)
+    }
+    report(receipt)
+
+    void this.waitForFinalReceipt(hash, {}, reader).then((final) => {
+      if (final && final.status !== receipt.status) report(final)
+      options.onFinalized(final ?? receipt)
+    })
+
+    return {
+      kind: "sent",
+      hash,
+      receipt: receipt.status === "success" ? "success" : "reverted",
+    }
+  }
+
   private reportReceipt(
     receipt: TransactionReceipt,
-    options: EthereumSignerOptions,
+    options: Pick<EthereumSignerOptions, "onSuccess" | "onError">,
   ) {
     if (receipt.status === "reverted") {
       options.onError(this.formatError(new ExecutionRevertedError()))
@@ -344,12 +528,13 @@ export class EthereumSigner {
   private async waitForFinalReceipt(
     hash: Hex,
     { interval = 3_000, timeout = 180_000 } = {},
+    client: PublicClient = this.publicClient,
   ): Promise<TransactionReceipt | null> {
     const deadline = Date.now() + timeout
     while (Date.now() < deadline) {
       const [receipt, finalized] = await Promise.all([
-        this.publicClient.getTransactionReceipt({ hash }).catch(() => null),
-        this.publicClient.getBlock({ blockTag: "finalized" }).catch(() => null),
+        client.getTransactionReceipt({ hash }).catch(() => null),
+        client.getBlock({ blockTag: "finalized" }).catch(() => null),
       ])
       if (receipt && finalized && finalized.number >= receipt.blockNumber)
         return receipt

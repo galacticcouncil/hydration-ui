@@ -450,3 +450,103 @@ export const FIXTURE_DEPOSIT_HISTORY = {
     },
   ],
 }
+
+// ---- Stage 3: cash-out --------------------------------------------------
+
+// hydration-ramp server/lib/ramp/redeemBuilder.mjs `computeQuote`: the PSM fee
+// rounds DOWN on the amount, the developer fee is zero at launch, FLOOR is 2
+// USDC. redeemFeeBps 5 is the live vault value measured 2026-11-05 (hydration-
+// ramp CLAUDE.md); it reproduces the doc example (25.5 USDC -> fee 12750).
+export const FIXTURE_REDEEM_FEE_BPS = 5n
+export const FIXTURE_FLOOR = 2_000_000n
+
+/** The fixture quote for `usdcAmount` (a request decimal string), or null below the floor. */
+export const buildFixtureQuote = (usdcAmount: string) => {
+  const [whole = "0", fraction = ""] = usdcAmount.split(".")
+  const amount = BigInt(whole) * 1_000_000n + BigInt(fraction.padEnd(6, "0"))
+  const psmFee = (amount * FIXTURE_REDEEM_FEE_BPS) / 10_000n
+  const vaultPayout = amount - psmFee
+  if (vaultPayout < FIXTURE_FLOOR) return null
+  return {
+    quote: {
+      usdcAmount: amount.toString(),
+      psmFee: psmFee.toString(),
+      vaultPayout: vaultPayout.toString(),
+      developerFee: "0",
+      bridgeCredited: vaultPayout.toString(),
+      floor: FIXTURE_FLOOR.toString(),
+    },
+    payoutLimit: FIXTURE_QUOTE.payoutLimit,
+  }
+}
+
+// Cash-outs in several statuses, so the status screens can be seen on
+// fixtures. Label, tone and detail are rows of API doc 5.1, verbatim.
+const rampRow = (
+  n: number,
+  status: string,
+  label: string,
+  tone: string,
+  detail: string | null,
+  usdcAmount: string,
+) => ({
+  ...FIXTURE_RAMP_BUILT,
+  id: `00000000-0000-4000-8000-0000000000${(0xd2 + n).toString(16)}`,
+  usdcAmount,
+  createdAt: `2026-10-${20 - n}T12:00:00.000Z`,
+  validUntil: `2026-10-${20 - n}T12:30:00.000Z`,
+  status,
+  label,
+  tone,
+  detail,
+})
+
+export const FIXTURE_RAMP_LIST = [
+  rampRow(0, "submitted", "Checking", "pending", null, "25500000"),
+  rampRow(
+    1,
+    "credited",
+    "Queued on Base",
+    "pending",
+    "A queue position is not a payout date.",
+    "100000000",
+  ),
+  rampRow(
+    2,
+    "bridge_payment_submitted",
+    "Bank payout submitted",
+    "pending",
+    null,
+    "40000000",
+  ),
+  rampRow(3, "paid", "Paid", "success", null, "250000000"),
+  rampRow(
+    4,
+    "redeem_reverted",
+    "Transaction reverted - nothing was redeemed",
+    "neutral",
+    null,
+    "10000000",
+  ),
+  rampRow(
+    5,
+    "expired",
+    "Expired - no redemption found",
+    "neutral",
+    "No redemption with this transaction's reference was found on Hydration before its deadline, and the transaction can no longer be used. If you approved HOLLAR for it, that approval stays in place unused; only a redeem you sign yourself can spend it.",
+    "15000000",
+  ),
+  rampRow(
+    6,
+    "unpayable",
+    "Needs attention",
+    "attention",
+    "The vault could not pay the payout address; the amount is held for it.",
+    "30000000",
+  ),
+]
+
+export const FIXTURE_RAMPS_LIST_RESPONSE = {
+  ...FIXTURE_RAMPS,
+  ramps: FIXTURE_RAMP_LIST,
+}
