@@ -349,6 +349,27 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
                           Number(pick.debtReserve!.priceInUsd),
                       })}
                     />
+                    <PreviewRow
+                      label={t("multiply.pairDetails.largestFall")}
+                      tooltip={t("multiply.pairDetails.largestFallTooltip", {
+                        collateral: symbol(pick.pair.collateralAssetId),
+                        debt: symbol(pick.pair.debtAssetId),
+                      })}
+                      value={percent(pick.risk?.largestFall ?? null)}
+                    />
+                    <PreviewRow
+                      label={t("multiply.pairDetails.penalty")}
+                      tooltip={t("multiply.pairDetails.penaltyTooltip")}
+                      value={percent(
+                        Number(
+                          pick.pair.eMode !== 0 &&
+                            pick.collateralReserve!.eModeCategoryId ===
+                              pick.pair.eMode
+                            ? pick.collateralReserve!.eModeLiquidationBonus
+                            : pick.collateralReserve!.liquidationBonus,
+                        ),
+                      )}
+                    />
                   </Stack>
                 </Stack>
               </Paper>

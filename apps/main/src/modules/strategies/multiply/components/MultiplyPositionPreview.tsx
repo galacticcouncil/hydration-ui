@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   Grid,
   Paper,
@@ -180,15 +181,34 @@ export const MultiplyAssetsCard: React.FC<{
 export const PreviewRow = ({
   label,
   value,
+  tooltip,
 }: {
   label: string
   value: React.ReactNode
+  tooltip?: string
 }) => (
   // a p5 line (24px), so a row holding a badge matches the rest
   <Flex justify="space-between" align="center" sx={{ minHeight: pxToRem(24) }}>
-    <Text fs="p6" color={getToken("text.medium")}>
-      {label}
-    </Text>
+    {tooltip ? (
+      <Tooltip text={tooltip} side="left" asChild>
+        <Box sx={{ width: "fit-content" }}>
+          <Text
+            fs="p6"
+            color={getToken("text.medium")}
+            decoration={(theme) =>
+              `underline dotted color-mix(in srgb, ${getToken("text.low")(theme)} 75%, transparent) 1px`
+            }
+            style={{ textUnderlineOffset: 3, cursor: "help" }}
+          >
+            {label}
+          </Text>
+        </Box>
+      </Tooltip>
+    ) : (
+      <Text fs="p6" color={getToken("text.medium")}>
+        {label}
+      </Text>
+    )}
     {typeof value === "string" ? (
       <Text fs="p5" fw={600} lh={1} color={getToken("text.high")}>
         {value}

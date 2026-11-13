@@ -137,7 +137,6 @@
   "deposit.swap.deposit": "You deposit",
   "deposit.swap.deposit.tooltip": "The exact {{ symbol }} bought and deposited in one transaction. If the price moves too far first, nothing happens and you can try again.",
   "deposit.swap.deposit.tooltip.exact": "The swap is 1:1, so your full amount is deposited. Your trade limit doesn't apply.",
-  "deposit.swap.price": "1 {{ symbolIn }} ≈ {{ value, currency }}",
   "deposit.swap.unavailable": "No {{ symbolIn }} to {{ symbol }} quote is available right now. Try another amount, or deposit {{ symbol }} directly.",
   "deposit.swap.failed": "Nothing was deposited, and your {{ symbol }} stays in your wallet, apart from any network fee. Check your balances and the current vault status, then retry.",
   "deposit.fee.unavailable": "The network fee for this deposit can't be estimated right now, so it can't be paid in {{ symbol }}. Try again shortly.",

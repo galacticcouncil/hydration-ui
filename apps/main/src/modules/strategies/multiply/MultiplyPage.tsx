@@ -19,7 +19,10 @@ import { MultiplyDetailsCard } from "@/modules/strategies/multiply/components/Mu
 import { MultiplyHeader } from "@/modules/strategies/multiply/components/MultiplyHeader"
 import { MultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm"
 import { MultiplyPairDetailsModal } from "@/modules/strategies/multiply/components/MultiplyPairDetailsModal"
-import { MultiplyPairSelectModal } from "@/modules/strategies/multiply/components/MultiplyPairSelectModal"
+import {
+  MultiplyPairSelectModal,
+  type MultiplySelectStep,
+} from "@/modules/strategies/multiply/components/MultiplyPairSelectModal"
 import { MultiplyPositionsCard } from "@/modules/strategies/multiply/components/MultiplyPositionsCard"
 import {
   findPairByAssets,
@@ -36,6 +39,7 @@ import {
 } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useMultiplyPositions } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
 import { getLoopsToRestore } from "@/modules/strategies/multiply/utils/loops"
+import { getPayAssetId } from "@/modules/strategies/multiply/utils/pay"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const MultiplyPageContent: React.FC = () => {
@@ -45,7 +49,7 @@ const MultiplyPageContent: React.FC = () => {
   const allPairs = useMultiplyPairs()
   const pairs = useMultiplyPairsMetrics(allPairs)
   const { data: positions } = useMultiplyPositions()
-  const [isSelectOpen, setIsSelectOpen] = useState(false)
+  const [selectStep, setSelectStep] = useState<MultiplySelectStep | null>(null)
   const [isWizardOpen, setIsWizardOpen] = useState(false)
   const [depositSlug, setDepositSlug] = useState<string | null>(null)
   const [detailsSlug, setDetailsSlug] = useState<string | null>(null)
@@ -56,8 +60,17 @@ const MultiplyPageContent: React.FC = () => {
   const pair = allPairs.find((p) => p.slug === search.pair) ?? allPairs[0]!
   const selected = pairs.find((p) => p.pair.slug === pair.slug)!
 
-  const selectPair = (next: MultiplyPair) =>
-    navigate({ search: { pair: next.slug }, replace: true })
+  const payAssetId = getPayAssetId(pair, search.pay)
+
+  // a new pair drops ?pay=, so the pay asset resets to its collateral
+  const selectPair = (next: MultiplyPair, pay?: string) =>
+    navigate({
+      search: {
+        pair: next.slug,
+        pay: pay === next.collateralAssetId ? undefined : pay,
+      },
+      replace: true,
+    })
 
   // A position on a loop missing from the list (another device, or removed)
   // puts the loop back, so the table, selector and positions agree.
@@ -145,13 +158,15 @@ const MultiplyPageContent: React.FC = () => {
           <Box minWidth={0}>
             <Paper px="xl">
               <MultiplyOpenForm
-                key={pair.slug}
+                key={`${pair.slug}-${payAssetId}`}
                 pair={pair}
+                payAssetId={payAssetId}
                 metrics={selected.data}
                 risk={selected.risk}
                 collateralReserve={selected.collateralReserve}
                 debtReserve={selected.debtReserve}
-                onPairClick={() => setIsSelectOpen(true)}
+                onAssetClick={() => setSelectStep("pay")}
+                onPayAssetChange={(id) => selectPair(pair, id)}
               />
             </Paper>
           </Box>
@@ -161,7 +176,7 @@ const MultiplyPageContent: React.FC = () => {
       {isWizardOpen && (
         <CustomLoopWizard
           onClose={() => setIsWizardOpen(false)}
-          onSelect={selectPair}
+          onSelect={(next) => selectPair(next)}
         />
       )}
 
@@ -175,12 +190,14 @@ const MultiplyPageContent: React.FC = () => {
         onClose={() => setDetailsSlug(null)}
       />
 
-      {isSelectOpen && (
+      {selectStep && (
         <MultiplyPairSelectModal
           pairs={pairs}
           selected={pair}
+          payAssetId={payAssetId}
+          initialStep={selectStep}
           onSelect={selectPair}
-          onClose={() => setIsSelectOpen(false)}
+          onClose={() => setSelectStep(null)}
         />
       )}
     </Stack>
