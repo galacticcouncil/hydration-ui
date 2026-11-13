@@ -9,6 +9,8 @@ const searchSchema = z.object({
   pair: z.string().optional(),
   collateral: z.coerce.string().optional(),
   debt: z.coerce.string().optional(),
+  // the asset the user enters with; missing means the pair's collateral
+  pay: z.coerce.string().optional(),
 })
 
 export const Route = createFileRoute("/strategies/looper/")({

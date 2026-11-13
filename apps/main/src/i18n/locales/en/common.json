@@ -122,6 +122,7 @@
   "offer": "Offer",
   "accepting": "Accepting",
   "price": "Price",
+  "swapPrice": "1 {{ symbolIn }} ≈ {{ value, currency }}",
   "vol": "Vol",
   "yield": "Yield",
   "marketPrice": "Market price",

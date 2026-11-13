@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { encodeFunctionData, type Hex, parseUnits } from "viem"
 
@@ -18,9 +19,11 @@ import {
   LOOPER_FACTORY_ADDRESS,
   type MultiplyPair,
 } from "@/modules/strategies/multiply/config/pairs"
+import { useLooperRecoveryStore } from "@/modules/strategies/multiply/hooks/useLooperRecoveryStore"
 import { getIntentFloors } from "@/modules/strategies/multiply/utils/projection"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTransactionsStore } from "@/states/transactions"
 
 export type OpenMultiplyPositionInput = {
   amount: string
@@ -28,44 +31,36 @@ export type OpenMultiplyPositionInput = {
   collateralPriceInDebt: number
 }
 
-/**
- * Opens a Multiply position: approves the collateral and the fee budget to the
- * factory when the allowance is short (exact amounts — the ERC20 precompile
- * rejects uint256.max), then `factory.open`, in one batch.
- */
-export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
-  const { t } = useTranslation("strategies")
-  const { evm } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const display = useResolveAssetDisplay()
-  const { evmAddress, submitBatch } = useVaultEvmCall()
+/** `factory.open`'s amount, floors and fee budget, in base units */
+export type OpenCallArgs = {
+  amount: bigint
+  leverage: number
+  minIntentDebt: bigint
+  minIntentAToken: bigint
+  feeBudget: bigint
+}
 
-  return useMutation({
-    mutationFn: async ({
+/**
+ * The open sequence: approves the collateral and the fee budget to the factory
+ * when the allowance is short (exact amounts — the ERC20 precompile rejects
+ * uint256.max), then `factory.open`.
+ */
+export const useOpenCalls = (pair: MultiplyPair) => {
+  const { evm } = useRpcProvider()
+  const { evmAddress } = useVaultEvmCall()
+
+  return useCallback(
+    async ({
       amount,
       leverage,
-      collateralPriceInDebt,
-    }: OpenMultiplyPositionInput) => {
+      minIntentDebt,
+      minIntentAToken,
+      feeBudget,
+    }: OpenCallArgs) => {
       const factory = LOOPER_FACTORY_ADDRESS
       if (!factory) {
         throw new Error("VITE_LOOPER_FACTORY_ADDRESS is not configured")
       }
-
-      const collateral = display(pair.collateralAssetId)
-      const debt = getAssetWithFallback(pair.debtAssetId)
-      const aCollateral = getAssetWithFallback(
-        pair.aCollateralAssetId.toString(),
-      )
-      const amountBig = parseUnits(amount, collateral.decimals)
-
-      const floors = getIntentFloors({
-        amount: amountBig,
-        collateralDecimals: collateral.decimals,
-        debtDecimals: debt.decimals,
-        collateralPriceInDebt,
-        debtEd: BigInt(debt.existentialDeposit),
-        aCollateralEd: BigInt(aCollateral.existentialDeposit),
-      })
 
       const params = {
         collateral: pair.collateral,
@@ -82,14 +77,15 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
         minHf: pair.minHf,
         stepHf: pair.stepHf,
         feeReserve: pair.feeReserve,
-        ...floors,
+        minIntentDebt,
+        minIntentAToken,
       }
 
       const calls: BatchEvmCall[] = []
 
       const approvals: [Hex, bigint][] = [
-        [pair.collateral, amountBig],
-        [pair.feeAsset, pair.feeBudget],
+        [pair.collateral, amount],
+        [pair.feeAsset, feeBudget],
       ]
       for (const [token, value] of approvals) {
         const allowance = await evm.readContract({
@@ -118,9 +114,54 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
         data: encodeFunctionData({
           abi: LOOPER_FACTORY_ABI,
           functionName: "open",
-          args: [params, amountBig, pair.feeBudget],
+          args: [params, amount, feeBudget],
         }),
         abi: [...LOOPER_FACTORY_ABI],
+      })
+
+      return calls
+    },
+    [pair, evm, evmAddress],
+  )
+}
+
+/** Opens a Multiply position with the collateral itself, in one batch. */
+export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
+  const { t } = useTranslation("strategies")
+  const { getAssetWithFallback } = useAssets()
+  const display = useResolveAssetDisplay()
+  const { buildBatchTx } = useVaultEvmCall()
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const buildOpenCalls = useOpenCalls(pair)
+  const clearRecovery = useLooperRecoveryStore((s) => s.clear)
+
+  return useMutation({
+    mutationFn: async ({
+      amount,
+      leverage,
+      collateralPriceInDebt,
+    }: OpenMultiplyPositionInput) => {
+      const collateral = display(pair.collateralAssetId)
+      const debt = getAssetWithFallback(pair.debtAssetId)
+      const aCollateral = getAssetWithFallback(
+        pair.aCollateralAssetId.toString(),
+      )
+      const amountBig = parseUnits(amount, collateral.decimals)
+
+      const floors = getIntentFloors({
+        amount: amountBig,
+        collateralDecimals: collateral.decimals,
+        debtDecimals: debt.decimals,
+        collateralPriceInDebt,
+        debtEd: BigInt(debt.existentialDeposit),
+        aCollateralEd: BigInt(aCollateral.existentialDeposit),
+      })
+
+      const calls = await buildOpenCalls({
+        amount: amountBig,
+        leverage,
+        feeBudget: pair.feeBudget,
+        ...floors,
       })
 
       const toastValues = {
@@ -131,14 +172,18 @@ export const useOpenMultiplyPosition = (pair: MultiplyPair) => {
 
       // ponytail: no pre-sign dry-run yet; a batch can't be eth_call'ed with its
       // approvals, so the AaveRefused-on-OOG check waits for a deployed factory to test against
-      return submitBatch(
-        calls,
+      return createTransaction(
         {
-          submitted: t("multiply.open.toast.submitted", toastValues),
-          success: t("multiply.open.toast.success", toastValues),
+          tx: await buildBatchTx(calls, MULTIPLY_OPEN_GAS),
+          toasts: {
+            submitted: t("multiply.open.toast.submitted", toastValues),
+            success: t("multiply.open.toast.success", toastValues),
+          },
+          invalidateQueries: [[MULTIPLY_QUERY_KEY_PREFIX]],
         },
-        [[MULTIPLY_QUERY_KEY_PREFIX]],
-        MULTIPLY_OPEN_GAS,
+        // opening with the collateral finishes an interrupted two-step entry,
+        // but only once it lands
+        { onSuccess: () => clearRecovery(pair.slug) },
       )
     },
   })
