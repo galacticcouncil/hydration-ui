@@ -11,6 +11,8 @@ import {
 import { getXcmReportAlerts } from "@/modules/xcm/transfer/utils/report"
 
 const ZEC = 10n ** 8n
+const USDC = 10n ** 6n
+const HOLLAR = 10n ** 18n
 const DAY_MS = 86_400_000
 
 const i18n = i18next.createInstance()
@@ -202,6 +204,148 @@ describe("getXcmReportAlerts", () => {
         },
         { key: XcmLimitAlertKey.WormholeCustodyExceeded, severity: "error" },
       ])
+    })
+  })
+
+  describe("psm", () => {
+    const depositLimit = (headroom: bigint): TransferValidationReport => ({
+      asset: "USDC",
+      chain: "Base",
+      decimals: 6,
+      headroom,
+      error: "psm.depositLimitExceeded",
+    })
+
+    it.each([true, false])(
+      "blocks a deposit over the vault limit (hub metered: %s)",
+      (isHubMetered) => {
+        const [alert, ...rest] = getXcmReportAlerts(
+          [depositLimit(5n * USDC)],
+          isHubMetered,
+          t,
+        )
+
+        expect(rest).toEqual([])
+        expect(alert).toMatchObject({
+          key: "psm.depositLimitExceeded",
+          severity: "error",
+        })
+        expect(alert?.message).toMatch(/limit on Base\b.* send up to 5\sUSDC/)
+      },
+    )
+
+    it("reads a limit at 0 as unavailable, not as one to send under", () => {
+      const report: TransferValidationReport[] = [
+        depositLimit(0n),
+        {
+          asset: "HOLLAR",
+          chain: "Hydration",
+          decimals: 18,
+          headroom: 0n,
+          error: "psm.mintHeadroomExceeded",
+        },
+        {
+          asset: "HOLLAR",
+          chain: "Hydration",
+          decimals: 18,
+          headroom: 0n,
+          error: "psm.redeemLimitExceeded",
+        },
+        {
+          asset: "USDC",
+          chain: "Base",
+          decimals: 6,
+          headroom: 0n,
+          error: "psm.payoutLimitExceeded",
+        },
+      ]
+
+      expect(getXcmReportAlerts(report, true, t)).toEqual([
+        {
+          key: "psm.depositLimitExceeded",
+          message:
+            "The HOLLAR PSM on Base isn't taking deposits right now. Please try again later.",
+          severity: "error",
+        },
+        {
+          key: "psm.mintHeadroomExceeded",
+          message:
+            "HOLLAR can't be minted on Hydration right now. A deposit would still be taken, but its HOLLAR would wait in a queue until minting resumes. Please try again later.",
+          severity: "error",
+        },
+        {
+          key: "psm.redeemLimitExceeded",
+          message:
+            "The HOLLAR PSM on Hydration isn't taking redemptions right now. Please try again later.",
+          severity: "error",
+        },
+        {
+          key: "psm.payoutLimitExceeded",
+          message:
+            "Nothing can be paid out on Base right now. A redemption would still burn its HOLLAR, but the payout would wait in a queue until payouts resume. Please try again later.",
+          severity: "error",
+        },
+      ])
+    })
+
+    it("blocks the queueing limits with the amount that fits", () => {
+      const [mint, payout] = getXcmReportAlerts(
+        [
+          {
+            asset: "HOLLAR",
+            chain: "Hydration",
+            decimals: 18,
+            headroom: 250n * HOLLAR,
+            error: "psm.mintHeadroomExceeded",
+          },
+          {
+            asset: "USDC",
+            chain: "Base",
+            decimals: 6,
+            headroom: 40n * USDC,
+            error: "psm.payoutLimitExceeded",
+          },
+        ],
+        false,
+        t,
+      )
+
+      expect(mint).toMatchObject({ severity: "error" })
+      expect(mint?.message).toMatch(/^Only 250\sHOLLAR can be minted on Hydr/)
+      expect(payout).toMatchObject({ severity: "error" })
+      expect(payout?.message).toMatch(/^Only 40\sUSDC can be paid out on Base/)
+    })
+
+    it("blocks a redeem below one usdc unit", () => {
+      const belowMinRedeem: TransferValidationReport = {
+        amount: "0.000001",
+        asset: "HOLLAR",
+        chain: "Hydration",
+        decimals: 18,
+        min: 10n ** 12n,
+        error: "psm.belowMinRedeem",
+      }
+
+      expect(getXcmReportAlerts([belowMinRedeem], true, t)).toEqual([
+        {
+          key: "psm.belowMinRedeem",
+          message: "The minimum redemption from Hydration is 0.000001 HOLLAR.",
+          severity: "error",
+        },
+      ])
+    })
+
+    it("blocks the pauses, a stranding recipient and an unreadable side", () => {
+      const report: TransferValidationReport[] = [
+        { chain: "Base", error: "psm.depositsPaused" },
+        { chain: "Hydration", error: "psm.redeemPaused" },
+        { chain: "Base", error: "psm.invalidRecipient" },
+        { chain: "Hydration", error: "psm.unreachable" },
+      ]
+
+      expect(getXcmReportAlerts(report, false, t)).toMatchObject(
+        report.map(({ error }) => ({ key: error, severity: "error" })),
+      )
     })
   })
 

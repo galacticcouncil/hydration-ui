@@ -58,6 +58,12 @@ export const isOmniRoute = (route: AssetRoute | null): boolean => {
   return tags.includes(XcmTag.Omni)
 }
 
+// HOLLAR PSM: usdc locked on an evm chain backs HOLLAR on Hydration 1:1
+export const isPsmRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as string[]
+  return tags.includes(XcmTag.Psm)
+}
+
 export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
   const tags = (route.tags ?? []) as string[]
   return tags.includes(XcmTag.SnowbridgeV1)
