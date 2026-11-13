@@ -309,6 +309,9 @@ describe("Q6 deposit history, builder's own fixture", () => {
     setWallet(A)
     render(app())
     await flush()
+    // Figma D06 -> Transfer step: the history is one step after the details.
+    await clickText("bank.deposit.viewDeposits")
+    await flush()
     const text = document.body.textContent ?? ""
     // the funds_scheduled entry (f5): status checking, receivedAt null
     const spans = Array.from(document.querySelectorAll("span")).map(

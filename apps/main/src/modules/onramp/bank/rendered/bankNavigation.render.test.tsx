@@ -148,6 +148,7 @@ const view = (currency: string, status: string) => ({
 // The scripted server: each test sets what the onboarding and on-ramp reads say.
 let onboarding: () => Response
 let onrampAccounts: unknown
+let depositsAnswer: unknown
 const ready = () =>
   json(
     200,
@@ -177,7 +178,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
     case "GET /v1/onramp/accounts":
       return json(200, onrampAccounts)
     case "GET /v1/onramp/deposits":
-      return json(200, { deposits: [], unattributed: [] })
+      return json(200, depositsAnswer)
     case "GET /v1/bank-accounts":
       return json(200, FIXTURE_BANK_ACCOUNTS)
     case "GET /v1/ramps":
@@ -245,6 +246,7 @@ beforeEach(() => {
   useBankEntryStore.getState().clear()
   onboarding = ready
   onrampAccounts = { accounts: [usdReady, view("eur", "not_requested")] }
+  depositsAnswer = { deposits: [], unattributed: [] }
   walletState.account = { rawAddress: A, address: A }
   walletState.signer = new FakeEthSigner(A)
   emit()
@@ -486,5 +488,165 @@ describe("Portfolio, Deposits: the saved-status tile is the server's state", () 
     expect(stepper()).toBeNull()
     // Read once: the next open of the flow is a normal one.
     expect(useBankEntryStore.getState().entry).toBeNull()
+  })
+})
+
+// ---- phase B: deposit ----------------------------------------------------
+
+const DEP = "00000000-0000-4000-8000-0000000000f9"
+const deposit = (
+  status: string,
+  label: string,
+  detail: string | null = null,
+) => ({
+  id: DEP,
+  currency: "usd",
+  amount: "120.00",
+  bridgeState: "payment_processed",
+  receivedAt: "2026-10-22T12:00:00.000Z",
+  status,
+  label,
+  detail,
+  progress: {
+    arrived: "120000000",
+    deposited: "120000000",
+    waiting: "0",
+    credited: status === "credited" ? "120000000" : "0",
+  },
+})
+
+describe("deposit: details, transfers, one deposit's timeline", () => {
+  const toTransfers = async () => {
+    signedIn()
+    mountFlow("deposit")
+    await waitFor(() => expect(text()).toContain("bank.deposit.viewDeposits"))
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.bankDetails")
+    await clickText("bank.deposit.viewDeposits")
+    await waitFor(() =>
+      expect(document.querySelector("[data-deposit-row]")).not.toBeNull(),
+    )
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.transfer")
+  }
+  const openRow = async () => {
+    await clickText("bank.history.open")
+    await waitFor(() =>
+      expect(text()).toContain("bank.deposit.summary.bankTransfer"),
+    )
+  }
+
+  it("D06 rails read as names; an unknown rail token is shown as returned", async () => {
+    onrampAccounts = {
+      accounts: [
+        {
+          ...usdReady,
+          instructions: {
+            ...usdReady.instructions,
+            paymentRails: ["ach_push", "wire", "zz_new"],
+          },
+        },
+        view("eur", "not_requested"),
+      ],
+    }
+    signedIn()
+    mountFlow("deposit")
+    await waitFor(() =>
+      expect(document.querySelector("[data-rails]")).not.toBeNull(),
+    )
+    expect(
+      document.querySelector("[data-rails]")!.getAttribute("data-rails"),
+    ).toBe("ACH|Wire|zz_new")
+    expect(text()).not.toContain("ach_push")
+  })
+
+  it("the details of one deposit replace the list; back returns to it", async () => {
+    depositsAnswer = {
+      deposits: [deposit("queued_on_hydration", "Queued on Hydration")],
+      unattributed: [],
+    }
+    await toTransfers()
+    await openRow()
+    expect(document.querySelector("[data-deposit-row]")).toBeNull()
+    await click("[data-header-back]")
+    expect(document.querySelector("[data-deposit-row]")).not.toBeNull()
+    expect(text()).not.toContain("bank.deposit.summary.bankTransfer")
+  })
+
+  it("the timeline lights only what the status reaches; the current stage is the server's label", async () => {
+    depositsAnswer = {
+      deposits: [deposit("queued_on_hydration", "Queued (server words)")],
+      unattributed: [],
+    }
+    await toTransfers()
+    await openRow()
+    const tl = document.querySelector("[data-timeline-lit]")!
+    expect(tl.getAttribute("data-timeline-lit")).toBe("5")
+    expect(tl.getAttribute("data-timeline-complete")).toBe("false")
+    expect(text()).toContain("Queued (server words)")
+    expect(
+      Array.from(document.querySelectorAll("[data-stage-upcoming]")).map((e) =>
+        e.getAttribute("data-stage-upcoming"),
+      ),
+    ).toEqual(["Credited"])
+  })
+
+  it("waiting for the deposit limit stands on Depositing, with its label and the wait copy", async () => {
+    depositsAnswer = {
+      deposits: [deposit("waiting_deposit_limit", "Waiting for deposit limit")],
+      unattributed: [],
+    }
+    await toTransfers()
+    await openRow()
+    expect(
+      document
+        .querySelector("[data-stage-current]")
+        ?.getAttribute("data-stage-current"),
+    ).toBe("Depositing")
+    expect(text()).toContain("bank.history.waitingLimit")
+  })
+
+  it("credited completes the timeline; checking shows no timeline at all", async () => {
+    depositsAnswer = {
+      deposits: [deposit("credited", "Credited")],
+      unattributed: [],
+    }
+    await toTransfers()
+    await openRow()
+    expect(
+      document
+        .querySelector("[data-timeline-complete]")
+        ?.getAttribute("data-timeline-complete"),
+    ).toBe("true")
+    cleanup()
+    client.clear()
+    depositsAnswer = {
+      deposits: [deposit("checking", "Checking", "funds_scheduled")],
+      unattributed: [],
+    }
+    await toTransfers()
+    await openRow()
+    expect(document.querySelector("[data-timeline-lit]")).toBeNull()
+    expect(
+      document
+        .querySelector("[data-off-timeline]")
+        ?.getAttribute("data-off-timeline"),
+    ).toBe("checking")
+    expect(text()).toContain("bank.history.detail.funds_scheduled")
+  })
+
+  it("Portfolio's deposit row reopens the flow on that deposit, without the stepper", async () => {
+    depositsAnswer = {
+      deposits: [deposit("arrived", "Arrived")],
+      unattributed: [],
+    }
+    signedIn()
+    useBankEntryStore
+      .getState()
+      .open({ direction: "deposit", target: { kind: "deposit", id: DEP } })
+    mountFlow("deposit")
+    await waitFor(() =>
+      expect(text()).toContain("bank.deposit.summary.bankTransfer"),
+    )
+    expect(stepper()).toBeNull()
+    expect(text()).toContain("Arrived")
   })
 })

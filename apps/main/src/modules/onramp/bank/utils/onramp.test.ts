@@ -13,11 +13,15 @@ import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   canRequestOnrampAccount,
   canRetryOnrampAccount,
+  DEPOSIT_TIMELINE,
   formatUsdcBaseUnits,
   getDepositAmountLine,
   getDepositDetailKey,
+  getDepositStage,
+  getDepositTone,
   getOnrampHeader,
   getOnrampPollInterval,
+  getRailLabels,
   getVisibleInstructions,
   ONRAMP_POLL_MS,
 } from "@/modules/onramp/bank/utils/onramp"
@@ -265,5 +269,61 @@ describe("preparing copy", () => {
     expect(onrampCopy["bank.deposit.preparing.leave"]).toBe(
       "You can leave this page. The setup continues, and this page shows the result when you come back. It can take a few minutes.",
     )
+  })
+})
+
+describe("stage 4: rails and the deposit timeline", () => {
+  it("names the rails it knows and passes any other token through", () => {
+    expect(getRailLabels(["ach_push", "ach", "wire", "fednow"])).toEqual([
+      "ACH",
+      "Wire",
+      "FedNow",
+    ])
+    expect(getRailLabels(["sepa", "swift_x"])).toEqual(["SEPA", "swift_x"])
+    // a prototype key is a token like any other, never a lookup hit
+    expect(getRailLabels(["constructor"])).toEqual(["constructor"])
+  })
+
+  it("lights stages in the 5.3 order; waiting for the limit stands on Depositing", () => {
+    expect(DEPOSIT_TIMELINE.map((s) => s.status)).toEqual([
+      "received_by_bridge",
+      "sent_to_base",
+      "arrived",
+      "depositing",
+      "queued_on_hydration",
+      "credited",
+    ])
+    expect(getDepositStage("received_by_bridge")).toEqual({
+      lit: 1,
+      complete: false,
+    })
+    expect(getDepositStage("waiting_deposit_limit")).toEqual({
+      lit: 4,
+      complete: false,
+    })
+    expect(getDepositStage("queued_on_hydration")).toEqual({
+      lit: 5,
+      complete: false,
+    })
+    expect(getDepositStage("credited")).toEqual({ lit: 6, complete: true })
+  })
+
+  it.each([
+    "checking",
+    "needs_attention",
+    "returned",
+    "unknown",
+    "toString",
+    "later_status",
+  ])("%s is off-timeline (nothing lit, never complete)", (status) => {
+    expect(getDepositStage(status)).toEqual({ lit: 0, complete: false })
+  })
+
+  it("tones: success only for credited, attention for needs_attention", () => {
+    expect(getDepositTone("credited")).toBe("success")
+    expect(getDepositTone("needs_attention")).toBe("attention")
+    expect(getDepositTone("queued_on_hydration")).toBe("pending")
+    expect(getDepositTone("returned")).toBe("neutral")
+    expect(getDepositTone("a_later_status")).toBe("neutral")
   })
 })

@@ -197,3 +197,78 @@ export const getOnrampHeader = (
       : { kind: "rechecking" }
   return { kind: "failed" }
 }
+
+// ---- Stage 4: rail labels and the deposit timeline ----------------------
+
+// Bridge's payment-rail tokens we know a name for (hbr-bridge-xyz skill);
+// any other token is shown exactly as the server returned it.
+const RAIL_NAMES: Record<string, string> = {
+  ach: "ACH",
+  ach_push: "ACH",
+  wire: "Wire",
+  fednow: "FedNow",
+  sepa: "SEPA",
+}
+
+/** Human rail names, in order, duplicates dropped (ach and ach_push both read ACH). */
+export const getRailLabels = (rails: ReadonlyArray<string>): string[] => [
+  ...new Set(
+    rails.map((rail) =>
+      Object.prototype.hasOwnProperty.call(RAIL_NAMES, rail)
+        ? RAIL_NAMES[rail]!
+        : rail,
+    ),
+  ),
+]
+
+/**
+ * The deposit timeline (Figma D08-D13, pattern P04): the 5.3 statuses a
+ * deposit moves through, in order, with the 5.3 labels as stage names
+ * (`DEPOSIT_LABELS`, server/lib/onramp/depositAttribution.mjs:89, copied, not
+ * ours). `waiting_deposit_limit` stands on the Depositing stage (arrived on
+ * Base, not deposited yet). `returned`, `checking`, `needs_attention` and any
+ * status not listed are off-timeline: no stage is lit, the label says it.
+ */
+export const DEPOSIT_TIMELINE = [
+  { status: "received_by_bridge", name: "Received by Bridge" },
+  { status: "sent_to_base", name: "Sent to Base" },
+  { status: "arrived", name: "Arrived" },
+  { status: "depositing", name: "Depositing" },
+  { status: "queued_on_hydration", name: "Queued on Hydration" },
+  { status: "credited", name: "Credited" },
+] as const
+
+const DEPOSIT_STAGE_OF: Record<string, number> = {
+  received_by_bridge: 1,
+  sent_to_base: 2,
+  arrived: 3,
+  depositing: 4,
+  waiting_deposit_limit: 4,
+  queued_on_hydration: 5,
+  credited: 6,
+}
+
+/** Stages a deposit status lights (0 = off-timeline); complete only on `credited` (rule 4). */
+export const getDepositStage = (
+  status: string,
+): { lit: number; complete: boolean } => {
+  const lit = Object.prototype.hasOwnProperty.call(DEPOSIT_STAGE_OF, status)
+    ? DEPOSIT_STAGE_OF[status]!
+    : 0
+  return { lit, complete: status === "credited" }
+}
+
+/** A pill colour per deposit status (5.3 has labels, no tones); unknown is neutral. */
+export const getDepositTone = (
+  status: string,
+): "pending" | "attention" | "neutral" | "success" =>
+  status === "credited"
+    ? "success"
+    : status === "needs_attention"
+      ? "attention"
+      : status === "returned"
+        ? "neutral"
+        : Object.prototype.hasOwnProperty.call(DEPOSIT_STAGE_OF, status) ||
+            status === "checking"
+          ? "pending"
+          : "neutral"

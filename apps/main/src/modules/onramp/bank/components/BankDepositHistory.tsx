@@ -1,4 +1,4 @@
-import { Alert, Separator, Stack, Text } from "@galacticcouncil/ui/components"
+import { Alert, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,16 +9,25 @@ import { classifyBankError } from "@/modules/onramp/bank/utils/onboarding"
 
 type BankDepositHistoryProps = {
   h160: string
+  /** Opens one deposit's timeline in place of this list. */
+  onOpen?: (id: string) => void
 }
 
-/** GET /v1/onramp/deposits. Unattributed entries are listed apart, never as a deposit (rule 9). */
-export const BankDepositHistory: FC<BankDepositHistoryProps> = ({ h160 }) => {
+/**
+ * GET /v1/onramp/deposits as Figma M05 cards. Unattributed entries are listed
+ * apart, never as a deposit (rule 9). An empty answer is "no deposits tracked
+ * yet", not proof that nothing was sent (API doc 4).
+ */
+export const BankDepositHistory: FC<BankDepositHistoryProps> = ({
+  h160,
+  onOpen,
+}) => {
   const { t } = useTranslation(["onramp"])
   const deposits = useHbrDeposits(h160)
   const data = deposits.data
 
   return (
-    <Stack gap="s">
+    <Stack gap="m">
       <Text fs="p3" fw={500}>
         {t("bank.history.title")}
       </Text>
@@ -34,11 +43,10 @@ export const BankDepositHistory: FC<BankDepositHistoryProps> = ({ h160 }) => {
         </Text>
       )}
       {data?.deposits.map((entry) => (
-        <BankDepositEntry key={entry.id} entry={entry} />
+        <BankDepositEntry key={entry.id} entry={entry} onOpen={onOpen} />
       ))}
       {data && data.unattributed.length > 0 && (
-        <>
-          <Separator />
+        <Stack gap="s" data-unattributed="1">
           <Text fs="p4" fw={500}>
             {t("bank.history.unattributed.title")}
           </Text>
@@ -51,7 +59,7 @@ export const BankDepositHistory: FC<BankDepositHistoryProps> = ({ h160 }) => {
               entry={entry}
             />
           ))}
-        </>
+        </Stack>
       )}
     </Stack>
   )

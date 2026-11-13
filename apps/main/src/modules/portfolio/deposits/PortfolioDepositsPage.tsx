@@ -1,6 +1,7 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
+import { BankDepositHistory } from "@/modules/onramp/bank/components/BankDepositHistory"
 import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
 import {
   BankEntry,
@@ -26,7 +27,17 @@ export const PortfolioDepositsPage = () => {
 
   return (
     <Flex direction="column" gap="xl">
-      <BankPortfolio onOpen={open} />
+      <BankPortfolio
+        onOpen={open}
+        history={(h160) => (
+          <BankDepositHistory
+            h160={h160}
+            onOpen={(id) =>
+              open({ direction: "deposit", target: { kind: "deposit", id } })
+            }
+          />
+        )}
+      />
     </Flex>
   )
 }

@@ -18,11 +18,21 @@ import {
 
 type ChildrenProps = { children?: ReactNode }
 
+/** The `data-*` props a screen sets for tests, passed to the DOM as given. */
+const dataProps = (props: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(props).filter(([k]) => k.startsWith("data-")),
+  )
+
 export const ModalBody: FC<ChildrenProps> = ({ children }) => (
   <div>{children}</div>
 )
-export const Stack: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
-export const Flex: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
+export const Stack: FC<ChildrenProps> = ({ children, ...rest }) => (
+  <div {...dataProps(rest)}>{children}</div>
+)
+export const Flex: FC<ChildrenProps> = ({ children, ...rest }) => (
+  <div {...dataProps(rest)}>{children}</div>
+)
 export const FormField: FC<ChildrenProps & { error?: string }> = ({
   children,
   error,
@@ -32,7 +42,9 @@ export const FormField: FC<ChildrenProps & { error?: string }> = ({
     {error && <span data-field-error="1">{error}</span>}
   </div>
 )
-export const Text: FC<ChildrenProps> = ({ children }) => <span>{children}</span>
+export const Text: FC<ChildrenProps> = ({ children, ...rest }) => (
+  <span {...dataProps(rest)}>{children}</span>
+)
 export const Separator: FC = () => <hr />
 export const Skeleton: FC = () => <i>skeleton</i>
 export const Icon: FC = () => null
@@ -104,10 +116,9 @@ export const Chip: FC<ChildrenProps & { "data-tone"?: string }> = ({
   children,
   "data-tone": tone,
 }) => <span data-chip={tone ?? "1"}>{children}</span>
-export const Paper: FC<ChildrenProps & { "data-bank-tile"?: string }> = ({
-  children,
-  "data-bank-tile": tile,
-}) => <section data-bank-tile={tile}>{children}</section>
+export const Paper: FC<ChildrenProps> = ({ children, ...rest }) => (
+  <section {...dataProps(rest)}>{children}</section>
+)
 export const Grid: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
 
 export const CopyButton: FC<{ text: string }> = ({ text }) => (
