@@ -1,30 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router"
-import z from "zod"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { getPageMeta } from "@/config/navigation"
-import { dataTableSortSchema } from "@/form/dataTableSortSchema"
-import { BorrowDashboardPage } from "@/modules/borrow/dashboard/BorrowDashboardPage"
-import { BorrowDashboardSkeletonPage } from "@/modules/borrow/dashboard/BorrowDashboardSkeletonPage"
-
-const searchSchema = z.object({
-  suppliedSort: dataTableSortSchema.default([
-    { id: "underlyingBalanceUSD", desc: true },
-  ]),
-  borrowedSort: dataTableSortSchema,
-  supplyGSort: dataTableSortSchema,
-  supplySort: dataTableSortSchema,
-  borrowSort: dataTableSortSchema,
-})
+import { LINKS } from "@/config/navigation"
 
 export const Route = createFileRoute("/borrow/dashboard")({
-  component: BorrowDashboardPage,
-  pendingComponent: BorrowDashboardSkeletonPage,
-  validateSearch: searchSchema,
-  head: ({
-    match: {
-      context: { i18n },
-    },
-  }) => ({
-    meta: getPageMeta("borrow", i18n.t),
-  }),
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: LINKS.borrowDashboard, search, replace: true })
+  },
 })

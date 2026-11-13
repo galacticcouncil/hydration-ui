@@ -1,4 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   Amount,
   Box,
@@ -16,6 +15,7 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 
 import { GigaHDXRepayFormValues, useGigaHDXRepay } from "./GigaHDXRepay.utils"
 
@@ -92,7 +92,12 @@ const GigaHDXRepayForm = ({ onClose }: GigaHDXRepayModalProps) => {
               },
               {
                 label: t("borrow:healthFactor"),
-                content: <HealthFactorChange {...healthFactor} />,
+                content: (
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                ),
               },
             ]}
           />

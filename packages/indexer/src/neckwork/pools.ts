@@ -72,6 +72,7 @@ export const stablepoolYieldMetricsQuery = (client: NeckworkClient) =>
         poolId: item.poolId,
         feeAprPerc: item.feeAprPerc,
         feeApyPerc: item.feeApyPerc,
+        asOf: data.asOf,
       }))
     },
   })

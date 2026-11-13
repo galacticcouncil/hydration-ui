@@ -18,6 +18,8 @@ export const USDT_POOL_ASSET_ID = "103"
 export const WETH_POOL_ASSET_ID = "104"
 export const BIL_ERC20_ID = "55"
 export const BIL_ASSET_ID = "550"
+export const HDX_ERC20_ASSET_ID = "67"
+export const STHDX_ASSET_ID = "670"
 
 export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"

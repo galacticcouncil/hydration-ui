@@ -1,4 +1,3 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   HYDRATION_CHAIN_KEY,
   isAnyEvmChain,
@@ -31,6 +30,7 @@ import {
   EVM_DEFAULT_CHAIN_KEY,
   EVM_DISPATCH_ADDRESS,
 } from "@/config/evm"
+import { ExtendedEvmCall } from "@/types"
 import { requestNetworkSwitch } from "@/utils"
 import {
   getPermitGasFromWeight,

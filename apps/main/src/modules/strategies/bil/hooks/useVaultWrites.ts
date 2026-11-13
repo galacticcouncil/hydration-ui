@@ -1,6 +1,6 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { TradeRouteBuilder } from "@galacticcouncil/sdk-next/sor"
 import { safeConvertSS58toH160, safeStringify } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation } from "@tanstack/react-query"
@@ -16,7 +16,7 @@ import {
 } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
-import { estimateGasLimit } from "@/api/borrow"
+import { estimateGasLimit } from "@/api/evm"
 import { calculateSlippage } from "@/api/utils/slippage"
 import {
   BIL_DEPOSIT_ZAP_ABI,
@@ -53,10 +53,13 @@ const vaultWriteTxOptions = (
     ? { onSuccess: options.onSuccess, resolveOn: "success" }
     : undefined
 
-interface BatchEvmCall {
+export interface BatchEvmCall {
   to: Hex
   data: Hex
   abi: Abi
+  // Overrides the batch's callGas. Every inner gas limit adds to the batch
+  // weight, which the EVM permit must keep under the 2^24 EIP-7825 cap.
+  gas?: bigint
 }
 
 function buildCancelResupplyCalls(
@@ -86,7 +89,7 @@ function buildCancelResupplyCalls(
   ]
 }
 
-function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
+export function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
   const rpc = useRpcProvider()
 
   const { account } = useAccount()
@@ -133,45 +136,53 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
     [evmAddress, rpc, createTransaction, txOptions],
   )
 
-  const buildBatchCalls = useCallback(
-    async (calls: BatchEvmCall[]) => {
+  const buildEvmTxs = useCallback(
+    async (calls: BatchEvmCall[], callGas = EVM_CALL_GAS) => {
       if (calls.length === 0) {
-        throw new Error("buildBatchCalls called with no calls")
+        throw new Error("buildEvmTxs called with no calls")
       }
 
       const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
         await estimateGasLimit({
           evm: rpc.evm,
-          gasLimit: EVM_CALL_GAS.toString(),
+          gasLimit: callGas.toString(),
         })
 
-      const evmCalls = calls.map(({ to, data, abi }) => ({
+      const evmCalls = calls.map(({ to, data, abi, gas }) => ({
         from: evmAddress,
         to,
         data,
         type: CallType.Evm,
         dryRun: (() => Promise.resolve(undefined)) as () => Promise<undefined>,
-        gasLimit,
+        gasLimit: gas ?? gasLimit,
         maxFeePerGas: maxFeePerGas[0],
         maxPriorityFeePerGas: maxPriorityFeePerGas[0],
         abi: safeStringify(abi),
       }))
 
-      const papiCalls = evmCalls.map(
-        (c) => transformEvmCallToPapiTx(rpc.papi, c).decodedCall,
-      )
-
-      return papiCalls
+      return evmCalls.map((c) => transformEvmCallToPapiTx(rpc.papi, c))
     },
     [evmAddress, rpc],
   )
 
+  const buildBatchCalls = useCallback(
+    async (calls: BatchEvmCall[], callGas?: bigint) =>
+      (await buildEvmTxs(calls, callGas)).map((tx) => tx.decodedCall),
+    [buildEvmTxs],
+  )
+
+  // A single call goes out bare: batch_all around one call adds nothing.
   const buildBatchTx = useCallback(
-    async (calls: BatchEvmCall[]) => {
-      const batchInner = await buildBatchCalls(calls)
-      return rpc.papi.tx.Utility.batch_all({ calls: batchInner })
+    async (calls: BatchEvmCall[], callGas?: bigint) => {
+      const txs = await buildEvmTxs(calls, callGas)
+      const [only] = txs
+      return only && txs.length === 1
+        ? only
+        : rpc.papi.tx.Utility.batch_all({
+            calls: txs.map((tx) => tx.decodedCall),
+          })
     },
-    [buildBatchCalls, rpc],
+    [buildEvmTxs, rpc],
   )
 
   const submitBatch = useCallback(
@@ -179,8 +190,9 @@ function useVaultEvmCall(writeOptions: VaultWriteOptions = {}) {
       calls: BatchEvmCall[],
       toasts: { submitted: string; success: string },
       invalidateQueries: string[][] = [[BIL_QUERY_KEY_PREFIX]],
+      callGas?: bigint,
     ) => {
-      const batchTx = await buildBatchTx(calls)
+      const batchTx = await buildBatchTx(calls, callGas)
 
       return createTransaction(
         { tx: batchTx, toasts, invalidateQueries },

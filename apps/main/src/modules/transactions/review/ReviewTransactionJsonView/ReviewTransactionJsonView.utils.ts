@@ -1,4 +1,8 @@
 import {
+  incentiveControllerAbi,
+  poolAbi,
+} from "@galacticcouncil/money-market/core"
+import {
   formatTypeValueJson,
   JsonValue,
   propPath,
@@ -18,6 +22,10 @@ import {
   BIL_POOL_ABI,
   VAULT_ABI,
 } from "@/modules/strategies/bil/config/abi"
+import {
+  LOOPER_FACTORY_ABI,
+  LOOPER_POSITION_ABI,
+} from "@/modules/strategies/multiply/config/abi"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import {
@@ -73,6 +81,10 @@ const KNOWN_ABIS: Abi = [
   ...VAULT_ABI,
   ...BIL_POOL_ABI,
   ...BIL_DEPOSIT_ZAP_ABI,
+  ...poolAbi,
+  ...incentiveControllerAbi,
+  ...LOOPER_FACTORY_ABI,
+  ...LOOPER_POSITION_ABI,
 ]
 
 const decodeEvmCallInput = (call: unknown): unknown => {

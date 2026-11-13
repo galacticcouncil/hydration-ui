@@ -180,11 +180,25 @@ export const SBadgeSlot = styled.div`
   height: 50%;
 `
 
+// clip-path per logo when collapsed into one circle, keyed by logo count
+const COLLAPSED_CLIPS: Record<number, string[]> = {
+  2: ["inset(0 50% 0 0)", "inset(0 0 0 50%)"],
+  3: ["inset(0 50% 0 0)", "inset(0 0 50% 50%)", "inset(50% 0 0 50%)"],
+  4: [
+    "inset(0 50% 50% 0)",
+    "inset(0 0 50% 50%)",
+    "inset(50% 50% 0 0)",
+    "inset(50% 0 0 50%)",
+  ],
+}
+
 export const SDecorationContainer = styled.div<{
   size: LogoSize
   count: number
+  /** number of logos merged into one circle */
+  collapsed?: number
   decoration?: AssetLogoDecoration
-}>(({ decoration = "none", count, size }) => {
+}>(({ decoration = "none", count, collapsed, size, theme }) => {
   const overlap = LOGO_OVERLAP[size]
   const thickness = DECOR_THICKNESS[size]
   const padding = DECOR_PADDING[size]
@@ -201,6 +215,40 @@ export const SDecorationContainer = styled.div<{
         margin-left: -${pxToRem(overlap)};
       }
     `,
+    !!collapsed &&
+      css`
+        width: ${pxToRem(diameter)};
+        height: ${pxToRem(diameter)};
+
+        /* nth-child(n) outranks the child's own position: relative */
+        > :nth-child(n) {
+          position: absolute;
+          inset: 0;
+          margin-left: 0;
+        }
+
+        ${(COLLAPSED_CLIPS[collapsed] ?? [])
+          .map((clip, i) => `> :nth-of-type(${i + 1}) { clip-path: ${clip}; }`)
+          .join("\n")}
+
+        /* 1px gaps between the sections, in the page background color */
+        &::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          border-radius: ${theme.radii.full};
+          --line: linear-gradient(
+            ${theme.surfaces.themeBasePalette.background},
+            ${theme.surfaces.themeBasePalette.background}
+          );
+          background:
+            var(--line) center / ${pxToRem(1)} 100% no-repeat,
+            var(--line) ${collapsed === 3 ? "right" : "center"} center /
+              ${collapsed === 3 ? "50%" : collapsed === 4 ? "100%" : "0"}
+              ${pxToRem(1)} no-repeat;
+        }
+      `,
     decorations(thickness, padding)(decoration),
     decoration === "atoken" &&
       css`

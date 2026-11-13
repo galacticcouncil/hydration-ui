@@ -19,6 +19,10 @@ const schema = z.object({
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
+  VITE_LOOPER_FACTORY_ADDRESS: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/)
+    .optional(),
 })
 
 export const ENV = schema.parse(import.meta.env)

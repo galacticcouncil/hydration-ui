@@ -1,4 +1,4 @@
-import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
+import { markets } from "@galacticcouncil/money-market/core"
 import { HOLLAR_ASSET_ID, isH160Address } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { XcAssetOperation, XcJourney } from "@galacticcouncil/xc-scan"
@@ -15,7 +15,7 @@ const networkToEcosystem: Record<string, ChainEcosystem> = {
 }
 
 const H160_ASSET_IDS: Record<string, string> = {
-  [AaveV3HydrationMainnet.GHO_TOKEN_ADDRESS.toLowerCase()]: HOLLAR_ASSET_ID,
+  [markets.hydration_v3.addresses.HOLLAR_TOKEN.toLowerCase()]: HOLLAR_ASSET_ID,
 }
 
 function resolveH160ToAssetId(assetId: string): string {

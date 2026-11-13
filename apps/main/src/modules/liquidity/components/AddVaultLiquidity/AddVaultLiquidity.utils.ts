@@ -1,9 +1,9 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   QUERY_KEY_BLOCK_PREFIX,
   safeConvertAnyToH160,
   safeStringify,
 } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -16,7 +16,7 @@ import { Abi, encodeFunctionData, erc20Abi, Hex, maxUint128 } from "viem"
 import z from "zod/v4"
 
 import { useAccountBalances } from "@/api/balances/account.hooks"
-import { estimateGasLimit } from "@/api/borrow"
+import { estimateGasLimit } from "@/api/evm"
 import { UNIPROXY_ABI } from "@/api/gamma/abi"
 import {
   bandMid,

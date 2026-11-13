@@ -13,12 +13,14 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
+import { setupExternalApyPersistence } from "@/api/external/persistence"
 import { setupPortfolioPersistence } from "@/api/portfolio"
 import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
+import { setupRiskSeriesPersistence } from "@/modules/strategies/multiply/hooks/usePairRiskLevels"
 import { applyResetTutorialsParam } from "@/modules/tutorials/utils/resetTutorials"
 
 import { routeTree } from "./routeTree.gen"
@@ -37,6 +39,8 @@ const queryClient = new QueryClient({
 })
 
 setupPortfolioPersistence(queryClient)
+setupExternalApyPersistence(queryClient)
+setupRiskSeriesPersistence(queryClient)
 
 applyResetTutorialsParam()
 

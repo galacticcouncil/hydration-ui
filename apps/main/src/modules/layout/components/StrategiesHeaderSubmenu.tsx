@@ -9,6 +9,7 @@ import { SDetailedLink } from "@/components/DetailedLink/DetailedLink.styled"
 import { InternalNavigationItem, NavigationKey } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import { JuicerStrategyLogo } from "@/modules/strategies/juicer/components/JuicerStrategyLogo"
+import { MultiplyLogo } from "@/modules/strategies/multiply/components/MultiplyLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -28,7 +29,7 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
   const { isReady } = useRpcProvider()
   const { getAsset } = useAssets()
 
-  return items.map(({ key, to, search }) => {
+  return items.map(({ key, to, params, search }) => {
     const assetIconId = STRATEGY_ASSET_ICON_BY_KEY[key]
     const showAssetIcon =
       isReady &&
@@ -37,11 +38,13 @@ export const StrategiesHeaderSubmenu: React.FC<Props> = ({ items }) => {
 
     return (
       <SDetailedLink key={key} asChild>
-        <Link to={to} search={search}>
+        <Link to={to} params={params} search={search}>
           {key === "strategiesJuicer" ? (
             <JuicerStrategyLogo size="medium" />
           ) : showAssetIcon ? (
             <AssetLogo id={assetIconId} size="medium" hideChain />
+          ) : key === "strategiesMultiply" ? (
+            <MultiplyLogo size="medium" />
           ) : null}
           <Box>
             <Text fw={600} fs="p4" lh={1.4}>

@@ -1,4 +1,5 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -8,7 +9,6 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { accountUnlockClassesQuery } from "@/api/democracy"
 import {
   claimableVotingRewardsQuery,
@@ -20,6 +20,7 @@ import {
 } from "@/api/gigaStake"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
 import { GigaUnstakeProps } from "@/modules/staking/gigaStaking/unstake/GigaUnstake"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -55,18 +56,23 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
   )
   const claimMutation = useClaimAndCompound()
 
-  const { hdxReserve, hollarReserve, borrowableHollar, userSummary } =
-    userBorrowSummary
+  const {
+    hdxReserve,
+    hdxPosition,
+    hollarPosition,
+    borrowableHollar,
+    account: marketAccount,
+  } = userBorrowSummary
 
-  const suppliedHdx = Big(hdxReserve.underlyingBalance)
+  const suppliedHdx = Big(hdxPosition?.underlyingBalance ?? "0")
   const availableBorrowUsd = Big(borrowableHollar)
-  const currentLoanToValue = Big(userSummary.currentLoanToValue)
+  const currentLoanToValue = Big(marketAccount.currentLoanToValue)
 
-  const hdxPriceUsd = Big(hdxReserve.reserve.priceInUSD)
+  const hdxPriceUsd = Big(hdxReserve.priceInUsd)
   const debtConstrainedMaxUnstake =
     currentLoanToValue.gt(0) &&
     hdxPriceUsd.gt(0) &&
-    Big(hollarReserve.totalBorrows).gt(0)
+    Big(hollarPosition?.variableBorrows ?? "0").gt(0)
       ? availableBorrowUsd.div(currentLoanToValue).div(hdxPriceUsd)
       : suppliedHdx
   const debtLockedInGigaHdx = Big.max(
@@ -213,7 +219,7 @@ export const useGigaUnstake = ({ userBorrowSummary }: GigaUnstakeProps) => {
         {
           tx,
           invalidateQueries: [
-            userGigaBorrowSummaryQueryKey(account.address),
+            [...moneyMarketKeys.market(GIGA_MARKET.market)],
             gigaQueryKey(account.address),
           ],
           toasts,
