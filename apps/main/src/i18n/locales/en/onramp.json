@@ -311,6 +311,6 @@
   "bank.deposit.preparing.steps.address": "Setting up your deposit address",
   "bank.deposit.preparing.steps.bridge": "Creating your bank details with Bridge",
   "bank.deposit.preparing.steps.ready": "Ready to receive",
-  "bank.deposit.preparing.leave": "You can leave this page. The setup continues, and your bank details will be here when you come back. It usually takes a few minutes.",
+  "bank.deposit.preparing.leave": "You can leave this page. The setup continues, and this page shows the result when you come back. It can take a few minutes.",
   "bank.deposit.rechecking": "Checking your {{ currency }} bank details again shortly"
 }

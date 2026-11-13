@@ -8,6 +8,7 @@ import {
 import type {
   CreateBankAccountRequest,
   CustomerType,
+  OnrampAccountsResponse,
   OnrampCurrency,
 } from "@/modules/onramp/bank/config/schemas"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
@@ -17,7 +18,11 @@ import {
 } from "@/modules/onramp/bank/utils/hbrErrors"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
-import { getOnrampPollInterval } from "@/modules/onramp/bank/utils/onramp"
+import {
+  createReadBudget,
+  getOnrampPollInterval,
+  ONRAMP_READ_BUDGET,
+} from "@/modules/onramp/bank/utils/onramp"
 import { hbrQueryKeys } from "@/modules/onramp/bank/utils/queryKeys"
 
 // About every 10 s while the user is in the hosted flow (API doc 2 step 5;
@@ -216,11 +221,22 @@ export const hbrRemoveBankAccountMutation = (
       }),
   })
 
+/** Reads of GET /v1/onramp/accounts per wallet (module-wide, like the session store). */
+export const onrampReadBudget = createReadBudget(ONRAMP_READ_BUDGET)
+
 export const hbrOnrampAccountsQuery = (service: HbrService, h160: string) =>
   queryOptions({
     networkMode: HBR_NETWORK_MODE,
     queryKey: hbrQueryKeys.onrampAccounts(h160),
-    queryFn: () => service.forWallet(h160).listOnrampAccounts(),
+    // The read budget (ONRAMP_READ_BUDGET, utils/onramp.ts) is taken before
+    // every send; past it nothing is sent and the last answer stays.
+    queryFn: async ({ client, queryKey }) => {
+      if (onrampReadBudget.tryTake(h160.toLowerCase()))
+        return service.forWallet(h160).listOnrampAccounts()
+      const last = client.getQueryData<OnrampAccountsResponse>(queryKey)
+      if (last) return last
+      throw new HbrApiError(429, "rate_limited", { error: "rate_limited" })
+    },
     retry: false,
     staleTime: 0,
     // Deposit instructions: never kept past the screen (rule 5).

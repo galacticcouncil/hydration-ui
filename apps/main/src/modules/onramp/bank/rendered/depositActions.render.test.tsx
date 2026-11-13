@@ -92,6 +92,7 @@ import {
   FIXTURE_BANK_ACCOUNTS,
   FIXTURE_DEPOSIT_HISTORY,
 } from "@/modules/onramp/bank/config/fixtures"
+import { onrampReadBudget } from "@/modules/onramp/bank/hooks/hbrQueries"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -249,6 +250,7 @@ const releaseHeld = async (response: Response) => {
 }
 
 beforeEach(() => {
+  onrampReadBudget.reset()
   vi.stubGlobal("fetch", vi.fn(fakeFetch))
   queryClient = new QueryClient({
     queryCache: new QueryCache({ onError: logQueryError }),

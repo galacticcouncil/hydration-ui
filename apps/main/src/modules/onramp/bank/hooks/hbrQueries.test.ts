@@ -22,6 +22,7 @@ import {
   hbrRequestOnrampAccountMutation,
   hbrRetryOnrampAccountMutation,
   hbrSignInMutation,
+  onrampReadBudget,
 } from "@/modules/onramp/bank/hooks/hbrQueries"
 import * as hbrQueries from "@/modules/onramp/bank/hooks/hbrQueries"
 import {
@@ -111,6 +112,7 @@ const logged = () =>
     .join("\n")
 
 beforeEach(() => {
+  onrampReadBudget.reset()
   useHbrSessionStore.getState().clear()
   consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
 })

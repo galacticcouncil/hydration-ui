@@ -147,11 +147,37 @@ export const isRateLimited = (error: unknown) =>
 
 /**
  * GET /v1/onramp/accounts is limited to 6 a minute per wallet (API doc 1).
- * The screen's only other caller of the route is the re-read after a request
- * or re-arm. While an account is `preparing`, 12 s polls (5 a minute) plus
- * that re-read stay within 6; otherwise 20 s. After a 429 the next poll waits
- * a full window: a backoff, never shown as a failure.
+ * The rule kept here: at most ONRAMP_READ_BUDGET.reads (6) reads of that route
+ * per wallet in any sliding 60 s window, whatever triggers them (the mount, a
+ * poll, the re-read after a request or re-arm, a remount). The query takes one
+ * read from `onrampReadBudget` (hooks/hbrQueries.ts) before it sends; with none
+ * left it sends nothing and keeps the last answer, or, with no answer yet,
+ * reads as a 429 ("Checking again shortly"). Polls: 12 s while an account is
+ * `preparing`, 20 s otherwise, 60 s after a 429.
  */
+export const ONRAMP_READ_BUDGET = { reads: 6, windowMs: 60_000 } as const
+
+/** A per-key sliding-window counter: `tryTake` is false when `reads` were taken in the last `windowMs`. */
+export const createReadBudget = (
+  budget: { reads: number; windowMs: number },
+  now: () => number = () => Date.now(),
+) => {
+  const taken = new Map<string, number[]>()
+  return {
+    tryTake: (key: string) => {
+      const t = now()
+      const recent = (taken.get(key) ?? []).filter(
+        (at) => at > t - budget.windowMs,
+      )
+      const ok = recent.length < budget.reads
+      if (ok) recent.push(t)
+      taken.set(key, recent)
+      return ok
+    },
+    reset: () => taken.clear(),
+  }
+}
+
 export const ONRAMP_POLL_MS = {
   preparing: 12_000,
   settled: 20_000,
@@ -169,9 +195,10 @@ export const getOnrampPollInterval = (
       : ONRAMP_POLL_MS.settled
 
 /**
- * What the account header says. A 429 is a backoff: a non-ready status stays
- * as it was read; a ready one says it is being checked again (its
- * instructions stay hidden, rule 5). Any other failed read says so.
+ * What the account header says. A 429 is a backoff, never a failure: with no
+ * answer yet, or on a ready account, it says the details are checked again
+ * shortly (instructions stay hidden, rule 5); a non-ready status stays as it
+ * was read. Any other failed read says so.
  */
 export const getOnrampHeader = (
   query: { data: OnrampAccountsResponse | undefined; error: unknown },
@@ -183,9 +210,9 @@ export const getOnrampHeader = (
   | null => {
   const view = findOnrampAccount(query.data, currency)
   if (!query.error) return view ? { kind: "status", view } : null
-  if (isRateLimited(query.error) && view)
-    return view.status === "ready"
-      ? { kind: "rechecking" }
-      : { kind: "status", view }
+  if (isRateLimited(query.error))
+    return view && view.status !== "ready"
+      ? { kind: "status", view }
+      : { kind: "rechecking" }
   return { kind: "failed" }
 }

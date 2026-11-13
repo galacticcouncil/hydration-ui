@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import onrampCopy from "@/i18n/locales/en/onramp.json"
 import {
   FIXTURE_DEPOSIT_HISTORY,
   FIXTURE_ONRAMP_VIEWS,
@@ -12,13 +13,14 @@ import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
 import {
   canRequestOnrampAccount,
   canRetryOnrampAccount,
+  createReadBudget,
   formatUsdcBaseUnits,
   getDepositAmountLine,
   getDepositDetailKey,
   getOnrampHeader,
   getOnrampPollInterval,
   getVisibleInstructions,
-  ONRAMP_POLL_MS,
+  ONRAMP_READ_BUDGET,
 } from "@/modules/onramp/bank/utils/onramp"
 
 const read = (
@@ -188,10 +190,18 @@ describe("on-ramp polling and the 429 backoff", () => {
     ).toBe(60_000)
   })
 
-  it("the preparing interval plus the one re-read after a request fits 6 a minute", () => {
-    expect(
-      Math.ceil(60_000 / ONRAMP_POLL_MS.preparing) + 1,
-    ).toBeLessThanOrEqual(6)
+  it("the read budget allows 6 reads per wallet in any sliding 60 s window", () => {
+    let now = 0
+    const budget = createReadBudget(ONRAMP_READ_BUDGET, () => now)
+    const taken = () => budget.tryTake("0xa")
+    for (let i = 0; i < 6; i++) expect(taken()).toBe(true)
+    expect(taken()).toBe(false) // the 7th in the window sends nothing
+    expect(budget.tryTake("0xb")).toBe(true) // per wallet
+    now = 59_999
+    expect(taken()).toBe(false)
+    now = 60_001 // the six reads at 0 left the window
+    for (let i = 0; i < 6; i++) expect(taken()).toBe(true)
+    expect(taken()).toBe(false)
   })
 
   it("a 429 is a backoff in the header, never a failure", () => {
@@ -211,6 +221,12 @@ describe("on-ramp polling and the 429 backoff", () => {
         "usd",
       ),
     ).toEqual({ kind: "rechecking" })
+    // With no answer yet, a 429 still reads "checking again", never "failed".
+    expect(getOnrampHeader({ data: undefined, error: limited }, "usd")).toEqual(
+      {
+        kind: "rechecking",
+      },
+    )
     expect(
       getOnrampHeader(
         {
@@ -220,5 +236,13 @@ describe("on-ramp polling and the 429 backoff", () => {
         "usd",
       ),
     ).toEqual({ kind: "failed" })
+  })
+})
+
+describe("preparing copy", () => {
+  it("promises no outcome and no typical duration", () => {
+    expect(onrampCopy["bank.deposit.preparing.leave"]).toBe(
+      "You can leave this page. The setup continues, and this page shows the result when you come back. It can take a few minutes.",
+    )
   })
 })
