@@ -3,12 +3,12 @@ import { getAddress } from "viem"
 import {
   buildFixtureBankAccount,
   buildFixtureOnboarding,
+  buildFixtureQuote,
   FIXTURE_CUSTOMER_ID,
   FIXTURE_DELETE_BANK_ACCOUNT,
   FIXTURE_DEPOSIT_HISTORY,
   FIXTURE_ONBOARDING_SEQUENCE,
   FIXTURE_ONRAMP_VIEWS,
-  buildFixtureQuote,
   FIXTURE_RAMP_BUILD_REFUSAL,
   FIXTURE_RAMP_BUILT,
   FIXTURE_RAMP_LIST,

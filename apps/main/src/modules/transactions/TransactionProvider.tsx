@@ -39,8 +39,8 @@ import {
 import { TxState, TxStatus } from "@/modules/transactions/types"
 import {
   canPresentStrict,
-  StrictSendState,
   strictEvmDigest,
+  StrictSendState,
   useStrictEvmLedger,
 } from "@/modules/transactions/utils/strictEvm"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -311,11 +311,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     ? !hasRendered || strict.wrapRefusal === "pending"
     : !hasRendered ||
       (transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY &&
-      // a failed estimate must not block submit; it leaves the fee unknown
-      (!isReady || (!hasInitialError && !fee && !isFeeEstimateError))) ||
-    isLoadingNonce ||
-    isLoadingFeeEstimate ||
-    isLoadingPaymentInfo
+        // a failed estimate must not block submit; it leaves the fee unknown
+        (!isReady || (!hasInitialError && !fee && !isFeeEstimateError))) ||
+      isLoadingNonce ||
+      isLoadingFeeEstimate ||
+      isLoadingPaymentInfo
 
   return (
     <TransactionContext.Provider

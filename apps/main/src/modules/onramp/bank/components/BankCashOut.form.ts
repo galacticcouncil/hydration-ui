@@ -9,11 +9,9 @@ import i18n from "@/i18n"
 const AMOUNT = /^(0|[1-9]\d*)(\.\d{1,6})?$/
 
 export const bankCashOutFormSchema = z.object({
-  bankAccountId: z
-    .string()
-    .regex(/^[0-9a-f-]{36}$/, {
-      error: () => i18n.t("onramp:bank.cashOut.form.error.account"),
-    }),
+  bankAccountId: z.string().regex(/^[0-9a-f-]{36}$/, {
+    error: () => i18n.t("onramp:bank.cashOut.form.error.account"),
+  }),
   usdcAmount: z.preprocess(
     (v) => (typeof v === "string" ? v.trim() : ""),
     z
@@ -30,9 +28,11 @@ export const bankCashOutFormSchema = z.object({
 export type BankCashOutFormValues = z.infer<typeof bankCashOutFormSchema>
 
 export const useBankCashOutForm = (bankAccountId: string) =>
-  useForm<z.input<typeof bankCashOutFormSchema>, unknown, BankCashOutFormValues>(
-    {
-      defaultValues: { bankAccountId, usdcAmount: "" },
-      resolver: standardSchemaResolver(bankCashOutFormSchema),
-    },
-  )
+  useForm<
+    z.input<typeof bankCashOutFormSchema>,
+    unknown,
+    BankCashOutFormValues
+  >({
+    defaultValues: { bankAccountId, usdcAmount: "" },
+    resolver: standardSchemaResolver(bankCashOutFormSchema),
+  })

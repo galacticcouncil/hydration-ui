@@ -10,10 +10,7 @@ import { create } from "zustand"
 
 import { TxOptions } from "@/modules/transactions/types"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import {
-  SingleTransaction,
-  StrictEvmWrapRefusal,
-} from "@/states/transactions"
+import { SingleTransaction, StrictEvmWrapRefusal } from "@/states/transactions"
 
 /*
  * The strict option of createTransaction (StrictEvmOptions). Why it exists: a
@@ -187,9 +184,7 @@ export const getStrictWrapRefusal = (args: {
   return null
 }
 
-const stateOf = (
-  outcome: PreparedSendOutcome,
-): StrictSendState | null => {
+const stateOf = (outcome: PreparedSendOutcome): StrictSendState | null => {
   switch (outcome.kind) {
     case "refused":
       return "refused"

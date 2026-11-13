@@ -18,12 +18,12 @@ import { isBigInt } from "remeda"
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { getStrictWrapRefusal } from "@/modules/transactions/utils/strictEvm"
 import {
   containsEvmCall,
   prependEvmBindingTx,
   transformEvmCallToPapiTx,
 } from "@/modules/transactions/utils/tx"
-import { getStrictWrapRefusal } from "@/modules/transactions/utils/strictEvm"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"

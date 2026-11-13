@@ -27,7 +27,13 @@ export const ReviewStrictEvmStatus = () => {
       errorDescription={t(`transaction.strict.status.${view}.description`)}
       errorActions={
         view === "declined" ? (
-          <Button size="micro" uppercase variant="muted" outline onClick={reset}>
+          <Button
+            size="micro"
+            uppercase
+            variant="muted"
+            outline
+            onClick={reset}
+          >
             {t("transaction.status.error.tryAgain")}
           </Button>
         ) : undefined

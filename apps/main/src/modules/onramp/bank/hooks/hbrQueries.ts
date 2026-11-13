@@ -13,13 +13,13 @@ import type {
 } from "@/modules/onramp/bank/config/schemas"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import {
-  HbrApiError,
-  HbrResponseError,
-} from "@/modules/onramp/bank/utils/hbrErrors"
-import {
   PreparedCashOut,
   toPreparedCashOut,
 } from "@/modules/onramp/bank/utils/cashOut"
+import {
+  HbrApiError,
+  HbrResponseError,
+} from "@/modules/onramp/bank/utils/hbrErrors"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 import { isRailOpen } from "@/modules/onramp/bank/utils/onboarding"
 import { getOnrampPollInterval } from "@/modules/onramp/bank/utils/onramp"
@@ -296,8 +296,7 @@ export const hbrQuoteRampMutation = (service: HbrService, h160: string) =>
   mutationOptions({
     networkMode: HBR_NETWORK_MODE,
     mutationKey: hbrQueryKeys.mutation(h160, "quoteRamp"),
-    mutationFn: (body: RampRequest) =>
-      service.forWallet(h160).quoteRamp(body),
+    mutationFn: (body: RampRequest) => service.forWallet(h160).quoteRamp(body),
   })
 
 /**

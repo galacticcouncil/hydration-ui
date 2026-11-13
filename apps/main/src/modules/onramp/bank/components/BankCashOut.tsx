@@ -99,6 +99,16 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
     [],
   )
 
+  // The list arrives after the form: select the first account once it does,
+  // and again if the selected one leaves the list.
+  const firstAccountId = cashOutAccounts[0]?.id
+  const selectedId = values.bankAccountId
+  useEffect(() => {
+    if (!firstAccountId) return
+    if (!cashOutAccounts.some((a) => a.id === selectedId))
+      form.setValue("bankAccountId", firstAccountId)
+  }, [firstAccountId, selectedId, cashOutAccounts, form])
+
   // Re-render when the quote may be refreshed again.
   useEffect(() => {
     if (!quotedAt) return
@@ -238,7 +248,7 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
   return (
     <Stack gap="l">
       <FormProvider {...form}>
-        <Stack gap="m" as="form" onSubmit={onQuote}>
+        <Stack gap="m">
           <Text fs="p2" fw={500} font="primary">
             {t("bank.cashOut.title")}
           </Text>
@@ -281,11 +291,15 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
             )}
           />
           <Button
-            type="submit"
             variant="secondary"
             disabled={busy || coolingDown || notAvailable}
+            onClick={() => void onQuote()}
           >
-            {t(quoteFits ? "bank.cashOut.quote.refresh" : "bank.cashOut.quote.get")}
+            {t(
+              quoteFits
+                ? "bank.cashOut.quote.refresh"
+                : "bank.cashOut.quote.get",
+            )}
           </Button>
         </Stack>
       </FormProvider>
@@ -308,11 +322,7 @@ export const BankCashOut: FC<BankCashOutProps> = ({ h160, accounts }) => {
         </Button>
       )}
       {quoteFits && !notAvailable && (
-        <Button
-          size="large"
-          disabled={busy}
-          onClick={() => void onConfirm()}
-        >
+        <Button size="large" disabled={busy} onClick={() => void onConfirm()}>
           {t("bank.cashOut.confirm")}
         </Button>
       )}

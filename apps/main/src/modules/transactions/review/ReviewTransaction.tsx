@@ -6,9 +6,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { ReviewTransactionFeePaymentAssetModal } from "@/modules/transactions/review/ReviewTransactionFeePaymentAssetModal"
 import { ReviewStrictEvmStatus } from "@/modules/transactions/review/ReviewStrictEvmStatus"
 import { ReviewStrictEvmSummary } from "@/modules/transactions/review/ReviewStrictEvmSummary"
+import { ReviewTransactionFeePaymentAssetModal } from "@/modules/transactions/review/ReviewTransactionFeePaymentAssetModal"
 import { ReviewTransactionFooter } from "@/modules/transactions/review/ReviewTransactionFooter"
 import { ReviewTransactionJsonView } from "@/modules/transactions/review/ReviewTransactionJsonView"
 import { ReviewTransactionStatus } from "@/modules/transactions/review/ReviewTransactionStatus"

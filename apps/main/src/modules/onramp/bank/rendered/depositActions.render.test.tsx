@@ -86,13 +86,13 @@ vi.mock("@/config/env", () => ({
   ENV: { VITE_HBR_API_URL: "https://hbr.test" },
 }))
 
+import onrampCopy from "@/i18n/locales/en/onramp.json"
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import {
   buildFixtureOnboarding,
   FIXTURE_BANK_ACCOUNTS,
   FIXTURE_DEPOSIT_HISTORY,
 } from "@/modules/onramp/bank/config/fixtures"
-import onrampCopy from "@/i18n/locales/en/onramp.json"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
@@ -511,7 +511,10 @@ describe("E2E-4 a refused on-ramp request", () => {
     onrampQueue[A] = [
       () =>
         json(200, {
-          accounts: [view("usd", "not_requested"), view("eur", "not_requested")],
+          accounts: [
+            view("usd", "not_requested"),
+            view("eur", "not_requested"),
+          ],
         }),
     ]
     setWallet(A)

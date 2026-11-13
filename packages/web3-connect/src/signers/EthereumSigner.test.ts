@@ -200,7 +200,8 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
       onError: vi.fn((m: string) => order.push(`error:${m}`)),
       onFinalized: vi.fn(),
     }
-    const sends = () => calls.filter((c) => c.method.endsWith("sendTransaction"))
+    const sends = () =>
+      calls.filter((c) => c.method.endsWith("sendTransaction"))
     return { signer, options, calls, sends, order }
   }
 
@@ -224,7 +225,9 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
       "success",
     ])
     // no chain switch, no permit signature
-    expect(calls.map((c) => c.method)).not.toContain("wallet_switchEthereumChain")
+    expect(calls.map((c) => c.method)).not.toContain(
+      "wallet_switchEthereumChain",
+    )
     expect(calls.map((c) => c.method)).not.toContain("wallet_addEthereumChain")
     expect(calls.map((c) => c.method)).not.toContain("eth_signTypedData_v4")
   })
@@ -283,7 +286,10 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
 
   it("refuses before the prompt when the signer's own address is not `from`", async () => {
     const { signer, options, sends } = setupPrepared()
-    const other = { ...prepared, from: "0x00000000000000000000000000000000000000c3" }
+    const other = {
+      ...prepared,
+      from: "0x00000000000000000000000000000000000000c3",
+    }
     await expect(
       signer.sendPreparedTransaction(other, options),
     ).resolves.toEqual({ kind: "refused", reason: "account" })
@@ -298,7 +304,9 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
       signer.sendPreparedTransaction(prepared, options),
     ).resolves.toEqual({ kind: "refused", reason: "chain" })
     expect(sends()).toHaveLength(0)
-    expect(calls.map((c) => c.method)).not.toContain("wallet_switchEthereumChain")
+    expect(calls.map((c) => c.method)).not.toContain(
+      "wallet_switchEthereumChain",
+    )
   })
 
   it("a gas estimate that throws refuses before the prompt", async () => {
@@ -321,7 +329,11 @@ describe("Ethereum signer prepared transaction (strict send)", () => {
     await expect(
       signer.sendPreparedTransaction(prepared, options),
     ).resolves.toEqual({ kind: "sent", hash: HASH, receipt: "reverted" })
-    expect(order.slice(0, 3)).toEqual(["prompt", "submitted", "receipt:reverted"])
+    expect(order.slice(0, 3)).toEqual([
+      "prompt",
+      "submitted",
+      "receipt:reverted",
+    ])
     expect(options.onSuccess).not.toHaveBeenCalled()
   })
 

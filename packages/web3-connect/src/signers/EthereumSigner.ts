@@ -83,7 +83,11 @@ export type PreparedEvmTransaction = {
 }
 
 /** Why a prepared transaction was refused before `eth_sendTransaction`. */
-export type PreparedSendRefusal = "account" | "chain" | "read_chain" | "estimate"
+export type PreparedSendRefusal =
+  | "account"
+  | "chain"
+  | "read_chain"
+  | "estimate"
 
 export type PreparedReceiptStatus = "success" | "reverted" | "unknown"
 

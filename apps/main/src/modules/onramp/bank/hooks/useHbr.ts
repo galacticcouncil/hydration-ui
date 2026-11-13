@@ -33,8 +33,8 @@ import {
   liveSessionFor,
   useHbrSessionStore,
 } from "@/modules/onramp/bank/store/useHbrSessionStore"
-import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import type { PreparedCashOut } from "@/modules/onramp/bank/utils/cashOut"
+import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import type { HbrService } from "@/modules/onramp/bank/utils/hbrService"
 
 export type { MessageSigner } from "@/modules/onramp/bank/hooks/hbrQueries"

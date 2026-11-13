@@ -1,6 +1,6 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { Alert, Button, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import {
   isEthereumSigner,
   requestNetworkSwitch,
@@ -96,7 +96,10 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
       </Stack>
       <Alert variant="info" description={t("bank.cashOut.review.once")} />
       {expired && (
-        <Alert variant="warning" description={t("bank.cashOut.review.expired")} />
+        <Alert
+          variant="warning"
+          description={t("bank.cashOut.review.expired")}
+        />
       )}
       {!expired && signer && walletChain !== null && !onChain && (
         <>
