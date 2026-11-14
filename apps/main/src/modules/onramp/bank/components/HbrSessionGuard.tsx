@@ -14,8 +14,11 @@ import {
  * it clears the session in memory and in sessionStorage and removes every HBR
  * query, so the next bank screen asks for a new sign-in. The first account
  * after a page load (null, then the reconnected wallet) is not a change: a
- * reload in the same tab keeps its session (owner decision 2026-11-13). The
- * server token is not revoked here (no DELETE); it ends at its expiry.
+ * reload in the same tab keeps its session (owner decision 2026-11-13). After
+ * the local clear it revokes the token at the server, best effort: one DELETE
+ * with the captured token, every outcome ignored (useHbrClearSession). Since
+ * hydration-ramp #132 that DELETE also drops the session's unused link grant;
+ * if it fails, the grant lives until the signed message's expiry.
  */
 export const HbrSessionGuard: FC = () => {
   const { account } = useAccount()

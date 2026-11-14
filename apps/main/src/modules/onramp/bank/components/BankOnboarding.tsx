@@ -42,8 +42,9 @@ type BankOnboardingProps = {
  * 2026-11-13). The session ends locally on a wallet disconnect or change
  * (HbrSessionGuard, mounted at the app root, with or without a bank screen),
  * on a 401 for its token, and when its expiry has passed on a read back from
- * sessionStorage; closing the tab ends sessionStorage. The server token is
- * not revoked (no DELETE is sent): it stays valid there until it expires.
+ * sessionStorage; closing the tab ends sessionStorage. On the guard's clear
+ * the server token is revoked best effort (one DELETE, outcome ignored); on a
+ * 401 or an expiry there is nothing left to revoke.
  */
 export const BankOnboarding: FC<BankOnboardingProps> = ({
   h160,
