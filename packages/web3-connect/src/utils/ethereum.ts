@@ -195,3 +195,17 @@ export function isEip1193Provider(
 ): provider is Required<EIP1193Provider> {
   return isFunction(provider?.request)
 }
+
+/**
+ * The EIP-1193 error `code` a provider attached to its own error object
+ * (4001 = the user rejected the request), or null when there is none. Read
+ * it from the error the provider threw, before any wrapper drops it.
+ */
+export const getEip1193ErrorCode = (error: unknown): number | null => {
+  if (typeof error !== "object" || error === null || !("code" in error))
+    return null
+  const { code } = error
+  return typeof code === "number" && Number.isInteger(code) ? code : null
+}
+
+export const EIP1193_USER_REJECTED = 4001

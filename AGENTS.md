@@ -9,6 +9,7 @@ Web app for the Hydration parachain. `apps/main` is the one deployable (a React 
 - **Checks.** `yarn lint` runs ESLint and `tsc` in every workspace; `yarn lint:fix` sorts imports and formats. `yarn test` runs Vitest, which covers pure logic in `*.test.ts` files under `apps/main/src`, `packages/web3-connect/src` and `packages/ui/src`.
 - **UI changes are verified by eye.** Open the affected page in the running app, or the story in Storybook, and report which of the two you looked at.
   - App: `yarn workspace @galacticcouncil/main dev` runs against the test network; `dev:production` runs against mainnet. By default, run the mainnet dev server, unless told otherwise.
+  - Bank screens against a local HBR API: `VITE_HBR_API_URL=/hbr yarn workspace @galacticcouncil/main dev` (the dev server proxies `/hbr` to `HBR_DEV_PROXY_TARGET`, default `http://127.0.0.1:8080`; server setup in the hydration-ramp repo, `docs/runbooks/local-app-test-server.md`). Unset, the bank screens use fixtures.
   - Storybook: `yarn workspace @galacticcouncil/ui dev`, port 6006.
 - **Translations** are edited by hand in `apps/main/src/i18n/locales/en/*.json`; `yarn i18n` is a placeholder.
 - **Design tokens come from upstream.** `yarn workspace @galacticcouncil/ui theme` downloads them from the `galacticcouncil/hydration-styles` repo and overwrites the local token files, so a token value changes there. How tokens are transformed is `packages/ui/style-dictionary/build.mjs`.

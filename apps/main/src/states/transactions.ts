@@ -1,5 +1,6 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
 import { ActivityType, HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
+import type { PreparedEvmTransaction } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { NearTxStatus } from "@galacticcouncil/web3-connect/src/signers/NearSigner"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
@@ -49,6 +50,47 @@ export type TExecutedAmount = {
   assetId: string
 }
 
+/** Why a strict transaction would need wrapping (useWrapTransaction), or null. */
+export type StrictEvmWrapRefusal = "pending" | "unbound" | "multisig"
+
+/**
+ * The strict option (owner decision 2026-11-12) for a transaction a server
+ * prepared and that must reach the wallet ONCE, exactly as given: one plain
+ * `eth_sendTransaction` from the wallet's own H160, never a Call Permit, an
+ * EVM.call through a Polkadot signer, the dispatch precompile or a wrapping
+ * batch. `tx` must be `strictEvmCall(prepared)`. Every guarantee is enforced
+ * in `modules/transactions/utils/strictEvm.ts` and the pipeline code it names.
+ */
+export type StrictEvmOptions = {
+  /** Sent with to, data, value and chainId exactly as given. */
+  prepared: PreparedEvmTransaction
+  /** The app session's H160: the wallet's active address and `prepared.from` must equal it. */
+  sessionAddress: string
+  /**
+   * The hand-over this transaction belongs to (a cash-out: its ramp id). The
+   * once-ledger is keyed by scope AND fields; `after` is read in the same scope.
+   * It must be STABLE for the hand-over and unique per server preparation: a
+   * scope that differs per call is another hand-over, so "once" holds only for
+   * a stable scope.
+   */
+  scope: string
+  /** A strict transaction whose receipt must have succeeded before this one is presented. */
+  after?: PreparedEvmTransaction | null
+  /** Epoch ms from which the transaction is refused before the wallet is asked. */
+  notAfter?: number
+  /**
+   * Receives the hash only once its receipt is MINED (success or reverted):
+   * the final hash after a speed-up, also a hash a failed send's error surfaced
+   * once its receipt is seen. Never from the wallet's answer alone, never for a
+   * cancelled or replaced transaction, never for a hash that does not mine.
+   * Why: HBR pins the first reported hash (HBR #130), and a speed-up's
+   * original never mines; with no report, HBR links the burn by its ref.
+   */
+  onMined?: (txHash: string) => void
+  /** Set by useWrapTransaction from the account; a caller's value is overwritten. */
+  wrapRefusal?: StrictEvmWrapRefusal | null
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
@@ -66,6 +108,8 @@ export type TransactionCommon = {
   initialError?: string
   /** Shown in the review modal's error state instead of the generic description. */
   errorMessage?: string
+  /** See StrictEvmOptions. */
+  strictEvm?: StrictEvmOptions
 }
 
 interface SingleTransactionInput extends TransactionCommon {

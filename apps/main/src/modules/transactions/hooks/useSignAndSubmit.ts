@@ -24,6 +24,7 @@ import {
   submitUnsignedPolkadotTx,
 } from "@/modules/transactions/utils/polkadot"
 import { signAndSubmitSolanaTx } from "@/modules/transactions/utils/solana"
+import { signAndSubmitStrictEvmTx } from "@/modules/transactions/utils/strictEvm"
 import {
   addTxSubscription,
   deleteTxSubscription,
@@ -60,6 +61,12 @@ export const useSignAndSubmit = (
       const { tx, isUnsigned } = transaction
 
       const signer = wallet?.signer
+
+      // Strict: one plain eth_sendTransaction or nothing, whatever the fee
+      // asset (no permit, no EVM.call, no dispatch precompile).
+      if (transaction.strictEvm) {
+        return signAndSubmitStrictEvmTx(transaction, signer, txOptions)
+      }
 
       if (isUnsigned && isPapiTransaction(tx)) {
         return submitUnsignedPolkadotTx(tx, papiClient, txOptions)

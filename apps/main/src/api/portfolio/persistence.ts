@@ -6,7 +6,12 @@ import {
   persistQueryClientSave,
   persistQueryClientSubscribe,
 } from "@tanstack/query-persist-client-core"
-import { Query, QueryClient } from "@tanstack/react-query"
+import {
+  defaultShouldDehydrateMutation,
+  Mutation,
+  Query,
+  QueryClient,
+} from "@tanstack/react-query"
 
 import {
   PORTFOLIO_CACHE_BUSTER,
@@ -19,10 +24,21 @@ import {
   removeItemFromStore,
   setItemInStore,
 } from "@/utils/indexedDB"
+import { isSensitiveKey } from "@/utils/queryErrorLog"
 
 const PORTFOLIO_BALANCES_KEY = ["portfolio", "balances"] as const
 
+/**
+ * Paused mutations are persisted as before (react-query's default), except
+ * those keyed under a sensitive root (SENSITIVE_KEY_ROOTS): their variables
+ * (bank details) never reach IndexedDB.
+ */
+export const shouldDehydratePortfolioMutation = (mutation: Mutation): boolean =>
+  !isSensitiveKey(mutation.options.mutationKey) &&
+  defaultShouldDehydrateMutation(mutation)
+
 export const shouldDehydratePortfolioQuery = (query: Query): boolean =>
+  !isSensitiveKey(query.queryKey) &&
   query.state.status === "success" &&
   PORTFOLIO_BALANCES_KEY.every((part, i) => query.queryKey[i] === part)
 
@@ -154,6 +170,7 @@ export const setupPortfolioPersistence = (queryClient: QueryClient) => {
         buster: PORTFOLIO_CACHE_BUSTER,
         dehydrateOptions: {
           shouldDehydrateQuery: shouldDehydratePortfolioQuery,
+          shouldDehydrateMutation: shouldDehydratePortfolioMutation,
         },
       }
       persistQueryClientSubscribe(persistOptions)
