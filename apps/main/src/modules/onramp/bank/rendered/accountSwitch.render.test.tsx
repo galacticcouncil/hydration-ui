@@ -128,6 +128,7 @@ vi.mock("@/config/env", () => ({
 // ---- fake HBR server over fetch -----------------------------------------
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
+import { HbrSessionGuard } from "@/modules/onramp/bank/components/HbrSessionGuard"
 import { useHbrSignOut } from "@/modules/onramp/bank/hooks/useHbr"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
@@ -299,6 +300,36 @@ const returnFromBridge = async () => {
   fireEvent.click(screen.getByText("bank.verify.opened.return"))
 }
 
+// #132: an EXISTING customer that is not bound yet (its create came after the
+// sign-in's link grant had expired), made on the fake server directly. A
+// sign-in of this wallet then holds no grant, so it binds with the two-step bind.
+const existingUnboundCustomer = async (addr: string) => {
+  const lower = addr.toLowerCase()
+  const c = await backend.createChallenge(lower)
+  const s = await backend.openSession({ nonce: c.nonce, signature: SIG })
+  const realNow = Date.now()
+  const later = vi.spyOn(Date, "now").mockReturnValue(realNow + 11 * 60_000)
+  reqToken = s.token
+  try {
+    await backend.forWallet(lower).createCustomer("individual")
+  } finally {
+    later.mockRestore()
+    reqToken = null
+  }
+  expect(
+    (
+      await (async () => {
+        reqToken = s.token
+        try {
+          return await backend.forWallet(lower).getMe()
+        } finally {
+          reqToken = null
+        }
+      })()
+    ).customer,
+  ).toBeNull()
+}
+
 // The sign-in screen in any of its forms: the wallet prompt pending (asked
 // automatically when the flow opens), failed, or waiting for a press.
 const signInShown = () =>
@@ -443,10 +474,11 @@ describe("lead question: identity crosses wallets", () => {
   it.each(["withdraw", "deposit"] as const)(
     "the link step on %s says what the wallet is linked for",
     async (direction) => {
+      // the link step shows for a customer that existed before the sign-in (#132)
+      await existingUnboundCustomer(A)
       setEvm(A)
       mount(direction)
       await signInAs(A)
-      fireEvent.click(screen.getByText("bank.accountType.cta"))
       await flush()
       expect(screen.queryByText("bank.link.title")).not.toBeNull()
       expect(
@@ -475,10 +507,11 @@ describe("lead question: identity crosses wallets", () => {
   })
 
   it("L3 switch between bind challenge and bind verify; B signs in meanwhile", async () => {
+    // A's customer existed before this sign-in, so A binds in two steps (#132).
+    await existingUnboundCustomer(A)
     setEvm(A)
     mount()
     await signInAs(A)
-    fireEvent.click(screen.getByText("bank.accountType.cta"))
     await flush()
     expect(screen.queryByText("bank.link.cta")).not.toBeNull()
     fireEvent.click(screen.getByText("bank.link.cta"))
@@ -510,11 +543,8 @@ describe("lead question: identity crosses wallets", () => {
       setEvm(A)
       mount()
       await signInAs(A)
+      // #132: the create links the new wallet; no bind signature
       fireEvent.click(screen.getByText("bank.accountType.cta"))
-      await flush()
-      fireEvent.click(screen.getByText("bank.link.cta"))
-      await flush()
-      await signNext()
       await flush()
       expect(screen.queryByText("bank.verify.action.title")).not.toBeNull()
       const before = log.length
@@ -536,11 +566,8 @@ describe("lead question: identity crosses wallets", () => {
     setEvm(A)
     mount()
     await signInAs(A)
+    // #132: the create links the new wallet; no bind signature
     fireEvent.click(screen.getByText("bank.accountType.cta"))
-    await flush()
-    fireEvent.click(screen.getByText("bank.link.cta"))
-    await flush()
-    await signNext()
     await flush()
     expect(screen.queryByText("bank.verify.action.title")).not.toBeNull()
     errorSpy.mockClear()
@@ -580,11 +607,8 @@ describe("lead question: identity crosses wallets", () => {
     setEvm(A)
     mount()
     await signInAs(A)
+    // #132: the create links the new wallet; no bind signature
     fireEvent.click(screen.getByText("bank.accountType.cta"))
-    await flush()
-    fireEvent.click(screen.getByText("bank.link.cta"))
-    await flush()
-    await signNext()
     await flush()
     onboardingOverride = () => json(401, { error: "unauthorized" })
     const before = log.length
@@ -750,5 +774,141 @@ describe("auto sign-in: at most one personal_sign per user action", () => {
       storedBefore,
     )
     expect(sessionStorage.getItem(`hbr-session:${A.toLowerCase()}`)).toBeNull()
+  })
+})
+
+// ---- review 1 delta 5 R-B1: the app-root guard is the tracker that remains --
+
+describe("R-B1 the session guard keeps the connected wallet current with the bank modal closed", () => {
+  it("V6: guard mounted, modal closed, wallet switched to B, A's late signature stores nothing", async () => {
+    setEvm(A)
+    const client = makeClient()
+    activeClient = client
+    const guard = render(
+      <QueryClientProvider client={client}>
+        <HbrSessionGuard />
+      </QueryClientProvider>,
+    )
+    const modal = render(
+      <QueryClientProvider client={client}>
+        <BankFlow direction="deposit" />
+      </QueryClientProvider>,
+    )
+    await flush()
+    const aPrompt = pendingSigns.shift()! // A's sign-in stays open in the wallet
+    modal.unmount() // the bank modal closes; only the guard tracks the wallet
+    act(() => setEvm(B))
+    await act(async () => aPrompt.resolve(SIG))
+    await flush()
+    expect(useHbrSessionStore.getState().session).toBeNull()
+    expect(sessionStorage.getItem(`hbr-session:${A.toLowerCase()}`)).toBeNull()
+    guard.unmount()
+  })
+
+  it("V6 control: guard mounted, modal closed, A still (or again) connected: A's late signature keeps A's session", async () => {
+    setEvm(A)
+    const client = makeClient()
+    activeClient = client
+    const guard = render(
+      <QueryClientProvider client={client}>
+        <HbrSessionGuard />
+      </QueryClientProvider>,
+    )
+    const modal = render(
+      <QueryClientProvider client={client}>
+        <BankFlow direction="deposit" />
+      </QueryClientProvider>,
+    )
+    await flush()
+    const aPrompt = pendingSigns.shift()!
+    modal.unmount() // only the guard tracks the wallet now
+    act(() => setEvm(B))
+    act(() => setEvm(A))
+    await act(async () => aPrompt.resolve(SIG))
+    await flush()
+    expect(useHbrSessionStore.getState().session?.h160).toBe(A.toLowerCase())
+    guard.unmount()
+  })
+
+  it("with no tracker mounted the connected wallet is unknown: a late signature is dropped (reset on the last unmount)", async () => {
+    setEvm(A)
+    const client = makeClient()
+    activeClient = client
+    const modal = render(
+      <QueryClientProvider client={client}>
+        <BankFlow direction="deposit" />
+      </QueryClientProvider>,
+    )
+    await flush()
+    const aPrompt = pendingSigns.shift()!
+    modal.unmount()
+    // A is still the selected account, but nothing tracks it any more
+    await act(async () => aPrompt.resolve(SIG))
+    await flush()
+    expect(useHbrSessionStore.getState().session).toBeNull()
+  })
+})
+
+// ---- #132: one signature for a new wallet ---------------------------------
+
+describe("#132 one signature for a new wallet; an existing unbound customer signs twice", () => {
+  it("a new wallet signs once: sign in, choose the type, and the set-up goes on with no bind screen", async () => {
+    setEvm(A)
+    mount("withdraw")
+    await signInAs(A)
+    await flush()
+    fireEvent.click(screen.getByText("bank.accountType.cta"))
+    await flush()
+    expect(screen.queryByText("bank.link.cta")).toBeNull()
+    expect(screen.queryByText("bank.verify.kycCta")).not.toBeNull()
+    expect(log.some((e) => e.path.includes("/bind/"))).toBe(false)
+    expect(signCalls).toBe(1)
+  })
+
+  it("an existing unbound customer signs twice: sign in, then the two-step bind", async () => {
+    await existingUnboundCustomer(A)
+    setEvm(A)
+    mount("withdraw")
+    await signInAs(A)
+    await flush()
+    expect(screen.queryByText("bank.accountType.cta")).toBeNull()
+    fireEvent.click(screen.getByText("bank.link.cta"))
+    await flush()
+    await signNext()
+    expect(screen.queryByText("bank.link.cta")).toBeNull()
+    expect(screen.queryByText("bank.verify.kycCta")).not.toBeNull()
+    expect(signCalls).toBe(2)
+  })
+
+  it("a bind that answers 409 already_bound continues (no error shown)", async () => {
+    await existingUnboundCustomer(A)
+    setEvm(A)
+    mount("withdraw")
+    await signInAs(A)
+    await flush()
+    // the wallet gets linked elsewhere between the read and the press
+    const realChallenge = backend.forWallet
+    let answered409 = false
+    backend.forWallet = (h: string) => {
+      const api = realChallenge(h)
+      return {
+        ...api,
+        createBindChallenge: async () => {
+          answered409 = true
+          throw new HbrApiError(409, "already_bound", {
+            error: "already_bound",
+          })
+        },
+      }
+    }
+    fireEvent.click(screen.getByText("bank.link.cta"))
+    await flush()
+    backend.forWallet = realChallenge
+    expect(answered409).toBe(true)
+    expect(screen.queryByText(/^bank\.sign\.error\./)).toBeNull()
+    expect(
+      log.some((e) => e.path.endsWith("/bind/challenge") && e.status === 409),
+    ).toBe(true)
+    expect(signCalls).toBe(1)
   })
 })

@@ -618,7 +618,7 @@ describe("sign-in and bind stay with the wallet they started for", () => {
       sent.push({ path: String(url), auth: headers.Authorization })
       return jsonResponse(200, {
         nonce: `0x${"ab".repeat(32)}`,
-        message: "Hydration Ramp wallet binding (v2)",
+        message: "Hydration Ramp wallet binding (v3)",
       })
     })
     const service = createHbrService({

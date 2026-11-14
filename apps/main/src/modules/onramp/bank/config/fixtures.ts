@@ -23,8 +23,9 @@ export const FIXTURE_HOSTED_LINK = "https://example.org/"
 
 /**
  * The sign-in message, as `renderLoginMessage` renders it (hydration-ramp
- * server/lib/identity/walletSession.mjs; example in API doc 4,
- * POST /v1/auth/challenge): 11 lines joined by "\n".
+ * server/lib/identity/walletSession.mjs, template version 2 since #132: the
+ * statement carries the link consent; `Version: 1` is EIP-4361's; example in
+ * API doc 4, POST /v1/auth/challenge): 11 lines joined by "\n".
  */
 export const renderFixtureLoginMessage = (args: {
   checksumAddress: string
@@ -36,7 +37,7 @@ export const renderFixtureLoginMessage = (args: {
     "app.example.org wants you to sign in with your Ethereum account:",
     args.checksumAddress,
     "",
-    "Sign in to the Hydration ramp. Signing this message does not move funds, approve any transaction or bind a wallet.",
+    "Sign in to the Hydration ramp. If this wallet has no ramp account yet, this also links it to the ramp account you open with it before this message expires, for cash-outs, bank deposits and refunds. Signing this message does not move funds or approve any transaction.",
     "",
     `URI: ${FIXTURE_APP_ORIGIN}`,
     "Version: 1",
@@ -48,7 +49,7 @@ export const renderFixtureLoginMessage = (args: {
 
 /**
  * The bind message, as `renderBindMessage` renders it (hydration-ramp
- * server/lib/identity/walletBinding.mjs, version 2; example in API doc 4,
+ * server/lib/identity/walletBinding.mjs, version 3 since #132; example in API doc 4,
  * POST /v1/customers/me/bind/challenge).
  */
 export const renderFixtureBindMessage = (args: {
@@ -58,10 +59,10 @@ export const renderFixtureBindMessage = (args: {
   expiresAt: string
 }) =>
   [
-    "Hydration Ramp wallet binding (v2)",
+    "Hydration Ramp wallet binding (v3)",
     `URI: ${FIXTURE_APP_ORIGIN}`,
     "",
-    "Purpose: bind this wallet to your ramp account for payouts and refunds.",
+    "Purpose: link this wallet to your ramp account for cash-outs, bank deposits and refunds.",
     "Signing this message does not move funds or approve any transaction.",
     "",
     "Account (Bridge customer id): <placeholder>",

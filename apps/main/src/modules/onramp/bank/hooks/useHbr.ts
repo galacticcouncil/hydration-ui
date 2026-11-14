@@ -84,11 +84,24 @@ export const useHbrOnboarding = (h160: string) =>
 // that started it may have unmounted on the wallet switch (its own view of
 // the account is then stale).
 let connectedWallet: string | null = null
+// Mounted trackers. When the last one unmounts nothing keeps the value
+// current, so it is reset to null: a signature that returns then is dropped
+// (fail closed) rather than checked against a wallet that may have changed.
+// In the app HbrSessionGuard stays mounted at the root, so this only happens
+// in a tree without it (tests, or a future layout that drops the guard).
+let trackers = 0
 
 /** Keeps `connectedWallet` current; called by BankFlow, BankPortfolio and HbrSessionGuard. */
 export const useTrackConnectedWallet = () => {
   const { account } = useAccount()
   const wallet = account?.rawAddress.toLowerCase() ?? null
+  useLayoutEffect(() => {
+    trackers += 1
+    return () => {
+      trackers -= 1
+      if (trackers === 0) connectedWallet = null
+    }
+  }, [])
   useLayoutEffect(() => {
     connectedWallet = wallet
   }, [wallet])

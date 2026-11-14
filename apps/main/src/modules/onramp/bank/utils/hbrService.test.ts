@@ -143,7 +143,7 @@ describe("HBR fixture service", () => {
     expect(createHbrService({ baseUrl: "/hbr", session }).mode).toBe("http")
   })
 
-  it("walks the whole onboarding: sign-in, customer, bind, KYC pending to approved", async () => {
+  it("walks the whole onboarding: sign-in, customer (bound by the sign-in's link grant, #132), KYC pending to approved", async () => {
     const service = createHbrFixtureService({ session, delayMs: 0 })
 
     const challenge = await service.createChallenge(H160)
@@ -163,13 +163,15 @@ describe("HBR fixture service", () => {
         code: "customer_not_found",
       },
     )
+    expect(challenge.message).toContain(
+      "this also links it to the ramp account you open with it before this message expires",
+    )
     await service.forWallet(H160).createCustomer("business")
-    expect((await service.forWallet(H160).getOnboarding()).bound).toBe(false)
-
-    const bind = await service.forWallet(H160).createBindChallenge()
-    await service
-      .forWallet(H160)
-      .verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
+    // One signature: the create bound the new wallet; the bind says already_bound.
+    expect((await service.forWallet(H160).getMe()).customer).not.toBeNull()
+    await expect(
+      service.forWallet(H160).createBindChallenge(),
+    ).rejects.toMatchObject({ status: 409, code: "already_bound" })
 
     const reads = []
     for (let i = 0; i < 4; i++)
@@ -187,6 +189,42 @@ describe("HBR fixture service", () => {
       true,
     ])
     expect(reads[0]?.customer.type).toBe("business")
+  })
+
+  it("an expired grant binds nothing; a wallet that already had a customer at sign-in gets no grant and binds with the two-step v3 bind", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    try {
+      vi.setSystemTime(new Date("2026-11-14T12:00:00.000Z"))
+      const service = createHbrFixtureService({ session, delayMs: 0 })
+      const open = async () => {
+        const challenge = await service.createChallenge(H160)
+        useHbrSessionStore.getState().setSession(
+          await service.openSession({
+            nonce: challenge.nonce,
+            signature: SIGNATURE,
+          }),
+        )
+      }
+      await open()
+      // the create comes when the signed message has expired: no bind
+      vi.setSystemTime(new Date("2026-11-14T12:10:00.000Z"))
+      await service.forWallet(H160).createCustomer("individual")
+      expect((await service.forWallet(H160).getMe()).customer).toBeNull()
+      // a new sign-in of a wallet with a customer holds no grant
+      await open()
+      await service.forWallet(H160).createCustomer("individual")
+      expect((await service.forWallet(H160).getMe()).customer).toBeNull()
+      const bind = await service.forWallet(H160).createBindChallenge()
+      expect(bind.message.split("\n")[0]).toBe(
+        "Hydration Ramp wallet binding (v3)",
+      )
+      await service
+        .forWallet(H160)
+        .verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
+      expect((await service.forWallet(H160).getMe()).customer).not.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("refuses a reused sign-in nonce and an unknown token", async () => {
@@ -268,9 +306,8 @@ describe("HBR fixture service, stage 2 walk", () => {
       }),
     )
     const api = service.forWallet(H160)
+    // #132: the create binds the new wallet (the sign-in's link grant)
     await api.createCustomer("individual")
-    const bind = await api.createBindChallenge()
-    await api.verifyBind({ nonce: bind.nonce, signature: SIGNATURE })
     return api
   }
   const ACH = {
@@ -311,7 +348,10 @@ describe("HBR fixture service, stage 2 walk", () => {
     expect((await api.listDeposits()).deposits).toEqual([])
     await api.requestOnrampAccount("usd")
     const eur = await api.requestOnrampAccount("eur")
-    expect(eur.account).toMatchObject({ status: "refused", retryAllowed: true })
+    expect(eur.account).toMatchObject({
+      status: "refused",
+      retryAllowed: true,
+    })
 
     const statuses = []
     for (let i = 0; i < 3; i++)
@@ -401,7 +441,9 @@ describe("HBR HTTP client timeouts", () => {
     signIn()
     const fetchFn = vi.fn(async () => {
       const res = new Response(null, { status: 200 })
-      Object.defineProperty(res, "json", { value: () => new Promise(() => {}) })
+      Object.defineProperty(res, "json", {
+        value: () => new Promise(() => {}),
+      })
       return res
     })
     const service = createHbrService({ baseUrl: "/hbr", session, fetchFn })

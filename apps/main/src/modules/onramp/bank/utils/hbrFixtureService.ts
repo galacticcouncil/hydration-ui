@@ -103,7 +103,11 @@ const randomToken = () =>
  * An in-memory stand-in for the HBR server, used when `VITE_HBR_API_URL` is
  * unset (the testnet app, API doc rule 18). It walks the onboarding of
  * section 2 per wallet: sign-in, customer, bind, then KYC pending, under
- * review and approved over three onboarding reads. It never verifies a
+ * review and approved over three onboarding reads. As the server since #132
+ * (authRoutes R2, customerRoutes C1 LINK): a sign-in of a wallet with no
+ * customer keeps a link grant for THAT session until the signed message
+ * expires, and that session's create binds the wallet (one signature); a
+ * wallet that had a customer at sign-in binds with the two-step bind. It never verifies a
  * signature and never hands out a transaction: the off-ramp build answers
  * `503 ramp_build_unavailable` as a server that builds no redeem does.
  */
@@ -115,6 +119,8 @@ export const createHbrFixtureService = (args: {
   const delayMs = args.delayMs ?? 300
   const wallets = new Map<string, WalletState>()
   const sessions = new Map<string, string>()
+  // token -> the signed login message's expiry (ms): the session's link grant.
+  const linkGrants = new Map<string, number>()
   const challenges = new Map<
     string,
     { h160: string; kind: "login" | "bind"; expiresAt: number }
@@ -224,6 +230,9 @@ export const createHbrFixtureService = (args: {
       if (!challenge) return refuse(401, "unauthorized")
       const token = randomToken()
       sessions.set(token, challenge.h160)
+      const state = walletOf(challenge.h160)
+      if (!state.customerType && !state.bound)
+        linkGrants.set(token, challenge.expiresAt)
       return sessionResponseSchema.parse({
         token,
         expiresAt: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
@@ -234,7 +243,10 @@ export const createHbrFixtureService = (args: {
       closeSession: async (captured) => {
         await settle()
         const token = captured ?? session.getToken(forH160.toLowerCase())
-        if (token) sessions.delete(token)
+        if (token) {
+          sessions.delete(token)
+          linkGrants.delete(token)
+        }
       },
       getMe: async () => {
         const { h160, wallet } = await authed(forH160)
@@ -248,6 +260,13 @@ export const createHbrFixtureService = (args: {
         if (!createCustomerRequestSchema.safeParse({ type }).success)
           return refuse(400, "bad_request")
         wallet.customerType ??= type
+        // C1 LINK: this session's grant binds the wallet, once, before expiry.
+        const token = session.getToken(forH160.toLowerCase())
+        const grantExpiry = token ? linkGrants.get(token) : undefined
+        if (token && grantExpiry !== undefined) {
+          linkGrants.delete(token)
+          if (!wallet.bound && Date.now() < grantExpiry) wallet.bound = true
+        }
         return createCustomerResponseSchema.parse({
           customer: { id: FIXTURE_CUSTOMER_ID, type: wallet.customerType },
         })
