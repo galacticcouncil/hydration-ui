@@ -85,6 +85,8 @@ export const hbrSignInMutation = (
   service: HbrService,
   h160: string,
   signer: MessageSigner,
+  /** Whether `h160` is still the connected wallet (read when the signature returns). */
+  isConnected: () => boolean = () => true,
 ) =>
   mutationOptions({
     networkMode: HBR_NETWORK_MODE,
@@ -99,6 +101,10 @@ export const hbrSignInMutation = (
       // The server's wallet must be this wallet; otherwise keep no session.
       if (session.h160.toLowerCase() !== h160.toLowerCase())
         throw new HbrResponseError(200)
+      // A late signature of a wallet that is no longer connected never
+      // replaces the live session of the wallet that is (review-1 R-A1):
+      // its session is dropped, not stored. The server token lapses by idle.
+      if (!isConnected()) return
       useHbrSessionStore.getState().setSession(session)
     },
   })

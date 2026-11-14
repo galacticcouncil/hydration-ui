@@ -18,6 +18,7 @@ import {
   useHbrOnrampAccounts,
   useHbrSession,
   useHbrSignIn,
+  useTrackConnectedWallet,
 } from "@/modules/onramp/bank/hooks/useHbr"
 import type { BankEntry } from "@/modules/onramp/bank/store/useBankEntryStore"
 import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
@@ -171,6 +172,7 @@ export const BankPortfolio: FC<BankPortfolioProps> = (props) => {
   const wallet = useWallet()
   const { toggle } = useWeb3ConnectModal()
   const gate = getBankWalletGate(account, wallet?.signer)
+  useTrackConnectedWallet()
   if (!isBankFlowEnabled()) return null
 
   return (

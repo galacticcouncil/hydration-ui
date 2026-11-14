@@ -9,6 +9,7 @@ import {
   BankDirection,
   MessageSigner,
   useHbrSession,
+  useTrackConnectedWallet,
 } from "@/modules/onramp/bank/hooks/useHbr"
 import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore"
 import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
@@ -47,6 +48,7 @@ type BankFlowProps = {
 export const BankFlow: FC<BankFlowProps> = ({ direction, onExit, onClose }) => {
   const { account } = useAccount()
   const wallet = useWallet()
+  useTrackConnectedWallet()
   const gate = getBankWalletGate(account, wallet?.signer)
   // Read once and then cleared: a reopen from Portfolio applies to this mount.
   const [entry] = useState(() => {

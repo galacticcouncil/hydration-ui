@@ -213,15 +213,22 @@ const setWallet = (w: string | null) => {
 }
 // Settled = every in-flight query or mutation is one the test holds on
 // purpose (a held fetch answer); no fixed sleeps.
+// A read can start only after the previous one settled and re-rendered (the
+// onboarding read, then the on-ramp read), so "settled" is checked again after
+// a macrotask until it holds twice in a row (review-1 R-A4: a loaded run
+// opened that gap).
 const flush = async () => {
-  await act(async () => {
-    await waitFor(() =>
-      expect(queryClient.isFetching() + queryClient.isMutating()).toBe(
-        held.length,
-      ),
-    )
-  })
-  await act(async () => {})
+  const settled = () =>
+    queryClient.isFetching() + queryClient.isMutating() === held.length
+  for (let stable = 0; stable < 2; ) {
+    await act(async () => {
+      await waitFor(() => expect(settled()).toBe(true))
+    })
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0))
+    })
+    stable = settled() ? stable + 1 : 0
+  }
 }
 const page = () => document.body.innerHTML
 const app = () => (

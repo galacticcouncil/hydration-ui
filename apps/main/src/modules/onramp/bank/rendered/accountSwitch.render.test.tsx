@@ -729,4 +729,26 @@ describe("auto sign-in: at most one personal_sign per user action", () => {
     await flush()
     expect(signCalls).toBe(1)
   })
+
+  it("R-A1 a late signature of wallet A never replaces wallet B's session", async () => {
+    setEvm(A)
+    open(makeClient())
+    await flush()
+    const aPrompt = pendingSigns.shift()! // A's sign-in stays open in the wallet
+    act(() => setEvm(B))
+    await flush()
+    await signNext() // B signs first: B's session
+    expect(useHbrSessionStore.getState().session?.h160).toBe(B.toLowerCase())
+    const storedBefore = sessionStorage.getItem(
+      `hbr-session:${B.toLowerCase()}`,
+    )
+    await act(async () => aPrompt.resolve(SIG))
+    await flush()
+    // A's session is dropped; B's stays in memory and storage
+    expect(useHbrSessionStore.getState().session?.h160).toBe(B.toLowerCase())
+    expect(sessionStorage.getItem(`hbr-session:${B.toLowerCase()}`)).toBe(
+      storedBefore,
+    )
+    expect(sessionStorage.getItem(`hbr-session:${A.toLowerCase()}`)).toBeNull()
+  })
 })

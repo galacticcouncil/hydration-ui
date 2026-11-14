@@ -1,7 +1,10 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC, useEffect, useRef } from "react"
 
-import { useHbrClearSession } from "@/modules/onramp/bank/hooks/useHbr"
+import {
+  useHbrClearSession,
+  useTrackConnectedWallet,
+} from "@/modules/onramp/bank/hooks/useHbr"
 
 /**
  * Ends the bank session when the connected wallet goes away or changes, with
@@ -17,6 +20,7 @@ import { useHbrClearSession } from "@/modules/onramp/bank/hooks/useHbr"
 export const HbrSessionGuard: FC = () => {
   const { account } = useAccount()
   const clearSession = useHbrClearSession()
+  useTrackConnectedWallet()
   const current = account?.address ?? null
   const last = useRef<string | null>(null)
 

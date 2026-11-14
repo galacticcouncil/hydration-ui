@@ -1,10 +1,11 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   useIsMutating,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo } from "react"
 
 import { ENV } from "@/config/env"
 import {
@@ -78,8 +79,30 @@ export const useHbrMe = (h160: string) =>
 export const useHbrOnboarding = (h160: string) =>
   useQuery(hbrOnboardingQuery(useHbrService(), h160))
 
-export const useHbrSignIn = (h160: string, signer: MessageSigner) =>
-  useMutation(hbrSignInMutation(useHbrService(), h160, signer))
+// The connected wallet as last seen by any mounted bank screen or the app's
+// session guard. A sign-in reads it when its signature returns: the screen
+// that started it may have unmounted on the wallet switch (its own view of
+// the account is then stale).
+let connectedWallet: string | null = null
+
+/** Keeps `connectedWallet` current; called by BankFlow, BankPortfolio and HbrSessionGuard. */
+export const useTrackConnectedWallet = () => {
+  const { account } = useAccount()
+  const wallet = account?.rawAddress.toLowerCase() ?? null
+  useLayoutEffect(() => {
+    connectedWallet = wallet
+  }, [wallet])
+}
+
+export const useHbrSignIn = (h160: string, signer: MessageSigner) => {
+  const isConnected = useCallback(
+    () => connectedWallet === h160.toLowerCase(),
+    [h160],
+  )
+  return useMutation(
+    hbrSignInMutation(useHbrService(), h160, signer, isConnected),
+  )
+}
 
 export const useHbrSignOut = (h160: string) =>
   useMutation(hbrSignOutMutation(useHbrService(), useQueryClient(), h160))
