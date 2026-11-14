@@ -27,6 +27,8 @@ export type BankFlowNav = {
   /** Set when Portfolio reopened this flow: its target, and no wizard stepper. */
   entry?: BankEntry["target"]
   reopened?: boolean
+  /** One id per opening of the flow (a mount of BankFlow): the auto sign-in runs once per open. */
+  openId?: number
 }
 
 export const BankFlowContext = createContext<BankFlowNav>({

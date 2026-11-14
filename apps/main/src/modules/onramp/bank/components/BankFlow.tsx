@@ -14,6 +14,9 @@ import { useBankEntryStore } from "@/modules/onramp/bank/store/useBankEntryStore
 import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { getBankWalletGate } from "@/modules/onramp/bank/utils/walletGate"
 
+// Each mount of BankFlow is one opening of the flow (a user action).
+let openCounter = 0
+
 type BankSessionProps = {
   h160: string
   signer: MessageSigner
@@ -53,6 +56,7 @@ export const BankFlow: FC<BankFlowProps> = ({ direction, onExit, onClose }) => {
   useEffect(() => {
     useBankEntryStore.getState().clear()
   }, [])
+  const [openId] = useState(() => (openCounter += 1))
   const nav = useMemo(
     () => ({
       direction,
@@ -60,8 +64,9 @@ export const BankFlow: FC<BankFlowProps> = ({ direction, onExit, onClose }) => {
       onClose,
       entry: entry?.target,
       reopened: !!entry,
+      openId,
     }),
-    [direction, onExit, onClose, entry],
+    [direction, onExit, onClose, entry, openId],
   )
 
   if (!isBankFlowEnabled()) return null

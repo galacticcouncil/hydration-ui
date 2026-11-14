@@ -148,7 +148,7 @@ describe("HbrSessionGuard: the session ends with the wallet (review 4a B3)", () 
       </QueryClientProvider>,
     )
     await waitFor(() =>
-      expect(document.body.textContent).toContain("bank.signIn.cta"),
+      expect(document.body.textContent).toContain("bank.signIn.pending.title"),
     )
   })
 

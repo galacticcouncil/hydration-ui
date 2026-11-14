@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { BankSetupTile } from "@/modules/onramp/bank/components/BankSetupTile"
 import {
   MessageSigner,
+  useHbrActionInFlight,
   useHbrMe,
   useHbrOnboarding,
   useHbrOnrampAccounts,
@@ -125,17 +126,21 @@ const SignIn: FC<{ h160: string; signer: MessageSigner }> = ({
 }) => {
   const { t } = useTranslation(["onramp"])
   const signIn = useHbrSignIn(h160, signer)
+  const inFlight = useHbrActionInFlight(h160, "signIn")
   return (
     <Tiles>
       <BankSetupTile
         tile={{ kind: "signIn", tone: "attention" }}
-        busy={signIn.isPending}
+        busy={signIn.isPending || inFlight.pending}
         error={
           signIn.isError
             ? t(`bank.sign.error.${classifySignError(signIn.error)}`)
             : undefined
         }
-        onAction={() => signIn.mutate()}
+        // One prompt per press; none while a sign-in of this wallet is open.
+        onAction={() => {
+          if (inFlight.isFree()) signIn.mutate()
+        }}
       />
     </Tiles>
   )

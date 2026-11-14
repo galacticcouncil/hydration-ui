@@ -17,7 +17,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react"
-import { useSyncExternalStore } from "react"
+import { StrictMode, useSyncExternalStore } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // ---- wallet mock -------------------------------------------------------
@@ -51,10 +51,13 @@ const pendingSigns: Deferred[] = []
 // Signatures still open in the fake wallet, whether or not a test took them
 // out of `pendingSigns` to answer later.
 let openSigns = 0
+// Every personal_sign the app asked of the fake wallet, answered or not.
+let signCalls = 0
 class FakeEthSigner {
   __eth = true
   constructor(public address: string) {}
   signMessage(message: string) {
+    signCalls += 1
     openSigns += 1
     return new Promise<string>((resolve, reject) => {
       const done =
@@ -124,6 +127,7 @@ vi.mock("@/config/env", () => ({
 
 // ---- fake HBR server over fetch -----------------------------------------
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
+import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
 import { useHbrSignOut } from "@/modules/onramp/bank/hooks/useHbr"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
 import { HbrApiError } from "@/modules/onramp/bank/utils/hbrErrors"
@@ -295,8 +299,16 @@ const returnFromBridge = async () => {
   fireEvent.click(screen.getByText("bank.verify.opened.return"))
 }
 
+// The sign-in screen in any of its forms: the wallet prompt pending (asked
+// automatically when the flow opens), failed, or waiting for a press.
+const signInShown = () =>
+  !!(
+    screen.queryByText("bank.signIn.pending.title") ||
+    screen.queryByText("bank.signIn.cta") ||
+    screen.queryByText("bank.signIn.retry")
+  )
+// Opening the flow asks the wallet at once (owner decision 2026-11-14).
 const signInAs = async (addr: string) => {
-  fireEvent.click(screen.getByText("bank.signIn.cta"))
   await flush()
   const d = await signNext()
   expect(d.signer).toBe(addr)
@@ -310,6 +322,7 @@ beforeEach(() => {
   pendingSigns.length = 0
   deleteHangs = false
   openSigns = 0
+  signCalls = 0
   onboardingOverride = null
   harnessWallet = null
   errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
@@ -327,14 +340,13 @@ describe("lead question: identity crosses wallets", () => {
   it("L1 switch A->B after challenge, before session", async () => {
     setEvm(A)
     mount()
-    fireEvent.click(screen.getByText("bank.signIn.cta"))
     await flush()
     expect(pendingSigns.length).toBe(1)
     act(() => setEvm(B))
     await flush()
     await signNext() // A's signer finishes, A's session opens
     const s = useHbrSessionStore.getState().session
-    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(signInShown()).toBe(true)
     expect(s).toBeNull()
     expect(crossed()).toEqual([])
   })
@@ -367,7 +379,7 @@ describe("lead question: identity crosses wallets", () => {
         .getQueryCache()
         .findAll({ queryKey: ["hbr", B.toLowerCase()] }),
     ).toEqual([])
-    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(signInShown()).toBe(true)
     expect(screen.queryByText("bank.accountType.cta")).toBeNull()
     expect(crossed()).toEqual([])
     // After the switch, no request carries A's token.
@@ -387,7 +399,7 @@ describe("lead question: identity crosses wallets", () => {
     const before = log.length
     mount()
     await flush()
-    expect(screen.queryByText("bank.signIn.cta")).toBeNull()
+    expect(signInShown()).toBe(false)
     expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
     expect(
       log.slice(before).every((e) => e.tokenOf === A || e.tokenOf === null),
@@ -399,7 +411,7 @@ describe("lead question: identity crosses wallets", () => {
     setEvm(B)
     mount()
     await flush()
-    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(signInShown()).toBe(true)
     expect(log.slice(beforeB).some((e) => e.tokenOf === A)).toBe(false)
   })
 
@@ -424,7 +436,7 @@ describe("lead question: identity crosses wallets", () => {
     const before = log.length
     mount()
     await flush()
-    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(signInShown()).toBe(true)
     expect(log.slice(before).some((e) => e.tokenOf !== null)).toBe(false)
   })
 
@@ -475,8 +487,8 @@ describe("lead question: identity crosses wallets", () => {
     const bindDeferred = pendingSigns.shift()!
     act(() => setEvm(B))
     await flush()
-    // B signs in while A's bind signature is still open
-    fireEvent.click(screen.getByText("bank.signIn.cta"))
+    // B is asked to sign in (automatically, B is a new wallet in this open)
+    // while A's bind signature is still open
     await flush()
     await signNext()
     expect(useHbrSessionStore.getState().session?.h160).toBe(B)
@@ -580,7 +592,7 @@ describe("lead question: identity crosses wallets", () => {
     await flush()
     const after = log.slice(before)
     expect(useHbrSessionStore.getState().session).toBeNull()
-    expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    expect(signInShown()).toBe(true)
     expect(
       after.filter((e) => e.path === "/v1/customers/me/onboarding").length,
     ).toBe(1)
@@ -601,6 +613,120 @@ describe("lead question: identity crosses wallets", () => {
     fireEvent.click(screen.getByText("harness-sign-out"))
     await flush()
     expect(useHbrSessionStore.getState().session).toBeNull()
+    expect(signInShown()).toBe(true)
+  })
+})
+
+// ---- owner decision 2026-11-14: opening Bank asks the wallet at once --------
+
+describe("auto sign-in: at most one personal_sign per user action", () => {
+  // The app's one QueryClient lives across bank-modal mounts.
+  const open = (client: QueryClient, strict = false) => {
+    activeClient = client
+    const tree = (
+      <QueryClientProvider client={client}>
+        <BankFlow direction="deposit" />
+      </QueryClientProvider>
+    )
+    return render(strict ? <StrictMode>{tree}</StrictMode> : tree)
+  }
+
+  it("one prompt on open, also under StrictMode", async () => {
+    setEvm(A)
+    open(makeClient(), true)
+    await flush()
+    expect(signCalls).toBe(1)
+    expect(screen.queryByText("bank.signIn.pending.title")).not.toBeNull()
+    await signNext()
+    expect(useHbrSessionStore.getState().session?.h160).toBe(A.toLowerCase())
+    expect(signCalls).toBe(1)
+  })
+
+  it("reopening the modal while the prompt is open asks nothing more", async () => {
+    setEvm(A)
+    const client = makeClient()
+    const first = open(client)
+    await flush()
+    expect(signCalls).toBe(1)
+    first.unmount()
+    open(client)
+    await flush()
+    expect(signCalls).toBe(1)
+    expect(screen.queryByText("bank.signIn.pending.title")).not.toBeNull()
+    await signNext()
+    expect(useHbrSessionStore.getState().session?.h160).toBe(A.toLowerCase())
+  })
+
+  it("no prompt while this wallet has a session", async () => {
+    setEvm(A)
+    const client = makeClient()
+    const first = open(client)
+    await flush()
+    await signNext()
+    expect(signCalls).toBe(1)
+    first.unmount()
+    // a new open of the flow with the session live: no prompt
+    open(client)
+    await flush()
+    expect(screen.queryByText("bank.accountType.cta")).not.toBeNull()
+    expect(signCalls).toBe(1)
+  })
+
+  it("no prompt for a Substrate account", async () => {
+    setSubstrate()
+    open(makeClient())
+    await flush()
+    expect(signCalls).toBe(0)
+    expect(screen.queryByText("bank.connectEvm.title")).not.toBeNull()
+  })
+
+  it("a rejected prompt shows Try again; only pressing it asks once more", async () => {
+    setEvm(A)
+    open(makeClient())
+    await flush()
+    const d = pendingSigns.shift()!
+    await act(async () =>
+      d.reject(Object.assign(new Error("rejected"), { code: 4001 })),
+    )
+    await flush()
+    expect(screen.queryByText("bank.signIn.retry")).not.toBeNull()
+    expect(signCalls).toBe(1)
+    // a re-render, or a remount inside the same open (wallet away and back),
+    // asks nothing by itself
+    act(() => setEvm(A))
+    await flush()
+    act(() => setSubstrate())
+    await flush()
+    act(() => setEvm(A))
+    await flush()
+    expect(signCalls).toBe(1)
     expect(screen.queryByText("bank.signIn.cta")).not.toBeNull()
+    // a double press before the re-render asks once
+    const press = screen.getByText("bank.signIn.cta")
+    act(() => {
+      fireEvent.click(press)
+      fireEvent.click(press)
+    })
+    await flush()
+    expect(signCalls).toBe(2)
+    expect(screen.queryByText("bank.signIn.pending.title")).not.toBeNull()
+  })
+
+  it("the Portfolio sign-in tile: one prompt per press, none while one is open", async () => {
+    setEvm(A)
+    const client = makeClient()
+    activeClient = client
+    render(
+      <QueryClientProvider client={client}>
+        <BankPortfolio onOpen={() => {}} />
+      </QueryClientProvider>,
+    )
+    await flush()
+    // Portfolio never prompts by itself
+    expect(signCalls).toBe(0)
+    fireEvent.click(screen.getByText("bank.tile.signIn.cta"))
+    fireEvent.click(screen.getByText("bank.tile.signIn.cta"))
+    await flush()
+    expect(signCalls).toBe(1)
   })
 })

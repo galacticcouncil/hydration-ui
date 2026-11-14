@@ -289,7 +289,7 @@ describe("the bank modal: stepper, back and close", () => {
     expect(stepper()?.getAttribute("data-steps")).toBe(
       "bank.step.method|bank.step.verify|bank.step.bankDetails|bank.step.transfer",
     )
-    expect(text()).toContain("bank.signIn.title")
+    expect(text()).toMatch(/bank\.signIn\./)
     expect(stepper()?.getAttribute("data-step")).toBe("bank.step.verify")
   })
 

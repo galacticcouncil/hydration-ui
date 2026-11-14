@@ -41,7 +41,9 @@ export const BankStepShell: FC<BankStepShellProps> = ({
         <Stepper
           steps={steps.map((key) => t(`bank.step.${key}`))}
           activeStepIndex={active}
-          compact
+          // The kit's default ("auto"): compact on mobile, the expanded
+          // stepper with its labels under the circles on desktop. Forcing
+          // compact on desktop drops the labels outside the card (kit bug).
           px="xl"
           pt="l"
         />
