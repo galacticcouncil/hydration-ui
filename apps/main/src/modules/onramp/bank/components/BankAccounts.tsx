@@ -52,7 +52,13 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
       ? { kind: "status", rampId: entry.id }
       : { kind: "amount" },
   )
+  // `usdcAmount` is the amount confirmed by W01's Continue (checked against
+  // the request rule), the only one a review quotes. `typedAmount` is W01's
+  // field text exactly as typed, shown again when W01 comes back. Both live
+  // in this mount only: a wallet change (BankSession is keyed by h160) or a
+  // new opening of the flow starts empty.
   const [usdcAmount, setUsdcAmount] = useState("")
+  const [typedAmount, setTypedAmount] = useState("")
   const [chosenId, setChosenId] = useState<string | undefined>()
   const list = useHbrBankAccounts(h160)
   const remove = useHbrRemoveBankAccount(h160)
@@ -174,10 +180,17 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
 
   return (
     <BankCashOutAmount
-      usdcAmount={usdcAmount}
+      usdcAmount={typedAmount}
       accountLine={selected ? line(selected) : null}
-      onChooseAccount={() => setView({ kind: "pick" })}
-      onContinue={(amount) => {
+      onChooseAccount={(typed) => {
+        setTypedAmount(typed)
+        // The confirmed amount stands only while the field still holds it;
+        // otherwise W02's Continue returns to W01, which checks the field.
+        if (typed.trim() !== usdcAmount) setUsdcAmount("")
+        setView({ kind: "pick" })
+      }}
+      onContinue={(amount, typed) => {
+        setTypedAmount(typed)
         setUsdcAmount(amount)
         setView({ kind: "pick" })
       }}

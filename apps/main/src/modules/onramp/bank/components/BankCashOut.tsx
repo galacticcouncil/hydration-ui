@@ -245,6 +245,10 @@ export const BankCashOut: FC<BankCashOutProps> = ({
 
   const credited =
     quoteFits && quote.data ? quote.data.quote.bridgeCredited : null
+  // "Getting the quote" only while no answer is in: once the request settled
+  // without a quote (refused, failed) the figure reads "-", as every amount
+  // the bank screens cannot show, never an older quote.
+  const quoteSettled = quote.isSuccess || quote.isError
 
   return (
     <BankStepShell
@@ -269,7 +273,9 @@ export const BankCashOut: FC<BankCashOutProps> = ({
                   ? t("bank.cashOut.quote.usdc", {
                       amount: formatUsdcBaseUnits(credited) ?? "-",
                     })
-                  : t("bank.cashOut.summary.quoting")}
+                  : quoteSettled
+                    ? "-"
+                    : t("bank.cashOut.summary.quoting")}
               </Text>
               <Text fs="p5" color={getToken("text.medium")}>
                 {t("bank.cashOut.summary.from", { amount: usdcAmount })}

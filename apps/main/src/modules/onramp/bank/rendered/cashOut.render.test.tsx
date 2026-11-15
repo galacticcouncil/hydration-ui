@@ -333,6 +333,7 @@ const unsigned = (data: string, from = A) => ({
 })
 
 let buildAnswer: () => Response
+let quoteAnswer: () => Response | Promise<Response>
 let rampStatus: Record<string, unknown> = FIXTURE_RAMP_BUILT
 // The list of cash-outs (GET /v1/ramps): empty unless a test lists the ramp.
 let rampsList: Record<string, unknown>[] = []
@@ -389,7 +390,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
         ],
       })
     case "POST /v1/ramps/quote":
-      return json(200, FIXTURE_QUOTE)
+      return quoteAnswer()
     case "POST /v1/ramps":
       return buildAnswer()
     case "GET /v1/ramps":
@@ -503,6 +504,7 @@ beforeEach(() => {
   useToastsStore.setState({ toasts: {} })
   h.last4 = "6789"
   buildAnswer = built()
+  quoteAnswer = () => json(200, FIXTURE_QUOTE)
   rampStatus = FIXTURE_RAMP_BUILT
   rampsList = []
   h.storage.clear()
@@ -936,6 +938,63 @@ describe("build refusals", () => {
       (s) => s.method === "POST" && s.path === "/v1/ramps",
     )
     expect(builds).toHaveLength(1)
+  })
+})
+
+describe("e2e B: the review card once the quote request settled without a quote", () => {
+  /** W01 -> W02 -> W05 without waiting for a quote (amountToQuote waits for one). */
+  const toQuoteStep = async () => {
+    render(app())
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    await act(async () => {
+      fireEvent.change(document.querySelector("input")!, {
+        target: { value: "25.5" },
+      })
+    })
+    await click("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await waitFor(() =>
+      expect(button("bank.flow.continue").disabled).toBe(false),
+    )
+    await click("bank.flow.continue")
+    await waitFor(() =>
+      expect(document.querySelector("[data-summary-credited]")).not.toBeNull(),
+    )
+  }
+  const headline = () =>
+    document.querySelector("[data-summary-credited]")?.textContent
+
+  it("refused (503 ramp_build_unavailable): the warning, and nothing says a quote is being fetched", async () => {
+    quoteAnswer = () =>
+      json(503, { error: "ramp_build_unavailable", nothingBroadcast: true })
+    await toQuoteStep()
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.error.notAvailable"),
+    )
+    expect(text()).not.toContain("bank.cashOut.summary.quoting")
+    expect(headline()).toBe("-")
+    expect(text()).not.toContain("bank.cashOut.quote.bridgeCredited")
+    expect(buttons().map((b) => b.textContent)).not.toContain(
+      "bank.cashOut.confirm",
+    )
+  })
+
+  it("failed (500): the try-again warning, and no in-progress text", async () => {
+    quoteAnswer = () => json(500, { error: "internal" })
+    await toQuoteStep()
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.error.couldNotPrepare"),
+    )
+    expect(text()).not.toContain("bank.cashOut.summary.quoting")
+    expect(headline()).toBe("-")
+  })
+
+  it("pending: the in-progress text stays while no answer is in", async () => {
+    quoteAnswer = () => new Promise<Response>(() => {})
+    await toQuoteStep()
+    await flush()
+    expect(headline()).toBe("bank.cashOut.summary.quoting")
+    expect(text()).not.toContain("bank.cashOut.error.")
   })
 })
 

@@ -22,8 +22,9 @@ type BankCashOutAmountProps = {
   usdcAmount: string
   /** The chosen account's line, or null when none is chosen yet. */
   accountLine: string | null
-  onChooseAccount: () => void
-  onContinue: (usdcAmount: string) => void
+  /** The destination row; `typed` is the field's text, exactly as typed. */
+  onChooseAccount: (typed: string) => void
+  onContinue: (usdcAmount: string, typed: string) => void
   /** The list of cash-outs (Transfer step). */
   onViewTransfers: () => void
 }
@@ -42,7 +43,11 @@ export const BankCashOutAmount: FC<BankCashOutAmountProps> = ({
 }) => {
   const { t } = useTranslation(["onramp"])
   const form = useBankCashOutAmountForm(usdcAmount)
-  const submit = form.handleSubmit((values) => onContinue(values.usdcAmount))
+  // W01 unmounts when W02 opens: the parent keeps the field's raw text.
+  const typed = () => String(form.getValues("usdcAmount") ?? "")
+  const submit = form.handleSubmit((values) =>
+    onContinue(values.usdcAmount, typed()),
+  )
 
   return (
     <BankStepShell title={t("bank.cashOut.title")} step="amount">
@@ -75,7 +80,7 @@ export const BankCashOutAmount: FC<BankCashOutAmountProps> = ({
               }
               value={<ChevronRightIcon />}
               isActive={false}
-              onClick={onChooseAccount}
+              onClick={() => onChooseAccount(typed())}
             />
           </Stack>
         </ModalBody>

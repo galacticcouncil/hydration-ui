@@ -159,6 +159,7 @@ let rampsList: unknown[]
 let unlinkedList: unknown[]
 let rampView: Record<string, unknown>
 let quoteCalls = 0
+let quoteBodies: unknown[] = []
 const ready = () =>
   json(
     200,
@@ -205,6 +206,7 @@ const fakeFetch = async (url: string, init: RequestInit) => {
       return json(200, { ramp: rampView })
     case "POST /v1/ramps/quote":
       quoteCalls += 1
+      quoteBodies.push(init.body ? JSON.parse(init.body as string) : undefined)
       return json(200, FIXTURE_QUOTE)
   }
   return json(404, { error: "not_found" })
@@ -271,6 +273,7 @@ beforeEach(() => {
   unlinkedList = []
   rampView = { ...FIXTURE_RAMP_BUILT, label: "Checking (server)" }
   quoteCalls = 0
+  quoteBodies = []
   walletState.account = { rawAddress: A, address: A }
   walletState.signer = new FakeEthSigner(A)
   emit()
@@ -856,6 +859,130 @@ describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
     expect(text()).toContain("1234")
     await flush()
     expect(quoteCalls).toBe(0)
+  })
+
+  const field = () => document.querySelector("input")?.value
+  const openPickerFromRow = async () => {
+    await click('[data-option="bank.cashOut.form.destination"]')
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll("button")).find(
+          (b) => b.textContent === "bank.flow.continue",
+        )?.disabled,
+      ).toBe(false),
+    )
+  }
+
+  it("e2e A: an amount typed before the destination row is in the field after W02's Continue, as typed", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await enterAmount("25.50")
+    await openPickerFromRow()
+    await clickText("bank.flow.continue")
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    // The raw text, not a re-formatted number (25.5).
+    expect(field()).toBe("25.50")
+    await flush()
+    expect(quoteCalls).toBe(0)
+    // W01's Continue checks it; the review quotes exactly that amount.
+    await clickText("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await clickText("bank.flow.continue")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.quote.bridgeCredited"),
+    )
+    expect(quoteBodies).toEqual([
+      {
+        bankAccountId: FIXTURE_BANK_ACCOUNTS.bankAccounts[0]!.id,
+        usdcAmount: "25.50",
+      },
+    ])
+  })
+
+  it("e2e A: the picker's back arrow returns to the typed amount", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await enterAmount("25.5")
+    await openPickerFromRow()
+    await click("[data-header-back]")
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    expect(field()).toBe("25.5")
+  })
+
+  it("e2e A: an amount changed after Continue is checked again, never the older one quoted", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    await enterAmount("25.5 ")
+    await clickText("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await click("[data-header-back]")
+    // As typed, the trailing space included.
+    expect(field()).toBe("25.5 ")
+    await enterAmount("30")
+    await openPickerFromRow()
+    await clickText("bank.flow.continue")
+    // Back on W01 with the new text: no review of 25.5.
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    expect(field()).toBe("30")
+    await flush()
+    expect(quoteCalls).toBe(0)
+  })
+
+  it("e2e A: an unchanged confirmed amount goes from the destination row to the review", async () => {
+    signedIn()
+    mountFlow("withdraw")
+    // Confirmed as "25.5" (the request rule trims); the field still holds it.
+    await enterAmount("25.5 ")
+    await clickText("bank.flow.continue")
+    await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+    await click("[data-header-back]")
+    await openPickerFromRow()
+    await clickText("bank.flow.continue")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.quote.bridgeCredited"),
+    )
+    expect(quoteBodies).toEqual([
+      {
+        bankAccountId: FIXTURE_BANK_ACCOUNTS.bankAccounts[0]!.id,
+        usdcAmount: "25.5",
+      },
+    ])
+  })
+
+  it("e2e A: the typed amount does not survive a wallet change or a new opening of the flow", async () => {
+    const B = "0x2222222222222222222222222222222222222222"
+    signedIn()
+    const first = mountFlow("withdraw")
+    await enterAmount("25.5")
+    await openPickerFromRow()
+    await click("[data-header-back]")
+    expect(field()).toBe("25.5")
+    // A -> B -> A: the flow under A starts again with an empty field.
+    await act(async () => {
+      walletState.account = { rawAddress: B, address: B }
+      walletState.signer = new FakeEthSigner(B)
+      emit()
+    })
+    await flush()
+    await act(async () => {
+      walletState.account = { rawAddress: A, address: A }
+      walletState.signer = new FakeEthSigner(A)
+      emit()
+    })
+    // Back on A with a session for A (set again here, whatever the switch left).
+    await act(async () => {
+      signedIn()
+    })
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    expect(field()).toBe("")
+    // Closed and opened again: empty too.
+    await enterAmount("25.5")
+    first.unmount()
+    mountFlow("withdraw")
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    expect(field()).toBe("")
   })
 
   it("an invalid amount stays on W01 with its message", async () => {
