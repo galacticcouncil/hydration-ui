@@ -25,8 +25,8 @@ type BankCashOutAmountProps = {
   /** The destination row; `typed` is the field's text, exactly as typed. */
   onChooseAccount: (typed: string) => void
   onContinue: (usdcAmount: string, typed: string) => void
-  /** The list of cash-outs (Transfer step). */
-  onViewTransfers: () => void
+  /** The list of cash-outs (Transfer step); `typed` as for the row. */
+  onViewTransfers: (typed: string) => void
 }
 
 /**
@@ -93,7 +93,7 @@ export const BankCashOutAmount: FC<BankCashOutAmountProps> = ({
               type="button"
               size="large"
               variant="tertiary"
-              onClick={onViewTransfers}
+              onClick={() => onViewTransfers(typed())}
             >
               {t("bank.cashOut.status.viewTransfers")}
             </Button>

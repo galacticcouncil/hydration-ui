@@ -194,7 +194,12 @@ export const BankAccounts: FC<BankAccountsProps> = ({ h160, rails }) => {
         setUsdcAmount(amount)
         setView({ kind: "pick" })
       }}
-      onViewTransfers={() => setView({ kind: "transfers" })}
+      onViewTransfers={(typed) => {
+        // The list leads back to W01 only, never to a review: the confirmed
+        // amount is checked again at W01's row or Continue.
+        setTypedAmount(typed)
+        setView({ kind: "transfers" })
+      }}
     />
   )
 }

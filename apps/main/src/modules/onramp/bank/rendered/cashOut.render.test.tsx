@@ -300,6 +300,7 @@ vi.mock("@/config/xcSwap", () => ({ XC_SWAP_CONFIG: {} }))
 
 import { CallType } from "@galacticcouncil/xc-core"
 
+import { QUOTE_REFRESH_MS } from "@/modules/onramp/bank/components/BankCashOut"
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
 import { BankTransferHistory } from "@/modules/onramp/bank/components/BankTransferHistory"
 import {
@@ -309,6 +310,7 @@ import {
 } from "@/modules/onramp/bank/config/fixtures"
 import { useBankCashOutStore } from "@/modules/onramp/bank/store/useBankCashOutStore"
 import { useHbrSessionStore } from "@/modules/onramp/bank/store/useHbrSessionStore"
+import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 import { TransactionManager } from "@/modules/transactions/TransactionManager"
 import { useStrictEvmLedger } from "@/modules/transactions/utils/strictEvm"
 import { strictEvmCall } from "@/modules/transactions/utils/strictEvm"
@@ -987,6 +989,54 @@ describe("e2e B: the review card once the quote request settled without a quote"
     )
     expect(text()).not.toContain("bank.cashOut.summary.quoting")
     expect(headline()).toBe("-")
+  })
+
+  it("R-2: a good quote, then a refresh that fails: no old figure, the warning, Get quote", async () => {
+    const realNow = Date.now.bind(Date)
+    let offset = 0
+    vi.spyOn(Date, "now").mockImplementation(() => realNow() + offset)
+    let calls = 0
+    let answerFirst!: (r: Response) => void
+    quoteAnswer = () =>
+      ++calls === 1
+        ? new Promise<Response>((r) => (answerFirst = r))
+        : json(500, { error: "internal" })
+    await toQuoteStep()
+    // The good quote lands past the cool-down, so Refresh renders enabled.
+    offset = QUOTE_REFRESH_MS + 1
+    await act(async () => answerFirst(json(200, FIXTURE_QUOTE)))
+    await flush()
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.quote.bridgeCredited"),
+    )
+    expect(headline()).toContain(
+      formatUsdcBaseUnits(FIXTURE_QUOTE.quote.bridgeCredited)!,
+    )
+    expect(button("bank.cashOut.quote.refresh").disabled).toBe(false)
+    // Refresh; the server fails it.
+    await click("bank.cashOut.quote.refresh")
+    await waitFor(() =>
+      expect(text()).toContain("bank.cashOut.error.couldNotPrepare"),
+    )
+    expect(calls).toBe(2)
+    expect(headline()).toBe("-")
+    expect(
+      document
+        .querySelector("[data-summary-credited]")
+        ?.getAttribute("data-summary-credited"),
+    ).toBe("")
+    expect(text()).not.toContain(
+      formatUsdcBaseUnits(FIXTURE_QUOTE.quote.bridgeCredited)!,
+    )
+    expect(text()).not.toContain("bank.cashOut.quote.bridgeCredited")
+    expect(text()).not.toContain("bank.cashOut.summary.quoting")
+    // As today: no Confirm; the quote button reads Get quote.
+    expect(buttons().map((b) => b.textContent)).not.toContain(
+      "bank.cashOut.confirm",
+    )
+    expect(buttons().map((b) => b.textContent)).toContain(
+      "bank.cashOut.quote.get",
+    )
   })
 
   it("pending: the in-progress text stays while no answer is in", async () => {

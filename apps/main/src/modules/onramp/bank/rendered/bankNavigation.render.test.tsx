@@ -985,6 +985,37 @@ describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
     expect(field()).toBe("")
   })
 
+  it("R-1: View withdrawals and back returns to the typed amount; it still ends with the session and the flow", async () => {
+    signedIn()
+    const first = mountFlow("withdraw")
+    await enterAmount("25.50")
+    await clickText("bank.cashOut.status.viewTransfers")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.history.title"))
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.transfer")
+    await click("[data-header-back]")
+    expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+    expect(field()).toBe("25.50")
+    // The session is cleared (expiry, a 401) and set again: empty.
+    await clickText("bank.cashOut.status.viewTransfers")
+    await act(async () => {
+      useHbrSessionStore.getState().clear()
+    })
+    await flush()
+    expect(document.querySelector("input")).toBeNull()
+    await act(async () => {
+      signedIn()
+    })
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    expect(field()).toBe("")
+    // Closed from the list and opened again: empty.
+    await enterAmount("25.5")
+    await clickText("bank.cashOut.status.viewTransfers")
+    first.unmount()
+    mountFlow("withdraw")
+    await waitFor(() => expect(document.querySelector("input")).not.toBeNull())
+    expect(field()).toBe("")
+  })
+
   it("an invalid amount stays on W01 with its message", async () => {
     signedIn()
     mountFlow("withdraw")
