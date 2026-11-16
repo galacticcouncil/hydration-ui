@@ -6,6 +6,10 @@ import { useTranslation } from "react-i18next"
 import { useGetClaimAllBorrowRewardsTx } from "@/api/borrow"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { useXykPools } from "@/api/pools"
+import {
+  rewardsDistributorAccountKey,
+  useGetRewardsDistributorClaimTx,
+} from "@/api/rewardsDistributor"
 import { stakingPositionsQuery, useInvalidateStakeData } from "@/api/staking"
 import {
   getClaimFarmRewardsTx,
@@ -55,7 +59,8 @@ const useGetClaimStakingTx = () => {
 
 export const useClaimAllWalletRewards = () => {
   const { t } = useTranslation("wallet")
-  const { papi } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { papi } = rpc
 
   const { data: pools = [] } = useXykPools()
 
@@ -65,18 +70,24 @@ export const useClaimAllWalletRewards = () => {
   const createBatch = useCreateBatchTx()
 
   const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
+  const getClaimDistributorTx = useGetRewardsDistributorClaimTx()
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
 
   return useMutation({
     mutationFn: async () => {
       const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
-      const claimBorrow = await getClaimBorrowTx()
+      // built only when needed: it throws when the controller has nothing for the account
+      const claimBorrow = walletRewards.incentives.isControllerEmpty
+        ? undefined
+        : await getClaimBorrowTx()
+      const claimDistributor = await getClaimDistributorTx()
 
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
       const txs = [
-        ...(!walletRewards.incentives.isEmpty ? [claimBorrow] : []),
+        ...(claimBorrow ? [claimBorrow] : []),
+        ...(claimDistributor ? [claimDistributor] : []),
         ...(!walletRewards.farming.isEmpty ? farmRewardsTx : []),
         ...(!walletRewards.referral.isEmpty ? [claimReferral] : []),
       ]
@@ -90,6 +101,9 @@ export const useClaimAllWalletRewards = () => {
         txs,
         transaction: {
           toasts,
+          invalidateQueries: claimDistributor
+            ? [rewardsDistributorAccountKey(rpc)]
+            : undefined,
         },
       })
 

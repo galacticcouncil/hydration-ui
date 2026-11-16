@@ -20,6 +20,7 @@ import { AccountBindingBanner } from "@/modules/borrow/account/AccountBindingBan
 import { BorrowAssetsTable } from "@/modules/borrow/dashboard/components/borrow-assets/BorrowAssetsTable"
 import { BorrowedAssetsTable } from "@/modules/borrow/dashboard/components/borrowed-assets/BorrowedAssetsTable"
 import { DashboardHeader } from "@/modules/borrow/dashboard/components/DashboardHeader"
+import { RewardsProgramNotice } from "@/modules/borrow/dashboard/components/RewardsProgramNotice"
 import { SuppliedAssetsTable } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsTable"
 import { SupplyAssetsTable } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable"
 import { GigaHDXBanner } from "@/modules/staking/gigaStaking/GigaHDXBanner"
@@ -47,6 +48,7 @@ export const BorrowDashboardPage = () => {
     <Stack gap="xxl">
       <GigaHDXBanner stakeAmount={0n} type="stake" />
       <DashboardHeader />
+      <RewardsProgramNotice />
       <AccountBindingBanner />
       <Box>
         {shouldRenderFilter && (

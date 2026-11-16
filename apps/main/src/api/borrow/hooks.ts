@@ -23,6 +23,12 @@ import {
   useUserBorrowSummary,
 } from "@/api/borrow/queries"
 import { neckworkClient } from "@/api/neckwork"
+import {
+  findRewardPriceUsd,
+  getRewardsProgramIncentives,
+  useRewardsProgram,
+} from "@/api/rewardsDistributor"
+import { mergeRewardsIncentive } from "@/api/rewardsDistributor.utils"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import {
@@ -91,6 +97,17 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     [borrowReserves],
   )
 
+  const rewardsProgram = useRewardsProgram()
+  const programIncentives = useMemo(
+    () =>
+      getRewardsProgramIncentives(
+        rewardsProgram,
+        rewardsProgram.latest &&
+          findRewardPriceUsd(reserves, rewardsProgram.latest.reward.address),
+      ),
+    [reserves, rewardsProgram],
+  )
+
   const allAssetIds = useMemo(() => {
     const ids = assetIdsMemo.flatMap((assetId) => {
       const asset = getAsset(assetId)
@@ -119,8 +136,15 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
           underlyingAsset === getAddressFromAssetId(assetId),
       )
 
-      const incentives = (assetReserve?.aIncentivesData ?? []).filter(
-        ({ incentiveAPR }) => Big(incentiveAPR).gt(0),
+      // the reward program pays on top of what the controller streams
+      const allIncentives = mergeRewardsIncentive(
+        assetReserve?.aIncentivesData ?? [],
+        assetReserve &&
+          programIncentives.get(assetReserve.underlyingAsset.toLowerCase()),
+      )
+
+      const incentives = allIncentives.filter(({ incentiveAPR }) =>
+        Big(incentiveAPR).gt(0),
       )
 
       const stableSwapAssetIds =
@@ -144,7 +168,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
       const calculatedData = calculateAssetApyTotals(
         stableSwapAssetIds,
         underlyingReserves,
-        assetReserve?.aIncentivesData ?? [],
+        allIncentives,
         new Map(externalApys),
         stablepoolData,
         lpAPY ?? 0,
@@ -167,6 +191,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     getAsset,
     getErc20AToken,
     isLoading,
+    programIncentives,
     reserves,
     yieldsMap,
   ])

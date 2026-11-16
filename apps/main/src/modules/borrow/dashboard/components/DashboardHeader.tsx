@@ -19,8 +19,10 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useRewardsDistributorClaim } from "@/api/rewardsDistributor"
 import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
+import { DistributorRewards } from "@/modules/borrow/dashboard/components/DistributorRewards"
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
 
 export const MIN_CLAIMABLE_INCENTIVES_USDT = 0.01
@@ -34,6 +36,7 @@ export const DashboardHeader = () => {
   const [riskModalOpen, setRiskModalOpen] = useState(false)
 
   const { claimableRewardsUsd } = getUserClaimableRewards(user)
+  const distributorClaim = useRewardsDistributorClaim()
 
   const {
     healthFactor,
@@ -137,6 +140,10 @@ export const DashboardHeader = () => {
               </SValueStatsValue>
             }
           />
+        )}
+
+        {distributorClaim.status !== "none" && (
+          <DistributorRewards claim={distributorClaim} />
         )}
       </Stack>
       <Modal open={riskModalOpen} onOpenChange={setRiskModalOpen}>
