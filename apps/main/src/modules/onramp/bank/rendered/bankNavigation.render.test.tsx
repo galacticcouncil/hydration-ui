@@ -1026,6 +1026,168 @@ describe("withdraw: W01 -> W02 -> W05 -> status (Figma W01-W15)", () => {
     expect(quoteCalls).toBe(0)
   })
 
+  // D1-R2: W01 hands its typed text up on three exits: Continue (validated
+  // by the form), the destination row and View withdrawals. Only Continue may
+  // confirm an amount. An invalid text carried out through the row or View
+  // withdrawals, along every route onward from there, ends on W01 with the
+  // text as typed: no review, no quote request, no build request, and W01's
+  // Continue shows the field error. Each case reads every request sent.
+  describe("only W01's validated Continue confirms an amount (D1-R2)", () => {
+    const rampPosts = () =>
+      vi
+        .mocked(fetch)
+        .mock.calls.map(
+          ([url, init]) =>
+            `${(init as RequestInit | undefined)?.method ?? "GET"} ${String(
+              url,
+            ).replace("https://hbr.test", "")}`,
+        )
+        .filter((r) => r.startsWith("POST /v1/ramps"))
+    const viewTransfersAndBack = async () => {
+      await clickText("bank.cashOut.status.viewTransfers")
+      await waitFor(() =>
+        expect(text()).toContain("bank.cashOut.history.title"),
+      )
+      await click("[data-header-back]")
+    }
+    const viaStatusAndBack = async () => {
+      await clickText("bank.cashOut.status.viewTransfers")
+      await waitFor(() =>
+        expect(document.querySelector("[data-ramp-row]")).not.toBeNull(),
+      )
+      await clickText("bank.cashOut.history.open")
+      await waitFor(() =>
+        expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+      )
+      await clickText("bank.cashOut.status.viewTransfers")
+      await waitFor(() =>
+        expect(document.querySelector("[data-ramp-row]")).not.toBeNull(),
+      )
+      await click("[data-header-back]")
+    }
+    const pickerContinue = async () => {
+      await clickText("bank.flow.continue")
+    }
+    const pickerAddBackContinue = async () => {
+      await click('[data-option="bank.accounts.addAnother"]')
+      expect(text()).toContain("bank.accounts.railTitle")
+      await click("[data-header-back]")
+      await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+      await waitFor(() =>
+        expect(
+          Array.from(document.querySelectorAll("button")).find(
+            (b) => b.textContent === "bank.flow.continue",
+          )?.disabled,
+        ).toBe(false),
+      )
+      await clickText("bank.flow.continue")
+    }
+    const pickerBack = async () => {
+      await click("[data-header-back]")
+    }
+    type Route = [string, () => Promise<void>]
+    const routes: Route[] = [
+      [
+        "row, picker Continue",
+        async () => {
+          await openPickerFromRow()
+          await pickerContinue()
+        },
+      ],
+      [
+        "row, add, back, picker Continue",
+        async () => {
+          await openPickerFromRow()
+          await pickerAddBackContinue()
+        },
+      ],
+      [
+        "row, picker back",
+        async () => {
+          await openPickerFromRow()
+          await pickerBack()
+        },
+      ],
+      ["View withdrawals, back", viewTransfersAndBack],
+      [
+        "View withdrawals, back, row, picker Continue",
+        async () => {
+          await viewTransfersAndBack()
+          await openPickerFromRow()
+          await pickerContinue()
+        },
+      ],
+      [
+        "View withdrawals, back, row, add, back, picker Continue",
+        async () => {
+          await viewTransfersAndBack()
+          await openPickerFromRow()
+          await pickerAddBackContinue()
+        },
+      ],
+      [
+        "View withdrawals, back, row, picker back",
+        async () => {
+          await viewTransfersAndBack()
+          await openPickerFromRow()
+          await pickerBack()
+        },
+      ],
+      [
+        "View withdrawals, a status, its View withdrawals, back, row, picker Continue",
+        async () => {
+          await viaStatusAndBack()
+          await openPickerFromRow()
+          await pickerContinue()
+        },
+      ],
+    ]
+    // Non-numeric, empty, blank (trims to empty) and more than 6 decimals.
+    const invalid = ["abc", "", "   ", "1.1234567"]
+    const cases = invalid.flatMap((value) => [
+      ...routes.map(([name, route]) => ({ value, name, route, prior: false })),
+      // With an amount confirmed earlier: the new text replaces it, never the
+      // invalid text standing as the confirmed amount.
+      ...routes
+        .filter(([name]) => name.endsWith("picker Continue"))
+        .map(([name, route]) => ({ value, name, route, prior: true })),
+    ])
+
+    it.each(cases)(
+      "$value via $name (earlier confirmed amount: $prior): W01 with the text and its error; no review, no quote, no build",
+      async ({ value, route, prior }) => {
+        rampsList = [FIXTURE_RAMP_BUILT]
+        signedIn()
+        mountFlow("withdraw")
+        if (prior) {
+          await enterAmount("25.5")
+          await clickText("bank.flow.continue")
+          await waitFor(() => expect(text()).toContain("bank.accounts.title"))
+          await click("[data-header-back]")
+        }
+        await enterAmount(value)
+        await route()
+        await flush()
+        // What the user sees: W01 again, the text as typed, no review card.
+        expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+        expect(field()).toBe(value)
+        expect(document.querySelector("[data-summary-credited]")).toBeNull()
+        expect(document.querySelector("[data-field-error]")).toBeNull()
+        // What went out: no quote, no build.
+        expect(rampPosts()).toEqual([])
+        // W01's Continue checks the text: the field error, still W01.
+        await clickText("bank.flow.continue")
+        await flush()
+        expect(document.querySelector("[data-field-error]")?.textContent).toBe(
+          "onramp:bank.cashOut.form.error.amount",
+        )
+        expect(stepper()?.getAttribute("data-step")).toBe("bank.step.amount")
+        expect(text()).not.toContain("bank.accounts.title")
+        expect(rampPosts()).toEqual([])
+      },
+    )
+  })
+
   it("a cash-out's details replace the list (R01); back returns to the list", async () => {
     signedIn()
     rampsList = [FIXTURE_RAMP_BUILT]
