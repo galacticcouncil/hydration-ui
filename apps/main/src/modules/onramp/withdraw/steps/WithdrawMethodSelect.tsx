@@ -7,7 +7,7 @@ import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { OnrampScreen } from "@/modules/onramp/types"
 
@@ -42,7 +42,7 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
             title={t("withdraw.method.onchain.title")}
             description={t("withdraw.method.onchain.description")}
           />
-          {ENV.VITE_ENV !== "production" && (
+          {isBankFlowEnabled() && (
             <StepButton
               icon={CreditCardIcon}
               onClick={() => onSelect(OnrampScreen.WithdrawBank)}

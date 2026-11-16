@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next"
 import { useUnmount } from "react-use"
 import { useShallow } from "zustand/shallow"
 
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { PendingDeposit } from "@/modules/onramp/components/PendingDeposit"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
 import { DepositAsset } from "@/modules/onramp/deposit/steps/DepositAsset"
@@ -75,7 +76,7 @@ export const DepositPage = () => {
           />
         )}
 
-        {page === OnrampScreen.DepositBank && (
+        {page === OnrampScreen.DepositBank && isBankFlowEnabled() && (
           <DepositBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
         )}
         {page === OnrampScreen.DepositSuccess && (

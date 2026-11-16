@@ -9,6 +9,12 @@ export const useNavigation = (): NavigationItem[] => {
   return useMemo(
     () =>
       NAVIGATION.filter((item) => item.enabled !== false).map((item) => {
+        if (item.key === "portfolio") {
+          return {
+            ...item,
+            children: item.children?.filter((child) => child.enabled !== false),
+          }
+        }
         if (item.key === "strategies") {
           return {
             ...item,

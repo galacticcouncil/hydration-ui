@@ -2,6 +2,7 @@ import { Flex, ModalContainer } from "@galacticcouncil/ui/components"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useUnmount } from "react-use"
 
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { WithdrawBank } from "@/modules/onramp/withdraw/steps/WithdrawBank"
@@ -48,7 +49,7 @@ export const WithdrawPage = () => {
           </>
         )}
 
-        {page === OnrampScreen.WithdrawBank && (
+        {page === OnrampScreen.WithdrawBank && isBankFlowEnabled() && (
           <WithdrawBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
         )}
 
