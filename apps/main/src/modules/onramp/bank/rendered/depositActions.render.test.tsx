@@ -695,6 +695,42 @@ describe("Q4b remove asks first", () => {
     expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
   })
 
+  it("C6c two other rows reorder while the confirm is open: it still names and removes the same account", async () => {
+    const OTHER = {
+      ...SECOND,
+      id: "00000000-0000-4000-8000-0000000000b4",
+      status: "inactive",
+    }
+    const name = (a: typeof UNREAD | typeof OTHER) =>
+      `bank.accounts.row.status.${a.status}`
+    bankList = { bankAccounts: [UNREAD, OTHER] }
+    await open()
+    await openConfirm(0)
+    expect(dialog()?.querySelector("[data-remove-name]")?.textContent).toBe(
+      name(UNREAD),
+    )
+    bankList = { bankAccounts: [OTHER, UNREAD] }
+    await act(async () => {
+      await queryClient.invalidateQueries()
+    })
+    await flush()
+    const titles = () =>
+      Array.from(document.querySelectorAll("span"))
+        .filter((s) => !s.closest("[data-dialog]"))
+        .map((s) => s.textContent)
+        .filter((t) => t?.startsWith("bank.accounts.row.status."))
+    expect(titles()).toEqual([name(OTHER), name(UNREAD)])
+    expect(dialog()).not.toBeNull()
+    expect(dialog()?.querySelector("[data-remove-name]")?.textContent).toBe(
+      name(UNREAD),
+    )
+    await act(async () => {
+      fireEvent.click(confirm()!)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${UNREAD.id}`])
+  })
+
   it("C6b a re-read that takes the account out of the saved rows closes its confirm; nothing is sent", async () => {
     await open()
     await openConfirm(0)
@@ -776,6 +812,38 @@ describe("Q4b remove asks first", () => {
     },
   )
 
+  // Back on the picker after the flow left it (signed in again when the
+  // session ended), where a confirm that survived would show.
+  const backToPicker = async () => {
+    await act(async () => {
+      signIn(A)
+    })
+    await flush()
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-option="bank.cashOut.form.destination"]'),
+      ).not.toBeNull(),
+    )
+    await act(async () => {
+      fireEvent.click(
+        document.querySelector(
+          '[data-option="bank.cashOut.form.destination"]',
+        )!,
+      )
+    })
+    await flush()
+    await waitFor(() => expect(removeItem(0)).toBeDefined())
+  }
+  const expectNoConfirm = () => {
+    expect(dialog()).toBeNull()
+    expect(
+      Array.from(document.querySelectorAll("button")).some(
+        (b) => b.textContent === "bank.accounts.removeConfirm.confirm",
+      ),
+    ).toBe(false)
+    expect(deletes()).toEqual([])
+  }
+
   it("C8 a wallet change while the confirm is open closes it and sends nothing", async () => {
     await open()
     await openConfirm(0)
@@ -788,8 +856,8 @@ describe("Q4b remove asks first", () => {
       setWallet(A)
     })
     await flush()
-    expect(dialog()).toBeNull()
-    expect(deletes()).toEqual([])
+    await backToPicker()
+    expectNoConfirm()
   })
 
   it("C8 the session ending while the confirm is open closes it and sends nothing", async () => {
@@ -800,7 +868,8 @@ describe("Q4b remove asks first", () => {
     })
     await flush()
     expect(dialog()).toBeNull()
-    expect(deletes()).toEqual([])
+    await backToPicker()
+    expectNoConfirm()
   })
 
   it("C8 leaving the picker while the confirm is open closes it and sends nothing", async () => {
@@ -813,7 +882,8 @@ describe("Q4b remove asks first", () => {
     await flush()
     expect(dialog()).toBeNull()
     expect(document.querySelector("input")).not.toBeNull()
-    expect(deletes()).toEqual([])
+    await backToPicker()
+    expectNoConfirm()
   })
 
   it("C9 once per confirm, not once per row: after an answer, the same row's next confirm sends again", async () => {
