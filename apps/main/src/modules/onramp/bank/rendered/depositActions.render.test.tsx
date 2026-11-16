@@ -393,6 +393,7 @@ describe("Q4 remove", () => {
     await open()
     expect(document.body.textContent).toContain("1234")
     await clickText("bank.accounts.remove")
+    await clickText("bank.accounts.removeConfirm.confirm")
     await flush()
     // While the DELETE is held the row stays and remove is disabled.
     expect(document.body.textContent ?? "").toContain("1234")
@@ -435,6 +436,7 @@ describe("Q4 remove", () => {
     )
     await open()
     await clickText("bank.accounts.remove")
+    await clickText("bank.accounts.removeConfirm.confirm")
     await flush()
     vi.useFakeTimers()
     await act(async () => {
@@ -454,9 +456,392 @@ describe("Q4 remove", () => {
     )
     await open()
     await clickText("bank.accounts.remove")
+    await clickText("bank.accounts.removeConfirm.confirm")
     await flush()
     expect(alerts()).toContain("bank.accounts.removeResult.unknown")
     expect(alerts()).not.toContain("bank.accounts.removeResult.removed")
+  })
+})
+
+// A confirm before a saved bank account is removed. The menu item opens it;
+// only its confirm button sends the DELETE, once, for the account whose menu
+// opened it. The stub draws the dialog's X, Escape and an outside click as
+// three controls; the real kit (Radix) reports each as onOpenChange(false).
+describe("Q4b remove asks first", () => {
+  const SECOND = {
+    id: "00000000-0000-4000-8000-0000000000b2",
+    externalAccountId: "ea_synthetic_second",
+    status: "active",
+    currency: "eur",
+    accountType: "iban",
+    last4: "9876",
+    bankName: "<placeholder bank 2>",
+  }
+  const UNREAD = {
+    id: "00000000-0000-4000-8000-0000000000b3",
+    externalAccountId: "ea_synthetic_unread",
+    status: "unknown",
+    currency: null,
+    accountType: null,
+    last4: "4321",
+    bankName: "<placeholder bank 3>",
+  }
+  const FIRST = FIXTURE_BANK_ACCOUNTS.bankAccounts[0]!
+  beforeEach(() => {
+    delQueue.length = 0
+    delQueue.push(() =>
+      json(200, {
+        status: "deactivated",
+        bankAccount: { id: FIRST.id, state: "revoked" },
+      }),
+    )
+    bankList = { bankAccounts: [FIRST, SECOND] }
+    depositsAnswer = { deposits: [], unattributed: [] }
+  })
+  const open = async () => {
+    direction = "withdraw"
+    signIn(A)
+    setWallet(A)
+    render(app())
+    await flush()
+    await act(async () => {
+      fireEvent.click(
+        document.querySelector(
+          '[data-option="bank.cashOut.form.destination"]',
+        )!,
+      )
+    })
+    await flush()
+  }
+  const dialog = () => document.querySelector("[data-dialog]")
+  const deletes = () =>
+    sent.filter((s) => s.method === "DELETE").map((s) => s.path)
+  // The menu item of the row at `index` (saved rows first, then the others).
+  const removeItem = (index: number) =>
+    Array.from(document.querySelectorAll("button")).filter(
+      (b) => b.textContent === "bank.accounts.remove",
+    )[index] as HTMLButtonElement
+  const openConfirm = async (index: number) => {
+    await act(async () => {
+      fireEvent.click(removeItem(index))
+    })
+    expect(dialog()).not.toBeNull()
+  }
+  const inDialog = (label: string) =>
+    Array.from(dialog()?.querySelectorAll("button") ?? []).find(
+      (b) => b.textContent === label,
+    ) as HTMLButtonElement | undefined
+  const confirm = () => inDialog("bank.accounts.removeConfirm.confirm")
+  const listText = () =>
+    Array.from(document.querySelectorAll("[data-option]")).map((o) =>
+      o.getAttribute("data-option"),
+    )
+
+  it("C1 the menu item only opens the confirm; its button sends one DELETE for that account", async () => {
+    await open()
+    await openConfirm(0)
+    await flush()
+    expect(deletes()).toEqual([])
+    expect(dialog()?.textContent).toContain("bank.accounts.removeConfirm.title")
+    expect(dialog()?.textContent).toContain(
+      "bank.accounts.removeConfirm.description",
+    )
+    expect(confirm()?.getAttribute("data-variant")).toBe("danger")
+    expect(inDialog("common:cancel")).toBeDefined()
+    await act(async () => {
+      fireEvent.click(confirm()!)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
+    expect(dialog()).toBeNull()
+    // The answer, not the confirm, says what happened.
+    expect(alerts()).toContain("bank.accounts.removeResult.removed")
+  })
+
+  it.each([
+    ["Cancel", () => inDialog("common:cancel")!],
+    ["the X", () => dialog()!.querySelector("[data-dialog-close]")!],
+    [
+      "an outside click",
+      () => dialog()!.querySelector("[data-dialog-outside]")!,
+    ],
+  ])(
+    "C2 %s closes the confirm and sends nothing; the list is unchanged",
+    async (_name, target) => {
+      await open()
+      const before = listText()
+      await openConfirm(0)
+      await act(async () => {
+        fireEvent.click(target())
+      })
+      await flush()
+      expect(dialog()).toBeNull()
+      expect(deletes()).toEqual([])
+      expect(listText()).toEqual(before)
+      expect(alerts()).toEqual([])
+    },
+  )
+
+  it("C2 Escape closes the confirm and sends nothing", async () => {
+    await open()
+    const before = listText()
+    await openConfirm(0)
+    await act(async () => {
+      fireEvent.keyDown(confirm()!, { key: "Escape" })
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    expect(deletes()).toEqual([])
+    expect(listText()).toEqual(before)
+  })
+
+  it.each([0, 1])(
+    "C3 two rows: the confirm opened from row %i removes that row's account, never the other",
+    async (index) => {
+      await open()
+      await openConfirm(index)
+      await act(async () => {
+        fireEvent.click(confirm()!)
+      })
+      await flush()
+      expect(deletes()).toEqual([
+        `/v1/bank-accounts/${[FIRST, SECOND][index]!.id}`,
+      ])
+    },
+  )
+
+  it("C4 a double click on the confirm sends one DELETE (two events, then two in one tick)", async () => {
+    delQueue.length = 0
+    delQueue.push(hold())
+    await open()
+    await openConfirm(0)
+    const button = confirm()!
+    await act(async () => {
+      fireEvent.click(button)
+    })
+    await act(async () => {
+      fireEvent.click(button)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
+    await releaseHeld(
+      json(200, {
+        status: "deactivated",
+        bankAccount: { id: FIRST.id, state: "revoked" },
+      }),
+    )
+    sent.length = 0
+    await openConfirm(1)
+    const second = confirm()!
+    await act(async () => {
+      fireEvent.click(second)
+      fireEvent.click(second)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${SECOND.id}`])
+  })
+
+  it("C5 while a remove is in flight no confirm can send: the menu items and a confirm left open are disabled", async () => {
+    delQueue.length = 0
+    delQueue.push(hold())
+    await open()
+    // Two confirms open at once is a stub-only state (the real dialog is
+    // modal); it stands for any confirm on screen while a remove is in flight.
+    await openConfirm(1)
+    await openConfirm(0)
+    const confirms = () =>
+      Array.from(document.querySelectorAll("[data-dialog] button")).filter(
+        (b) => b.textContent === "bank.accounts.removeConfirm.confirm",
+      ) as HTMLButtonElement[]
+    expect(confirms().length).toBe(2)
+    // In DOM order: FIRST's confirm, then SECOND's.
+    await act(async () => {
+      fireEvent.click(confirms()[0]!)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
+    // FIRST's confirm closed; SECOND's is still open, and disabled.
+    expect(confirms().length).toBe(1)
+    expect(confirms()[0]!.disabled).toBe(true)
+    expect(removeItem(0).disabled).toBe(true)
+    expect(removeItem(1).disabled).toBe(true)
+    await act(async () => {
+      fireEvent.click(confirms()[0]!)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
+  })
+
+  it("C6 the list re-reads and reorders while the confirm is open: it still names and removes the same account", async () => {
+    await open()
+    await openConfirm(0)
+    expect(dialog()?.querySelector("[data-remove-name]")?.textContent).toBe(
+      FIRST.bankName,
+    )
+    bankList = { bankAccounts: [SECOND, FIRST] }
+    await act(async () => {
+      await queryClient.invalidateQueries()
+    })
+    await flush()
+    expect(listText().slice(0, 2)).toEqual([SECOND.bankName, FIRST.bankName])
+    expect(dialog()).not.toBeNull()
+    expect(dialog()?.querySelector("[data-remove-name]")?.textContent).toBe(
+      FIRST.bankName,
+    )
+    await act(async () => {
+      fireEvent.click(confirm()!)
+    })
+    await flush()
+    expect(deletes()).toEqual([`/v1/bank-accounts/${FIRST.id}`])
+  })
+
+  it("C6b a re-read that takes the account out of the saved rows closes its confirm; nothing is sent", async () => {
+    await open()
+    await openConfirm(0)
+    bankList = { bankAccounts: [SECOND, { ...FIRST, status: "inactive" }] }
+    await act(async () => {
+      await queryClient.invalidateQueries()
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    expect(deletes()).toEqual([])
+  })
+
+  // The confirm shows the row's own text: one value feeds both.
+  const shown = () => ({
+    name: dialog()?.querySelector("[data-remove-name]")?.textContent ?? null,
+    detail:
+      dialog()?.querySelector("[data-remove-detail]")?.textContent ?? null,
+  })
+  const spans = () =>
+    Array.from(document.querySelectorAll("span"))
+      .filter((s) => !s.closest("[data-dialog]"))
+      .map((s) => s.textContent)
+
+  it("C7 the name in the confirm is the row's text: a saved row, title and line", async () => {
+    await open()
+    await openConfirm(1)
+    const line = `bank.accounts.row.last4 {"last4":"9876"} · bank.accounts.row.currency.eur`
+    expect(shown()).toEqual({ name: SECOND.bankName, detail: line })
+    expect(listText()).toContain(SECOND.bankName)
+    expect(spans()).toContain(line)
+  })
+
+  it("C7 a saved row without a bank name: the row's fallback title, nothing invented", async () => {
+    bankList = { bankAccounts: [{ ...FIRST, bankName: null }] }
+    await open()
+    await openConfirm(0)
+    const line = `bank.accounts.row.last4 {"last4":"1234"} · bank.accounts.row.currency.usd`
+    expect(shown()).toEqual({
+      name: "bank.accounts.row.status.active",
+      detail: line,
+    })
+    expect(listText()).toContain("bank.accounts.row.status.active")
+    expect(spans()).toContain(line)
+  })
+
+  it.each([
+    [
+      "an unknown read with digits and a bank name",
+      UNREAD,
+      "bank.accounts.row.status.unknown",
+      `bank.accounts.row.last4 {"last4":"4321"} · <placeholder bank 3>`,
+    ],
+    [
+      "an unknown read with nothing else",
+      { ...UNREAD, last4: null, bankName: null },
+      "bank.accounts.row.status.unknown",
+      null,
+    ],
+    [
+      "an inactive account",
+      { ...SECOND, id: UNREAD.id, status: "inactive" },
+      "bank.accounts.row.status.inactive",
+      `bank.accounts.row.last4 {"last4":"9876"} · bank.accounts.row.currency.eur · <placeholder bank 2>`,
+    ],
+  ])(
+    "C7 %s: the confirm shows what the row shows",
+    async (_name, account, name, detail) => {
+      bankList = { bankAccounts: [account] }
+      await open()
+      await openConfirm(0)
+      expect(shown()).toEqual({ name, detail })
+      expect(spans()).toContain(name)
+      if (detail) expect(spans()).toContain(detail)
+      await act(async () => {
+        fireEvent.click(confirm()!)
+      })
+      await flush()
+      expect(deletes()).toEqual([`/v1/bank-accounts/${account.id}`])
+    },
+  )
+
+  it("C8 a wallet change while the confirm is open closes it and sends nothing", async () => {
+    await open()
+    await openConfirm(0)
+    await act(async () => {
+      setWallet(B)
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    await act(async () => {
+      setWallet(A)
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    expect(deletes()).toEqual([])
+  })
+
+  it("C8 the session ending while the confirm is open closes it and sends nothing", async () => {
+    await open()
+    await openConfirm(0)
+    await act(async () => {
+      useHbrSessionStore.getState().clear()
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    expect(deletes()).toEqual([])
+  })
+
+  it("C8 leaving the picker while the confirm is open closes it and sends nothing", async () => {
+    await open()
+    await openConfirm(0)
+    // Stub-only path (the real dialog blocks the page behind it).
+    await act(async () => {
+      fireEvent.click(document.querySelector("[data-header-back]")!)
+    })
+    await flush()
+    expect(dialog()).toBeNull()
+    expect(document.querySelector("input")).not.toBeNull()
+    expect(deletes()).toEqual([])
+  })
+
+  it("C9 once per confirm, not once per row: after an answer, the same row's next confirm sends again", async () => {
+    delQueue.length = 0
+    delQueue.push(() =>
+      json(409, {
+        error: "ramp_in_flight",
+        ramp: { id: "00000000-0000-4000-8000-0000000000d1" },
+        validUntil: "2026-10-22T12:30:00.000Z",
+        retryAfter: "2026-10-22T12:30:00.000Z",
+      }),
+    )
+    await open()
+    await openConfirm(0)
+    await act(async () => {
+      fireEvent.click(confirm()!)
+    })
+    await flush()
+    expect(alerts()).toContain("bank.accounts.removeResult.inFlight")
+    await openConfirm(0)
+    await act(async () => {
+      fireEvent.click(confirm()!)
+    })
+    await flush()
+    expect(deletes()).toEqual([
+      `/v1/bank-accounts/${FIRST.id}`,
+      `/v1/bank-accounts/${FIRST.id}`,
+    ])
   })
 })
 

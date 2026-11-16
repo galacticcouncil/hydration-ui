@@ -10,10 +10,12 @@
 import {
   Children,
   cloneElement,
+  createContext,
   FC,
   isValidElement,
   ReactElement,
   ReactNode,
+  useContext,
 } from "react"
 
 type ChildrenProps = { children?: ReactNode }
@@ -284,6 +286,45 @@ export const MenuItemIcon: FC = () => null
 export const MenuItemLabel: FC<ChildrenProps> = ({ children }) => (
   <>{children}</>
 )
+// ---- a controlled dialog (ModalRoot + ModalContent), drawn in place --------
+// Radix reports its X, Escape and an outside click as onOpenChange(false); the
+// stub draws one control per path, so each is a separate user action.
+
+const DialogContext = createContext<{
+  open: boolean
+  onOpenChange?: (open: boolean) => void
+}>({ open: false })
+export const ModalRoot: FC<
+  ChildrenProps & { open?: boolean; onOpenChange?: (open: boolean) => void }
+> = ({ children, open = false, onOpenChange }) => (
+  <DialogContext.Provider value={{ open, onOpenChange }}>
+    {children}
+  </DialogContext.Provider>
+)
+export const ModalContent: FC<ChildrenProps> = ({ children }) => {
+  const { open, onOpenChange } = useContext(DialogContext)
+  if (!open) return null
+  return (
+    <div
+      data-dialog="1"
+      role="dialog"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onOpenChange?.(false)
+      }}
+    >
+      <div data-dialog-outside="1" onClick={() => onOpenChange?.(false)} />
+      <button
+        type="button"
+        data-dialog-close="1"
+        onClick={() => onOpenChange?.(false)}
+      >
+        dialog-close
+      </button>
+      {children}
+    </div>
+  )
+}
+
 export const Box: FC<ChildrenProps> = ({ children }) => <div>{children}</div>
 export const ModalContainer: FC<ChildrenProps> = ({ children }) => (
   <div>{children}</div>

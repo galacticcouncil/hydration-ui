@@ -75,6 +75,11 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
   const usable = getCashOutAccounts(accounts)
   const others = accounts.filter((a) => !usable.includes(a))
   const selected = usable.find((a) => a.id === selectedId)
+  // A saved row's text; the remove confirm shows the same (one source).
+  const rowName = (account: BankAccountView) => ({
+    title: account.bankName ?? t("bank.accounts.row.status.active"),
+    detail: line({ ...account, bankName: null }),
+  })
 
   return (
     <>
@@ -97,10 +102,8 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
               <Box flex={1}>
                 <OptionCard
                   icon={LandmarkIcon}
-                  label={
-                    account.bankName ?? t("bank.accounts.row.status.active")
-                  }
-                  description={line({ ...account, bankName: null })}
+                  label={rowName(account).title}
+                  description={rowName(account).detail}
                   value={
                     <Flex align="center" gap="m">
                       <Chip variant="green" size="small">
@@ -120,6 +123,7 @@ export const BankAccountPicker: FC<BankAccountPickerProps> = ({
                 />
               </Box>
               <BankAccountMenu
+                name={rowName(account)}
                 isRemoving={isRemoving}
                 onRemove={() => onRemove(account.id)}
               />

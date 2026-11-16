@@ -29,21 +29,30 @@ export const BankAccountRow: FC<BankAccountRowProps> = ({
       : null,
     account.bankName,
   ].filter((part): part is string => !!part)
+  // The row's text, shown again by the remove confirm (one source).
+  const name = {
+    title: t(`bank.accounts.row.status.${account.status}`),
+    detail: parts.length > 0 ? parts.join(" · ") : null,
+  }
 
   return (
     <Flex align="center" gap="m" py="s">
       <Icon component={LandmarkIcon} size="m" color={getToken("text.medium")} />
       <Stack flex={1}>
         <Text fs="p4" fw={500}>
-          {t(`bank.accounts.row.status.${account.status}`)}
+          {name.title}
         </Text>
-        {parts.length > 0 && (
+        {name.detail && (
           <Text fs="p5" color={getToken("text.low")}>
-            {parts.join(" · ")}
+            {name.detail}
           </Text>
         )}
       </Stack>
-      <BankAccountMenu isRemoving={isRemoving} onRemove={onRemove} />
+      <BankAccountMenu
+        name={name}
+        isRemoving={isRemoving}
+        onRemove={onRemove}
+      />
     </Flex>
   )
 }
