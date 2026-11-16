@@ -7,7 +7,10 @@ import {
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
-import { withCollateralFirst } from "@/modules/strategies/multiply/utils/pay"
+import {
+  withBalanceOrAll,
+  withCollateralFirst,
+} from "@/modules/strategies/multiply/utils/pay"
 import { useAssets } from "@/providers/assetsProvider"
 
 type MultiplyPayAssetListProps = {
@@ -21,21 +24,13 @@ type MultiplyPayAssetListProps = {
 const LIST_HEIGHT = 560
 
 /**
- * What the user can enter a loop with, collateral first. A pool-share
- * collateral ranks like the money-market supply modal (the pool's reserves,
- * their underlyings, then the debt asset); any other is a plain tradable list.
+ * What the user can enter a pool-share loop with, ranked like the money-market
+ * supply modal (collateral, the pool's reserves, their underlyings, then the
+ * debt asset). Only held assets are listed, unless the user holds none.
  */
 export const MultiplyPayAssetList: React.FC<MultiplyPayAssetListProps> = (
   props,
 ) => {
-  const { pair } = props
-  const { getAssetWithFallback, isStableSwap } = useAssets()
-  const isPoolShare = isStableSwap(getAssetWithFallback(pair.collateralAssetId))
-
-  return isPoolShare ? <PoolSharePayList {...props} /> : <PayList {...props} />
-}
-
-const PoolSharePayList: React.FC<MultiplyPayAssetListProps> = (props) => {
   const { pair } = props
   const { data: pool } = useStablepoolReserves(pair.collateralAssetId)
   const reserves = useAddableStablepoolTokens(
@@ -52,9 +47,11 @@ const PoolSharePayList: React.FC<MultiplyPayAssetListProps> = (props) => {
     options: { firstAssetId: pair.collateralAssetId, highPriorityAssetIds },
   })
   const { getAssetWithFallback } = useAssets()
-  const sortedAssets = withCollateralFirst(
-    rankedAssets,
-    getAssetWithFallback(pair.collateralAssetId),
+  const sortedAssets = withBalanceOrAll(
+    withCollateralFirst(
+      rankedAssets,
+      getAssetWithFallback(pair.collateralAssetId),
+    ),
   )
 
   return <PayList {...props} sortedAssets={sortedAssets} />
@@ -84,6 +81,7 @@ const PayList: React.FC<
       sortedAssets={sortedAssets}
       selectedAssetId={selectedAssetId}
       searchInputVariant="standalone"
+      flushTop
       height={LIST_HEIGHT}
       onSelect={(asset) => onSelect(asset.id)}
     />

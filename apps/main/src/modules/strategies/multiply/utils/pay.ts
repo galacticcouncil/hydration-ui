@@ -4,9 +4,16 @@ import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 
 type PairAssets = Pick<MultiplyPair, "collateralAssetId">
 
-/** The asset the user enters with: `?pay=` from the URL, or the collateral. */
-export const getPayAssetId = (pair: PairAssets, pay: string | undefined) =>
-  pay ?? pair.collateralAssetId
+/**
+ * The asset the user enters with: `?pay=` from the URL, or the collateral.
+ * A loop whose collateral isn't a pool share is entered with the collateral
+ * only, so `pay` is ignored there.
+ */
+export const getPayAssetId = (
+  pair: PairAssets,
+  pay: string | undefined,
+  canPickPay: boolean,
+) => (canPickPay && pay) || pair.collateralAssetId
 
 /**
  * What the amount input may spend of the pay asset. `spendable` already leaves
@@ -41,6 +48,12 @@ export const withCollateralFirst = <T extends { id: string }>(
   !assets.length || assets.some((a) => a.id === collateral.id)
     ? assets
     : [{ ...collateral, balance: "0", balanceDisplay: "0" }, ...assets]
+
+/** The assets the user holds; all of them when they hold none. */
+export const withBalanceOrAll = <T extends object>(assets: T[]) => {
+  const held = assets.filter((a) => "balance" in a && Number(a.balance) > 0)
+  return held.length ? held : assets
+}
 
 export type PayQuoteState =
   | "idle"

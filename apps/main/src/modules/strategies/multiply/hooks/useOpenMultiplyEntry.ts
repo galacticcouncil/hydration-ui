@@ -27,11 +27,9 @@ import {
   useTransactionsStore,
 } from "@/states/transactions"
 
-/** Step 1 of a two-step entry: whatever turns the pay asset(s) into collateral. */
+/** Step 1 of a two-step entry: the sell of the pay asset into collateral. */
 export type LooperEntryStep1 = {
-  /** how step 2 reads the received collateral from step 1's events */
-  variant: "sell" | "proportional"
-  /** the asset sold; the proportional variant ignores it */
+  /** the asset sold */
   payAssetId: string
   tx: AnyTransaction
   /** what the user pays, formatted for the toasts ("1,000 USDT") */
@@ -115,29 +113,14 @@ export const useOpenMultiplyEntry = (pair: MultiplyPair) => {
           result && isSubstrateTxResult(result) ? result.events : null
         const balances = events ? undefined : await readBalances(result)
 
-        return step1.variant === "sell"
-          ? {
-              variant: "sell",
-              events: {
-                routerExecuted: events
-                  ? papi.event.Router.Executed.filter(events).map(
-                      (e) => e.payload,
-                    )
-                  : [],
-              },
-              balances,
-            }
-          : {
-              variant: "proportional",
-              events: {
-                liquidityAdded: events
-                  ? papi.event.Stableswap.LiquidityAdded.filter(events).map(
-                      (e) => e.payload,
-                    )
-                  : [],
-              },
-              balances,
-            }
+        return {
+          events: {
+            routerExecuted: events
+              ? papi.event.Router.Executed.filter(events).map((e) => e.payload)
+              : [],
+          },
+          balances,
+        }
       }
 
       // set once step 1 landed ("" until what it delivered is read); left for
@@ -171,7 +154,6 @@ export const useOpenMultiplyEntry = (pair: MultiplyPair) => {
                   held = ""
                   const { collateralPriceInDebt, maxDeposit } = getMarket()
                   const entry = getLooperEntry({
-                    account: address,
                     payAssetId: step1.payAssetId,
                     collateralAssetId: pair.collateralAssetId,
                     step1: await readStep1(result),

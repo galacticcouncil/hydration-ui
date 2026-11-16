@@ -11,6 +11,7 @@ import { useVaultEvmCall } from "@/modules/strategies/bil/hooks/useVaultWrites"
 import {
   MULTIPLY_DEFAULT_LEVERAGE,
   MULTIPLY_OPEN_GAS,
+  MULTIPLY_PAY_WITH_OTHER_ASSETS,
   MULTIPLY_QUERY_KEY_PREFIX,
 } from "@/modules/strategies/multiply/config/constants"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
@@ -27,6 +28,18 @@ import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
+
+/**
+ * Whether a loop can be entered with another asset than its collateral: only
+ * a pool-share collateral (PRIME, HUSDT, …) can; plain ones (vDOT) can't.
+ * Nothing can while `MULTIPLY_PAY_WITH_OTHER_ASSETS` is off.
+ */
+export const useCanPickPay = () => {
+  const { getAssetWithFallback, isStableSwap } = useAssets()
+  return (pair: Pick<MultiplyPair, "collateralAssetId">) =>
+    MULTIPLY_PAY_WITH_OTHER_ASSETS &&
+    isStableSwap(getAssetWithFallback(pair.collateralAssetId))
+}
 
 /**
  * The pay → collateral sell, as the money-market supply modal quotes it, but
