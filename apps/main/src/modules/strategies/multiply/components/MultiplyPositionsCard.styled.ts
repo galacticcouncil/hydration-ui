@@ -6,10 +6,10 @@ export const SPositionHeader = styled.div(
     cursor: pointer;
     border-radius: ${theme.radii.m};
 
-    /* PositionCard (ResponsiveScope > Paper) paints the same translucent
-       surface as the card around it; doubled, the header turns darker */
     & > div > div {
       background-color: transparent;
+      border: none;
+      border-radius: 0;
     }
 
     &:focus-visible {
