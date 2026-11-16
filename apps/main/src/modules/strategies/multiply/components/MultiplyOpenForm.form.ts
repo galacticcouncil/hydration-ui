@@ -9,39 +9,14 @@ export type MultiplyOpenFormValues = {
   amount: string
   leverage: number
   payAssetId: string
-  /** pays with the pool's reserves instead of `amount` of the pay asset */
-  proportional: boolean
-  /** per reserve, in its own units; balances are checked by the form */
-  reserveAmounts: { assetId: string; amount: string }[]
 }
 
-const useSchema = (maxBalance: string) => {
-  const amountSchema = required
-    .pipe(positive)
-    .check(validateFieldMaxBalance(maxBalance))
-
-  return z
-    .object({
-      amount: z.string(),
-      leverage: z.number(),
-      payAssetId: z.string(),
-      proportional: z.boolean(),
-      reserveAmounts: z.array(
-        z.object({ assetId: z.string(), amount: z.string() }),
-      ),
-    })
-    .superRefine((values, ctx) => {
-      if (values.proportional) return
-      const result = amountSchema.safeParse(values.amount)
-      if (!result.success) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["amount"],
-          message: result.error.issues[0]?.message,
-        })
-      }
-    })
-}
+const useSchema = (maxBalance: string) =>
+  z.object({
+    amount: required.pipe(positive).check(validateFieldMaxBalance(maxBalance)),
+    leverage: z.number(),
+    payAssetId: z.string(),
+  })
 
 export const useMultiplyOpenForm = ({
   maxBalance,
@@ -59,8 +34,6 @@ export const useMultiplyOpenForm = ({
       amount: defaultAmount,
       leverage: defaultLeverage,
       payAssetId,
-      proportional: false,
-      reserveAmounts: [],
     },
     resolver: standardSchemaResolver(useSchema(maxBalance)),
     mode: "onChange",

@@ -38,6 +38,7 @@ import {
   useMultiplyPairsMetrics,
 } from "@/modules/strategies/multiply/hooks/useMultiplyPairMetrics"
 import { useMultiplyPositions } from "@/modules/strategies/multiply/hooks/useMultiplyPositions"
+import { useCanPickPay } from "@/modules/strategies/multiply/hooks/usePayAsset"
 import { getLoopsToRestore } from "@/modules/strategies/multiply/utils/loops"
 import { getPayAssetId } from "@/modules/strategies/multiply/utils/pay"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -60,7 +61,8 @@ const MultiplyPageContent: React.FC = () => {
   const pair = allPairs.find((p) => p.slug === search.pair) ?? allPairs[0]!
   const selected = pairs.find((p) => p.pair.slug === pair.slug)!
 
-  const payAssetId = getPayAssetId(pair, search.pay)
+  const canPickPay = useCanPickPay()(pair)
+  const payAssetId = getPayAssetId(pair, search.pay, canPickPay)
 
   // a new pair drops ?pay=, so the pay asset resets to its collateral
   const selectPair = (next: MultiplyPair, pay?: string) =>
@@ -165,7 +167,8 @@ const MultiplyPageContent: React.FC = () => {
                 risk={selected.risk}
                 collateralReserve={selected.collateralReserve}
                 debtReserve={selected.debtReserve}
-                onAssetClick={() => setSelectStep("pay")}
+                // a plain pair has no pay step, so the button picks the pair
+                onAssetClick={() => setSelectStep(canPickPay ? "pay" : "pair")}
                 onPayAssetChange={(id) => selectPair(pair, id)}
               />
             </Paper>

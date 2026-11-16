@@ -16,7 +16,6 @@ import {
   Summary,
   SummaryRow,
   Text,
-  Toggle,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -36,10 +35,7 @@ import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
-import {
-  type MultiplyOpenFormValues,
-  useMultiplyOpenForm,
-} from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
+import { useMultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
 import { MultiplyPaySwapSummary } from "@/modules/strategies/multiply/components/MultiplyPaySwapSummary"
 import { MultiplyPositionPreview } from "@/modules/strategies/multiply/components/MultiplyPositionPreview"
 import { MultiplySwapResult } from "@/modules/strategies/multiply/components/MultiplySwapResult"
@@ -60,7 +56,6 @@ import {
   usePayMaxBalance,
   usePayQuote,
 } from "@/modules/strategies/multiply/hooks/usePayAsset"
-import { useProportionalEntry } from "@/modules/strategies/multiply/hooks/useProportionalEntry"
 import {
   getCapRoom,
   getEntryCost,
@@ -158,12 +153,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
       : undefined,
   })
   const { control, handleSubmit, watch, formState, getValues, setValue } = form
-  const [amount, leverage, proportional, reserveAmounts] = watch([
-    "amount",
-    "leverage",
-    "proportional",
-    "reserveAmounts",
-  ])
+  const [amount, leverage] = watch(["amount", "leverage"])
 
   // a fee estimate landing moves the max; the amount is checked against it again
   useEffect(() => {
@@ -175,23 +165,15 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     if (getValues("leverage") > maxLeverage) setValue("leverage", maxLeverage)
   }, [maxLeverage, getValues, setValue])
 
-  const quote = usePayQuote(pair, payAssetId, proportional ? "" : amount)
-  const split = useProportionalEntry(
-    pair,
-    payAssetId,
-    proportional ? reserveAmounts : EMPTY_AMOUNTS,
-  )
-  // the collateral the loop gets: the typed amount, the quoted sell's output
-  // or the shares the proportional add is estimated to mint
-  const collateralAmount = proportional
-    ? Number(formatUnits(split.shares, collateral.decimals))
-    : quote.isSwap
-      ? quote.amountOut
-        ? Number(formatUnits(quote.amountOut, collateral.decimals))
-        : 0
-      : Number(amount || 0)
+  const quote = usePayQuote(pair, payAssetId, amount)
+  // the collateral the loop gets: the typed amount or the quoted sell's output
+  const collateralAmount = quote.isSwap
+    ? quote.amountOut
+      ? Number(formatUnits(quote.amountOut, collateral.decimals))
+      : 0
+    : Number(amount || 0)
 
-  const { getAssetPrice } = useAssetsPrice([payAssetId, ...split.reserveIds])
+  const { getAssetPrice } = useAssetsPrice([payAssetId])
   const getPriceUsd = (assetId: string) => {
     const price = getAssetPrice(assetId)
     return price.isValid ? Number(price.price) : 0
@@ -199,16 +181,8 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   const payPrice = getAssetPrice(payAssetId)
 
   // an aToken held as money-market collateral: paying with it withdraws it
-  const withdrawn = proportional
-    ? reserveAmounts.find(
-        (r) => !!getErc20AToken(r.assetId) && Number(r.amount || 0) > 0,
-      )
-    : { assetId: payAssetId, amount }
-  const withdrawnAsset = display(withdrawn?.assetId ?? payAssetId)
-  const payUnderlyingId = withdrawn
-    ? getErc20AToken(withdrawn.assetId)?.underlyingAssetId
-    : undefined
-  const [debouncedPayAmount] = useDebouncedValue(withdrawn?.amount ?? "")
+  const payUnderlyingId = getErc20AToken(payAssetId)?.underlyingAssetId
+  const [debouncedPayAmount] = useDebouncedValue(amount)
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
@@ -293,11 +267,9 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     !metrics?.unavailableReason &&
     !cantFill &&
     !overMax &&
-    (proportional
-      ? split.state === "ready"
-      : payMax.isResolved &&
-        Big(amount || "0").lte(balance) &&
-        (!quote.isSwap || (quote.state === "ready" && !!quote.tx))) &&
+    payMax.isResolved &&
+    Big(amount || "0").lte(balance) &&
+    (!quote.isSwap || (quote.state === "ready" && !!quote.tx)) &&
     !isPending
 
   const recovery = getRecovery(maxDeposit)
@@ -314,17 +286,8 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     if (isLoading) return t("multiply.open.cta")
     if (metrics?.unavailableReason)
       return t("multiply.open.ctaState.unavailable")
-    if (proportional && split.state === "idle")
-      return t("multiply.open.ctaState.enterAmount")
-    if (proportional && split.state === "insufficientBalance")
-      return t("multiply.open.ctaState.insufficientBalance", {
-        symbol: display(split.overBalanceIds[0] ?? payAssetId).symbol,
-      })
-    if (proportional && split.state === "tooSmall")
-      return t("multiply.open.ctaState.tooSmallShares")
-    if (!proportional && !(amountNum > 0))
-      return t("multiply.open.ctaState.enterAmount")
-    if (!proportional && amountNum > Number(balance))
+    if (!(amountNum > 0)) return t("multiply.open.ctaState.enterAmount")
+    if (amountNum > Number(balance))
       return t("multiply.open.ctaState.insufficientBalance", {
         symbol: payAsset.symbol,
       })
@@ -349,48 +312,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     maxDeposit: market.current.getMaxDepositAt(leverage),
   })
 
-  // turning it on starts every reserve empty except the pay asset's amount
-  const onProportionalChange = (checked: boolean) => {
-    setValue("proportional", checked)
-    if (checked) {
-      setValue(
-        "reserveAmounts",
-        split.reserveIds.map((assetId) => ({
-          assetId,
-          amount: assetId === payAssetId ? getValues("amount") : "",
-        })),
-      )
-    }
-    form.trigger()
-  }
-
-  const onSubmit = handleSubmit(({ amount, leverage, reserveAmounts }) => {
-    if (proportional) {
-      const tx = split.buildStep1()
-      if (!tx) return
-      entryMutation.mutate(
-        {
-          step1: {
-            variant: "proportional",
-            payAssetId,
-            tx,
-            paid: reserveAmounts
-              .filter((r) => Number(r.amount || 0) > 0)
-              .map((r) =>
-                t("common:currency", {
-                  value: r.amount,
-                  symbol: display(r.assetId).symbol,
-                }),
-              )
-              .join(", "),
-          },
-          leverage,
-          getMarket: getMarketAt(leverage),
-        },
-        { onSuccess },
-      )
-      return
-    }
+  const onSubmit = handleSubmit(({ amount, leverage }) => {
     if (!quote.isSwap) {
       openMutation.mutate(
         {
@@ -406,7 +328,6 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     entryMutation.mutate(
       {
         step1: {
-          variant: "sell",
           payAssetId,
           tx: quote.tx,
           paid: t("common:currency", {
@@ -425,103 +346,44 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     <FormProvider {...form}>
       <form onSubmit={onSubmit}>
         <Stack gap="l" py="xl">
-          {split.isAvailable && (
-            <Flex justify="space-between" align="center">
-              <FormLabel>{t("multiply.open.proportional")}</FormLabel>
-              <Toggle
-                checked={proportional}
-                onCheckedChange={onProportionalChange}
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field, fieldState }) => (
+              <AssetInput
+                label={t("multiply.open.deposit")}
+                asset={{
+                  symbol: payAsset.symbol,
+                  icon: <AssetLogo id={payAsset.logoId} />,
+                }}
+                onAssetClick={onAssetClick}
+                value={field.value}
+                onChange={field.onChange}
+                isDisplayValueLoading={
+                  quote.isSwap ? !payPrice.isValid : isLoading
+                }
+                displayValue={t("common:currency", {
+                  value:
+                    Number(field.value || 0) *
+                    (quote.isSwap
+                      ? getPriceUsd(payAssetId)
+                      : collateralPriceUsd),
+                })}
+                balance={{
+                  label: t("common:balance"),
+                  value: t("common:number", { value: balance }),
+                  onMax: () => field.onChange(balance),
+                  onPercentage: (percent) =>
+                    field.onChange(
+                      percentageOf(balance, percent, payAsset.decimals),
+                    ),
+                  isMaxDisabled: !payMax.isResolved || !(Number(balance) > 0),
+                  isLoading: isBalanceLoading,
+                }}
+                amountError={fieldState.error?.message}
               />
-            </Flex>
-          )}
-
-          {proportional ? (
-            reserveAmounts.map((reserve, index) => {
-              const asset = display(reserve.assetId)
-              const max = split.getReserveMax(reserve.assetId)
-
-              return (
-                <Controller
-                  key={reserve.assetId}
-                  control={control}
-                  name={`reserveAmounts.${index}.amount`}
-                  render={({ field }) => (
-                    <AssetInput
-                      label={
-                        index === 0 ? t("multiply.open.deposit") : undefined
-                      }
-                      asset={{
-                        symbol: asset.symbol,
-                        icon: <AssetLogo id={asset.logoId} />,
-                      }}
-                      value={field.value}
-                      onChange={field.onChange}
-                      displayValue={t("common:currency", {
-                        value:
-                          Number(field.value || 0) *
-                          getPriceUsd(reserve.assetId),
-                      })}
-                      balance={{
-                        label: t("common:balance"),
-                        value: t("common:number", { value: max }),
-                        onMax: () => field.onChange(max),
-                        onPercentage: (percent) =>
-                          field.onChange(
-                            percentageOf(max, percent, asset.decimals),
-                          ),
-                        isMaxDisabled: !(Number(max) > 0),
-                        isLoading: isBalanceLoading,
-                      }}
-                      amountError={
-                        split.overBalanceIds.includes(reserve.assetId)
-                          ? t("common:error.maxBalance")
-                          : undefined
-                      }
-                    />
-                  )}
-                />
-              )
-            })
-          ) : (
-            <Controller
-              control={control}
-              name="amount"
-              render={({ field, fieldState }) => (
-                <AssetInput
-                  label={t("multiply.open.deposit")}
-                  asset={{
-                    symbol: payAsset.symbol,
-                    icon: <AssetLogo id={payAsset.logoId} />,
-                  }}
-                  onAssetClick={onAssetClick}
-                  value={field.value}
-                  onChange={field.onChange}
-                  isDisplayValueLoading={
-                    quote.isSwap ? !payPrice.isValid : isLoading
-                  }
-                  displayValue={t("common:currency", {
-                    value:
-                      Number(field.value || 0) *
-                      (quote.isSwap
-                        ? getPriceUsd(payAssetId)
-                        : collateralPriceUsd),
-                  })}
-                  balance={{
-                    label: t("common:balance"),
-                    value: t("common:number", { value: balance }),
-                    onMax: () => field.onChange(balance),
-                    onPercentage: (percent) =>
-                      field.onChange(
-                        percentageOf(balance, percent, payAsset.decimals),
-                      ),
-                    isMaxDisabled: !payMax.isResolved || !(Number(balance) > 0),
-                    isLoading: isBalanceLoading,
-                  }}
-                  amountError={fieldState.error?.message}
-                />
-              )}
-            />
-          )}
+            )}
+          />
 
           {quote.isSwap && (
             <Flex justify="space-between" align="center">
@@ -708,9 +570,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
           </AuthorizedAction>
         </Stack>
 
-        <CollapsibleRoot
-          open={proportional ? split.state !== "idle" : Number(amount) > 0}
-        >
+        <CollapsibleRoot open={Number(amount) > 0}>
           <CollapsibleContent>
             <Separator mx="-xl" />
             <Summary separator={<Separator mx="-xl" />}>
@@ -741,16 +601,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
                   )
                 }
               />
-              {proportional && (
-                <SummaryRow
-                  label={t("common:minimumReceived")}
-                  content={t("common:currency", {
-                    value: formatUnits(split.minShares, collateral.decimals),
-                    symbol: collateral.symbol,
-                  })}
-                />
-              )}
-              {quote.isSwap && !proportional && (
+              {quote.isSwap && (
                 <MultiplyPaySwapSummary
                   payAsset={getAssetWithFallback(payAssetId)}
                   collateral={getAssetWithFallback(pair.collateralAssetId)}
@@ -762,7 +613,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
                 <SummaryRow
                   label={t("common:healthFactor")}
                   tooltip={t("multiply.open.withdrawHfTooltip", {
-                    symbol: withdrawnAsset.symbol,
+                    symbol: payAsset.symbol,
                   })}
                   content={
                     <HealthFactorChange
@@ -789,5 +640,3 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
     </FormProvider>
   )
 }
-
-const EMPTY_AMOUNTS: MultiplyOpenFormValues["reserveAmounts"] = []

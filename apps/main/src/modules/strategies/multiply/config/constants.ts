@@ -11,3 +11,7 @@ export const MULTIPLY_QUERY_KEY_PREFIX = "multiply"
 export const MULTIPLY_MIN_LEVERAGE = 1.1
 export const MULTIPLY_LEVERAGE_STEP = 0.1
 export const MULTIPLY_DEFAULT_LEVERAGE = 3
+
+// Off: every loop is entered with its collateral (the supply asset) and the
+// pair picker is one step. On: pool-share loops also take other assets.
+export const MULTIPLY_PAY_WITH_OTHER_ASSETS = false

@@ -4,6 +4,7 @@ import {
   getPayAssetId,
   getPayMaxBalance,
   getPayQuoteState,
+  withBalanceOrAll,
   withCollateralFirst,
 } from "@/modules/strategies/multiply/utils/pay"
 
@@ -12,11 +13,29 @@ const HDX = "0"
 
 describe("getPayAssetId", () => {
   it("defaults to the collateral when no pay asset is in the URL", () => {
-    expect(getPayAssetId(HUSDT_USDC, undefined)).toBe("111")
+    expect(getPayAssetId(HUSDT_USDC, undefined, true)).toBe("111")
   })
 
   it("keeps the pay asset from the URL", () => {
-    expect(getPayAssetId(HUSDT_USDC, "10")).toBe("10")
+    expect(getPayAssetId(HUSDT_USDC, "10", true)).toBe("10")
+  })
+
+  it("ignores the URL's pay asset when the loop can't pick one", () => {
+    expect(getPayAssetId(HUSDT_USDC, "10", false)).toBe("111")
+  })
+})
+
+describe("withBalanceOrAll", () => {
+  it("drops the assets the user holds none of", () => {
+    const usdt = { id: "10", balance: "5" }
+    expect(
+      withBalanceOrAll([{ id: "111", balance: "0" }, usdt, { id: "22" }]),
+    ).toEqual([usdt])
+  })
+
+  it("keeps every asset when none is held", () => {
+    const list = [{ id: "111", balance: "0" }, { id: "22" }]
+    expect(withBalanceOrAll(list)).toBe(list)
   })
 })
 

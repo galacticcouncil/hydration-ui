@@ -52,8 +52,6 @@
   "multiply.open.ctaState.quoting": "Finding a route",
   "multiply.open.ctaState.noRoute": "No route to {{ symbol }}",
   "multiply.open.ctaState.tooSmall": "Amount too small to swap",
-  "multiply.open.ctaState.tooSmallShares": "Amount too small",
-  "multiply.open.proportional": "Add proportionally",
   "multiply.open.youGet": "You get",
   "multiply.open.noRoute": "There is no route from {{ symbolIn }} to {{ symbol }} right now. Pick another asset to pay with.",
   "multiply.open.tooSmall": "This amount of {{ symbolIn }} is too small to swap into {{ symbol }}. Enter a larger amount.",
