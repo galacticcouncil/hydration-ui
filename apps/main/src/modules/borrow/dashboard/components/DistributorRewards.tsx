@@ -1,25 +1,33 @@
-import {
-  Box,
-  Flex,
-  LoadingButton,
-  SValueStatsValue,
-  Tooltip,
-  ValueStats,
-} from "@galacticcouncil/ui/components"
+import { Flex, TableCell, TableRow, Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { type RewardsDistributorClaim } from "@/api/rewardsDistributor"
-import { useClaimDistributorRewards } from "@/modules/borrow/dashboard/components/DistributorRewards.tx"
+import {
+  type RewardsDistributorAccrued,
+  type RewardsDistributorClaim,
+} from "@/api/rewardsDistributor"
+import { AssetLogo } from "@/components/AssetLogo"
+import { DistributorAccruedRewards } from "@/components/DistributorAccruedRewards/DistributorAccruedRewards"
+import {
+  getDistributorRewardsAssetId,
+  getDistributorRewardsSymbol,
+} from "@/modules/borrow/dashboard/components/DistributorRewards.utils"
 
 type DistributorRewardsProps = {
   claim: RewardsDistributorClaim
+  accrued: RewardsDistributorAccrued
 }
 
-export const DistributorRewards: FC<DistributorRewardsProps> = ({ claim }) => {
+/** The rewards distributor's row in the rewards window's table. */
+export const DistributorRewards: FC<DistributorRewardsProps> = ({
+  claim,
+  accrued,
+}) => {
   const { t } = useTranslation(["common", "borrow"])
-  const { status, symbol, owed } = claim
-  const { mutate, isPending } = useClaimDistributorRewards(symbol)
+  const { status, owed, owedUsd } = claim
+  const symbol = getDistributorRewardsSymbol(claim, accrued)
 
   const blockedReason =
     status === "belowDeposit"
@@ -29,28 +37,36 @@ export const DistributorRewards: FC<DistributorRewardsProps> = ({ claim }) => {
         : undefined
 
   return (
-    <ValueStats
-      label={t("borrow:distributorRewards.label", { symbol })}
-      wrap={[false, false, true]}
-      customValue={
-        <SValueStatsValue size="large">
-          <Flex align="center" gap="base">
-            {t("currency", { value: owed, symbol })}
-            <Tooltip text={blockedReason} asChild>
-              {/* a disabled button fires no pointer events of its own */}
-              <Box as="span">
-                <LoadingButton
-                  isLoading={isPending}
-                  disabled={status !== "claimable"}
-                  onClick={() => mutate()}
-                >
-                  {t("borrow:claim")}
-                </LoadingButton>
-              </Box>
-            </Tooltip>
+    <TableRow>
+      <TableCell>
+        <Flex direction="column" gap="s">
+          <Flex align="center" gap="s">
+            <AssetLogo id={getDistributorRewardsAssetId(claim, accrued)} />
+            <Text fs="p3" fw={600}>
+              {t("borrow:distributorRewards.label", { symbol })}
+            </Text>
           </Flex>
-        </SValueStatsValue>
-      }
-    />
+          <DistributorAccruedRewards stages={accrued.stages} symbol={symbol} />
+          {blockedReason && (
+            <Text fs="p6" lh={1.2} color={getToken("accents.alert.primary")}>
+              {blockedReason}
+            </Text>
+          )}
+        </Flex>
+      </TableCell>
+      <TableCell sx={{ verticalAlign: "top" }}>
+        <Flex direction="column" align="flex-end">
+          <Text fs="p4" fw={500}>
+            {t("currency", { value: owed, symbol })}
+          </Text>
+          {/* no price: the amount alone, not a value of zero */}
+          {Big(owedUsd).gt(0) && (
+            <Text fs="p5" lh={1} color={getToken("text.medium")}>
+              {t("currency", { value: owedUsd, maximumFractionDigits: 2 })}
+            </Text>
+          )}
+        </Flex>
+      </TableCell>
+    </TableRow>
   )
 }

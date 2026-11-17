@@ -9,7 +9,9 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useGigaAccountBalance } from "@/api/gigaStake"
+import { useRewardsDistributorAccrued } from "@/api/rewardsDistributor"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { DistributorAccruedRewards } from "@/components/DistributorAccruedRewards/DistributorAccruedRewards"
 import { LINKS } from "@/config/navigation"
 import { useClaimAllWalletRewards } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.data"
@@ -25,6 +27,7 @@ export const WalletRewardsSection: FC = () => {
     useWalletRewardsSectionData()
 
   const claimAll = useClaimAllWalletRewards()
+  const distributorAccrued = useRewardsDistributorAccrued()
 
   const [incentivesDisplay] = useDisplayAssetPrice(
     incentives.assetId,
@@ -40,19 +43,27 @@ export const WalletRewardsSection: FC = () => {
 
   return (
     <SWalletRewardsSection gap="base" separated>
-      <Flex justify="space-between" align="center">
-        <ValueStats
-          wrap
-          size="medium"
-          label={t("rewards.incentives")}
-          value={incentivesDisplay}
-          isLoading={incentives.loading}
+      {/* one child, so no separator comes between the row and its lines */}
+      <Flex direction="column" gap="s">
+        <Flex justify="space-between" align="center">
+          <ValueStats
+            wrap
+            size="medium"
+            label={t("rewards.incentives")}
+            value={incentivesDisplay}
+            isLoading={incentives.loading}
+          />
+          {incentives.isEmpty && !incentives.loading && (
+            <WalletRewardsSectionEmpty link="/borrow">
+              {t("rewards.incentives.empty")}
+            </WalletRewardsSectionEmpty>
+          )}
+        </Flex>
+        {/* not claimable yet, so not in the value above nor in "claim all" */}
+        <DistributorAccruedRewards
+          stages={distributorAccrued.stages}
+          symbol={distributorAccrued.symbol}
         />
-        {incentives.isEmpty && !incentives.loading && (
-          <WalletRewardsSectionEmpty link="/borrow">
-            {t("rewards.incentives.empty")}
-          </WalletRewardsSectionEmpty>
-        )}
       </Flex>
       <Flex justify="space-between" align="center">
         <ValueStats

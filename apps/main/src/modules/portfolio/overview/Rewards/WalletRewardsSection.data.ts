@@ -5,7 +5,7 @@ import { useBorrowClaimableRewards } from "@/api/borrow"
 import { useRewardsDistributorClaim } from "@/api/rewardsDistributor"
 import { useReferralRewards } from "@/hooks/data/useReferralRewards"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
-import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/DashboardHeader"
+import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/RewardsModal.utils"
 import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
 import { useAssets } from "@/providers/assetsProvider"
 

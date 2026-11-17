@@ -19,13 +19,16 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useRewardsDistributorClaim } from "@/api/rewardsDistributor"
+import {
+  useRewardsDistributorAccrued,
+  useRewardsDistributorClaim,
+} from "@/api/rewardsDistributor"
 import { UnavailableApy } from "@/components/DetailedApy/UnavailableApy"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
-import { DistributorRewards } from "@/modules/borrow/dashboard/components/DistributorRewards"
+import { hasDistributorRewards } from "@/modules/borrow/dashboard/components/DistributorRewards.utils"
+import { RewardsModal } from "@/modules/borrow/dashboard/components/RewardsModal"
+import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/RewardsModal.utils"
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
-
-export const MIN_CLAIMABLE_INCENTIVES_USDT = 0.01
 
 export const DashboardHeader = () => {
   const { t } = useTranslation(["common", "borrow"])
@@ -34,9 +37,26 @@ export const DashboardHeader = () => {
   const { isLoading: isApyLoading } = useApyContext()
 
   const [riskModalOpen, setRiskModalOpen] = useState(false)
+  const [rewardsModalOpen, setRewardsModalOpen] = useState(false)
 
   const { claimableRewardsUsd } = getUserClaimableRewards(user)
   const distributorClaim = useRewardsDistributorClaim()
+  const distributorAccrued = useRewardsDistributorAccrued()
+
+  // The distributor's rewards share the controller's stat and button. With
+  // them the button opens a window that lists both and claims them together.
+  const hasDistributor = hasDistributorRewards(
+    distributorClaim,
+    distributorAccrued,
+  )
+  const isControllerEmpty = Big(claimableRewardsUsd).lt(
+    MIN_CLAIMABLE_INCENTIVES_USDT,
+  )
+  const isDistributorClaimable = distributorClaim.status === "claimable"
+  const availableRewardsUsd = Big(claimableRewardsUsd)
+    .plus(isDistributorClaimable ? distributorClaim.owedUsd : 0)
+    .toString()
+  const hasClaimableRewards = !isControllerEmpty || isDistributorClaimable
 
   const {
     healthFactor,
@@ -119,7 +139,7 @@ export const DashboardHeader = () => {
           }
         />
 
-        {Big(claimableRewardsUsd).gte(MIN_CLAIMABLE_INCENTIVES_USDT) && (
+        {(!isControllerEmpty || hasDistributor) && (
           <ValueStats
             label={t("borrow:availableRewards")}
             wrap={[false, false, true]}
@@ -130,22 +150,43 @@ export const DashboardHeader = () => {
                 ) : (
                   <Flex align="center" gap="base">
                     {t("currency", {
-                      value: claimableRewardsUsd,
+                      value: availableRewardsUsd,
                     })}
-                    <Button onClick={() => openClaimRewards()}>
-                      {t("borrow:claim")}
-                    </Button>
+                    {hasClaimableRewards ? (
+                      <Button
+                        onClick={() =>
+                          hasDistributor
+                            ? setRewardsModalOpen(true)
+                            : openClaimRewards()
+                        }
+                      >
+                        {t("borrow:claim")}
+                      </Button>
+                    ) : (
+                      // rewards that are still accruing or waiting to be claimable
+                      <Button
+                        variant="secondary"
+                        outline
+                        onClick={() => setRewardsModalOpen(true)}
+                      >
+                        {t("details")}
+                      </Button>
+                    )}
                   </Flex>
                 )}
               </SValueStatsValue>
             }
           />
         )}
-
-        {distributorClaim.status !== "none" && (
-          <DistributorRewards claim={distributorClaim} />
-        )}
       </Stack>
+      {hasDistributor && (
+        <RewardsModal
+          open={rewardsModalOpen}
+          onOpenChange={setRewardsModalOpen}
+          claim={distributorClaim}
+          accrued={distributorAccrued}
+        />
+      )}
       <Modal open={riskModalOpen} onOpenChange={setRiskModalOpen}>
         <ModalHeader align="center" title={t("borrow:risk.title")} />
         <ModalBody scrollable={false}>

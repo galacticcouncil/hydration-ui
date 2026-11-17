@@ -5,7 +5,7 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsInMinute } from "date-fns/constants"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 import { useCallback, useMemo } from "react"
 import {
@@ -20,14 +20,22 @@ import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { estimateGasLimit, useBorrowReserves } from "@/api/borrow/queries"
 import {
   claimsFileSchema,
+  getAccruedRewards,
   getOwedReward,
   getRewardsClaimStatus,
   getRewardsProgramApr,
+  getRewardsReadTime,
+  getRewardsRetryInterval,
+  getRewardsRootsRefetchInterval,
+  getRewardsTokenAddress,
+  hasRewardsProgramEnded,
   isRewardsLatestStale,
   latestFileSchema,
+  type RewardsAccruedStage,
   type RewardsClaimStatus,
   type RewardsIncentive,
   type RewardsLatestFile,
+  type RewardsPendingRoot,
 } from "@/api/rewardsDistributor.utils"
 import { ENV } from "@/config/env"
 import { type AnyPapiTx } from "@/modules/transactions/types"
@@ -59,6 +67,24 @@ const DISTRIBUTOR_ABI = [
     stateMutability: "view",
     inputs: [],
     outputs: [{ name: "", type: "bytes32" }],
+  },
+  {
+    type: "function",
+    name: "pendingRoot",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "root", type: "bytes32" },
+      { name: "ipfsHash", type: "bytes32" },
+      { name: "validAt", type: "uint256" },
+    ],
+  },
+  {
+    type: "function",
+    name: "timelock",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
   },
   {
     type: "function",
@@ -131,6 +157,75 @@ export const rewardsDistributorRootQuery = (
         functionName: "root",
       })
       return root === zeroHash ? null : root
+    },
+  })
+
+/**
+ * The root waiting out the timelock and the unix time, in seconds, from which
+ * anyone may accept it; null when there is none. The owner can revoke it.
+ * Read for a connected account only, with the live root, which it keeps fresh.
+ */
+export const rewardsDistributorPendingRootQuery = (
+  rpc: TProviderContext,
+  isDeployed: boolean,
+  account: Hex | undefined,
+) =>
+  queryOptions({
+    queryKey: queryKey(rpc, "pendingRoot"),
+    enabled: rpc.isReady && isDeployed && !!account,
+    staleTime: millisecondsInMinute,
+    // from the last read and not the clock, so it is the same on every render
+    refetchInterval: ({ state }) =>
+      getRewardsRootsRefetchInterval(state.data?.validAt, state.dataUpdatedAt),
+    queryFn: async (): Promise<RewardsPendingRoot | null> => {
+      if (!DISTRIBUTOR_ADDRESS) return null
+      const [root, , validAt] = await rpc.evm.readContract({
+        address: DISTRIBUTOR_ADDRESS,
+        abi: DISTRIBUTOR_ABI,
+        functionName: "pendingRoot",
+      })
+      // The live root is read after it and put in its own query, which the
+      // claim reads too. A root accepted between the two reads is then pending
+      // and live at once, which counts once; in the other order it would be
+      // neither, and its amount would show as not claimable yet.
+      const liveRoot = await rpc.evm.readContract({
+        address: DISTRIBUTOR_ADDRESS,
+        abi: DISTRIBUTOR_ABI,
+        functionName: "root",
+      })
+      rpc.queryClient.setQueryData(
+        rewardsDistributorRootQuery(rpc, isDeployed).queryKey,
+        liveRoot === zeroHash ? null : liveRoot,
+      )
+
+      if (validAt === 0n) return null
+      // a pending zero hash would leave nothing claimable and has no tree
+      return { root: root === zeroHash ? null : root, validAt: Number(validAt) }
+    },
+  })
+
+/**
+ * Seconds between a root's submission and the time it may be accepted from.
+ * Read for a connected account only.
+ */
+export const rewardsDistributorTimelockQuery = (
+  rpc: TProviderContext,
+  isDeployed: boolean,
+  account: Hex | undefined,
+) =>
+  queryOptions({
+    queryKey: queryKey(rpc, "timelock"),
+    enabled: rpc.isReady && isDeployed && !!account,
+    // only the owner changes it
+    staleTime: millisecondsInHour,
+    queryFn: async () => {
+      if (!DISTRIBUTOR_ADDRESS) throw new Error("No rewards distributor")
+      const timelock = await rpc.evm.readContract({
+        address: DISTRIBUTOR_ADDRESS,
+        abi: DISTRIBUTOR_ABI,
+        functionName: "timelock",
+      })
+      return Number(timelock)
     },
   })
 
@@ -241,6 +336,8 @@ const useRewardsAccountAddress = () => {
 
 export type RewardsDistributorClaim = {
   status: RewardsClaimStatus
+  /** The reward token's id in the asset registry, "" when it is not known. */
+  assetId: string
   symbol: string
   /** Unclaimed amount in the reward token's own units. */
   owed: string
@@ -318,6 +415,7 @@ export const useRewardsDistributorClaim = (): RewardsDistributorClaim => {
 
     return {
       status,
+      assetId: asset?.id ?? "",
       symbol: asset?.symbol ?? "",
       owed: owedHuman,
       owedUsd: rewardPriceUsd
@@ -382,6 +480,159 @@ export const useGetRewardsDistributorClaimTx = () => {
   }, [call, rpc, status])
 }
 
+export type RewardsDistributorAccrued = {
+  /** The reward token's id in the asset registry, "" when it is not known. */
+  assetId: string
+  symbol: string
+  /** In the order they become claimable; empty when all earned is claimable. */
+  stages: {
+    stage: RewardsAccruedStage
+    /** In the reward token's own units; an estimate while accruing. */
+    amount: string
+    /** When it should become claimable; absent when unknown or not ahead. */
+    claimableAt: Date | undefined
+  }[]
+}
+
+const NO_ACCRUED: RewardsDistributorAccrued = {
+  assetId: "",
+  symbol: "",
+  stages: [],
+}
+
+/**
+ * A root's tree as the accrued hook reads it, for a connected account only.
+ * One that failed to load or is not served yet is asked for again, which the
+ * claim's own read of the same query leaves to the next mount.
+ */
+export const rewardsDistributorAccruedTreeQuery = (
+  rpc: TProviderContext,
+  root: Hex | null | undefined,
+  account: Hex | undefined,
+) =>
+  queryOptions({
+    ...rewardsDistributorClaimsQuery(rpc, account ? root : undefined),
+    refetchInterval: ({ state }) => getRewardsRetryInterval(state),
+  })
+
+/** The account's claimed amount as the accrued hook reads it: again after a read that failed. */
+export const rewardsDistributorAccruedAccountQuery = (
+  rpc: TProviderContext,
+  reward: Hex | undefined,
+  account: Hex | undefined,
+) =>
+  queryOptions({
+    ...rewardsDistributorAccountQuery(rpc, reward, account),
+    refetchInterval: ({ state }) => getRewardsRetryInterval(state),
+  })
+
+/**
+ * The accrued hook's answer from what it has read. Nothing without the
+ * registry's entry for the reward token, as for the claim, whose amount the
+ * block would otherwise show as zero above rewards that are owed.
+ */
+export const getRewardsDistributorAccrued = ({
+  account,
+  asset,
+  ...reads
+}: Omit<Parameters<typeof getAccruedRewards>[0], "account"> & {
+  account: string | undefined
+  asset: { id: string; symbol: string; decimals: number } | undefined
+}): RewardsDistributorAccrued => {
+  if (!account || !asset) return NO_ACCRUED
+
+  return {
+    assetId: asset.id,
+    symbol: asset.symbol,
+    stages: getAccruedRewards({ account, ...reads }).map(
+      ({ stage, amount, claimableAt }) => ({
+        stage,
+        amount: scaleHuman(amount, asset.decimals),
+        claimableAt:
+          claimableAt === undefined ? undefined : new Date(claimableAt),
+      }),
+    ),
+  }
+}
+
+/** What the connected account has earned on the distributor and cannot claim yet. */
+export const useRewardsDistributorAccrued = (): RewardsDistributorAccrued => {
+  const rpc = useRpcProvider()
+  const { getAsset } = useAssets()
+  const account = useRewardsAccountAddress()
+
+  const { data: isDeployed = false } = useQuery(
+    rewardsDistributorDeployedQuery(rpc),
+  )
+  const { data: pending, dataUpdatedAt: pendingReadAt } = useQuery(
+    rewardsDistributorPendingRootQuery(rpc, isDeployed, account),
+  )
+  // the same query as the claim's, so the lines and the amount above them
+  // count from one root; the read of the pending root keeps it fresh
+  const { data: liveRoot } = useQuery(
+    rewardsDistributorRootQuery(rpc, isDeployed),
+  )
+  const { data: timelock } = useQuery(
+    rewardsDistributorTimelockQuery(rpc, isDeployed, account),
+  )
+  const { data: latest, dataUpdatedAt: latestReadAt } = useQuery(
+    rewardsDistributorLatestQuery(rpc, isDeployed),
+  )
+
+  // roots that are the same one share a query
+  const { data: liveTree } = useQuery(
+    rewardsDistributorAccruedTreeQuery(rpc, liveRoot, account),
+  )
+  const { data: pendingTree } = useQuery(
+    rewardsDistributorAccruedTreeQuery(rpc, pending?.root, account),
+  )
+  const { data: closedTree } = useQuery(
+    rewardsDistributorAccruedTreeQuery(rpc, latest?.latestTree?.root, account),
+  )
+
+  const reward = getRewardsTokenAddress({ liveTree, pendingTree, latest })
+  const { data: state } = useQuery(
+    rewardsDistributorAccruedAccountQuery(rpc, reward, account),
+  )
+  const asset = reward ? getAsset(getAssetIdFromAddress(reward)) : undefined
+
+  // Times are judged as of the newest read instead of a ticking clock, so a
+  // line changes when a read does. The pending root is next read 75 seconds
+  // after its validAt, so its line can name that time for about a minute
+  // after it has passed, and in a hidden tab until the tab is shown again.
+  const now = getRewardsReadTime(pendingReadAt, latestReadAt)
+
+  return useMemo(
+    () =>
+      getRewardsDistributorAccrued({
+        account,
+        asset,
+        claimed: state?.claimed,
+        timelock,
+        now,
+        liveRoot,
+        liveTree,
+        pending,
+        pendingTree,
+        latest,
+        closedTree,
+      }),
+    [
+      account,
+      asset,
+      closedTree,
+      latest,
+      liveRoot,
+      liveTree,
+      now,
+      pending,
+      pendingTree,
+      state?.claimed,
+      timelock,
+    ],
+  )
+}
+
 export type RewardsProgram = {
   /** Why the connected account earns nothing, when it supplies and does not. */
   notEarningReason: string | undefined
@@ -389,7 +640,52 @@ export type RewardsProgram = {
   latest: RewardsLatestFile | undefined
 }
 
-/** The reward program's newest snapshot, left out once it is stale. */
+const NO_PROGRAM: RewardsProgram = {
+  notEarningReason: undefined,
+  maxHollarDebtUsd: "0",
+  latest: undefined,
+}
+
+/**
+ * The program as the account meets it, from latest.json and the time it was
+ * read at, in milliseconds. Nothing once the file is stale or the program has
+ * ended: no rate then, and no account is told that it earns nothing.
+ *
+ * Both are judged at the read and not by a running clock, so the answer is
+ * the same on every render between two reads.
+ */
+export const getRewardsProgram = ({
+  latest,
+  account,
+  readAt,
+}: {
+  latest: RewardsLatestFile | null | undefined
+  /** Lowercase, as the file keys its accounts. */
+  account: string | undefined
+  readAt: number
+}): RewardsProgram => {
+  if (
+    !latest ||
+    isRewardsLatestStale(latest.asOf.hour, readAt) ||
+    hasRewardsProgramEnded(latest.program, readAt)
+  ) {
+    return NO_PROGRAM
+  }
+
+  const status = account ? latest.accounts[account] : undefined
+
+  return {
+    notEarningReason:
+      status?.earning === false ? (status.reason ?? "unknown") : undefined,
+    maxHollarDebtUsd: latest.program.maxHollarDebtUsd,
+    latest,
+  }
+}
+
+/**
+ * The reward program's newest snapshot, left out once it is stale or the
+ * program has ended.
+ */
 export const useRewardsProgram = (): RewardsProgram => {
   const rpc = useRpcProvider()
   const account = useRewardsAccountAddress()
@@ -401,24 +697,10 @@ export const useRewardsProgram = (): RewardsProgram => {
     rewardsDistributorLatestQuery(rpc, isDeployed),
   )
 
-  return useMemo(() => {
-    if (!latest || isRewardsLatestStale(latest.asOf.hour, dataUpdatedAt)) {
-      return {
-        notEarningReason: undefined,
-        maxHollarDebtUsd: "0",
-        latest: undefined,
-      }
-    }
-
-    const status = account ? latest.accounts[account] : undefined
-
-    return {
-      notEarningReason:
-        status?.earning === false ? (status.reason ?? "unknown") : undefined,
-      maxHollarDebtUsd: latest.program.maxHollarDebtUsd,
-      latest,
-    }
-  }, [account, dataUpdatedAt, latest])
+  return useMemo(
+    () => getRewardsProgram({ latest, account, readAt: dataUpdatedAt }),
+    [account, dataUpdatedAt, latest],
+  )
 }
 
 /**
