@@ -4,7 +4,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { isNonNullish } from "remeda"
 
 import {
@@ -43,7 +43,6 @@ export const AssetList: React.FC<AssetListProps> = ({
   setSelectedAsset,
 }) => {
   const getHydrationAssetId = useHydrationAssetId()
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const chainKey = selectedChain?.key ?? ""
 
   const priceIds = useMemo(
@@ -116,11 +115,6 @@ export const AssetList: React.FC<AssetListProps> = ({
     ? assetList.findIndex(({ asset }) => asset === selectedAsset)
     : 0
 
-  // A highlighted row hides the separators on both of its sides
-  const isHighlighted = (index: number) =>
-    index === hoveredIndex ||
-    (!!selectedAsset && assetList[index]?.asset.key === selectedAsset.key)
-
   const initialScrollIndex =
     assetIndex >= MAX_VISIBLE_ASSET_ITEMS ? assetIndex : 0
 
@@ -130,8 +124,7 @@ export const AssetList: React.FC<AssetListProps> = ({
       itemSize={itemSize}
       maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
       initialScrollIndex={initialScrollIndex}
-      onMouseLeave={() => setHoveredIndex(null)}
-      renderItem={(item, { index }) => {
+      renderItem={(item) => {
         const balance = balances?.get(item.asset.key)
         const isLoading = isLoadingBalances || isAssetPriceLoading
         const isSelectedAsset = selectedAsset?.key === item.asset.key
@@ -144,9 +137,7 @@ export const AssetList: React.FC<AssetListProps> = ({
               isSelected={isSelectedAsset}
               isLoading={isLoading}
               balance={balance}
-              hideSeparator={isHighlighted(index) || isHighlighted(index + 1)}
               onClick={() => setSelectedAsset(item.asset)}
-              onMouseEnter={() => setHoveredIndex(index)}
             />
           </ModalCloseTrigger>
         )

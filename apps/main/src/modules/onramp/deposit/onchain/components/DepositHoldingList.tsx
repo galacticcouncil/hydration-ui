@@ -27,7 +27,7 @@ import { useDepositDiscovery } from "@/modules/onramp/deposit/onchain/hooks/useD
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
-const SKELETON_ROW_COUNT = 6
+const SKELETON_ROW_COUNT = 15
 
 type HoldingEntry =
   | { kind: "holding"; key: string; row: DepositBalanceRow }
@@ -61,7 +61,6 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
   const { watch } = useFormContext<XcmFormValues>()
   const [srcChain, srcAsset] = watch(["srcChain", "srcAsset"])
   const [search, setSearch] = useState("")
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   if (accounts.length === 0)
     return (
@@ -94,15 +93,6 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
     srcChain?.key === source.chain.key &&
     srcAsset?.key === balance.key
 
-  // A highlighted row hides the separators on both of its sides
-  const isHighlighted = (index: number) => {
-    const entry = entries[index]
-    return (
-      index === hoveredIndex ||
-      (entry?.kind === "holding" && isSelectedRow(entry.row))
-    )
-  }
-
   return (
     <SRightColumn height="100%">
       <SSearchInput
@@ -114,11 +104,20 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
         onChange={(event) => setSearch(event.target.value)}
       />
       {scanning ? (
-        <ProgressBar
-          value={(progress.settled / progress.total) * 100}
-          customLabel={t("deposit.flow.assets.scanning", progress)}
-          sx={{ flexShrink: 0 }}
-        />
+        <Flex direction="column" gap="xs" sx={{ flexShrink: 0 }}>
+          <Flex justify="space-between">
+            <Text fs="p5" fw={500} color={getToken("text.medium")}>
+              {t("deposit.flow.assets.scanning")}
+            </Text>
+            <Text fs="p5" color={getToken("text.tint.secondary")}>
+              {t("deposit.flow.assets.scanningProgress", progress)}
+            </Text>
+          </Flex>
+          <ProgressBar
+            value={(progress.settled / progress.total) * 100}
+            hideLabel
+          />
+        </Flex>
       ) : (
         Number(total) >= 0.1 && (
           <ValueStats
@@ -152,8 +151,7 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
             hideScrollbar
             aria-busy={scanning}
             getItemKey={(index) => entries[index]?.key ?? index}
-            onMouseLeave={() => setHoveredIndex(null)}
-            renderItem={(entry, { index }) => {
+            renderItem={(entry) => {
               if (entry.kind === "loading") return <DepositHoldingSkeleton />
               const { row } = entry
               const { source, balance } = row
@@ -168,11 +166,7 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
                   balanceDisplay={row.value}
                   isLoading={false}
                   isSelected={isSelectedRow(row)}
-                  hideSeparator={
-                    isHighlighted(index) || isHighlighted(index + 1)
-                  }
                   onClick={() => onSelect(row)}
-                  onMouseEnter={() => setHoveredIndex(index)}
                 />
               )
             }}

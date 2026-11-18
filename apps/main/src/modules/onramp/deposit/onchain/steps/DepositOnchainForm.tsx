@@ -10,8 +10,8 @@ import {
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { getChainId, HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
 import { FC, useState } from "react"
@@ -155,6 +155,7 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
         onBack={onBack}
         closable={closable}
       />
+      <Separator />
       <ModalBody noPadding scrollable={false}>
         <Stack px={["l", "xl"]} py={["m", "l"]} gap="s">
           <Text fs="p5" color={getToken("text.medium")}>
@@ -176,20 +177,55 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
         </Stack>
         <Separator />
         <Stack px={["l", "xl"]} py={["m", "l"]} gap="base">
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("common:from")}
-          </Text>
           <Flex justify="space-between" gap="base">
-            <ChainAssetFormField
-              fieldName="srcAsset"
-              chainFieldName="srcChain"
-              type="source"
-              address={srcAddress}
-              chainAssetPairs={sourceChainAssetPairs.filter(({ chain }) =>
-                canUseDepositAccount(account, chain),
-              )}
-              onAssetChange={resetAmounts}
-            />
+            <Flex
+              direction="column"
+              gap="base"
+              position="relative"
+              pt={pxToRem(26)}
+            >
+              <Flex
+                align="center"
+                gap="s"
+                position="absolute"
+                sx={{ top: 0, left: 0 }}
+              >
+                <Text
+                  fs="p5"
+                  color={getToken("text.medium")}
+                  whiteSpace="nowrap"
+                >
+                  {t("common:from")}
+                </Text>
+                {srcChain && (
+                  <>
+                    <ChainLogo
+                      ecosystem={srcChain.ecosystem}
+                      chainId={getChainId(srcChain)}
+                      size="extra-small"
+                    />
+                    <Text
+                      fs="p5"
+                      fw={500}
+                      color={getToken("text.high")}
+                      whiteSpace="nowrap"
+                    >
+                      {srcChain.name}
+                    </Text>
+                  </>
+                )}
+              </Flex>
+              <ChainAssetFormField
+                fieldName="srcAsset"
+                chainFieldName="srcChain"
+                type="source"
+                address={srcAddress}
+                chainAssetPairs={sourceChainAssetPairs.filter(({ chain }) =>
+                  canUseDepositAccount(account, chain),
+                )}
+                onAssetChange={resetAmounts}
+              />
+            </Flex>
             <AmountFormField
               fieldName="srcAmount"
               balance={srcBalances?.get(srcAsset?.key ?? "")}

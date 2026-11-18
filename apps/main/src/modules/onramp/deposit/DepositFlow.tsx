@@ -1,6 +1,6 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { FC } from "react"
+import { FC, useLayoutEffect } from "react"
 import { useUnmount } from "react-use"
 
 import { crossChainConfigQuery, hydrationClientQuery } from "@/api/xcm"
@@ -12,6 +12,7 @@ import { DepositCexSelect } from "@/modules/onramp/deposit/steps/DepositCexSelec
 import { DepositMethodSelect } from "@/modules/onramp/deposit/steps/DepositMethodSelect"
 import { DepositSuccess } from "@/modules/onramp/deposit/steps/DepositSuccess"
 import { DepositTransfer } from "@/modules/onramp/deposit/steps/DepositTransfer"
+import { useOnrampModalStore } from "@/modules/onramp/store/useOnrampModalStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
@@ -20,6 +21,12 @@ export const DepositFlow: FC = () => {
     useDeposit()
 
   useUnmount(reset)
+
+  // A preset skips method select; DepositOnchain applies it or stays on Holdings.
+  useLayoutEffect(() => {
+    if (useOnrampModalStore.getState().depositPreset)
+      paginateTo(OnrampScreen.DepositOnchainHoldings)
+  }, [paginateTo])
 
   // Warms the onchain step's suspense queries so it doesn't suspend the
   // modal into a blank frame, which React holds for at least 300ms

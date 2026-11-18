@@ -2,13 +2,11 @@ import { Flex } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAssetListItem = styled(Flex, {
-  shouldForwardProp: (prop: string) =>
-    prop !== "isSelected" && prop !== "hideSeparator",
+  shouldForwardProp: (prop: string) => prop !== "isSelected",
 })<{
   isSelected: boolean
-  hideSeparator: boolean
 }>(
-  ({ theme, isSelected, hideSeparator }) => css`
+  ({ theme, isSelected }) => css`
     justify-content: space-between;
     align-items: center;
     padding-inline: ${theme.space.m};
@@ -33,7 +31,18 @@ export const SAssetListItem = styled(Flex, {
       inset-inline: 0;
       bottom: 0;
       height: 1px;
-      background: ${hideSeparator ? "transparent" : theme.details.separators};
+      background: ${theme.details.separators};
+    }
+
+    // A hovered or selected row hides the separators on both of its sides.
+    // CSS rather than hover state, so hovering doesn't re-render the list.
+    &:hover::after,
+    &[data-selected]::after,
+    [data-virtual-index]:has(
+        + [data-virtual-index] :is(:hover, [data-selected])
+      )
+      &::after {
+      background: transparent;
     }
   `,
 )

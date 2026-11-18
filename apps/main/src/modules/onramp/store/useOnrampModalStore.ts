@@ -2,17 +2,28 @@ import { create } from "zustand"
 
 export type OnrampFlow = "deposit" | "withdraw"
 
+/** Opens the onchain deposit form on this source chain and asset. */
+export type DepositPreset = {
+  chainKey: string
+  assetKey: string
+}
+
 type OnrampModalStore = {
   isOpen: boolean
   // kept after close so the content stays rendered during the exit animation
   flow: OnrampFlow | null
-  open: (flow: OnrampFlow) => void
+  depositPreset: DepositPreset | null
+  open: (flow: OnrampFlow, depositPreset?: DepositPreset) => void
   close: () => void
+  clearDepositPreset: () => void
 }
 
 export const useOnrampModalStore = create<OnrampModalStore>((set) => ({
   isOpen: false,
   flow: null,
-  open: (flow) => set({ isOpen: true, flow }),
+  depositPreset: null,
+  open: (flow, depositPreset) =>
+    set({ isOpen: true, flow, depositPreset: depositPreset ?? null }),
   close: () => set({ isOpen: false }),
+  clearDepositPreset: () => set({ depositPreset: null }),
 }))

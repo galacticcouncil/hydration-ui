@@ -34,10 +34,7 @@ export type AssetListItemProps = {
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
-  // Set by the list when this row or the one below is highlighted
-  hideSeparator?: boolean
   onClick: () => void
-  onMouseEnter?: () => void
 }
 
 export const AssetListItem: React.FC<AssetListItemProps> = ({
@@ -50,21 +47,18 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   chain,
   isLoading,
   isSelected,
-  hideSeparator = false,
   onClick,
-  onMouseEnter,
 }) => {
   const { t } = useTranslation(["common"])
 
   return (
     <SAssetListItem
       isSelected={isSelected}
-      hideSeparator={hideSeparator}
+      data-selected={isSelected || undefined}
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
       as="button"
     >
-      <Flex align="start" gap="base">
+      <Flex align="start" gap="base" minWidth={0}>
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 
         <Text truncate as="div">
@@ -78,6 +72,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         fs="p4"
         fw={500}
         as="div"
+        sx={{ flexShrink: 0 }}
         color={
           isBigInt(balance?.amount) && balance.amount > 0n
             ? getToken("text.high")
