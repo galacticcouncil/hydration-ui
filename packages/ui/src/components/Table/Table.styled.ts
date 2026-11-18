@@ -6,7 +6,7 @@ import { Box } from "@/components/Box"
 import { Separator } from "@/components/Separator"
 import { createStyles, createVariants } from "@/utils"
 
-export type TableSize = "small" | "medium" | "large"
+export type TableSize = "compact" | "small" | "medium" | "large"
 export type TableProps = {
   size?: TableSize
   borderless?: boolean
@@ -14,12 +14,20 @@ export type TableProps = {
 }
 
 const rowHeightBySize: Record<TableSize, string> = {
+  compact: "2.5rem",
   small: "3.75rem",
   medium: "4.375rem",
   large: "5.25rem",
 }
 
 const columnSizeStyles = createVariants<TableSize>((theme) => ({
+  compact: css`
+    --table-column-padding-x: ${theme.space.l};
+
+    height: ${rowHeightBySize.compact};
+    padding-inline: var(--table-column-padding-x);
+    font-size: ${theme.fontSizes.p5};
+  `,
   small: css`
     --table-column-padding-x: ${theme.space.l};
 
@@ -57,6 +65,11 @@ export const SExpandedTableRowHorizontalSeparator = styled(Separator)`
 `
 
 const headSizeStyles = createVariants<TableSize>((theme) => ({
+  compact: css`
+    height: 1.875rem;
+    padding: 0 ${theme.space.l};
+    font-size: ${theme.fontSizes.p5};
+  `,
   small: css`
     height: 2.75rem;
     padding: 0 ${theme.space.l};

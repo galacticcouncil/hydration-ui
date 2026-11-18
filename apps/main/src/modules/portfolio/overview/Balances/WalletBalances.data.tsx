@@ -1,3 +1,4 @@
+import { markets } from "@galacticcouncil/money-market/core"
 import { bigShift } from "@galacticcouncil/utils"
 import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
@@ -5,7 +6,7 @@ import { useMemo } from "react"
 
 import { AssetType } from "@/api/assets"
 import { Balance, useAccountBalancesWithPriceByAssetType } from "@/api/balances"
-import { useUserBorrowSummary, useUserGigaBorrowSummary } from "@/api/borrow"
+import { useMarketAccount, useUserAddress } from "@/modules/money-market/hooks"
 import { useMyIsolatedPoolsLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import { useMyVaultLiquidity } from "@/modules/portfolio/overview/MyLiquidity/MyVaultLiquidity.data"
 import { useMyJuicerPositions } from "@/modules/portfolio/overview/MyStrategies/MyStrategies.data"
@@ -43,10 +44,10 @@ export const useWalletBalancesSectionData = () => {
   const { data: vaultLiquidity, isLoading: isLoadingVaultLiquidity } =
     useMyVaultLiquidity()
 
-  const { data: userBorrowSummary, isLoading: isLoadingBorrowSummary } =
-    useUserBorrowSummary()
   const evmAddress = useEvmAddress()
-  const gigaBorrowSummary = useUserGigaBorrowSummary()
+  const user = useUserAddress()
+  const mainAccount = useMarketAccount(user, markets.hydration_v3)
+  const gigaAccount = useMarketAccount(user, markets.gigahdx_v3)
   const bilPoolPosition = useBilPoolPosition(evmAddress)
   // Juicer withdrawals in flight: the shares sit in the vault's escrow, so no
   // wallet balance holds them until the claim — count them as assets
@@ -138,16 +139,17 @@ export const useWalletBalancesSectionData = () => {
     vaultLiquidity,
   ])
 
-  const giga = gigaBorrowSummary.data?.userSummary
+  const main = mainAccount.data
+  const giga = gigaAccount.data
   const bil = bilPoolPosition.data
   const supplyByMarket = {
-    main: userBorrowSummary?.totalLiquidityUSD || "0",
-    giga: giga?.totalLiquidityUSD || "0",
+    main: main?.totalLiquidityUsd || "0",
+    giga: giga?.totalLiquidityUsd || "0",
     bil: String(bil?.totalCollateralUsd ?? 0),
   }
   const borrowByMarket = {
-    main: userBorrowSummary?.totalBorrowsUSD || "0",
-    giga: giga?.totalBorrowsUSD || "0",
+    main: main?.totalBorrowsUsd || "0",
+    giga: giga?.totalBorrowsUsd || "0",
     bil: String(bil?.totalDebtUsd ?? 0),
   }
 
@@ -171,8 +173,8 @@ export const useWalletBalancesSectionData = () => {
     supplyByMarket,
     borrowByMarket,
     isBorrowLoading:
-      isLoadingBorrowSummary ||
-      (!!evmAddress &&
-        (gigaBorrowSummary.isPending || bilPoolPosition.isPending)),
+      mainAccount.isLoading ||
+      gigaAccount.isLoading ||
+      (!!evmAddress && bilPoolPosition.isPending),
   }
 }

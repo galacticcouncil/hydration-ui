@@ -30,6 +30,7 @@ export const MyLiquidity = () => {
         })}
         floatingBottomLabel
         size="medium"
+        fixedSize
         isLoading={isLiquidityLoading}
         wrap
       />
@@ -40,6 +41,7 @@ export const MyLiquidity = () => {
           value: omnipoolLiquidityTotal,
         })}
         size="medium"
+        fixedSize
         isLoading={isLiquidityLoading}
         wrap
       />
@@ -48,6 +50,7 @@ export const MyLiquidity = () => {
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency", { value: stablepoolTotal })}
         size="medium"
+        fixedSize
         isLoading={isBalanceLoading}
         wrap
       />
@@ -57,6 +60,7 @@ export const MyLiquidity = () => {
         value={t("common:currency", { value: isolatedPoolsTotal })}
         isLoading={isLiquidityLoading}
         size="medium"
+        fixedSize
         wrap
       />
       <PoolsHeaderSeparator />
