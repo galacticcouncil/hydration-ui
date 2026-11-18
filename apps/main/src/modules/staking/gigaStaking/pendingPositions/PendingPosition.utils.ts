@@ -1,10 +1,11 @@
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
-import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { gigaQueryKey } from "@/api/gigaStake"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -44,7 +45,7 @@ export const useCancelPendingPosition = () => {
       return createTransaction({
         tx,
         invalidateQueries: [
-          userGigaBorrowSummaryQueryKey(accountAddress),
+          [...moneyMarketKeys.market(GIGA_MARKET.market)],
           gigaQueryKey(accountAddress),
         ],
         toasts,

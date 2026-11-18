@@ -1,4 +1,5 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -14,11 +15,11 @@ import {
   useNativeTokenLocks,
 } from "@/api/balances"
 import { useAccountBalances } from "@/api/balances"
-import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { gigaQueryKey, useGigaStakeExchangeRate } from "@/api/gigaStake"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { GigaStakeProps } from "@/modules/staking/gigaStaking/stake/GigaStake"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
@@ -204,7 +205,7 @@ export const useGigaStake = ({ minStake, hdxReserve }: GigaStakeProps) => {
         {
           tx,
           invalidateQueries: [
-            userGigaBorrowSummaryQueryKey(address),
+            [...moneyMarketKeys.market(GIGA_MARKET.market)],
             gigaQueryKey(address),
             nativeTokenLocksQuery(rpc, address).queryKey,
             ...(!isBound

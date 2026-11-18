@@ -1,4 +1,4 @@
-import { isGho } from "@galacticcouncil/money-market/utils"
+import { useHollarFacilitator } from "@galacticcouncil/money-market/react"
 import {
   Flex,
   Grid,
@@ -12,33 +12,28 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInDay } from "date-fns/constants"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import {
-  borrowReservesQuery,
-  gigaLendingPoolAddressProvider,
-  useFacilitatorBucket,
-} from "@/api/borrow"
-import { useBorrowPoolDataContract } from "@/api/borrow/contracts"
 import { useBlockTime } from "@/api/chain"
 import { useGigaApr } from "@/api/gigaApr"
 import { gigaStakeConstantsQuery, gigaTotalLockedQuery } from "@/api/gigaStake"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { STAKING_DOCS_LINK } from "@/config/links"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman, toDecimal } from "@/utils/formatting"
+import { scaleHuman } from "@/utils/formatting"
 
 export const GigaStakeTotalsHeader: FC = () => {
   const { t } = useTranslation(["common", "staking"])
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const rpc = useRpcProvider()
   const { data: blockTimeMs = 0 } = useBlockTime()
-  const poolDataContract = useBorrowPoolDataContract()
   const { data: constants, isLoading: isConstantsLoading } = useQuery(
     gigaStakeConstantsQuery(rpc),
   )
@@ -56,24 +51,11 @@ export const GigaStakeTotalsHeader: FC = () => {
     ((constants?.cooldownPeriod ?? 0) * blockTimeMs) / millisecondsInDay,
   )
 
-  const { data: gigaPoolReserves, isLoading: isGigaPoolReservesLoading } =
-    useQuery(
-      borrowReservesQuery(
-        rpc,
-        gigaLendingPoolAddressProvider,
-        poolDataContract,
-        null,
-      ),
-    )
-
-  const hollarReserve = gigaPoolReserves?.formattedReserves.find((reserve) =>
-    isGho(reserve),
-  )
   const {
-    data: facilitatorBucketData,
-    isLoading: isFacilitatorBucketLoading,
-    isSuccess: isFacilitatorBucketSuccess,
-  } = useFacilitatorBucket(hollarReserve?.aTokenAddress ?? "")
+    data: facilitator,
+    isLoading: isFacilitatorLoading,
+    isSuccess: isFacilitatorSuccess,
+  } = useHollarFacilitator(GIGA_MARKET)
 
   const { data: gigaLockedHDX, isLoading: isGigaLockedHDXLoading } = useQuery(
     gigaTotalLockedQuery(rpc),
@@ -84,20 +66,10 @@ export const GigaStakeTotalsHeader: FC = () => {
   const [totalGigaSuppliedUsd, { isLoading: isTotalGigaSuppliedUsdLoading }] =
     useDisplayAssetPrice(native.id, totalGigaSupplied)
 
-  const maxBorrowHollar = toDecimal(
-    facilitatorBucketData?.facilitatorBucketCapacity ?? "0",
-    hollarReserve?.decimals ?? 18,
-  )
-
-  const borrowedHollar = toDecimal(
-    facilitatorBucketData?.facilitatorBucketLevel ?? "0",
-    hollarReserve?.decimals ?? 18,
-  )
-
-  const availableToBorrow = Big(maxBorrowHollar)
-    .minus(borrowedHollar)
+  const availableToBorrow = Big(facilitator?.maxCapacity ?? "0")
+    .minus(facilitator?.level ?? "0")
     .toString()
-  const hollarSymbol = hollarReserve?.symbol
+  const hollarSymbol = getAssetWithFallback(HOLLAR_ASSET_ID).symbol
 
   const totalStakeStat = (
     <ValueStats
@@ -153,9 +125,9 @@ export const GigaStakeTotalsHeader: FC = () => {
       wrap
       size="medium"
       label={t("staking:gigaStake.header.availableToBorrow")}
-      isLoading={isGigaPoolReservesLoading || isFacilitatorBucketLoading}
+      isLoading={isFacilitatorLoading}
       value={
-        isFacilitatorBucketSuccess
+        isFacilitatorSuccess
           ? t("currency", {
               value: availableToBorrow,
               symbol: hollarSymbol,

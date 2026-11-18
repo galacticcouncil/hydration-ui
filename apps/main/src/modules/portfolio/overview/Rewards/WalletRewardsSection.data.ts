@@ -1,20 +1,24 @@
+import { useClaimableRewards } from "@galacticcouncil/money-market/react"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 
-import { useBorrowClaimableRewards } from "@/api/borrow"
 import { useReferralRewards } from "@/hooks/data/useReferralRewards"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
-import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/DashboardHeader"
 import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
+import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/money-market/constants"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const useWalletRewardsSectionData = () => {
   const { native } = useAssets()
 
-  const { data: incentives, isLoading: incentivesLoading } =
-    useBorrowClaimableRewards()
+  const user = useUserAddress()
+  const { data: incentives, isPending } = useClaimableRewards(user)
+  const incentivesLoading = !!user && isPending
 
-  const claimableRewardsUsd = incentives?.claimableRewardsUsd || 0
+  const claimableRewardsUsd = (incentives ?? [])
+    .reduce((sum, reward) => sum.plus(reward.amountUsd), Big(0))
+    .toNumber()
 
   const {
     claimableValues: { totalUSD: liquidityUSD, isLoading: liquidityLoading },

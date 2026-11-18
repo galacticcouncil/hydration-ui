@@ -1,4 +1,3 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   Flex,
   Text,
@@ -6,6 +5,7 @@ import {
   TooltipIcon,
 } from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC } from "react"

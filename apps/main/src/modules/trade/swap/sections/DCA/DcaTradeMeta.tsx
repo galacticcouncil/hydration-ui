@@ -1,5 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   ExclamationMark,
@@ -16,6 +14,8 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -45,7 +45,12 @@ export const DcaTradeMeta: FC<Props> = ({
       {healthFactor?.isSignificantChange && (
         <SwapSummaryRow
           label={t("healthFactor")}
-          content={<HealthFactorChange {...healthFactor} />}
+          content={
+            <HealthFactorChange
+              current={healthFactor.current}
+              projected={healthFactor.future}
+            />
+          }
         />
       )}
       <SwapSummaryRow

@@ -8,23 +8,6 @@ export const SLiquidityLegend = styled(Flex)(
   `,
 )
 
-export const SRangeLegendToggle = styled(Flex)(
-  ({ theme }) => css`
-    cursor: pointer;
-    padding: 0;
-    border: none;
-    background: none;
-    font: inherit;
-    color: inherit;
-    border-radius: ${theme.radii.base};
-
-    &:focus-visible {
-      outline: 2px solid ${theme.controls.outline.active};
-      outline-offset: 2px;
-    }
-  `,
-)
-
 export const SManagedBand = styled(Flex, {
   shouldForwardProp: (prop) =>
     prop !== "$rangeColor" &&

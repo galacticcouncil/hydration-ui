@@ -1,9 +1,9 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   getAddressFromAssetId,
   safeConvertSS58toH160,
   safeStringify,
 } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import {
