@@ -9,6 +9,7 @@ import {
   ReserveApy,
   reserveApy,
   toNetApyPositions,
+  withSupplyIncentive,
 } from "@/modules/money-market/apy/effectiveApy"
 
 const UNAVAILABLE = { status: "unavailable" }
@@ -282,6 +283,93 @@ const row = (
   },
   reserve: { borrowIncentives: borrowIncentives.map(incentive) },
   apy,
+})
+
+describe("withSupplyIncentive", () => {
+  // 10% a year in the reward token of asset 43
+  const program = {
+    rewardTokenAddress: "0x000000000000000000000000000000010000002b",
+    incentiveAPR: "0.1",
+  }
+
+  it("adds the rate to a known supply as a part of its own, and leaves the borrow alone", () => {
+    const apy = reserveApy(reserve())
+
+    expect(withSupplyIncentive(apy, program)).toEqual({
+      supply: {
+        status: "known",
+        total: "0.1224",
+        parts: [
+          { kind: "base", rate: "0.0124" },
+          { kind: "incentive", assetId: "1", rate: "0.01" },
+          { kind: "incentive", assetId: "43", rate: "0.1" },
+        ],
+      },
+      borrow: apy.borrow,
+    })
+  })
+
+  it("adds it into the part of the same reward token, so the rate counts once", () => {
+    const streamed = {
+      ...incentive("0.02"),
+      rewardTokenAddress: program.rewardTokenAddress as `0x${string}`,
+    }
+    const apy = reserveApy(reserve({ supplyIncentives: [streamed] }))
+
+    expect(withSupplyIncentive(apy, program).supply).toEqual({
+      status: "known",
+      total: "0.1324",
+      parts: [
+        { kind: "base", rate: "0.0124" },
+        { kind: "incentive", assetId: "43", rate: "0.12" },
+      ],
+    })
+  })
+
+  it("adds it once when the reserve streams the token as two incentives", () => {
+    const streamed = {
+      ...incentive("0.02"),
+      rewardTokenAddress: program.rewardTokenAddress as `0x${string}`,
+    }
+    const apy = reserveApy(reserve({ supplyIncentives: [streamed, streamed] }))
+
+    expect(withSupplyIncentive(apy, program).supply).toMatchObject({
+      total: "0.1524",
+      parts: [
+        { kind: "base", rate: "0.0124" },
+        { kind: "incentive", assetId: "43", rate: "0.12" },
+        { kind: "incentive", assetId: "43", rate: "0.02" },
+      ],
+    })
+  })
+
+  it("adds it to an adjusted reserve's rate as well", () => {
+    const adjusted = adjustedApy(poolShare())
+    const supply = withSupplyIncentive(adjusted, program).supply
+
+    expect(adjusted.supply.status).toBe("known")
+    expect(supply).toMatchObject({ status: "known" })
+    if (adjusted.supply.status !== "known" || supply.status !== "known") return
+    expect(Number(supply.total)).toBeCloseTo(
+      Number(adjusted.supply.total) + 0.1,
+      12,
+    )
+  })
+
+  it.each([
+    ["unavailable", { status: "unavailable" } as const],
+    ["loading", { status: "loading" } as const],
+  ])("leaves a supply rate that is %s as it is", (_, supply) => {
+    const apy: ReserveApy = { supply }
+
+    expect(withSupplyIncentive(apy, program)).toBe(apy)
+  })
+
+  it("is the same rate when the program pays nothing on the reserve", () => {
+    const apy = reserveApy(reserve())
+
+    expect(withSupplyIncentive(apy, undefined)).toBe(apy)
+  })
 })
 
 describe("toNetApyPositions", () => {

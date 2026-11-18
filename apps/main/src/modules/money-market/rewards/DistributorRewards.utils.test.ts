@@ -11,7 +11,7 @@ import {
   getDistributorRewardsAssetId,
   getDistributorRewardsSymbol,
   hasDistributorRewards,
-} from "@/modules/borrow/dashboard/components/DistributorRewards.utils"
+} from "@/modules/money-market/rewards/DistributorRewards.utils"
 
 const i18n = i18next.createInstance()
 i18n.init({

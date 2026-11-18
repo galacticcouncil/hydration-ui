@@ -19,11 +19,11 @@ import {
 import { latestFileSchema } from "@/api/rewardsDistributor.utils"
 import { type TProviderContext } from "@/providers/rpcProvider"
 
+vi.mock("@galacticcouncil/money-market/core", () => ({}))
+vi.mock("@galacticcouncil/money-market/react", () => ({}))
 vi.mock("@galacticcouncil/utils", () => ({}))
 vi.mock("@galacticcouncil/web3-connect", () => ({}))
-vi.mock("polkadot-api", () => ({}))
 vi.mock("@/api/aave", () => ({}))
-vi.mock("@/api/borrow/queries", () => ({}))
 vi.mock("@/config/env", () => ({
   ENV: {
     VITE_REWARDS_DISTRIBUTOR_ADDRESS:

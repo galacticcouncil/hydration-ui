@@ -72,6 +72,41 @@ const input = (
 })
 
 describe("toBorrowAssetApyData", () => {
+  it("adds the reward program's rate on the asset's reserve to its incentives, once", () => {
+    const program = {
+      incentiveAPR: "0.1",
+      rewardTokenAddress: "0x000000000000000000000000000000010000002b",
+      rewardTokenSymbol: "PRIME",
+    }
+    const without = toBorrowAssetApyData(input())
+    const data = toBorrowAssetApyData(
+      input({ programIncentives: new Map([[VDOT_ADDRESS, program]]) }),
+    )
+
+    expect(data.incentives).toEqual([...without.incentives, program])
+    expect(data.incentivesNetAPR).toBeCloseTo(without.incentivesNetAPR + 10, 12)
+    expect(data.totalSupplyApy).toBeCloseTo(
+      (without.totalSupplyApy ?? 0) + 10,
+      12,
+    )
+    // the reserve's own list is left as it was
+    expect(vdotReserve.supplyIncentives).toHaveLength(2)
+  })
+
+  it("leaves an asset the reward program does not pay on as it is", () => {
+    const program = {
+      incentiveAPR: "0.1",
+      rewardTokenAddress: "0x000000000000000000000000000000010000002b",
+      rewardTokenSymbol: "PRIME",
+    }
+
+    expect(
+      toBorrowAssetApyData(
+        input({ programIncentives: new Map([[DOT_ADDRESS, program]]) }),
+      ),
+    ).toEqual(toBorrowAssetApyData(input()))
+  })
+
   it("maps a plain reserve to its base APYs and positive incentives", () => {
     const data = toBorrowAssetApyData(input())
 

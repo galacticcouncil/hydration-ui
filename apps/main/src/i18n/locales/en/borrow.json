@@ -44,7 +44,6 @@
   "rewards.title": "Claim rewards",
   "rewards.toasts.submitted": "Claiming rewards...",
   "rewards.toasts.success": "Rewards have been claimed.",
-  "rewards.total": "Total worth",
 
   "healthFactor": "Health factor",
   "healthFactor.liquidationAt": "Liquidation at <1.0",

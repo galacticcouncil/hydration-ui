@@ -7,6 +7,10 @@ import Big from "big.js"
 
 import type { ExternalApyType } from "@/api/borrow/externalApys"
 import type { BorrowAssetApyData, UnderlyingAssetApy } from "@/api/borrow/hooks"
+import {
+  mergeRewardsIncentive,
+  type RewardsIncentive,
+} from "@/api/rewardsDistributor.utils"
 import type { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 
 type Incentive = BorrowAssetApyData["incentives"][number]
@@ -25,6 +29,11 @@ export type BorrowAssetApyInput = {
       "underlyingAsset" | "supplyApy" | "variableBorrowApy" | "supplyIncentives"
     >
   >
+  /**
+   * What the reward program pays on top of the controller's incentives, by
+   * the reserve's lowercase underlying address.
+   */
+  programIncentives?: ReadonlyMap<string, RewardsIncentive>
   /** External feed readings, by the asset id they are for. */
   externalApys: ReadonlyMap<string, ExternalApy>
   stablepoolData: TStablepoolDetails | undefined
@@ -128,13 +137,15 @@ const calculateAssetProportionInStablepool = (
  * A stableswap share sums its pool assets' base APYs (each an aToken's
  * underlying reserve) and feed APYs, weighted by the asset's share of the
  * pool, or `1 / count` when the share cannot be read. Incentives are the
- * share's own reserve's supply incentives and count on both sides, as does
- * the LP fee. An unavailable feed makes every total null.
+ * share's own reserve's supply incentives, with the reward program's rate on
+ * that reserve, and count on both sides, as does the LP fee. An unavailable
+ * feed makes every total null.
  */
 export const toBorrowAssetApyData = ({
   assetId,
   poolAssetIds,
   reserves,
+  programIncentives,
   externalApys,
   stablepoolData,
   lpAPY,
@@ -145,15 +156,20 @@ export const toBorrowAssetApyData = ({
   const assetCount = stableSwapAssetIds.length
 
   const assetAddress = getAddressFromAssetId(assetId)
-  const allIncentives = (
-    reserves.find(({ underlyingAsset }) =>
-      sameAddress(underlyingAsset, assetAddress),
-    )?.supplyIncentives ?? []
-  ).map<Incentive>(({ rewardApr, rewardTokenAddress, rewardTokenSymbol }) => ({
-    incentiveAPR: rewardApr,
-    rewardTokenAddress,
-    rewardTokenSymbol,
-  }))
+  const assetReserve = reserves.find(({ underlyingAsset }) =>
+    sameAddress(underlyingAsset, assetAddress),
+  )
+  const allIncentives = mergeRewardsIncentive(
+    (assetReserve?.supplyIncentives ?? []).map<Incentive>(
+      ({ rewardApr, rewardTokenAddress, rewardTokenSymbol }) => ({
+        incentiveAPR: rewardApr,
+        rewardTokenAddress,
+        rewardTokenSymbol,
+      }),
+    ),
+    assetReserve &&
+      programIncentives?.get(assetReserve.underlyingAsset.toLowerCase()),
+  )
 
   const underlyingAddresses = stableSwapAssetIds.map((id) =>
     getAddressFromAssetId(getATokenUnderlyingId(id) ?? id),

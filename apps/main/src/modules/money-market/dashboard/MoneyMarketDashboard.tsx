@@ -35,6 +35,10 @@ import { FC, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Address } from "viem"
 
+import {
+  useRewardsDistributorAccrued,
+  useRewardsDistributorClaim,
+} from "@/api/rewardsDistributor"
 import { AccountBindingBanner } from "@/modules/money-market/account/AccountBindingBanner"
 import {
   OpenAction,
@@ -52,10 +56,13 @@ import {
 } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { HealthFactorRisk } from "@/modules/money-market/health-factor/HealthFactorRisk"
 import { useFormattedHealthFactor } from "@/modules/money-market/health-factor/useFormattedHealthFactor"
-import { useUserAddress } from "@/modules/money-market/hooks"
+import { DEFAULT_MARKET, useUserAddress } from "@/modules/money-market/hooks"
 import { isHollar } from "@/modules/money-market/reserves/reserves"
 import { useResolveReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useVisibleReserveSummaries } from "@/modules/money-market/reserves/useVisibleReserveSummaries"
+import { hasDistributorRewards } from "@/modules/money-market/rewards/DistributorRewards.utils"
+import { RewardsModal } from "@/modules/money-market/rewards/RewardsModal"
+import { RewardsProgramNotice } from "@/modules/money-market/rewards/RewardsProgramNotice"
 import {
   BorrowRow,
   NetApyValue,
@@ -162,6 +169,7 @@ export const MoneyMarketDashboard: FC = () => {
   const user = useUserAddress()
   const [open, setOpen] = useState<OpenAction | null>(null)
   const [riskOpen, setRiskOpen] = useState(false)
+  const [rewardsOpen, setRewardsOpen] = useState(false)
   // which column shows below the `lg` breakpoint, where they stack
   const [side, setSide] = useState<Side>("supply")
   const [showZeroBalance, setShowZeroBalance] = useState(false)
@@ -193,6 +201,8 @@ export const MoneyMarketDashboard: FC = () => {
   const request = useAccountRequest(user).data
   const facilitator = useHollarFacilitator()
   const claimable = useClaimableRewards(user)
+  const distributorClaim = useRewardsDistributorClaim()
+  const distributorAccrued = useRewardsDistributorAccrued()
   const { market } = useMoneyMarket()
   const resolveDisplay = useResolveReserveDisplay()
 
@@ -303,6 +313,19 @@ export const MoneyMarketDashboard: FC = () => {
     Big(0),
   )
 
+  // The rewards distributor pays on the main market only. Its rewards share
+  // the controller's stat and button, and with them the button opens a window
+  // that lists both and claims them together.
+  const isMainMarket = market.market === DEFAULT_MARKET
+  const hasDistributor =
+    isMainMarket && hasDistributorRewards(distributorClaim, distributorAccrued)
+  const isDistributorClaimable =
+    hasDistributor && distributorClaim.status === "claimable"
+  const isControllerEmpty = claimableUsd.lt(MIN_CLAIM_USD)
+  const availableRewardsUsd = claimableUsd.plus(
+    isDistributorClaimable ? distributorClaim.owedUsd : 0,
+  )
+
   // an account without debt has no health factor to show or explain
   const { isHealthFactorValid, healthFactorLevel } = useFormattedHealthFactor(
     acc?.healthFactor ?? HF_UNBOUNDED,
@@ -402,7 +425,7 @@ export const MoneyMarketDashboard: FC = () => {
             }
           />
 
-          {user && claimableUsd.gte(MIN_CLAIM_USD) && (
+          {user && (!isControllerEmpty || hasDistributor) && (
             <ValueStats
               size="large"
               fixedSize
@@ -411,17 +434,35 @@ export const MoneyMarketDashboard: FC = () => {
               customValue={
                 <Flex align="center" gap="base">
                   <ValueStatsValue size="large" fixedSize>
-                    {usd(claimableUsd.toFixed())}
+                    {usd(availableRewardsUsd.toFixed())}
                   </ValueStatsValue>
-                  <Button onClick={() => setOpen({ action: "claim" })}>
-                    {t("borrow:claim")}
-                  </Button>
+                  {!isControllerEmpty || isDistributorClaimable ? (
+                    <Button
+                      onClick={() =>
+                        hasDistributor
+                          ? setRewardsOpen(true)
+                          : setOpen({ action: "claim" })
+                      }
+                    >
+                      {t("borrow:claim")}
+                    </Button>
+                  ) : (
+                    // rewards that are still accruing or waiting to be claimable
+                    <Button
+                      variant="secondary"
+                      outline
+                      onClick={() => setRewardsOpen(true)}
+                    >
+                      {t("details")}
+                    </Button>
+                  )}
                 </Flex>
               }
             />
           )}
         </Stack>
       </ScrollArea>
+      {isMainMarket && <RewardsProgramNotice />}
 
       <Box display={["block", null, null, "none"]}>
         <ToggleGroup<Side>
@@ -585,6 +626,14 @@ export const MoneyMarketDashboard: FC = () => {
       </Grid>
 
       <OpenActionModal open={open} onClose={() => setOpen(null)} />
+      {hasDistributor && (
+        <RewardsModal
+          open={rewardsOpen}
+          onOpenChange={setRewardsOpen}
+          claim={distributorClaim}
+          accrued={distributorAccrued}
+        />
+      )}
       <Modal open={riskOpen} onOpenChange={setRiskOpen} variant="popup">
         <ModalHeader align="center" title={t("borrow:risk.title")} />
         <ModalBody scrollable={false}>

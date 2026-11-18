@@ -1,6 +1,9 @@
 import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/neckwork"
 import { markets } from "@galacticcouncil/money-market/core"
-import { useReserveSummaries } from "@galacticcouncil/money-market/react"
+import {
+  useMoneyMarket,
+  useReserveSummaries,
+} from "@galacticcouncil/money-market/react"
 import type { ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
   BIL_ASSET_ID,
@@ -27,6 +30,7 @@ import { kaminoApyQuery } from "@/api/external/kamino"
 import { lpFeeReading } from "@/api/external/lpFee"
 import { readingStatus } from "@/api/external/reading"
 import { neckworkClient, PROXY_URL } from "@/api/neckwork"
+import { useRewardsProgramIncentives } from "@/api/rewardsDistributor"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import {
   AdjustedReserve,
@@ -44,7 +48,9 @@ import {
   AdjustedApys,
   ReserveApy,
   reserveApy,
+  withSupplyIncentive,
 } from "@/modules/money-market/apy/effectiveApy"
+import { DEFAULT_MARKET } from "@/modules/money-market/hooks"
 import { useVaultStats } from "@/modules/strategies/bil/hooks/useVaultReads"
 import { isStableSwap, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -52,6 +58,32 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 const NO_ADJUSTED_APYS: AdjustedApys = new Map()
 
 const AdjustedApysContext = createContext<AdjustedApys>(NO_ADJUSTED_APYS)
+
+type ProgramIncentives = ReturnType<typeof useRewardsProgramIncentives>
+
+const NO_PROGRAM_INCENTIVES: ProgramIncentives = new Map()
+
+const ProgramIncentivesContext = createContext(NO_PROGRAM_INCENTIVES)
+
+/**
+ * The reward program's rates for the selected market's reserves, read once
+ * for every surface. The program runs on the main market only, and an address
+ * can be a reserve of several markets, so any other market gets none.
+ */
+const ProgramIncentivesProvider: FC<PropsWithChildren> = ({ children }) => {
+  const { market } = useMoneyMarket()
+  const incentives = useRewardsProgramIncentives()
+
+  return (
+    <ProgramIncentivesContext.Provider
+      value={
+        market.market === DEFAULT_MARKET ? incentives : NO_PROGRAM_INCENTIVES
+      }
+    >
+      {children}
+    </ProgramIncentivesContext.Provider>
+  )
+}
 
 const feedQuery = ({ source, id }: FeedSource) =>
   source === "defillama"
@@ -230,9 +262,15 @@ const AdjustedApysProvider: FC<PropsWithChildren> = ({ children }) => {
 export const ReserveApyProvider: FC<PropsWithChildren> = ({ children }) => {
   const { dataEnv } = useRpcProvider()
 
-  if (dataEnv === "testnet") return children
-
-  return <AdjustedApysProvider>{children}</AdjustedApysProvider>
+  return (
+    <ProgramIncentivesProvider>
+      {dataEnv === "testnet" ? (
+        children
+      ) : (
+        <AdjustedApysProvider>{children}</AdjustedApysProvider>
+      )}
+    </ProgramIncentivesProvider>
+  )
 }
 
 type ReserveWithRates = Pick<
@@ -250,14 +288,19 @@ type ReserveWithRates = Pick<
  */
 export const useResolveReserveApy = () => {
   const adjusted = useContext(AdjustedApysContext)
+  const programIncentives = useContext(ProgramIncentivesContext)
 
   return useCallback(
-    (reserve: ReserveWithRates): ReserveApy =>
-      reserveApy(
-        reserve,
-        adjusted.get(reserve.underlyingAsset.toLowerCase() as Address),
-      ),
-    [adjusted],
+    (reserve: ReserveWithRates): ReserveApy => {
+      const address = reserve.underlyingAsset.toLowerCase() as Address
+
+      // added after the lookup, so an adjusted reserve gets the rate as well
+      return withSupplyIncentive(
+        reserveApy(reserve, adjusted.get(address)),
+        programIncentives.get(address),
+      )
+    },
+    [adjusted, programIncentives],
   )
 }
 

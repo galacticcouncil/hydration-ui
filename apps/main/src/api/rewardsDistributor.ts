@@ -1,3 +1,6 @@
+import { markets, summarizeReserves } from "@galacticcouncil/money-market/core"
+import { useMarketReserves } from "@galacticcouncil/money-market/react"
+import { type EvmCall } from "@galacticcouncil/money-market/types"
 import {
   getAssetIdFromAddress,
   safeConvertAnyToH160,
@@ -6,7 +9,6 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
-import { Binary } from "polkadot-api"
 import { useCallback, useMemo } from "react"
 import {
   encodeFunctionData,
@@ -17,7 +19,6 @@ import {
 } from "viem"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
-import { estimateGasLimit, useBorrowReserves } from "@/api/borrow/queries"
 import {
   claimsFileSchema,
   getAccruedRewards,
@@ -38,7 +39,6 @@ import {
   type RewardsPendingRoot,
 } from "@/api/rewardsDistributor.utils"
 import { ENV } from "@/config/env"
-import { type AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { type TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -316,13 +316,34 @@ export const rewardsDistributorLatestQuery = (
 
 /** The reward token's price at the money market's oracle, which values the snapshots too. */
 export const findRewardPriceUsd = (
-  reserves: ReadonlyArray<{ underlyingAsset: string; priceInUSD: string }>,
+  reserves: ReadonlyArray<{ underlyingAsset: string; priceInUsd: string }>,
   reward: string,
 ) =>
   reserves.find(
     ({ underlyingAsset }) =>
       underlyingAsset.toLowerCase() === reward.toLowerCase(),
-  )?.priceInUSD
+  )?.priceInUsd
+
+/**
+ * The reward token's price in the main market, whichever market a page has
+ * selected: the program runs on that market's reserves only. Summarised once
+ * per read, since a price does not accrue between reads.
+ */
+const useRewardPriceUsd = (reward: string | undefined) => {
+  const { data: marketReserves } = useMarketReserves(markets.hydration_v3)
+
+  return useMemo(() => {
+    if (!marketReserves || !reward) return undefined
+
+    return findRewardPriceUsd(
+      summarizeReserves({
+        ...marketReserves,
+        currentTimestamp: Math.floor(Date.now() / 1000),
+      }),
+      reward,
+    )
+  }, [marketReserves, reward])
+}
 
 // lowercase: the claim and snapshot files key their accounts that way
 const useRewardsAccountAddress = () => {
@@ -405,13 +426,10 @@ const useRewardsDistributorState = () => {
 /** The connected account's unclaimed rewards on the distributor. */
 export const useRewardsDistributorClaim = (): RewardsDistributorClaim => {
   const { status, asset, owed, call } = useRewardsDistributorState()
-  const { data: borrowReserves } = useBorrowReserves()
+  const rewardPriceUsd = useRewardPriceUsd(call?.reward)
 
   return useMemo(() => {
     const owedHuman = asset ? scaleHuman(owed, asset.decimals) : "0"
-    const rewardPriceUsd = call
-      ? findRewardPriceUsd(borrowReserves?.formattedReserves ?? [], call.reward)
-      : undefined
 
     return {
       status,
@@ -422,61 +440,51 @@ export const useRewardsDistributorClaim = (): RewardsDistributorClaim => {
         ? Big(owedHuman).times(rewardPriceUsd).toString()
         : "0",
     }
-  }, [asset, borrowReserves, call, owed, status])
+  }, [asset, owed, rewardPriceUsd, status])
 }
 
-const buildClaimTx = async (
+const buildClaimCall = async (
   rpc: TProviderContext,
   { root, account, reward, claimable, proof }: ClaimCall,
-): Promise<AnyPapiTx | undefined> => {
-  const { papi, evm, queryClient } = rpc
+): Promise<EvmCall | undefined> => {
   if (!DISTRIBUTOR_ADDRESS) throw new Error("No rewards distributor")
 
   // A root accepted since the proof was loaded makes the claim revert; the
   // fresh root moves the hooks on to its tree, and the next attempt uses that.
-  const currentRoot = await queryClient.fetchQuery({
+  const currentRoot = await rpc.queryClient.fetchQuery({
     ...rewardsDistributorRootQuery(rpc, true),
     staleTime: 0,
   })
   if (currentRoot !== root) return undefined
 
-  const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-    await estimateGasLimit({ evm, gasLimit: AAVE_GAS_LIMIT.toString() })
+  const args = [account, reward, claimable, proof] as const
 
-  const call = papi.tx.EVM.call({
-    source: account,
-    target: DISTRIBUTOR_ADDRESS,
-    input: Binary.fromHex(
-      encodeFunctionData({
-        abi: DISTRIBUTOR_ABI,
-        functionName: "claim",
-        args: [account, reward, claimable, proof],
-      }),
-    ),
-    value: [0n, 0n, 0n, 0n],
-    gas_limit: gasLimit,
-    max_fee_per_gas: maxFeePerGas,
-    max_priority_fee_per_gas: maxPriorityFeePerGas,
-    access_list: [],
-    authorization_list: [],
-    nonce: undefined,
-  })
-
-  // a reverted EVM.call still succeeds as an extrinsic; this one fails with it
-  return papi.tx.Dispatcher.dispatch_evm_call({ call: call.decodedCall })
+  return {
+    to: DISTRIBUTOR_ADDRESS,
+    data: encodeFunctionData({
+      abi: DISTRIBUTOR_ABI,
+      functionName: "claim",
+      args,
+    }),
+    abi: DISTRIBUTOR_ABI.filter(({ name }) => name === "claim"),
+    functionName: "claim",
+    args,
+    gasLimit: AAVE_GAS_LIMIT,
+  }
 }
 
 /**
- * Builds the account's claim, or nothing when the claim would revert: nothing
- * owed, below the existential deposit, underfunded, or a replaced root.
+ * Builds the account's claim as a call for a money-market action plan, or
+ * nothing when the claim would revert: nothing owed, below the existential
+ * deposit, underfunded, or a replaced root.
  */
-export const useGetRewardsDistributorClaimTx = () => {
+export const useGetRewardsDistributorClaimCall = () => {
   const rpc = useRpcProvider()
   const { status, call } = useRewardsDistributorState()
 
   return useCallback(async () => {
     if (status !== "claimable" || !call) return undefined
-    return buildClaimTx(rpc, call)
+    return buildClaimCall(rpc, call)
   }, [call, rpc, status])
 }
 
@@ -735,4 +743,19 @@ export const getRewardsProgramIncentives = (
   }
 
   return incentives
+}
+
+/**
+ * What the program pays the connected account on each main-market reserve, to
+ * add to that reserve's own supply incentives. The reserves of another market
+ * are not in it, whatever their addresses: read it for the main market only.
+ */
+export const useRewardsProgramIncentives = () => {
+  const program = useRewardsProgram()
+  const rewardPriceUsd = useRewardPriceUsd(program.latest?.reward.address)
+
+  return useMemo(
+    () => getRewardsProgramIncentives(program, rewardPriceUsd),
+    [program, rewardPriceUsd],
+  )
 }
