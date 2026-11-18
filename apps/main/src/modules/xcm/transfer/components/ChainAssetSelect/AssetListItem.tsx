@@ -34,7 +34,10 @@ export type AssetListItemProps = {
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
+  // Set by the list when this row or the one below is highlighted
+  hideSeparator?: boolean
   onClick: () => void
+  onMouseEnter?: () => void
 }
 
 export const AssetListItem: React.FC<AssetListItemProps> = ({
@@ -47,12 +50,20 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   chain,
   isLoading,
   isSelected,
+  hideSeparator = false,
   onClick,
+  onMouseEnter,
 }) => {
   const { t } = useTranslation(["common"])
 
   return (
-    <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
+    <SAssetListItem
+      isSelected={isSelected}
+      hideSeparator={hideSeparator}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      as="button"
+    >
       <Flex align="start" gap="base">
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 

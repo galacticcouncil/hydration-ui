@@ -43,9 +43,8 @@ import { createRequestLimiter } from "@/utils/requestLimiter"
 
 const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
-export const useCrossChainConfig = () => {
-  const { sdk } = useRpcProvider()
-  return useSuspenseQuery({
+export const crossChainConfigQuery = (sdk: TProviderContext["sdk"]) =>
+  queryOptions({
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xcm", "context"],
@@ -103,21 +102,25 @@ export const useCrossChainConfig = () => {
       return ctx
     },
   })
+
+export const useCrossChainConfig = () => {
+  const { sdk } = useRpcProvider()
+  return useSuspenseQuery(crossChainConfigQuery(sdk))
 }
 
-const useHydrationClient = () => {
-  return useSuspenseQuery({
-    queryKey: ["xcm", "hydrationClient"],
-    queryFn: () => {
-      const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
-      if (!hydration || !isEvmParachain(hydration))
-        throw new Error("Invalid chain for HydrationClient")
-      return new clients.HydrationClient(hydration)
-    },
-    staleTime: Infinity,
-    gcTime: Infinity,
-  })
-}
+export const hydrationClientQuery = queryOptions({
+  queryKey: ["xcm", "hydrationClient"],
+  queryFn: () => {
+    const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+    if (!hydration || !isEvmParachain(hydration))
+      throw new Error("Invalid chain for HydrationClient")
+    return new clients.HydrationClient(hydration)
+  },
+  staleTime: Infinity,
+  gcTime: Infinity,
+})
+
+const useHydrationClient = () => useSuspenseQuery(hydrationClientQuery)
 
 export const useCrossChainConfigService = () => {
   const { data } = useCrossChainConfig()

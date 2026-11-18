@@ -61,6 +61,7 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
   const { watch } = useFormContext<XcmFormValues>()
   const [srcChain, srcAsset] = watch(["srcChain", "srcAsset"])
   const [search, setSearch] = useState("")
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   if (accounts.length === 0)
     return (
@@ -86,6 +87,21 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
         key: `loading:${index}`,
       }))
     : filtered.map((row) => ({ kind: "holding" as const, key: row.key, row }))
+
+  const isSelectedRow = ({ source, balance }: DepositBalanceRow) =>
+    sourceWallet?.provider === source.account.provider &&
+    sourceWallet.address === source.account.address &&
+    srcChain?.key === source.chain.key &&
+    srcAsset?.key === balance.key
+
+  // A highlighted row hides the separators on both of its sides
+  const isHighlighted = (index: number) => {
+    const entry = entries[index]
+    return (
+      index === hoveredIndex ||
+      (entry?.kind === "holding" && isSelectedRow(entry.row))
+    )
+  }
 
   return (
     <SRightColumn height="100%">
@@ -136,7 +152,8 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
             hideScrollbar
             aria-busy={scanning}
             getItemKey={(index) => entries[index]?.key ?? index}
-            renderItem={(entry) => {
+            onMouseLeave={() => setHoveredIndex(null)}
+            renderItem={(entry, { index }) => {
               if (entry.kind === "loading") return <DepositHoldingSkeleton />
               const { row } = entry
               const { source, balance } = row
@@ -150,13 +167,12 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
                   balance={balance}
                   balanceDisplay={row.value}
                   isLoading={false}
-                  isSelected={
-                    sourceWallet?.provider === source.account.provider &&
-                    sourceWallet.address === source.account.address &&
-                    srcChain?.key === source.chain.key &&
-                    srcAsset?.key === balance.key
+                  isSelected={isSelectedRow(row)}
+                  hideSeparator={
+                    isHighlighted(index) || isHighlighted(index + 1)
                   }
                   onClick={() => onSelect(row)}
+                  onMouseEnter={() => setHoveredIndex(index)}
                 />
               )
             }}
