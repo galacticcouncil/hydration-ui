@@ -11,6 +11,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { Trans, useTranslation } from "react-i18next"
 
 import { LINKS } from "@/config/navigation"
+import { OnrampModalClose } from "@/modules/onramp/components/OnrampModalClose"
 
 export type DepositOnchainSubmittedProps = {
   amount: string
@@ -26,6 +27,7 @@ export const DepositOnchainSubmitted: React.FC<
 
   return (
     <ModalBody>
+      <OnrampModalClose />
       <Stack gap="s">
         <Icon
           size="2xl"

@@ -1,5 +1,6 @@
 import {
   AccountTile,
+  Alert,
   Button,
   Flex,
   ModalBody,
@@ -13,12 +14,14 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
+import { FC, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance, useHydrationAssetId } from "@/api/xcm"
 import { ChainLogo } from "@/components/ChainLogo"
 import { canUseDepositAccount } from "@/modules/onramp/deposit/onchain/DepositOnchain.utils"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import {
   insertOptimisticJourney,
   removeOptimisticJourney,
@@ -27,7 +30,7 @@ import {
   AmountFormField,
   ChainAssetFormField,
 } from "@/modules/xcm/transfer/components/FormField"
-import { RecipientSelectButton } from "@/modules/xcm/transfer/components/Recipient"
+import { RecipientSelectModal } from "@/modules/xcm/transfer/components/Recipient"
 import { useResetAmounts } from "@/modules/xcm/transfer/hooks/useResetAmounts"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
@@ -49,11 +52,35 @@ export type DepositOnchainFormProps = {
 const getRecipientAddress = ({ destAccount, destAddress }: XcmFormValues) =>
   destAccount?.rawAddress ?? destAddress
 
+type AccountTileActionProps = {
+  label: string
+  disabled: boolean
+  onClick: () => void
+}
+
+const AccountTileAction: FC<AccountTileActionProps> = ({
+  label,
+  disabled,
+  onClick,
+}) => (
+  <Button
+    type="button"
+    variant="secondary"
+    outline
+    size="small"
+    disabled={disabled}
+    onClick={onClick}
+  >
+    {label}
+  </Button>
+)
+
 export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
   onBack,
   onSubmitted,
 }) => {
-  const { t } = useTranslation(["onramp", "common"])
+  const { t } = useTranslation(["onramp", "common", "xcm"])
+  const closable = useOnrampClosable()
   const { account } = useAccount()
   const {
     transfer,
@@ -82,13 +109,17 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
     },
   })
 
-  const [srcChain, srcAsset, destAsset, destAddress, destAmount] = watch([
-    "srcChain",
-    "srcAsset",
-    "destAsset",
-    "destAddress",
-    "destAmount",
-  ])
+  const [isRecipientModalOpen, setIsRecipientModalOpen] = useState(false)
+
+  const [srcChain, srcAsset, destAsset, destAddress, destAccount, destAmount] =
+    watch([
+      "srcChain",
+      "srcAsset",
+      "destAsset",
+      "destAddress",
+      "destAccount",
+      "destAmount",
+    ])
 
   const srcAddress = isConnectedAccountValid ? (account?.address ?? "") : ""
   const srcChainKey = srcChain?.key ?? ""
@@ -106,6 +137,11 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
       ? getPrimaryBridgeTag(selectedRoute)
       : null
   const estimatedTime = bridgeTag ? BRIDGE_TIME[bridgeTag] : undefined
+  const isTooSmall =
+    !!transfer && transfer.source.max.toBig().lt(transfer.source.min.toBig())
+  const fallbackRecipientName = destAddress
+    ? t("xcm:recipient.input.customWallet")
+    : t("deposit.onchain.noAccount")
 
   return (
     <form
@@ -117,7 +153,7 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
         title={t("deposit.onchain.title")}
         align="center"
         onBack={onBack}
-        closable={false}
+        closable={closable}
       />
       <ModalBody noPadding scrollable={false}>
         <Stack px={["l", "xl"]} py={["m", "l"]} gap="s">
@@ -125,24 +161,17 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
             {t("deposit.quick.sourceWallet")}
           </Text>
           {account && (
-            <Flex align="center" gap="base">
-              <AccountTile
-                name={account.name}
-                address={account.displayAddress}
-                flex={1}
-                minWidth={0}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                outline
-                size="small"
-                disabled={submit.isPending}
-                onClick={onBack}
-              >
-                {t("common:change")}
-              </Button>
-            </Flex>
+            <AccountTile
+              name={account.name}
+              address={account.displayAddress}
+              action={
+                <AccountTileAction
+                  label={t("common:change")}
+                  disabled={submit.isPending}
+                  onClick={onBack}
+                />
+              }
+            />
           )}
         </Stack>
         <Separator />
@@ -169,6 +198,7 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
               disabled={
                 !srcAsset ||
                 !destAddress ||
+                isTooSmall ||
                 !isConnectedAccountValid ||
                 isLoadingSrcBalances
               }
@@ -177,15 +207,18 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
               assetPrice={price}
             />
           </Flex>
+          {isTooSmall && (
+            <Alert
+              variant="warning"
+              description={t("deposit.onchain.tooSmall", {
+                amount: transfer.source.min.toDecimal(),
+                symbol: transfer.source.min.originSymbol,
+              })}
+            />
+          )}
         </Stack>
         <Separator />
-        <Flex
-          px={["l", "xl"]}
-          py={["m", "l"]}
-          gap="s"
-          align="center"
-          justify="space-between"
-        >
+        <Stack px={["l", "xl"]} py={["m", "l"]} gap="s">
           <Flex align="center" gap="s">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("common:to")}
@@ -199,14 +232,27 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
               Hydration
             </Text>
           </Flex>
-          <RecipientSelectButton
-            value={destAddress}
-            onChange={(address, recipient) => {
+          <AccountTile
+            name={destAccount?.name ?? fallbackRecipientName}
+            address={destAddress}
+            action={
+              <AccountTileAction
+                label={destAddress ? t("common:change") : t("common:select")}
+                disabled={submit.isPending}
+                onClick={() => setIsRecipientModalOpen(true)}
+              />
+            }
+          />
+          <RecipientSelectModal
+            open={isRecipientModalOpen}
+            onClose={() => setIsRecipientModalOpen(false)}
+            onSelectAddress={(address, recipient) => {
               setValue("destAddress", address, { shouldValidate: true })
               setValue("destAccount", recipient ?? null)
+              setIsRecipientModalOpen(false)
             }}
           />
-        </Flex>
+        </Stack>
         <XcmSummary>
           {destAsset && (
             <SummaryRow

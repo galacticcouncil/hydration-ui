@@ -2,9 +2,11 @@ import { formatSourceChainAddress, isH160Address } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { type AssetAmount, Parachain } from "@galacticcouncil/xc-core"
+import type { UseQueryResult } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { canUseDepositAccount } from "@/modules/onramp/deposit/onchain/DepositOnchain.utils"
+import type { DepositWalletResult } from "@/modules/onramp/deposit/onchain/hooks/useDepositWallets.utils"
 import type { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 
 export type DepositSource = ChainAssetPair & {
@@ -79,11 +81,18 @@ export const summarizeDepositBalances = (rows: DepositBalanceRow[]) => {
   }
 }
 
+// Upstream-broken routes, keyed `chain:asset` (#130). pendulum:pen: Hydration can't
+// price PEN (`WeightNotComputable`), so `dry_run_xcm` fails BuyExecution with `AssetNotFound`.
+const BROKEN_ROUTES = new Set(["pendulum:pen"])
+
 /** Only a static source reserve can prove max=0 without quoting a destination route. */
 export const getDepositUnavailableReason = (
   row: DepositBalanceRow,
 ): DepositUnavailableReason | undefined => {
-  if (!row.source.assets.some((asset) => asset.key === row.balance.key))
+  if (
+    !row.source.assets.some((asset) => asset.key === row.balance.key) ||
+    BROKEN_ROUTES.has(`${row.source.chain.key}:${row.balance.key}`)
+  )
     return "noRoute"
   const { chain } = row.source
   if (!(chain instanceof Parachain) || chain.getMinType() !== undefined)
@@ -95,6 +104,18 @@ export const getDepositUnavailableReason = (
     Big(`${row.balance.amount}e-${row.balance.decimals}`).lte(reserve)
     ? "tooSmall"
     : undefined
+}
+
+// Only `pending` is unsettled: errors settle, and background refetches never un-settle.
+export const getDiscoveryProgress = (
+  wallets: readonly DepositWalletResult[],
+  fetches: readonly Pick<UseQueryResult, "status">[],
+) => {
+  const settled =
+    wallets.filter((result) => result !== "waiting" && result !== "pending")
+      .length + fetches.filter((fetch) => fetch.status !== "pending").length
+  const total = wallets.length + fetches.length
+  return { settled, total, isSettled: settled === total }
 }
 
 /** Keep positive, routable Holdings once each; `noRoute`/`tooSmall` rows are dropped. */

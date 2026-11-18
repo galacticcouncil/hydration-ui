@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Flex,
+  ProgressBar,
   Text,
   ValueStats,
   VirtualizedList,
@@ -25,6 +26,8 @@ import { DepositBalanceRow } from "@/modules/onramp/deposit/onchain/DepositDisco
 import { useDepositDiscovery } from "@/modules/onramp/deposit/onchain/hooks/useDepositDiscovery"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+
+const SKELETON_ROW_COUNT = 6
 
 type HoldingEntry =
   | { kind: "holding"; key: string; row: DepositBalanceRow }
@@ -51,7 +54,7 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
-  const { rows, total, accounts, scanning, failed } = useDepositDiscovery({
+  const { rows, total, accounts, progress, failed } = useDepositDiscovery({
     provider,
   })
   const { account: sourceWallet } = useAccount()
@@ -71,19 +74,18 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
       </Flex>
     )
 
+  const scanning = !progress.isSettled
   const query = search.trim().toLowerCase()
   const filtered = query
     ? rows.filter((row) => getSearchText(row).includes(query))
     : rows
-  const entries: HoldingEntry[] = [
-    ...filtered.map((row) => ({ kind: "holding" as const, key: row.key, row })),
-    ...(scanning
-      ? Array.from({ length: filtered.length ? 2 : 3 }, (_, index) => ({
-          kind: "loading" as const,
-          key: `loading:${index}`,
-        }))
-      : []),
-  ]
+  // Nothing partial is shown until Discovery settles; then every row appears at once, sorted.
+  const entries: HoldingEntry[] = scanning
+    ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => ({
+        kind: "loading" as const,
+        key: `loading:${index}`,
+      }))
+    : filtered.map((row) => ({ kind: "holding" as const, key: row.key, row }))
 
   return (
     <SRightColumn height="100%">
@@ -92,15 +94,24 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
         placeholder={t("common:search.placeholder.assets")}
         aria-label={t("common:search.placeholder.assets")}
         value={search}
+        disabled={scanning}
         onChange={(event) => setSearch(event.target.value)}
       />
-      {Number(total) >= 0.1 && (
-        <ValueStats
-          label={t("deposit.flow.assets.total")}
-          value={t("common:currency", { value: total })}
-          wrap
+      {scanning ? (
+        <ProgressBar
+          value={(progress.settled / progress.total) * 100}
+          customLabel={t("deposit.flow.assets.scanning", progress)}
           sx={{ flexShrink: 0 }}
         />
+      ) : (
+        Number(total) >= 0.1 && (
+          <ValueStats
+            label={t("deposit.flow.assets.total")}
+            value={t("common:currency", { value: total })}
+            wrap
+            sx={{ flexShrink: 0 }}
+          />
+        )
       )}
       <Flex justify="space-between" px="l">
         <Text fs="p5" color={getToken("text.medium")}>
@@ -110,7 +121,7 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
           {t("common:balance")}
         </Text>
       </Flex>
-      {failed > 0 && (
+      {!scanning && failed > 0 && (
         <Alert
           variant="warning"
           description={t("deposit.flow.assets.partial")}

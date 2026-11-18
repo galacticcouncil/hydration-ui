@@ -344,7 +344,9 @@ const ModalContainer = ({
   contentWidth?: string
 }) => (
   <ModalRoot {...props} modal={false}>
+    {/* Inline has no open animation, so the width transition may run at once. */}
     <SModalContent
+      data-settled=""
       sx={{ position: "unset" }}
       className={className}
       contentWidth={contentWidth}

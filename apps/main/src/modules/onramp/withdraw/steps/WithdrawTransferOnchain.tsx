@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import { useAccountBalances } from "@/api/balances"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/portfolio/overview/Transfer/TransferPositionModal.submit"
@@ -32,6 +33,7 @@ export const WithdrawTransferOnchain: React.FC<
   WithdrawTransferOnchainProps
 > = ({ onTransferSuccess, onBack }) => {
   const { t } = useTranslation(["onramp", "common", "xcm", "wallet"])
+  const closable = useOnrampClosable()
   const { asset, cexId, setAmount: setWithdrawnAmount } = useWithdraw()
   const { getAsset } = useAssets()
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
@@ -59,7 +61,7 @@ export const WithdrawTransferOnchain: React.FC<
         })}
         onBack={onBack}
         align="center"
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <form

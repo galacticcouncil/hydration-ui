@@ -37,15 +37,14 @@ type DepositWalletConnectionState = {
 }
 
 // Shared by the connect screen and asset sidebar, so arriving assets do not interrupt approvals.
-const useDepositWalletConnectionState = create<DepositWalletConnectionState>(
-  () => ({
+export const useDepositWalletConnectionState =
+  create<DepositWalletConnectionState>(() => ({
     queue: [],
     results: {},
     errors: {},
     currentProvider: null,
     isConnecting: false,
-  }),
-)
+  }))
 let activeQueue: ReturnType<typeof startDepositWalletQueue> | null = null
 
 export const useDepositWallets = () => {

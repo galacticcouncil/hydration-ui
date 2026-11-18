@@ -31,6 +31,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { createDepositId } from "@/modules/onramp/config/cex"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
 import { useDepositConfirmation } from "@/modules/onramp/deposit/hooks/useDepositConfirmation"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { useAssets } from "@/providers/assetsProvider"
@@ -105,6 +106,7 @@ const DepositTransferConfirmation: React.FC<{
   onBack: () => void
 }> = ({ address, chainKey, assetKey, targetBalance, onConfirmed, onBack }) => {
   const { t } = useTranslation(["onramp"])
+  const closable = useOnrampClosable()
 
   useDepositConfirmation({
     address,
@@ -120,7 +122,7 @@ const DepositTransferConfirmation: React.FC<{
         title={t("deposit.cex.transfer.title")}
         onBack={onBack}
         align="center"
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <Stack justify="center" align="center" gap="base" py="xl">
@@ -144,6 +146,7 @@ const DepositTransferForm: React.FC<DepositTransferProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation(["onramp", "common", "xcm"])
+  const closable = useOnrampClosable()
   const { account } = useAccount()
   const {
     asset,
@@ -252,7 +255,7 @@ const DepositTransferForm: React.FC<DepositTransferProps> = ({
         title={t("deposit.cex.transfer.title")}
         onBack={onBack}
         align="center"
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <form

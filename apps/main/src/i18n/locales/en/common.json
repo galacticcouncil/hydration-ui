@@ -51,6 +51,7 @@
   "unknownExchangeRate": "Exchange rate: - = -",
   "custom": "Custom",
   "change": "Change",
+  "select": "Select",
   "connect": "Connect",
   "connectWallet": "Connect Wallet",
   "connectWallet.evm": "Connect EVM Wallet",

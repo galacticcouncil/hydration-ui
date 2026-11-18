@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { DepositHoldingList } from "@/modules/onramp/deposit/onchain/components/DepositHoldingList"
 import { DepositWalletList } from "@/modules/onramp/deposit/onchain/components/DepositWalletList"
 import { DepositBalanceRow } from "@/modules/onramp/deposit/onchain/DepositDiscovery.utils"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 
 export type DepositOnchainHoldingsProps = {
   onBack: () => void
@@ -24,6 +25,7 @@ export const DepositOnchainHoldings: React.FC<DepositOnchainHoldingsProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const closable = useOnrampClosable()
   const { gte } = useBreakpoints()
   const isDesktop = gte("md")
   const [provider, setProvider] = useState<WalletProviderType | null>(null)
@@ -34,7 +36,7 @@ export const DepositOnchainHoldings: React.FC<DepositOnchainHoldingsProps> = ({
         title={t("deposit.onchain.title")}
         align="center"
         onBack={onBack}
-        closable={false}
+        closable={closable}
       />
       <SWalletManagementBody noPadding scrollable={false}>
         <Grid

@@ -14,6 +14,7 @@ import {
   filterDepositBalancesByProviders,
   getDepositSources,
   getDepositUnavailableReason,
+  getDiscoveryProgress,
   groupDepositBalances,
   summarizeDepositBalances,
 } from "@/modules/onramp/deposit/onchain/DepositDiscovery.utils"
@@ -172,6 +173,12 @@ describe("deposit Holdings", () => {
     expect(result.rows.map((row) => row.key)).toEqual(["supported"])
   })
 
+  it("hides the pendulum PEN route, which fails on Hydration, from Discovery", () => {
+    const pen = balanceRow("pen", "pendulum", 10n ** 12n, 12, "1", "pen", "PEN")
+    expect(getDepositUnavailableReason(pen)).toBe("noRoute")
+    expect(groupDepositBalances([pen]).rows).toEqual([])
+  })
+
   it("does not invent a dust cutoff and ignores zero balances or repeated snapshots", () => {
     const tiny = balanceRow("tiny", "ethereum", 1n, 18, "0.000000000000000001")
     const result = groupDepositBalances([
@@ -247,5 +254,55 @@ describe("provably unspendable source reserves", () => {
     expect(getDepositUnavailableReason(dynamic)).toBeUndefined()
     expect(getDepositUnavailableReason(evm)).toBeUndefined()
     expect(groupDepositBalances([dynamic, evm]).rows).toHaveLength(2)
+  })
+})
+
+describe("discovery progress", () => {
+  it("counts a failed fetch as settled", () => {
+    expect(getDiscoveryProgress([], [{ status: "error" }])).toEqual({
+      settled: 1,
+      total: 1,
+      isSettled: true,
+    })
+  })
+  it("grows the total as wallets connect and add Deposit sources", () => {
+    const connecting = getDiscoveryProgress(
+      ["connected", "pending"],
+      [{ status: "success" }],
+    )
+    const connected = getDiscoveryProgress(
+      ["connected", "connected"],
+      [{ status: "success" }, { status: "pending" }, { status: "pending" }],
+    )
+    expect(connecting).toEqual({ settled: 2, total: 3, isSettled: false })
+    expect(connected).toEqual({ settled: 3, total: 5, isSettled: false })
+  })
+  it("settles only once both wallet connections and balance fetches finish", () => {
+    expect(
+      getDiscoveryProgress(["waiting"], [{ status: "success" }]).isSettled,
+    ).toBe(false)
+    expect(
+      getDiscoveryProgress(["skipped"], [{ status: "pending" }]).isSettled,
+    ).toBe(false)
+    expect(
+      getDiscoveryProgress(
+        ["rejected", "skipped"],
+        [{ status: "success" }, { status: "error" }],
+      ).isSettled,
+    ).toBe(true)
+  })
+  it("stays settled while an already-settled source refetches in the background", () => {
+    // A refetching query keeps its success/error status; only fetchStatus changes.
+    expect(
+      getDiscoveryProgress(["connected"], [{ status: "success" }]).isSettled,
+    ).toBe(true)
+  })
+  it("un-settles when a newly connected wallet adds a Deposit source", () => {
+    expect(
+      getDiscoveryProgress(
+        ["connected", "connected"],
+        [{ status: "success" }, { status: "pending" }],
+      ),
+    ).toEqual({ settled: 3, total: 4, isSettled: false })
   })
 })

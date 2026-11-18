@@ -13,9 +13,11 @@ import {
   DepositBalanceRow,
   filterDepositBalancesByProviders,
   getDepositSources,
+  getDiscoveryProgress,
   groupDepositBalances,
 } from "@/modules/onramp/deposit/onchain/DepositDiscovery.utils"
 import { useDepositAccounts } from "@/modules/onramp/deposit/onchain/hooks/useDepositAccounts"
+import { useDepositWalletConnectionState } from "@/modules/onramp/deposit/onchain/hooks/useDepositWallets"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
@@ -43,6 +45,10 @@ export const useDepositDiscovery = ({ provider }: DepositDiscoveryOptions) => {
       ),
     ),
   })
+
+  const walletResults = useDepositWalletConnectionState(
+    (state) => state.results,
+  )
 
   const getAssetId = useHydrationAssetId()
   const rawRows = sources.flatMap((source, index) =>
@@ -89,7 +95,7 @@ export const useDepositDiscovery = ({ provider }: DepositDiscoveryOptions) => {
     rows,
     total,
     accounts,
-    scanning: results.some((result) => result.isPending || result.isFetching),
+    progress: getDiscoveryProgress(Object.values(walletResults), results),
     failed: results.filter((result) => result.isError).length,
   }
 }

@@ -36,6 +36,7 @@ import {
   getCexConfigById,
 } from "@/modules/onramp/config/cex"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { AssetConfig } from "@/modules/onramp/types"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -49,6 +50,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation(["onramp", "common"])
+  const closable = useOnrampClosable()
   const { account } = useAccount()
   const { toggle: toggleWeb3Modal } = useWeb3ConnectModal()
   const { getAsset } = useAssets()
@@ -161,7 +163,7 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
         title={t("deposit.cex.asset.title")}
         align="center"
         onBack={onBack}
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <Stack gap="m">
