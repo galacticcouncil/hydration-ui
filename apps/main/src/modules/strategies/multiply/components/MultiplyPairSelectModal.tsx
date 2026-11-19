@@ -1,12 +1,17 @@
 import {
   Box,
   Collapsible,
-  Flex,
   Modal,
   ModalBody,
   ModalHeader,
   ScrollArea,
   Separator,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Text,
   WizardStep,
 } from "@galacticcouncil/ui/components"
 import { useState } from "react"
@@ -14,15 +19,13 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { MultiplyOptionRow } from "@/modules/strategies/multiply/components/MultiplyOptionRow"
+import { SOptionTable } from "@/modules/strategies/multiply/components/MultiplyOptionRow.styled"
 import { MultiplyPairLabel } from "@/modules/strategies/multiply/components/MultiplyPairLabel"
 import { type MultiplyPairRow } from "@/modules/strategies/multiply/components/MultiplyPairs.columns"
-import { SPairOption } from "@/modules/strategies/multiply/components/MultiplyPairSelectModal.styled"
 import { MultiplyPayAssetList } from "@/modules/strategies/multiply/components/MultiplyPayAssetList"
-import {
-  apyColor,
-  MultiplyStat,
-} from "@/modules/strategies/multiply/components/MultiplyStat"
-import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
+import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
+import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import { type MultiplyPair } from "@/modules/strategies/multiply/config/pairs"
 import { useCanPickPay } from "@/modules/strategies/multiply/hooks/usePayAsset"
 
@@ -62,56 +65,70 @@ export const MultiplyPairSelectModal: React.FC<
   const pairSymbol = (pair: MultiplyPair) =>
     `${display(pair.collateralAssetId).symbol}/${display(pair.debtAssetId).symbol}`
 
+  const numeric = { textAlign: "end" } as const
+
   const pairList = (
     <ScrollArea sx={{ height: "auto" }}>
       <Box maxHeight={["calc(100dvh - 280px)", "calc(75dvh - 280px)"]}>
-        {pairs.map(({ pair, data, risk }) => (
-          <SPairOption
-            key={pair.slug}
-            type="button"
-            selected={pair.slug === pick.slug}
-            onClick={() => {
-              if (!canPickPay(pair)) {
-                onSelect(pair, pair.collateralAssetId)
-                onClose()
-                return
-              }
-              setPick(pair)
-              setStep("pay")
-            }}
-          >
-            <MultiplyPairLabel pair={pair} />
-            <Flex gap="l" align="center">
-              {risk && data && (
-                <RiskBadge
-                  risk={risk}
-                  collateral={display(pair.collateralAssetId).symbol}
-                  debt={display(pair.debtAssetId).symbol}
-                  hf={data.maxLeverageHf}
-                />
-              )}
-              <MultiplyStat
-                label={t("cards.multiply.maxApy")}
-                value={
-                  data && data.maxNetApy !== null
-                    ? t("common:percent", { value: data.maxNetApy * 100 })
-                    : "—"
-                }
-                color={apyColor(data?.maxNetApy)}
-              />
-              <MultiplyStat
-                label={t("cards.multiply.maxLeverage")}
-                value={
-                  data
-                    ? t("cards.multiply.leverage", {
-                        value: data.maxLeverage,
-                      })
-                    : "—"
-                }
-              />
-            </Flex>
-          </SPairOption>
-        ))}
+        <SOptionTable size="compact">
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("multiply.select.column.loop")}</TableHead>
+              <TableHead>{t("multiply.risk.column")}</TableHead>
+              <TableHead sx={numeric}>{t("cards.multiply.maxApy")}</TableHead>
+              <TableHead sx={numeric}>
+                {t("cards.multiply.maxLeverage")}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {pairs.map(({ pair, data, risk }) => (
+              <MultiplyOptionRow
+                key={pair.slug}
+                selected={pair.slug === pick.slug}
+                onSelect={() => {
+                  if (!canPickPay(pair)) {
+                    onSelect(pair, pair.collateralAssetId)
+                    onClose()
+                    return
+                  }
+                  setPick(pair)
+                  setStep("pay")
+                }}
+              >
+                <TableCell>
+                  <MultiplyPairLabel pair={pair} size="small" />
+                </TableCell>
+                <TableCell>
+                  {data && (
+                    <PairRiskIndicator
+                      risk={risk ?? null}
+                      collateral={display(pair.collateralAssetId).symbol}
+                      debt={display(pair.debtAssetId).symbol}
+                      hf={data.maxLeverageHf}
+                    />
+                  )}
+                </TableCell>
+                <TableCell sx={numeric}>
+                  <Text fs="p4" fw={600} color={apyColor(data?.maxNetApy)}>
+                    {data && data.maxNetApy !== null
+                      ? t("common:percent", { value: data.maxNetApy * 100 })
+                      : "—"}
+                  </Text>
+                </TableCell>
+                <TableCell sx={numeric}>
+                  <Text fs="p4" fw={600}>
+                    {data
+                      ? t("cards.multiply.leverage", {
+                          value: data.maxLeverage,
+                        })
+                      : "—"}
+                  </Text>
+                </TableCell>
+              </MultiplyOptionRow>
+            ))}
+          </TableBody>
+        </SOptionTable>
       </Box>
     </ScrollArea>
   )

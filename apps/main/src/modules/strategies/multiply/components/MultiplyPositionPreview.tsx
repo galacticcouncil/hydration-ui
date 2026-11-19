@@ -2,7 +2,6 @@ import {
   Box,
   Flex,
   Grid,
-  Paper,
   Separator,
   Skeleton,
   Stack,
@@ -21,7 +20,7 @@ import {
   SApyText,
 } from "@/modules/strategies/multiply/components/MultiplyPositionPreview.styled"
 import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
-import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
+import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import { type PairRisk } from "@/modules/strategies/multiply/hooks/usePairRiskLevels"
 import { type projectMultiplyPosition } from "@/modules/strategies/multiply/utils/projection"
 
@@ -114,24 +113,21 @@ export const MultiplyPositionPreview: React.FC<
       <PreviewRow
         label={t("multiply.risk.column")}
         value={
-          risk && !isLoading ? (
-            <RiskBadge
-              risk={risk}
-              collateral={collateral.symbol}
-              debt={debt.symbol}
-              hf={projection.healthFactor}
-              leverage={leverage}
-            />
-          ) : (
-            <Skeleton width={48} />
-          )
+          <PairRiskIndicator
+            risk={isLoading ? null : risk}
+            collateral={collateral.symbol}
+            debt={debt.symbol}
+            hf={projection.healthFactor}
+            leverage={leverage}
+            withLabel
+          />
         }
       />
     </MultiplyAssetsCard>
   )
 }
 
-/** You supply / you borrow, then the caller's rows below a divider. */
+/** You supply / you borrow, then the caller's rows, each full width with a divider between. */
 export const MultiplyAssetsCard: React.FC<{
   collateral: Asset
   debt: Asset
@@ -153,28 +149,30 @@ export const MultiplyAssetsCard: React.FC<{
   const { t } = useTranslation(["strategies", "common"])
 
   return (
-    <Paper p="m" shadow={false}>
-      <Stack gap="m">
-        <AssetRow
-          label={t("multiply.open.supply")}
-          asset={collateral}
-          apy={supplyApy}
-          value={amounts?.[0] ?? 0}
-          isEmpty={!amounts}
-          isLoading={isLoading}
-        />
-        <AssetRow
-          label={t("multiply.open.borrow")}
-          asset={debt}
-          apy={borrowApy}
-          value={amounts?.[1] ?? 0}
-          isEmpty={!amounts}
-          isLoading={isLoading}
-        />
-        <Separator mx="-m" />
-        <Stack gap="xs">{children}</Stack>
-      </Stack>
-    </Paper>
+    <Stack
+      gap="base"
+      separated
+      withTrailingSeparator
+      separator={<Separator mx="-xl" />}
+    >
+      <AssetRow
+        label={t("multiply.open.supply")}
+        asset={collateral}
+        apy={supplyApy}
+        value={amounts?.[0] ?? 0}
+        isEmpty={!amounts}
+        isLoading={isLoading}
+      />
+      <AssetRow
+        label={t("multiply.open.borrow")}
+        asset={debt}
+        apy={borrowApy}
+        value={amounts?.[1] ?? 0}
+        isEmpty={!amounts}
+        isLoading={isLoading}
+      />
+      {children}
+    </Stack>
   )
 }
 
@@ -237,7 +235,7 @@ const AssetRow = ({
   const { t } = useTranslation(["strategies", "common"])
 
   return (
-    <Flex justify="space-between" align="center">
+    <Flex justify="space-between" align="center" py="s">
       <Stack gap="xs">
         <Text fs="p6" color={getToken("text.medium")}>
           {label}

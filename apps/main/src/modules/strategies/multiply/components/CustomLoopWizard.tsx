@@ -13,6 +13,11 @@ import {
   ScrollArea,
   Separator,
   Stack,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   Text,
   WizardStep,
 } from "@galacticcouncil/ui/components"
@@ -23,14 +28,12 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { MultiplyOptionRow } from "@/modules/strategies/multiply/components/MultiplyOptionRow"
+import { SOptionTable } from "@/modules/strategies/multiply/components/MultiplyOptionRow.styled"
 import { MultiplyPairLabel } from "@/modules/strategies/multiply/components/MultiplyPairLabel"
-import { SPairOption } from "@/modules/strategies/multiply/components/MultiplyPairSelectModal.styled"
 import { PreviewRow } from "@/modules/strategies/multiply/components/MultiplyPositionPreview"
-import {
-  apyColor,
-  MultiplyStat,
-} from "@/modules/strategies/multiply/components/MultiplyStat"
-import { RiskBadge } from "@/modules/strategies/multiply/components/RiskBadge"
+import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
+import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import {
   findPairByAssets,
   type MultiplyPair,
@@ -141,13 +144,21 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
     value === null ? "—" : t("common:percent", { value: value * 100 })
   const leverage = (value: number) => t("cards.multiply.leverage", { value })
 
-  const stat = (
-    label: string,
-    value: React.ReactNode,
-    color?: React.ComponentProps<typeof Text>["color"],
-  ) => <MultiplyStat label={label} value={value} color={color} />
-  const apyStat = (label: string, value: number | null) =>
-    stat(label, percent(value), apyColor(value))
+  const numeric = { textAlign: "end" } as const
+  const apyCell = (value: number | null) => (
+    <TableCell sx={numeric}>
+      <Text fs="p4" fw={600} color={apyColor(value)}>
+        {percent(value)}
+      </Text>
+    </TableCell>
+  )
+  const leverageCell = (value: number) => (
+    <TableCell sx={numeric}>
+      <Text fs="p4" fw={600}>
+        {leverage(value)}
+      </Text>
+    </TableCell>
+  )
 
   const create = () => {
     if (!pick) return
@@ -162,7 +173,7 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
 
   const riskBadge = (c: Candidate) =>
     c.risk && (
-      <RiskBadge
+      <PairRiskIndicator
         risk={c.risk}
         collateral={symbol(c.pair.collateralAssetId)}
         debt={symbol(c.pair.debtAssetId)}
@@ -170,20 +181,20 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
       />
     )
 
-  const assetRow = (id: string, sub: string | null) => (
-    <Box flexShrink={0}>
+  const assetCell = (id: string, reason: string | null) => (
+    <TableCell>
       <AssetLabelFullContainer>
-        <AssetLogo id={display(id).logoId} />
+        <AssetLogo id={display(id).logoId} size="small" />
         <Stack gap="xs">
           <AssetLabel symbol={symbol(id)} />
-          {sub && (
-            <Text fs="p6" color={getToken("text.low")} whiteSpace="nowrap">
-              {sub}
+          {reason && (
+            <Text fs="p6" color={getToken("text.low")}>
+              {reason}
             </Text>
           )}
         </Stack>
       </AssetLabelFullContainer>
-    </Box>
+    </TableCell>
   )
 
   // a step is done once it holds a pick; done steps can be reopened
@@ -225,41 +236,55 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
           )}
         >
           <StepList>
-            {collaterals.map(({ collateralAssetId, valid, best, reason }) => (
-              <SPairOption
-                key={collateralAssetId}
-                type="button"
-                selected={collateralId === collateralAssetId}
-                disabled={!best}
-                onClick={() => {
-                  if (collateralId !== collateralAssetId) {
-                    setCollateralId(collateralAssetId)
-                    setPickSlug(null)
-                  }
-                  setStep(1)
-                }}
-              >
-                {assetRow(
-                  collateralAssetId,
-                  best
-                    ? t("multiply.custom.loopsAvailable", {
-                        count: valid.length,
-                      })
-                    : (reason ?? t("multiply.custom.cantLoop")),
+            <SOptionTable size="compact">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("common:asset")}</TableHead>
+                  <TableHead sx={numeric}>
+                    {t("multiply.custom.bestApy")}
+                  </TableHead>
+                  <TableHead sx={numeric}>
+                    {t("cards.multiply.maxLeverage")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {collaterals.map(
+                  ({ collateralAssetId, valid, best, reason }) => (
+                    <MultiplyOptionRow
+                      key={collateralAssetId}
+                      selected={collateralId === collateralAssetId}
+                      disabled={!best}
+                      onSelect={() => {
+                        if (collateralId !== collateralAssetId) {
+                          setCollateralId(collateralAssetId)
+                          setPickSlug(null)
+                        }
+                        setStep(1)
+                      }}
+                    >
+                      {assetCell(
+                        collateralAssetId,
+                        best ? null : (reason ?? t("multiply.custom.cantLoop")),
+                      )}
+                      {best ? (
+                        <>
+                          {apyCell(best.maxNetApy)}
+                          {leverageCell(
+                            Math.max(...valid.map((c) => c.data!.maxLeverage)),
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <TableCell />
+                          <TableCell />
+                        </>
+                      )}
+                    </MultiplyOptionRow>
+                  ),
                 )}
-                {best && (
-                  <Flex gap="l" align="center">
-                    {apyStat(t("multiply.custom.bestApy"), best.maxNetApy)}
-                    {stat(
-                      t("cards.multiply.maxLeverage"),
-                      leverage(
-                        Math.max(...valid.map((c) => c.data!.maxLeverage)),
-                      ),
-                    )}
-                  </Flex>
-                )}
-              </SPairOption>
-            ))}
+              </TableBody>
+            </SOptionTable>
           </StepList>
         </Collapsible>
 
@@ -275,29 +300,48 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
           )}
         >
           <StepList>
-            {debtLoops.map((c) => (
-              <SPairOption
-                key={c.pair.slug}
-                type="button"
-                selected={pickSlug === c.pair.slug}
-                onClick={() => {
-                  setPickSlug(c.pair.slug)
-                  setStep(2)
-                }}
-              >
-                {assetRow(c.pair.debtAssetId, c.reason)}
-                {!c.unavailable && (
-                  <Flex gap="l" align="center">
-                    {riskBadge(c)}
-                    {apyStat(t("cards.multiply.maxApy"), c.maxNetApy)}
-                    {stat(
-                      t("cards.multiply.maxLeverage"),
-                      leverage(c.data!.maxLeverage),
+            <SOptionTable size="compact">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("common:asset")}</TableHead>
+                  <TableHead>{t("multiply.risk.column")}</TableHead>
+                  <TableHead sx={numeric}>
+                    {t("cards.multiply.maxApy")}
+                  </TableHead>
+                  <TableHead sx={numeric}>
+                    {t("cards.multiply.maxLeverage")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {debtLoops.map((c) => (
+                  <MultiplyOptionRow
+                    key={c.pair.slug}
+                    selected={pickSlug === c.pair.slug}
+                    disabled={c.unavailable}
+                    onSelect={() => {
+                      setPickSlug(c.pair.slug)
+                      setStep(2)
+                    }}
+                  >
+                    {assetCell(c.pair.debtAssetId, c.reason)}
+                    {c.unavailable ? (
+                      <>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
+                      </>
+                    ) : (
+                      <>
+                        <TableCell>{riskBadge(c)}</TableCell>
+                        {apyCell(c.maxNetApy)}
+                        {leverageCell(c.data!.maxLeverage)}
+                      </>
                     )}
-                  </Flex>
-                )}
-              </SPairOption>
-            ))}
+                  </MultiplyOptionRow>
+                ))}
+              </TableBody>
+            </SOptionTable>
           </StepList>
         </Collapsible>
 

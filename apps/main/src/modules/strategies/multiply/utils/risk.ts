@@ -1,4 +1,4 @@
-export type RiskLevel = "low" | "medium" | "high"
+import { type RiskLevel } from "@galacticcouncil/ui/components"
 
 const DAY_S = 24 * 60 * 60
 // a 30-day window of hourly candles spans just under 30 days

@@ -56,6 +56,7 @@ import {
   usePayMaxBalance,
   usePayQuote,
 } from "@/modules/strategies/multiply/hooks/usePayAsset"
+import { getLeverageMarks } from "@/modules/strategies/multiply/utils/marks"
 import {
   getCapRoom,
   getEntryCost,
@@ -415,28 +416,19 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
               control={control}
               name="leverage"
               render={({ field }) => (
-                <Stack gap="s">
-                  <Slider
-                    min={MULTIPLY_MIN_LEVERAGE}
-                    max={maxLeverage}
-                    step={MULTIPLY_LEVERAGE_STEP}
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                  <Flex justify="space-between">
-                    <Text fs="p5" color={getToken("text.medium")}>
-                      {leverageLabel(MULTIPLY_MIN_LEVERAGE)}
-                    </Text>
-                    <Text fs="p5" color={getToken("text.medium")}>
-                      {isLoading ? (
-                        <Skeleton width={32} />
-                      ) : (
-                        leverageLabel(maxLeverage)
-                      )}
-                    </Text>
-                  </Flex>
-                </Stack>
+                <Slider
+                  min={MULTIPLY_MIN_LEVERAGE}
+                  max={maxLeverage}
+                  step={MULTIPLY_LEVERAGE_STEP}
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isLoading}
+                  marks={getLeverageMarks(
+                    MULTIPLY_MIN_LEVERAGE,
+                    maxLeverage,
+                    leverageLabel,
+                  )}
+                />
               )}
             />
           </Box>

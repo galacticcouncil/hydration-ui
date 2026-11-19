@@ -23,10 +23,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { SMenuLabelText } from "@/modules/strategies/multiply/components/MultiplyPairs.styled"
 import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
-import {
-  RiskBadge,
-  RiskBadgeSkeleton,
-} from "@/modules/strategies/multiply/components/RiskBadge"
+import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import {
   isCustomLoop,
   type MultiplyPair,
@@ -91,11 +88,15 @@ export const useMultiplyPairColumns = (
           cell: ({ row }) => {
             const { pair, risk, data } = row.original
             if (!data)
-              return row.original.isLoading ? <RiskBadgeSkeleton /> : "—"
+              return row.original.isLoading ? (
+                <PairRiskIndicator risk={null} />
+              ) : (
+                "—"
+              )
             // with the reserves loaded, risk is null only while the price history loads
-            if (!risk) return <RiskBadgeSkeleton />
+            if (!risk) return <PairRiskIndicator risk={null} />
             return (
-              <RiskBadge
+              <PairRiskIndicator
                 risk={risk}
                 collateral={display(pair.collateralAssetId).symbol}
                 debt={display(pair.debtAssetId).symbol}

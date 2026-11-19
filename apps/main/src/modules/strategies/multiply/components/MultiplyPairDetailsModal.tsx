@@ -26,10 +26,7 @@ import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvi
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
-import {
-  RiskBadge,
-  RiskBadgeSkeleton,
-} from "@/modules/strategies/multiply/components/RiskBadge"
+import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import { LOOPER_FACTORY_ADDRESS } from "@/modules/strategies/multiply/config/pairs"
 import {
   type MultiplyPairMetrics,
@@ -259,16 +256,13 @@ const PairDetails: React.FC<{
       <Section
         title={t("multiply.pairDetails.risk")}
         action={
-          risk ? (
-            <RiskBadge
-              risk={risk}
-              collateral={collateral}
-              debt={debt}
-              hf={data.maxLeverageHf}
-            />
-          ) : (
-            <RiskBadgeSkeleton />
-          )
+          <PairRiskIndicator
+            risk={risk ?? null}
+            collateral={collateral}
+            debt={debt}
+            hf={data.maxLeverageHf}
+            size="large"
+          />
         }
       >
         <Summary
