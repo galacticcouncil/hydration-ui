@@ -11,11 +11,6 @@ vi.mock("@/modules/xcm/transfer/utils/chain", () => ({
 }))
 vi.mock("@galacticcouncil/ui/assets/icons", () => ({}))
 vi.mock("@galacticcouncil/ui/components", () => ({}))
-vi.mock("@galacticcouncil/money-market/ui-config", () => ({
-  AaveV3HydrationMainnet: {
-    GHO_TOKEN_ADDRESS: "0x0000000000000000000000000000000000000000",
-  },
-}))
 
 const chain = (key: string) => {
   const value = chainsMap.get(key)
