@@ -19,6 +19,8 @@ export type DepositBalanceRow = {
   source: DepositSource
   balance: AssetAmount
   value?: string
+  /** Hydration asset id the balance arrives as. */
+  destAssetId?: string | null
 }
 export type DepositUnavailableReason = "noRoute" | "tooSmall"
 
@@ -127,4 +129,64 @@ export const groupDepositBalances = (rows: DepositBalanceRow[]) => {
     return !getDepositUnavailableReason(row)
   })
   return summarizeDepositBalances(holdings)
+}
+
+export type DepositGroupBy = "none" | "asset" | "account" | "chain"
+
+export type DepositHoldingGroup = {
+  key: string
+  rows: DepositBalanceRow[]
+  value?: string
+  /** Summed token amount at the highest decimals among the rows. */
+  amount: bigint
+  decimals: number
+}
+
+const getGroupKey = (
+  row: DepositBalanceRow,
+  groupBy: Exclude<DepositGroupBy, "none">,
+) => {
+  if (groupBy === "chain") return row.source.chain.key
+  if (groupBy === "account") {
+    const { rawAddress } = row.source.account
+    return isH160Address(rawAddress) ? rawAddress.toLowerCase() : rawAddress
+  }
+  return row.destAssetId ? `id:${row.destAssetId}` : `key:${row.balance.key}`
+}
+
+/** Groups already-sorted rows, keeping their order inside a group; groups sort by value, unpriced last. */
+export const groupDepositHoldings = (
+  rows: DepositBalanceRow[],
+  groupBy: Exclude<DepositGroupBy, "none">,
+): DepositHoldingGroup[] => {
+  const groups = new Map<string, DepositBalanceRow[]>()
+  for (const row of rows) {
+    const key = getGroupKey(row, groupBy)
+    groups.set(key, [...(groups.get(key) ?? []), row])
+  }
+  return [...groups]
+    .map(([key, groupRows]) => {
+      const decimals = Math.max(...groupRows.map((row) => row.balance.decimals))
+      const priced = groupRows.filter((row) => row.value !== undefined)
+      return {
+        key,
+        rows: groupRows,
+        decimals,
+        amount: groupRows.reduce(
+          (sum, { balance }) =>
+            sum + balance.amount * 10n ** BigInt(decimals - balance.decimals),
+          0n,
+        ),
+        value: priced.length
+          ? priced.reduce((sum, row) => sum.plus(row.value!), Big(0)).toString()
+          : undefined,
+      }
+    })
+    .sort((a, b) => {
+      if (a.value === undefined && b.value !== undefined) return 1
+      if (a.value !== undefined && b.value === undefined) return -1
+      return (
+        Big(b.value ?? "0").cmp(a.value ?? "0") || a.key.localeCompare(b.key)
+      )
+    })
 }

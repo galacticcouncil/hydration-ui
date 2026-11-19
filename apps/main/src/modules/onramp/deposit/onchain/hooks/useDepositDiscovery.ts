@@ -68,6 +68,7 @@ export const useDepositDiscovery = ({ provider }: DepositDiscoveryOptions) => {
     const price = assetId ? getAssetPrice(assetId) : undefined
     return {
       ...row,
+      destAssetId: assetId,
       value: price?.isValid
         ? Big(toDecimal(row.balance.amount, row.balance.decimals))
             .times(price.price)

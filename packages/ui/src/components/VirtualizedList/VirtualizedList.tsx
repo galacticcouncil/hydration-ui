@@ -1,4 +1,5 @@
 import {
+  defaultRangeExtractor,
   useVirtualizer,
   VirtualItem,
   VirtualizerOptions,
@@ -10,6 +11,8 @@ import { clamp, isNullish } from "remeda"
 import {
   SList,
   SListItem,
+  SStickyItem,
+  SStickySection,
 } from "@/components/VirtualizedList/VirtualizedList.styled"
 import { useResponsiveValue, useUiScale } from "@/styles/media"
 
@@ -22,7 +25,9 @@ type VirtualizerProps = Pick<
 
 type VirtualizedListProps<T> = VirtualizerProps &
   ScrollAreaProps & {
-    itemSize: number
+    itemSize: number | ((item: T, index: number) => number)
+    /** Sticky items pin to the top until the next sticky item pushes them out. */
+    isItemSticky?: (item: T, index: number) => boolean
     items: readonly T[]
     renderItem: (item: T, virtualItem: VirtualItem) => React.ReactNode
     initialScrollIndex?: number
@@ -36,6 +41,7 @@ function VirtualizedList<T>({
   renderItem,
   overscan = 5,
   itemSize: baseItemSize,
+  isItemSticky,
   maxVisibleItems,
   getItemKey,
   initialScrollIndex,
@@ -49,16 +55,35 @@ function VirtualizedList<T>({
 
   const uiScale = useUiScale()
 
-  const itemSize = baseItemSize * uiScale
+  const getSize = (index: number) =>
+    (typeof baseItemSize === "number"
+      ? baseItemSize
+      : baseItemSize(items[index], index)) * uiScale
+  // ponytail: max-height math assumes uniform rows; uses the first row's size
+  const itemSize = items.length ? getSize(0) : 0
 
   const maxVisible = useResponsiveValue(maxVisibleItems, 0)
+
+  const stickyIndexes = isItemSticky
+    ? items.flatMap((item, index) => (isItemSticky(item, index) ? [index] : []))
+    : []
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => itemSize,
+    estimateSize: getSize,
     overscan,
     getItemKey: getItemKey || ((index) => index),
+    // Keep the current section's sticky item rendered once it scrolls past
+    rangeExtractor: (range) => {
+      const active = stickyIndexes.findLast(
+        (index) => index <= range.startIndex,
+      )
+      const indexes = defaultRangeExtractor(range)
+      return active === undefined || indexes.includes(active)
+        ? indexes
+        : [active, ...indexes]
+    },
   })
 
   useEffect(() => {
@@ -80,6 +105,16 @@ function VirtualizedList<T>({
   }, [initialScrollIndex, items.length, rowVirtualizer])
 
   const virtualItems = rowVirtualizer.getVirtualItems()
+  // A sticky item spans its whole section, so the browser pins it and pushes it
+  // out at the next section natively, in step with the scroll
+  const getSectionSize = (index: number, start: number) => {
+    const next = stickyIndexes.find((sticky) => sticky > index)
+    const end =
+      next === undefined
+        ? rowVirtualizer.getTotalSize()
+        : (rowVirtualizer.measurementsCache[next]?.start ?? start)
+    return end - start
+  }
   const lastRenderedIndex = virtualItems.at(-1)?.index
 
   useEffect(() => {
@@ -104,17 +139,30 @@ function VirtualizedList<T>({
       }
     >
       <SList height={rowVirtualizer.getTotalSize()}>
-        {virtualItems.map((virtualItem) => (
-          <SListItem
-            key={virtualItem.key}
-            data-virtual-index={virtualItem.index}
-            size={virtualItem.size}
-            start={virtualItem.start}
-            bordered={separated}
-          >
-            {renderItem(items[virtualItem.index], virtualItem)}
-          </SListItem>
-        ))}
+        {virtualItems.map((virtualItem) =>
+          stickyIndexes.includes(virtualItem.index) ? (
+            <SStickySection
+              key={virtualItem.key}
+              data-virtual-index={virtualItem.index}
+              size={getSectionSize(virtualItem.index, virtualItem.start)}
+              start={virtualItem.start}
+            >
+              <SStickyItem size={virtualItem.size}>
+                {renderItem(items[virtualItem.index], virtualItem)}
+              </SStickyItem>
+            </SStickySection>
+          ) : (
+            <SListItem
+              key={virtualItem.key}
+              data-virtual-index={virtualItem.index}
+              size={virtualItem.size}
+              start={virtualItem.start}
+              bordered={separated}
+            >
+              {renderItem(items[virtualItem.index], virtualItem)}
+            </SListItem>
+          ),
+        )}
       </SList>
     </ScrollArea>
   )

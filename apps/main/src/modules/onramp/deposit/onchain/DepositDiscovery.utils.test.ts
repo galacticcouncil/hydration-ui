@@ -16,6 +16,7 @@ import {
   getDepositUnavailableReason,
   getDiscoveryProgress,
   groupDepositBalances,
+  groupDepositHoldings,
   summarizeDepositBalances,
 } from "@/modules/onramp/deposit/onchain/DepositDiscovery.utils"
 
@@ -299,5 +300,56 @@ describe("discovery progress", () => {
         [{ status: "success" }, { status: "pending" }],
       ),
     ).toEqual({ settled: 3, total: 4, isSettled: false })
+  })
+})
+
+describe("grouping Holdings", () => {
+  it("sums one asset across chains with different decimals, keyed by the Hydration asset", () => {
+    const assethub = {
+      ...balanceRow("ah", "assethub", 1_500000n, 6, "1.5"),
+      destAssetId: "10",
+    }
+    const moonbeam = {
+      ...balanceRow("mb", "moonbeam", 2n * 10n ** 18n, 18, "2"),
+      destAssetId: "10",
+    }
+    const [group, ...rest] = groupDepositHoldings([moonbeam, assethub], "asset")
+    expect(rest).toEqual([])
+    expect(group?.rows.map((row) => row.key)).toEqual(["mb", "ah"])
+    expect(group?.decimals).toBe(18)
+    expect(group?.amount).toBe(35n * 10n ** 17n)
+    expect(group?.value).toBe("3.5")
+  })
+
+  it("falls back to the source asset key without a Hydration asset", () => {
+    const groups = groupDepositHoldings(
+      [
+        balanceRow("a", "ethereum", 1n, 0, "1"),
+        balanceRow("b", "base", 1n, 0, "1"),
+        { ...balanceRow("c", "base", 1n, 0, "1"), destAssetId: "10" },
+      ],
+      "asset",
+    )
+    expect(groups.map((group) => group.rows.length)).toEqual([2, 1])
+  })
+
+  it("sorts groups by summed value with unpriced last, keeping row order inside", () => {
+    const rows = [
+      balanceRow("eth-big", "ethereum", 1n, 0, "5"),
+      balanceRow("base-a", "base", 1n, 0, "4"),
+      balanceRow("base-b", "base", 1n, 0, "3"),
+      balanceRow("eth-unpriced", "ethereum", 1n, 0, undefined),
+      balanceRow("solo-unpriced", "assethub", 1n, 0, undefined),
+    ]
+    const groups = groupDepositHoldings(rows, "chain")
+    expect(groups.map((group) => [group.key, group.value])).toEqual([
+      ["base", "7"],
+      ["ethereum", "5"],
+      ["assethub", undefined],
+    ])
+    expect(groups[1]?.rows.map((row) => row.key)).toEqual([
+      "eth-big",
+      "eth-unpriced",
+    ])
   })
 })

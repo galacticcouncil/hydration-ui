@@ -56,8 +56,13 @@ export const DepositOnchainHoldings: React.FC<DepositOnchainHoldingsProps> = ({
             selectedProvider={provider}
             onSelectProvider={setProvider}
           />
-          <Box minWidth={0} minHeight={0} mb="-m">
-            <DepositHoldingList provider={provider} onSelect={onSelect} />
+          <Box minWidth={0} minHeight={0}>
+            {/* Keyed so switching wallets starts with a clear search */}
+            <DepositHoldingList
+              key={provider ?? "all"}
+              provider={provider}
+              onSelect={onSelect}
+            />
           </Box>
         </Grid>
       </SWalletManagementBody>
