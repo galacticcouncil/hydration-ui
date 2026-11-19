@@ -1,4 +1,5 @@
 import { pairCandlesQuery } from "@galacticcouncil/indexer/neckwork"
+import { type RiskLevel } from "@galacticcouncil/ui/components"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import {
   persistQueryClientRestore,
@@ -17,7 +18,6 @@ import { neckworkClient } from "@/api/neckwork"
 import {
   getLargestFall,
   getRiskLevel,
-  type RiskLevel,
   toPriceRatios,
 } from "@/modules/strategies/multiply/utils/risk"
 import { IndexedDBStores } from "@/utils/indexedDB"
