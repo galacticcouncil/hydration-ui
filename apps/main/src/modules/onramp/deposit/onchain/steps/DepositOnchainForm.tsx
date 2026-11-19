@@ -14,7 +14,7 @@ import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { getChainId, HYDRATION_PARACHAIN_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
-import { FC, useState } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -43,6 +43,7 @@ import {
 import { XcmFooter } from "@/modules/xcm/transfer/XcmFooter"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 import { useAssetPrice } from "@/states/displayAsset"
+import { toDecimal } from "@/utils/formatting"
 
 export type DepositOnchainFormProps = {
   onBack: () => void
@@ -87,6 +88,7 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
     selectedRoute,
     sourceChainAssetPairs,
     isLoadingSrcBalances,
+    isLoadingTransfer,
     isConnectedAccountValid,
   } = useXcmProvider()
   const { watch, handleSubmit, setValue } = useFormContext<XcmFormValues>()
@@ -139,6 +141,36 @@ export const DepositOnchainForm: React.FC<DepositOnchainFormProps> = ({
   const estimatedTime = bridgeTag ? BRIDGE_TIME[bridgeTag] : undefined
   const isTooSmall =
     !!transfer && transfer.source.max.toBig().lt(transfer.source.min.toBig())
+  // Prefill max once per source asset, after transfer and balances settle
+  const prefilledKey = useRef<string | null>(null)
+  const assetKey = srcAsset ? `${srcChainKey}:${srcAsset.key}` : null
+  useEffect(() => {
+    if (
+      !assetKey ||
+      prefilledKey.current === assetKey ||
+      !transfer ||
+      isLoadingTransfer ||
+      isLoadingSrcBalances ||
+      isTooSmall ||
+      watch("srcAmount")
+    )
+      return
+    const max = transfer.source.max
+    if (max.toBig().lte(0)) return
+    prefilledKey.current = assetKey
+    setValue("srcAmount", toDecimal(max.amount, max.decimals), {
+      shouldValidate: true,
+    })
+  }, [
+    assetKey,
+    transfer,
+    isLoadingTransfer,
+    isLoadingSrcBalances,
+    isTooSmall,
+    watch,
+    setValue,
+  ])
+
   const fallbackRecipientName = destAddress
     ? t("xcm:recipient.input.customWallet")
     : t("deposit.onchain.noAccount")

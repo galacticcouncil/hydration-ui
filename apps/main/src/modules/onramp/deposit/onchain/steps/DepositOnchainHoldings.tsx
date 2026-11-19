@@ -56,7 +56,7 @@ export const DepositOnchainHoldings: React.FC<DepositOnchainHoldingsProps> = ({
             selectedProvider={provider}
             onSelectProvider={setProvider}
           />
-          <Box minWidth={0} sx={{ minHeight: 0 }}>
+          <Box minWidth={0} minHeight={0} mb="-m">
             <DepositHoldingList provider={provider} onSelect={onSelect} />
           </Box>
         </Grid>

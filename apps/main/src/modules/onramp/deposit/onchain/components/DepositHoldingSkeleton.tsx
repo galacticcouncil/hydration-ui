@@ -1,9 +1,4 @@
-import {
-  AssetLabel,
-  Flex,
-  LogoSkeleton,
-  Skeleton,
-} from "@galacticcouncil/ui/components"
+import { Flex, LogoSkeleton, Skeleton } from "@galacticcouncil/ui/components"
 import { pxToRem } from "@galacticcouncil/ui/utils"
 
 export const DepositHoldingSkeleton = () => (
@@ -16,8 +11,11 @@ export const DepositHoldingSkeleton = () => (
   >
     <Flex gap="base" align="center">
       <LogoSkeleton size="medium" />
-      <AssetLabel symbol="" loading />
+      <Flex direction="column" gap="xs" justify="center">
+        <Skeleton sx={{ width: "3xl", height: "xs", display: "block" }} />
+        <Skeleton sx={{ width: "2xl", height: "xs", display: "block" }} />
+      </Flex>
     </Flex>
-    <Skeleton width={60} />
+    <Skeleton sx={{ width: "2xl" }} />
   </Flex>
 )

@@ -15,6 +15,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
+import Big from "big.js"
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -104,12 +105,12 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
         onChange={(event) => setSearch(event.target.value)}
       />
       {scanning ? (
-        <Flex direction="column" gap="xs" sx={{ flexShrink: 0 }}>
+        <Flex direction="column" px="base" gap="xs" flexShrink={0} height="2xl">
           <Flex justify="space-between">
-            <Text fs="p5" fw={500} color={getToken("text.medium")}>
+            <Text fs="p5" fw={500}>
               {t("deposit.flow.assets.scanning")}
             </Text>
-            <Text fs="p5" color={getToken("text.tint.secondary")}>
+            <Text fs="p5" fw={500} color={getToken("text.tint.secondary")}>
               {t("deposit.flow.assets.scanningProgress", progress)}
             </Text>
           </Flex>
@@ -119,30 +120,32 @@ export const DepositHoldingList: React.FC<DepositHoldingListProps> = ({
           />
         </Flex>
       ) : (
-        Number(total) >= 0.1 && (
-          <ValueStats
-            label={t("deposit.flow.assets.total")}
-            value={t("common:currency", { value: total })}
-            wrap
-            sx={{ flexShrink: 0 }}
-          />
+        Big(total).gt(0.1) && (
+          <Flex px="base" height="2xl">
+            <ValueStats
+              label={t("deposit.flow.assets.total")}
+              value={t("common:currency", { value: total })}
+              wrap
+              sx={{ flexShrink: 0 }}
+            />
+          </Flex>
         )
       )}
-      <Flex justify="space-between" px="l">
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("common:asset")}
-        </Text>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("common:balance")}
-        </Text>
-      </Flex>
-      {!scanning && failed > 0 && (
-        <Alert
-          variant="warning"
-          description={t("deposit.flow.assets.partial")}
-        />
-      )}
-      <Box flex={1} pr="base" sx={{ minHeight: 0 }}>
+      <Box flex={1} minHeight={0}>
+        <Flex justify="space-between" pl="base" pr="m">
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("common:asset")}
+          </Text>
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("common:balance")}
+          </Text>
+        </Flex>
+        {!scanning && failed > 0 && (
+          <Alert
+            variant="warning"
+            description={t("deposit.flow.assets.partial")}
+          />
+        )}
         {entries.length > 0 ? (
           <VirtualizedList
             items={entries}
