@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /*
- * Review 4a B1: on a production build no way in renders a bank screen. With
- * `@/config/env` set to production: the Deposits nav child is off, the
+ * Review 4a B1: with VITE_BANK_FLOW_ENABLED off no way in renders a bank screen. With
+ * `@/config/env` flag off: the Deposits nav child is off, the
  * /portfolio/deposits route is a 404 before its page loads, DepositPage and
  * WithdrawPage render no bank flow even when their state says DepositBank /
  * WithdrawBank (a stored page or a Portfolio tile), and BankFlow and
@@ -12,7 +12,7 @@ import { render } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 vi.mock("@/config/env", () => ({
-  ENV: { VITE_ENV: "production", VITE_HBR_API_URL: "https://hbr.test" },
+  ENV: { VITE_BANK_FLOW_ENABLED: false, VITE_HBR_API_URL: "https://hbr.test" },
 }))
 vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
 vi.mock("@galacticcouncil/web3-connect", () => ({
@@ -105,8 +105,8 @@ import { OnrampScreen } from "@/modules/onramp/types"
 import { WithdrawPage } from "@/modules/onramp/withdraw/WithdrawPage"
 import { Route as DepositsRoute } from "@/routes/portfolio/deposits"
 
-describe("production: no bank screen by any way in (review 4a B1)", () => {
-  it("the gate reads production as off", () => {
+describe("flag off: no bank screen by any way in (review 4a B1)", () => {
+  it("the gate reads the flag as off", () => {
     expect(isBankFlowEnabled()).toBe(false)
   })
 
@@ -149,11 +149,11 @@ describe("production: no bank screen by any way in (review 4a B1)", () => {
     expect(tiles.container.innerHTML).toBe("")
   })
 
-  // Positive control: the same render outside production shows the marker,
+  // Positive control: the same render with the flag on shows the marker,
   // so the two page tests above can see a bank flow when one renders.
-  it("control: outside production the pages do render their bank step", () => {
-    const env = ENV as { VITE_ENV: string }
-    env.VITE_ENV = "testnet"
+  it("control: with the flag on the pages do render their bank step", () => {
+    const env = ENV as { VITE_BANK_FLOW_ENABLED: boolean }
+    env.VITE_BANK_FLOW_ENABLED = true
     try {
       page.current = OnrampScreen.DepositBank
       const d = render(<DepositPage />)
@@ -166,7 +166,7 @@ describe("production: no bank screen by any way in (review 4a B1)", () => {
         w.container.querySelector('[data-marker="withdraw-bank"]'),
       ).not.toBeNull()
     } finally {
-      env.VITE_ENV = "production"
+      env.VITE_BANK_FLOW_ENABLED = false
     }
   })
 })

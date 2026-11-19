@@ -208,7 +208,6 @@ export const NAVIGATION: NavigationItem[] = [
         key: "portfolioDeposits",
         to: LINKS.portfolioDeposits,
         icon: LandmarkIcon,
-        // The bank flows are not offered in production yet.
         enabled: isBankFlowEnabled(),
       },
       {

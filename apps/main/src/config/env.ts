@@ -28,6 +28,7 @@ const schema = z.object({
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
+  VITE_BANK_FLOW_ENABLED: coerceToBoolean,
   VITE_HBR_API_URL: hbrApiUrl,
 })
 
