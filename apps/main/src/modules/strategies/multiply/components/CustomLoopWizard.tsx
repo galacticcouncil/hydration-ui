@@ -53,6 +53,7 @@ import {
   sortDebtLoops,
   summarizeCollaterals,
 } from "@/modules/strategies/multiply/utils/loops"
+import { useLooperSettings } from "@/states/looperSettings"
 
 type Candidate = MultiplyPairRow & {
   collateralAssetId: string
@@ -73,6 +74,7 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["strategies", "common"])
+  const slippage = useLooperSettings((s) => s.slippage)
   const display = useResolveAssetDisplay()
   const rows = useLoopCandidates()
   const pairs = useMultiplyPairs()
@@ -112,7 +114,7 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
     // known only once the loop is picked and probed
     const reason = cantUnwind
       ? t("multiply.unavailable.cantUnwind", {
-          slippage: row.pair.slippageBps / 100,
+          slippage,
         })
       : null
     return [

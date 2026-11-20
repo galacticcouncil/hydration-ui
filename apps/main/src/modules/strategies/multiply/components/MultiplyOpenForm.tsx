@@ -33,6 +33,7 @@ import { bestSellQuery } from "@/api/trade"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
+import { TradeLimitEditor } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { useMultiplyOpenForm } from "@/modules/strategies/multiply/components/MultiplyOpenForm.form"
@@ -67,6 +68,11 @@ import { getLooperRecovery } from "@/modules/strategies/multiply/utils/recovery"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
+import {
+  LOOPER_SLIPPAGE_OPTIONS,
+  looperSlippageSchema,
+  useLooperSettings,
+} from "@/states/looperSettings"
 import { percentageOf } from "@/utils/formatting"
 
 type MultiplyOpenFormProps = {
@@ -110,6 +116,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
   const openMutation = useOpenMultiplyPosition(pair)
   const entryMutation = useOpenMultiplyEntry(pair)
   const isPending = openMutation.isPending || entryMutation.isPending
+  const { slippage, setSlippage } = useLooperSettings()
   // collateral bought by an entry whose open didn't finish
   const recovered = useLooperRecoveryStore((s) => s.held[pair.slug])
   const isPayingCollateral = payAssetId === pair.collateralAssetId
@@ -490,7 +497,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             <Alert
               variant="error"
               description={t("multiply.open.cantFill", {
-                slippage: pair.slippageBps / 100,
+                slippage,
               })}
             />
           )}
@@ -566,6 +573,20 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
           <CollapsibleContent>
             <Separator mx="-xl" />
             <Summary separator={<Separator mx="-xl" />}>
+              <SummaryRow
+                label={t("common:tradeLimit")}
+                content={
+                  <TradeLimitEditor
+                    value={slippage}
+                    onChange={setSlippage}
+                    schema={looperSlippageSchema}
+                    options={LOOPER_SLIPPAGE_OPTIONS}
+                    title={t("common:tradeLimit")}
+                    description={t("multiply.open.tradeLimit.description")}
+                    disabled={isPending}
+                  />
+                }
+              />
               <SummaryRow
                 label={t("multiply.open.liquidationPrice")}
                 loading={isLoading}

@@ -23,6 +23,7 @@ import { useLooperRecoveryStore } from "@/modules/strategies/multiply/hooks/useL
 import { getIntentFloors } from "@/modules/strategies/multiply/utils/projection"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useLooperSlippageBps } from "@/states/looperSettings"
 import { useTransactionsStore } from "@/states/transactions"
 
 export type OpenMultiplyPositionInput = {
@@ -48,6 +49,7 @@ export type OpenCallArgs = {
 export const useOpenCalls = (pair: MultiplyPair) => {
   const { evm } = useRpcProvider()
   const { evmAddress } = useVaultEvmCall()
+  const slippageBps = useLooperSlippageBps()
 
   return useCallback(
     async ({
@@ -72,7 +74,7 @@ export const useOpenCalls = (pair: MultiplyPair) => {
         aCollateralAssetId: pair.aCollateralAssetId,
         feeAssetId: Number(pair.feeAssetId),
         eMode: pair.eMode,
-        slippageBps: pair.slippageBps,
+        slippageBps,
         leverage: parseUnits(leverage.toFixed(2), 18),
         minHf: pair.minHf,
         stepHf: pair.stepHf,
@@ -121,7 +123,7 @@ export const useOpenCalls = (pair: MultiplyPair) => {
 
       return calls
     },
-    [pair, evm, evmAddress],
+    [pair, evm, evmAddress, slippageBps],
   )
 }
 

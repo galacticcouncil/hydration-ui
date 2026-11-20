@@ -28,7 +28,6 @@ export type MultiplyPair = {
   // WAD
   minHf: bigint
   stepHf: bigint
-  slippageBps: number
   feeAssetId: string
   feeAsset: Hex
   // fee asset base units
@@ -40,7 +39,6 @@ export type MultiplyPair = {
 const MULTIPLY_DEFAULTS = {
   minHf: parseUnits("1.10", 18),
   stepHf: parseUnits("1.05", 18),
-  slippageBps: 100,
   feeAssetId: HDX_ASSET_ID,
   feeAsset: getAddressFromAssetId(HDX_ASSET_ID) as Hex,
   // ponytail: placeholders until the lark3 measurement ticket (#101) sizes the per-callback fee
