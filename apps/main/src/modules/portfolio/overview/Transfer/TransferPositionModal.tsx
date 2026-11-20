@@ -1,5 +1,3 @@
-import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   Alert,
   Box,
@@ -35,6 +33,8 @@ import { useTranslation } from "react-i18next"
 import { healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
+import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import {
   TransferPositionFormValues,
   useTransferPosition,
@@ -161,7 +161,12 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             <Summary separator={<ModalContentDivider />} withLeadingSeparator>
               <SummaryRow
                 label={t("common:healthFactor")}
-                content={<HealthFactorChange {...healthFactor} />}
+                content={
+                  <HealthFactorChange
+                    current={healthFactor.current}
+                    projected={healthFactor.future}
+                  />
+                }
               />
             </Summary>
           )}

@@ -1,20 +1,27 @@
+import { useClaimableRewards } from "@galacticcouncil/money-market/react"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 
-import { useBorrowClaimableRewards } from "@/api/borrow"
+import { useRewardsDistributorClaim } from "@/api/rewardsDistributor"
 import { useReferralRewards } from "@/hooks/data/useReferralRewards"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
-import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/DashboardHeader"
 import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
+import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/money-market/constants"
+import { useUserAddress } from "@/modules/money-market/hooks"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const useWalletRewardsSectionData = () => {
   const { native } = useAssets()
 
-  const { data: incentives, isLoading: incentivesLoading } =
-    useBorrowClaimableRewards()
+  const user = useUserAddress()
+  const { data: incentives, isPending } = useClaimableRewards(user)
+  const incentivesLoading = !!user && isPending
 
-  const claimableRewardsUsd = incentives?.claimableRewardsUsd || 0
+  const claimableRewardsUsd = (incentives ?? [])
+    .reduce((sum, reward) => sum.plus(reward.amountUsd), Big(0))
+    .toNumber()
+
+  const distributorClaim = useRewardsDistributorClaim()
 
   const {
     claimableValues: { totalUSD: liquidityUSD, isLoading: liquidityLoading },
@@ -23,7 +30,9 @@ export const useWalletRewardsSectionData = () => {
   const { data: staking, isLoading: stakingLoading } = useStakingRewards()
   const { data: referral, isLoading: referralLoading } = useReferralRewards()
 
-  const incentivesEmpty = claimableRewardsUsd < MIN_CLAIMABLE_INCENTIVES_USDT
+  const controllerEmpty = claimableRewardsUsd < MIN_CLAIMABLE_INCENTIVES_USDT
+  const distributorEmpty = distributorClaim.status !== "claimable"
+  const incentivesEmpty = controllerEmpty && distributorEmpty
   const farmingEmpty = Big(liquidityUSD).lte(0)
   const stakingEmpty = Big(staking?.maxRewards || "0").lte(0)
   const referralsEmpty = Big(referral?.totalRewards || "0").lte(0)
@@ -39,10 +48,14 @@ export const useWalletRewardsSectionData = () => {
 
   return {
     incentives: {
-      value: claimableRewardsUsd,
+      value: Big(claimableRewardsUsd)
+        .plus(distributorEmpty ? 0 : distributorClaim.owedUsd)
+        .toNumber(),
       assetId: USDT_ASSET_ID,
       loading: incentivesLoading,
       isEmpty: incentivesEmpty,
+      // the money market's own controller, without the rewards distributor
+      isControllerEmpty: controllerEmpty,
     },
     farming: {
       value: liquidityUSD,

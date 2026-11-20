@@ -1,7 +1,7 @@
-import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { Alert, Flex } from "@galacticcouncil/ui/components"
 import { useFormContext } from "react-hook-form"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TradeWarnings } from "@/modules/trade/swap/sections/XcSwap/components/TradeWarnings"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
 import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"

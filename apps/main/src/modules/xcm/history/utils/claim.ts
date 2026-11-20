@@ -1,4 +1,3 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import {
   EvmAddr,
   getVaaHeader,
@@ -13,6 +12,7 @@ import {
   safeParse,
   SolanaAddr,
 } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import {
   assetsMap,
   chainsMap,
