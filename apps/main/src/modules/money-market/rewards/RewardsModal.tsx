@@ -3,7 +3,6 @@ import {
   useMoneyMarket,
 } from "@galacticcouncil/money-market/react"
 import {
-  Box,
   Flex,
   LoadingButton,
   Modal,
@@ -13,6 +12,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -79,6 +79,14 @@ export const RewardsModal: FC<RewardsModalProps> = ({
       <ModalBody scrollable={false}>
         {/* a flat list: the window is the only box */}
         <Stack separated separator={<ModalContentDivider />} gap="l">
+          <Flex justify="space-between" gap="m">
+            <Text fs="p6" fw={500} color={getToken("text.low")}>
+              {t("asset")}
+            </Text>
+            <Text fs="p6" fw={500} color={getToken("text.low")}>
+              {t("balance")}
+            </Text>
+          </Flex>
           {rewards.map(
             ({ rewardTokenAddress, rewardTokenSymbol, amount, amountUsd }) => (
               <RewardsModalRow
@@ -95,7 +103,7 @@ export const RewardsModal: FC<RewardsModalProps> = ({
             <DistributorRewards claim={claim} accrued={accrued} />
           )}
           <Flex justify="space-between" align="center" gap="m">
-            <Text fs="p3" fw={600}>
+            <Text fs="p3" color={getToken("text.medium")}>
               {t("borrow:summary.totalWorth")}
             </Text>
             <Text fs="p3" fw={600}>
@@ -105,8 +113,6 @@ export const RewardsModal: FC<RewardsModalProps> = ({
               })}
             </Text>
           </Flex>
-        </Stack>
-        <Box mt="var(--modal-content-padding)">
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
               width="100%"
@@ -122,7 +128,7 @@ export const RewardsModal: FC<RewardsModalProps> = ({
               {t("borrow:claim")}
             </LoadingButton>
           </AuthorizedAction>
-        </Box>
+        </Stack>
       </ModalBody>
     </Modal>
   )

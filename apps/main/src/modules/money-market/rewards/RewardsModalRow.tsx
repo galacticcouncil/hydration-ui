@@ -33,12 +33,12 @@ export const RewardsModalRow: FC<RewardsModalRowProps> = ({
         </Text>
       </Flex>
       <Flex direction="column" align="flex-end" sx={{ flexShrink: 0 }}>
-        <Text fs="p4" fw={500}>
+        <Text fs="p4" fw={600}>
           {t("currency", { value: amount, symbol })}
         </Text>
         {/* no price: the amount alone, not a value of zero */}
         {Big(amountUsd).gt(0) && (
-          <Text fs="p5" lh={1} color={getToken("text.medium")}>
+          <Text fs="p5" lh={1} color={getToken("text.low")}>
             {t("currency", { value: amountUsd, maximumFractionDigits: 2 })}
           </Text>
         )}

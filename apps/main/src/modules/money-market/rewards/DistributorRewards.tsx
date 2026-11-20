@@ -7,11 +7,11 @@ import {
   type RewardsDistributorAccrued,
   type RewardsDistributorClaim,
 } from "@/api/rewardsDistributor"
-import { DistributorAccruedRewards } from "@/components/DistributorAccruedRewards/DistributorAccruedRewards"
 import {
   getDistributorRewardsAssetId,
   getDistributorRewardsSymbol,
 } from "@/modules/money-market/rewards/DistributorRewards.utils"
+import { RewardsModalAccrued } from "@/modules/money-market/rewards/RewardsModalAccrued"
 import { RewardsModalRow } from "@/modules/money-market/rewards/RewardsModalRow"
 
 type DistributorRewardsProps = {
@@ -44,7 +44,7 @@ export const DistributorRewards: FC<DistributorRewardsProps> = ({
         amount={owed}
         amountUsd={owedUsd}
       />
-      <DistributorAccruedRewards stages={accrued.stages} symbol={symbol} />
+      <RewardsModalAccrued stages={accrued.stages} symbol={symbol} />
       {blockedReason && (
         <Text fs="p6" lh={1.2} color={getToken("accents.alert.primary")}>
           {blockedReason}

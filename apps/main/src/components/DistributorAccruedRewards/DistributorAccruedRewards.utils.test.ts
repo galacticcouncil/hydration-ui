@@ -2,7 +2,10 @@ import { interpolationFormat } from "@galacticcouncil/utils/src/helpers/interpol
 import i18next, { type TFunction } from "i18next"
 import { describe, expect, it } from "vitest"
 
-import { getAccruedStageText } from "@/components/DistributorAccruedRewards/DistributorAccruedRewards.utils"
+import {
+  getAccruedStageParts,
+  getAccruedStageText,
+} from "@/components/DistributorAccruedRewards/DistributorAccruedRewards.utils"
 import common from "@/i18n/locales/en/common.json"
 
 // Only the shared namespace is loaded: the borrow dashboard and the portfolio
@@ -78,5 +81,63 @@ describe("getAccruedStageText", () => {
         "PRIME",
       ),
     ).toBe("≈ 0.000007 PRIME accruing")
+  })
+})
+
+const parts = (...args: Parameters<typeof getAccruedStageParts>) => {
+  const { amount, when } = getAccruedStageParts(...args)
+  return {
+    amount: amount.replaceAll("\u00a0", " "),
+    when: when?.replaceAll("\u00a0", " "),
+  }
+}
+
+describe("getAccruedStageParts", () => {
+  it("puts a pending root's amount apart from the time it can be claimed from", () => {
+    expect(
+      parts(t, { stage: "pending", amount: "12.5", claimableAt: AT }, "PRIME"),
+    ).toEqual({
+      amount: "12.5 PRIME pending",
+      when: "claimable from about Nov 17, 14:05",
+    })
+  })
+
+  it("says a pending root that only needs accepting is claimable shortly", () => {
+    expect(
+      parts(
+        t,
+        { stage: "pending", amount: "12.5", claimableAt: undefined },
+        "PRIME",
+      ),
+    ).toEqual({ amount: "12.5 PRIME pending", when: "claimable shortly" })
+  })
+
+  it("says a closed epoch whose root is not posted is not claimable yet", () => {
+    expect(
+      parts(
+        t,
+        { stage: "closed", amount: "0.4", claimableAt: undefined },
+        "PRIME",
+      ),
+    ).toEqual({ amount: "0.4 PRIME earned", when: "not claimable yet" })
+  })
+
+  it("marks the open epoch's amount as an estimate, with its time", () => {
+    expect(
+      parts(t, { stage: "accruing", amount: "3.2", claimableAt: AT }, "PRIME"),
+    ).toEqual({
+      amount: "≈ 3.2 PRIME accruing",
+      when: "claimable from about Nov 17, 14:05",
+    })
+  })
+
+  it("gives no time for the open epoch when none is known", () => {
+    expect(
+      parts(
+        t,
+        { stage: "accruing", amount: "3.2", claimableAt: undefined },
+        "PRIME",
+      ),
+    ).toEqual({ amount: "≈ 3.2 PRIME accruing", when: undefined })
   })
 })
