@@ -26,6 +26,8 @@ type ActionPlanVariables = {
   plan: ActionPlan
   toasts: TransactionToasts
   activity?: ActivityType
+  /** Reads outside the market that the plan changes, such as another contract's. */
+  invalidateQueries?: string[][]
 }
 
 /**
@@ -43,7 +45,12 @@ export const useActionPlanMutation = () => {
   const marketKey = [...moneyMarketKeys.market(market.market)]
 
   const mutation = useMutation({
-    mutationFn: async ({ plan, toasts, activity }: ActionPlanVariables) => {
+    mutationFn: async ({
+      plan,
+      toasts,
+      activity,
+      invalidateQueries = [],
+    }: ActionPlanVariables) => {
       const feePerGas = await fetchFeePerGas(evm)
       const tx = planToTransaction(plan, {
         papi,
@@ -56,7 +63,7 @@ export const useActionPlanMutation = () => {
           tx,
           toasts,
           activity,
-          invalidateQueries: [marketKey],
+          invalidateQueries: [marketKey, ...invalidateQueries],
           withExtraGas: plan.length > 1 && isEvmAccount(address),
         },
         {

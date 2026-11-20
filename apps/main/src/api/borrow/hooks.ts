@@ -8,6 +8,7 @@ import { useMemo } from "react"
 import { toBorrowAssetApyData } from "@/api/borrow/borrowAssetApy"
 import { ExternalApyType, useExternalApys } from "@/api/borrow/externalApys"
 import { neckworkClient } from "@/api/neckwork"
+import { useRewardsProgramIncentives } from "@/api/rewardsDistributor"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import { isStableSwap, useAssets } from "@/providers/assetsProvider"
@@ -83,6 +84,8 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     [marketReserves],
   )
 
+  const programIncentives = useRewardsProgramIncentives()
+
   const allAssetIds = useMemo(() => {
     const ids = assetIdsMemo.flatMap((assetId) => {
       const asset = getAsset(assetId)
@@ -117,6 +120,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
             ? asset.underlyingAssetId
             : undefined,
         reserves,
+        programIncentives,
         externalApys: externalApysMap,
         stablepoolData: stablepoolsMap.get(assetId),
         lpAPY: yieldsMap.get(assetId),
@@ -132,6 +136,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     getAsset,
     getErc20AToken,
     isLoading,
+    programIncentives,
     reserves,
     yieldsMap,
   ])

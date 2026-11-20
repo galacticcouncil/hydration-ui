@@ -36,6 +36,15 @@
   "claim.toast.submitted": "Claiming rewards worth {{ value, currency }}...",
   "claim.toast.success": "Claimed rewards worth {{ value, currency }}",
 
+  "distributorRewards.belowDeposit": "This amount is below the smallest {{ symbol }} balance an account can hold. It can be claimed once more has been earned.",
+  "distributorRewards.label": "{{ symbol }} supply rewards",
+  "distributorRewards.notEarning.excluded": "This account is excluded from {{ reward }} rewards on {{ assets }}.",
+  "distributorRewards.notEarning.hollarDebt": "This account is not earning {{ reward }} rewards on {{ assets }}. An account with more than {{ value, currency }} of HOLLAR debt earns nothing while it has that debt.",
+  "distributorRewards.underfunded": "These rewards are not funded yet. Try again later.",
+  "rewards.title": "Claim rewards",
+  "rewards.toasts.submitted": "Claiming rewards...",
+  "rewards.toasts.success": "Rewards have been claimed.",
+
   "healthFactor": "Health factor",
   "healthFactor.liquidationAt": "Liquidation at <1.0",
 

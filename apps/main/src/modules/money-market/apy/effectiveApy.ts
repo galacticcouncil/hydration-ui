@@ -197,6 +197,50 @@ export const reserveApy = (
   }
 }
 
+/**
+ * Adds an incentive the reserve's summary does not carry, such as the reward
+ * program's rate, to a known supply rate: into the part of the same reward
+ * token if there is one, as the breakdown shows one row per token. A supply
+ * rate that is loading or unavailable stays as it is, and so does the borrow
+ * side.
+ */
+export const withSupplyIncentive = (
+  apy: ReserveApy,
+  incentive: { rewardTokenAddress: string; incentiveAPR: string } | undefined,
+): ReserveApy => {
+  if (!incentive || apy.supply.status !== "known") return apy
+
+  const assetId = getAssetIdFromAddress(incentive.rewardTokenAddress)
+  const { parts } = apy.supply
+  // the first only: a reserve can stream one token as several incentives
+  const sameToken = parts.findIndex(
+    (part) => part.kind === "incentive" && part.assetId === assetId,
+  )
+
+  return {
+    ...apy,
+    supply: known(
+      sameToken === -1
+        ? [
+            ...parts,
+            {
+              kind: "incentive",
+              assetId,
+              rate: Big(incentive.incentiveAPR).toFixed(),
+            },
+          ]
+        : parts.map((part, index) =>
+            index === sameToken
+              ? {
+                  ...part,
+                  rate: Big(part.rate).plus(incentive.incentiveAPR).toFixed(),
+                }
+              : part,
+          ),
+    ),
+  }
+}
+
 /** A held position with its reserve and that reserve's effective APY. */
 export type NetApyRow = {
   position: Pick<PositionSummary, "underlyingBalanceUsd" | "variableBorrowsUsd">

@@ -1,5 +1,6 @@
 import { buildClaimAllRewards } from "@galacticcouncil/money-market/core"
 import { useUserIncentives } from "@galacticcouncil/money-market/react"
+import { type ActionPlan } from "@galacticcouncil/money-market/types"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useCallback } from "react"
@@ -7,6 +8,10 @@ import { useTranslation } from "react-i18next"
 
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { useXykPools } from "@/api/pools"
+import {
+  rewardsDistributorAccountKey,
+  useGetRewardsDistributorClaimCall,
+} from "@/api/rewardsDistributor"
 import { stakingPositionsQuery, useInvalidateStakeData } from "@/api/staking"
 import {
   getClaimFarmRewardsTx,
@@ -26,27 +31,52 @@ import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-const useGetClaimBorrowTx = () => {
+/** Turns a plan into an extrinsic that can be batched with the other claims. */
+const useGetPlanTx = () => {
   const { papi, evm } = useRpcProvider()
+
+  return useCallback(
+    async (plan: ActionPlan, from: string) => {
+      const feePerGas = await fetchFeePerGas(evm)
+      const tx = planToTransaction(plan, { papi, from, feePerGas })
+
+      if (isEvmCall(tx)) {
+        return papi.tx.Dispatcher.dispatch_evm_call({
+          call: transformEvmCallToPapiTx(papi, tx).decodedCall,
+        })
+      }
+      if (isPapiTransaction(tx)) return tx
+
+      throw new Error("Invalid claim transaction")
+    },
+    [papi, evm],
+  )
+}
+
+const useGetClaimBorrowTx = () => {
   const user = useUserAddress()
   const { data: userIncentives } = useUserIncentives(user)
+  const getPlanTx = useGetPlanTx()
 
   return useCallback(async () => {
     if (!user || !userIncentives) throw new Error("User incentives not found")
 
-    const plan = buildClaimAllRewards({ userIncentives, to: user })
-    const feePerGas = await fetchFeePerGas(evm)
-    const tx = planToTransaction(plan, { papi, from: user, feePerGas })
+    return getPlanTx(buildClaimAllRewards({ userIncentives, to: user }), user)
+  }, [getPlanTx, user, userIncentives])
+}
 
-    if (isEvmCall(tx)) {
-      return papi.tx.Dispatcher.dispatch_evm_call({
-        call: transformEvmCallToPapiTx(papi, tx).decodedCall,
-      })
-    }
-    if (isPapiTransaction(tx)) return tx
+/** The rewards distributor's claim, or nothing when it has none to make. */
+const useGetClaimDistributorTx = () => {
+  const user = useUserAddress()
+  const getClaimCall = useGetRewardsDistributorClaimCall()
+  const getPlanTx = useGetPlanTx()
 
-    throw new Error("Invalid claim transaction")
-  }, [papi, evm, user, userIncentives])
+  return useCallback(async () => {
+    const call = await getClaimCall()
+    if (!user || !call) return undefined
+
+    return getPlanTx([call], user)
+  }, [getClaimCall, getPlanTx, user])
 }
 
 // @ts-expect-error Temporarily unused
@@ -87,7 +117,8 @@ const useGetClaimStakingTx = () => {
 
 export const useClaimAllWalletRewards = () => {
   const { t } = useTranslation("wallet")
-  const { papi } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { papi } = rpc
 
   const { data: pools = [] } = useXykPools()
 
@@ -97,6 +128,7 @@ export const useClaimAllWalletRewards = () => {
   const createBatch = useCreateBatchTx()
 
   const getClaimBorrowTx = useGetClaimBorrowTx()
+  const getClaimDistributorTx = useGetClaimDistributorTx()
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
 
@@ -104,11 +136,14 @@ export const useClaimAllWalletRewards = () => {
     mutationFn: async () => {
       const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
       const claimReferral = papi.tx.Referrals.claim_rewards()
+      const claimDistributor = await getClaimDistributorTx()
 
       const txs = [
-        ...(!walletRewards.incentives.isEmpty
+        // `isEmpty` covers the distributor too; the controller has its own
+        ...(!walletRewards.incentives.isControllerEmpty
           ? [await getClaimBorrowTx()]
           : []),
+        ...(claimDistributor ? [claimDistributor] : []),
         ...(!walletRewards.farming.isEmpty ? farmRewardsTx : []),
         ...(!walletRewards.referral.isEmpty ? [claimReferral] : []),
       ]
@@ -122,6 +157,9 @@ export const useClaimAllWalletRewards = () => {
         txs,
         transaction: {
           toasts,
+          invalidateQueries: claimDistributor
+            ? [rewardsDistributorAccountKey(rpc)]
+            : undefined,
         },
       })
 
