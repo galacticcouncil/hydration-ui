@@ -26,10 +26,10 @@ export const AssetLabel = ({
 }: AssetLabelProps) => {
   if (loading) {
     return (
-      <div>
-        <Skeleton width={32} height={12} />
-        <Skeleton width={56} height={12} />
-      </div>
+      <Flex direction="column" gap="xs" justify="center">
+        <Skeleton sx={{ width: "3xl", height: "xs", display: "block" }} />
+        <Skeleton sx={{ width: "2xl", height: "xs", display: "block" }} />
+      </Flex>
     )
   }
 

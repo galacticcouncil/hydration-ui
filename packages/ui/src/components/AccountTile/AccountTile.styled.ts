@@ -7,6 +7,7 @@ export const SAccountTileContainer = styled.div<{
     display: grid;
     grid-template-columns: auto 1fr auto;
     column-gap: 8px;
+    align-items: center;
 
     background: ${active ? theme.controls.dim.active : theme.controls.dim.base};
     border: 1px solid ${active ? theme.controls.dim.active : "transparent"};

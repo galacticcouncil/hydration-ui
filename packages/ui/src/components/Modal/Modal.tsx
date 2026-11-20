@@ -337,12 +337,20 @@ const Modal = ({
 const ModalContainer = ({
   children,
   className,
+  contentWidth,
   ...props
 }: React.ComponentProps<typeof ModalRoot> & {
   className?: string
+  contentWidth?: string
 }) => (
   <ModalRoot {...props} modal={false}>
-    <SModalContent sx={{ position: "unset" }} className={className}>
+    {/* Inline has no open animation, so the width transition may run at once. */}
+    <SModalContent
+      data-settled=""
+      sx={{ position: "unset" }}
+      className={className}
+      contentWidth={contentWidth}
+    >
       <Paper>{children}</Paper>
     </SModalContent>
   </ModalRoot>

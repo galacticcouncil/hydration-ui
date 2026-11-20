@@ -53,6 +53,12 @@ const Web3ConnectSession = lazy(async () => ({
   ),
 }))
 
+const OnrampModal = lazy(async () => ({
+  default: await import("@/modules/onramp/OnrampModal").then(
+    (m) => m.OnrampModal,
+  ),
+}))
+
 const Devtools = import.meta.env.DEV
   ? lazy(async () => ({
       default: await import("@/components/Devtools").then((m) => m.Devtools),
@@ -154,6 +160,7 @@ function Services() {
         <TransactionManager />
         <Web3ConnectSession />
         <Web3ConnectModal neckwork={neckworkClient} papi={papi} />
+        <OnrampModal />
       </Suspense>
       {isReady && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}

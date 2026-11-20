@@ -9,6 +9,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Trans, useTranslation } from "react-i18next"
 
+import { OnrampModalClose } from "@/modules/onramp/components/OnrampModalClose"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -26,6 +27,7 @@ export const WithdrawSuccess: React.FC<WithdrawSuccessProps> = ({
 
   return (
     <ModalBody>
+      <OnrampModalClose />
       <Stack gap="s">
         <Icon
           size="2xl"

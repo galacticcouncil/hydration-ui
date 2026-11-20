@@ -4,6 +4,7 @@ import { useMount } from "react-use"
 
 import { CexAssetSelect } from "@/modules/onramp/components/CexAssetSelect/CexAssetSelect"
 import { getCexConfigById } from "@/modules/onramp/config/cex"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { useOnrampStore } from "@/modules/onramp/store/useOnrampStore"
 import { AssetConfig } from "@/modules/onramp/types"
 
@@ -17,6 +18,7 @@ export const DepositCexSelect: React.FC<DepositCexSelectProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const closable = useOnrampClosable()
   const { setCexId, cexId, setCurrentDeposit } = useOnrampStore()
 
   useMount(() => setCurrentDeposit(null))
@@ -31,7 +33,7 @@ export const DepositCexSelect: React.FC<DepositCexSelectProps> = ({
         title={t("deposit.cex.select.title")}
         align="center"
         onBack={onBack}
-        closable={false}
+        closable={closable}
       />
       <ModalBody noPadding>
         <CexAssetSelect

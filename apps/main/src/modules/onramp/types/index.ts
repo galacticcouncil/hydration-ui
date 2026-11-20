@@ -33,6 +33,9 @@ export enum OnrampScreen {
   DepositTransfer = "DepositTransfer",
   DepositBank = "DepositBank",
   DepositSuccess = "DepositSuccess",
+  DepositOnchainHoldings = "DepositOnchainHoldings",
+  DepositOnchainForm = "DepositOnchainForm",
+  DepositOnchainSubmitted = "DepositOnchainSubmitted",
 
   WithdrawAssetSelect = "WithdrawAssetSelect",
   WithdrawAsset = "WithdrawAsset",

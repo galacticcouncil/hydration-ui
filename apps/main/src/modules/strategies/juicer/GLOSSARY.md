@@ -35,3 +35,22 @@ _Avoid_: Claimable earnings
 **Withdrawal**:
 A redemption request in one Vault's queue; pays out that Vault's collateral asset, possibly in several settlements.
 _Avoid_: Redemption (in UI copy)
+
+## Onramp
+
+**Onchain deposit**:
+Moving funds the user already holds on another chain into their Hydration account, signed by a wallet they connect for the purpose.
+_Avoid_: Bridge (in UI copy)
+
+**Source wallet**:
+The connected wallet account that signs an Onchain deposit. Distinct from the active Hydration account, which receives it.
+
+**Deposit source**:
+One address on one chain that may hold funds to bring to Hydration. Several wallets exposing the same address share one Deposit source.
+_Avoid_: Wallet (one wallet yields many Deposit sources)
+
+**Holding**:
+A balance of one asset at one Deposit source. Picking a Holding starts an Onchain deposit.
+
+**Discovery**:
+Scanning every Deposit source for Holdings. Settled once every wallet connection and every balance fetch has either succeeded or failed.

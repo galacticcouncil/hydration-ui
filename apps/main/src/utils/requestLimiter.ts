@@ -1,0 +1,23 @@
+/** Runs at most `concurrency` tasks at once; the rest queue in call order. */
+export const createRequestLimiter = (concurrency: number) => {
+  if (!Number.isInteger(concurrency) || concurrency < 1)
+    throw new Error("Invalid concurrency")
+  let active = 0
+  const queue: (() => void)[] = []
+  return async <T>(task: () => Promise<T>): Promise<T> => {
+    await new Promise<void>((resolve) => {
+      const start = () => {
+        active++
+        resolve()
+      }
+      if (active < concurrency) start()
+      else queue.push(start)
+    })
+    try {
+      return await task()
+    } finally {
+      active--
+      queue.shift()?.()
+    }
+  }
+}

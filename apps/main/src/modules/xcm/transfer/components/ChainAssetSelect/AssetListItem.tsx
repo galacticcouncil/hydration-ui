@@ -34,6 +34,11 @@ export type AssetListItemProps = {
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
+  /** Replaces the chain-badged asset logo. */
+  logo?: React.ReactNode
+  /** Rendered after the balance, e.g. an expand chevron. */
+  trailing?: React.ReactNode
+  "aria-expanded"?: boolean
   onClick: () => void
 }
 
@@ -45,6 +50,9 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   balance,
   balanceDisplay,
   chain,
+  logo,
+  trailing,
+  "aria-expanded": ariaExpanded,
   isLoading,
   isSelected,
   onClick,
@@ -52,9 +60,15 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   const { t } = useTranslation(["common"])
 
   return (
-    <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
-      <Flex align="start" gap="base">
-        {chain && <XAssetLogo asset={asset} chain={chain} />}
+    <SAssetListItem
+      isSelected={isSelected}
+      data-selected={isSelected || undefined}
+      onClick={onClick}
+      aria-expanded={ariaExpanded}
+      as="button"
+    >
+      <Flex align="start" gap="base" minWidth={0}>
+        {logo ?? (chain && <XAssetLogo asset={asset} chain={chain} />)}
 
         <Text truncate as="div">
           <AssetLabel symbol={symbol} name={name} />
@@ -67,6 +81,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         fs="p4"
         fw={500}
         as="div"
+        sx={{ flexShrink: 0, marginInlineStart: "auto" }}
         color={
           isBigInt(balance?.amount) && balance.amount > 0n
             ? getToken("text.high")
@@ -101,6 +116,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
           />
         )}
       </Text>
+      {trailing}
     </SAssetListItem>
   )
 }
