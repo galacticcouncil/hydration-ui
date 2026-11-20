@@ -69,13 +69,16 @@ export const useCrossChainConfig = () => {
       // wormhole stack — but basejump can also be pulled on its own.
       // Snowbridge V1 routes carry the Snowbridge tag too, so one tag pulls
       // both versions. The inbound switch pulls only Snowbridge routes into
-      // Hydration, so Hydration → Ethereum keeps working.
+      // Hydration, so Hydration → Ethereum keeps working. PSM messages ride
+      // wormhole too, but the corridor opens on its own schedule, hence its
+      // own switch.
       const disabledBridgeTags = [
         ...(ENV.VITE_WORMHOLE_DISABLED
           ? [XcmTag.Wormhole, XcmTag.Basejump]
           : []),
         ...(ENV.VITE_BASEJUMP_DISABLED ? [XcmTag.Basejump] : []),
         ...(ENV.VITE_SNOWBRIDGE_DISABLED ? [XcmTag.Snowbridge] : []),
+        ...(ENV.VITE_PSM_DISABLED ? [XcmTag.Psm] : []),
       ]
 
       if (disabledBridgeTags.length || ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED) {

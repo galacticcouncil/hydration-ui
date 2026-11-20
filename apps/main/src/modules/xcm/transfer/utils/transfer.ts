@@ -85,6 +85,9 @@ export const getTransferStatus = (
  * unless the route prepays it on source on top of the amount (ntt executor
  * routes), in which case the whole amount is delivered.
  *
+ * Neither end moves more decimals than its asset has: the sdk floors the
+ * amount to the source's, and a PSM redeem burns HOLLAR floored to usdc's.
+ *
  * `amountDestFee` replaces the build-time fee where it's rated on the amount.
  */
 export const calculateTransferDestAmount = (
@@ -96,13 +99,20 @@ export const calculateTransferDestAmount = (
 ): string => {
   const destinationFee = amountDestFee ?? transfer.source.destinationFee
   if (!isValidBigSource(amount)) return ""
+  const sent = Big(amount).round(
+    Math.min(
+      transfer.source.balance.decimals,
+      transfer.destination.balance.decimals,
+    ),
+    Big.roundDown,
+  )
   if (asset.isEqual(destinationFee) && !isDestFeePrepaid) {
     const destFee = toDecimal(destinationFee.amount, destinationFee.decimals)
-    const amountMinusFee = Big(amount || "0").minus(destFee)
-    return amountMinusFee.gt(0) ? amountMinusFee.toString() : ""
+    const amountMinusFee = sent.minus(destFee)
+    return amountMinusFee.gt(0) ? amountMinusFee.toFixed() : ""
   }
 
-  return amount
+  return sent.gt(0) ? sent.toFixed() : ""
 }
 
 export type XcmDestination = {
