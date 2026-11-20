@@ -1,6 +1,7 @@
 import {
   ArrowRightLeftIcon,
   BanknoteIcon,
+  Blend,
   BlocksIcon,
   ChartPieIcon,
   CoinsIcon,
@@ -72,6 +73,7 @@ export const LINKS = {
   strategiesBil: "/strategies/bil-vault",
   strategiesJuicer: "/strategies/juicer",
   strategiesHollarBonds: "/strategies/hollar-bonds",
+  strategiesMultiply: "/strategies/looper",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -170,6 +172,11 @@ export const NAVIGATION: NavigationItem[] = [
         key: "strategiesHollarBonds",
         to: LINKS.strategiesHollarBonds,
         icon: GoalIcon,
+      },
+      {
+        key: "strategiesMultiply",
+        to: LINKS.strategiesMultiply,
+        icon: Blend,
       },
     ],
   },
@@ -397,6 +404,10 @@ export const getMenuTranslations = (t: TFunction) =>
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),
       description: t("navigation.strategiesHollarBonds.description"),
+    },
+    strategiesMultiply: {
+      title: t("navigation.strategiesMultiply.title"),
+      description: t("navigation.strategiesMultiply.description"),
     },
     deposit: {
       title: t("navigation.deposit.title"),

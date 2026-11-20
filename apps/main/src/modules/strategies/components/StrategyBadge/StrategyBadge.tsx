@@ -7,6 +7,8 @@ export enum StrategyBadgeType {
   RWA = "rwa",
   AutoCompound = "autoCompound",
   LowRisk = "lowRisk",
+  Leverage = "leverage",
+  Unavailable = "unavailable",
 }
 
 const variantConfig: Record<StrategyBadgeType, ChipProps["variant"]> = {
@@ -15,6 +17,8 @@ const variantConfig: Record<StrategyBadgeType, ChipProps["variant"]> = {
   [StrategyBadgeType.RWA]: "purple",
   [StrategyBadgeType.AutoCompound]: "cyan",
   [StrategyBadgeType.LowRisk]: "lime",
+  [StrategyBadgeType.Leverage]: "violet",
+  [StrategyBadgeType.Unavailable]: "tertiary",
 }
 
 type StrategyBadgeProps = Omit<ChipProps, "variant" | "children"> & {

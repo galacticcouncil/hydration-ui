@@ -6,6 +6,7 @@ import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { describe, expect, it } from "vitest"
 
 import {
+  assetDisplay,
   reserveDisplay,
   ReserveDisplayRegistry,
 } from "@/modules/money-market/reserves/reserveDisplay"
@@ -114,5 +115,19 @@ describe("reserveDisplay", () => {
       symbol: "HOLLAR",
       logoId: "222",
     })
+  })
+})
+
+describe("assetDisplay", () => {
+  it("shows a pool-share asset id as its aToken", () => {
+    expect(assetDisplay("690", MAIN, registry())).toEqual({
+      name: "Giga DOT",
+      symbol: "GDOT",
+      logoId: "69",
+    })
+  })
+
+  it("is undefined when the registry has no asset", () => {
+    expect(assetDisplay("1234", MAIN, registry())).toBeUndefined()
   })
 })

@@ -9,6 +9,7 @@ import { useBilStrategyMetrics } from "@/modules/strategies/bil/hooks/useBilStra
 import { StrategyBadgeType } from "@/modules/strategies/components/StrategyBadge/StrategyBadge"
 import { StrategyCard } from "@/modules/strategies/components/StrategyCard/StrategyCard"
 import { JuicerStrategyCard } from "@/modules/strategies/juicer/components/JuicerStrategyCard"
+import { MultiplyStrategyCard } from "@/modules/strategies/multiply/components/MultiplyStrategyCard"
 import { STABLE_BONDS } from "@/modules/strategies/stable-bonds/config/bonds"
 import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
 import {
@@ -30,6 +31,7 @@ export const StrategiesPage = () => {
       featureFlags.juicerEnabled,
       featureFlags.bilEnabled,
       featureFlags.hollarBondsEnabled,
+      featureFlags.looperEnabled,
     ].filter(Boolean).length,
   )
   const { active } = useStableBonds()
@@ -119,6 +121,7 @@ export const StrategiesPage = () => {
             link={LINKS.strategiesHollarBonds}
           />
         )}
+        {featureFlags.looperEnabled && <MultiplyStrategyCard />}
       </Grid>
     </>
   )
