@@ -1,8 +1,5 @@
-import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { Range } from "@radix-ui/react-slider"
-import { useMemo } from "react"
 import { FC } from "react"
-import { useMeasure } from "react-use"
 
 import { Union } from "@/assets/icons"
 import { getToken } from "@/utils"
@@ -10,7 +7,6 @@ import { getToken } from "@/utils"
 import { Box } from "../Box"
 import { Icon } from "../Icon/Icon"
 import {
-  SDash,
   SMark,
   SMarkLabel,
   SMarks,
@@ -18,6 +14,7 @@ import {
   SRange,
   SRoot,
   SThumb,
+  SThumbHandle,
   STrack,
 } from "./Slider.styled"
 
@@ -33,7 +30,6 @@ export type SliderProps = {
   max: number
   step: number
   disabled?: boolean
-  dashCount?: number
   marks?: SliderMark[]
 }
 
@@ -44,32 +40,8 @@ export const Slider: FC<SliderProps> = ({
   value,
   onChange,
   disabled,
-  dashCount = 20,
   marks,
 }) => {
-  const [ref, { width }] = useMeasure<HTMLSpanElement>()
-
-  const dashes = useMemo(
-    () =>
-      marks
-        ? null
-        : Array.from({ length: dashCount + 1 }).map((_, i) => (
-            <Fragment key={i}>
-              <SDash
-                key={`top-${i}`}
-                offset={i * (width / dashCount)}
-                row="top"
-              />
-              <SDash
-                key={`bottom-${i}`}
-                offset={i * (width / dashCount)}
-                row="bottom"
-              />
-            </Fragment>
-          )),
-    [marks, width, dashCount],
-  )
-
   const slider = (
     <SRoot
       value={[value]}
@@ -78,20 +50,20 @@ export const Slider: FC<SliderProps> = ({
       max={max}
       step={step}
       disabled={disabled}
-      ref={ref}
     >
-      {dashes}
       <STrack>
         <Range asChild>
           <SRange />
         </Range>
       </STrack>
       <SThumb>
-        <Icon
-          size={10}
-          component={Union}
-          color={getToken("controls.solid.onAccent")}
-        />
+        <SThumbHandle>
+          <Icon
+            size={10}
+            component={Union}
+            color={getToken("controls.solid.onAccent")}
+          />
+        </SThumbHandle>
       </SThumb>
     </SRoot>
   )

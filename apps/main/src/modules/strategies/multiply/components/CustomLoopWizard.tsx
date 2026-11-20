@@ -13,16 +13,20 @@ import {
   ScrollArea,
   Separator,
   Stack,
+  Summary,
+  SummaryRowValue,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
   Text,
+  ValueStats,
+  ValueStatsGroup,
   WizardStep,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useState } from "react"
+import { Fragment, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
@@ -30,8 +34,6 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { MultiplyOptionRow } from "@/modules/strategies/multiply/components/MultiplyOptionRow"
 import { SOptionTable } from "@/modules/strategies/multiply/components/MultiplyOptionRow.styled"
-import { MultiplyPairLabel } from "@/modules/strategies/multiply/components/MultiplyPairLabel"
-import { PreviewRow } from "@/modules/strategies/multiply/components/MultiplyPositionPreview"
 import { apyColor } from "@/modules/strategies/multiply/components/MultiplyStat"
 import { PairRiskIndicator } from "@/modules/strategies/multiply/components/PairRiskIndicator"
 import {
@@ -159,6 +161,52 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
       </Text>
     </TableCell>
   )
+
+  // ValueStats has no weight prop; sizes match its "small" value
+  const stat = (
+    label: string,
+    value: string,
+    color = getToken("text.high"),
+  ) => (
+    <ValueStats
+      wrap
+      size="small"
+      label={label}
+      customValue={
+        <Text
+          font="secondary"
+          fs={["base", "h7"]}
+          lh={1}
+          fw={600}
+          color={color}
+        >
+          {value}
+        </Text>
+      }
+    />
+  )
+
+  const stats = pick
+    ? [
+        {
+          label: t("cards.multiply.maxApy"),
+          value: percent(pick.maxNetApy),
+          color: apyColor(pick.maxNetApy),
+        },
+        {
+          label: t("cards.multiply.maxLeverage"),
+          value: leverage(pick.data!.maxLeverage),
+        },
+        {
+          label: t("multiply.details.liquidityAvailable"),
+          value: t("common:currency.compact", {
+            value:
+              Number(pick.data!.availableLiquidity) *
+              Number(pick.debtReserve!.priceInUsd),
+          }),
+        },
+      ]
+    : []
 
   const create = () => {
     if (!pick) return
@@ -354,57 +402,89 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
         >
           {pick && (
             <Stack gap="l" p="var(--modal-content-padding)" pt={0}>
-              <Paper p="m" shadow={false}>
-                <Stack gap="m">
-                  <Flex align="center" justify="space-between">
-                    <MultiplyPairLabel pair={pick.pair} />
-                    {riskBadge(pick)}
-                  </Flex>
-                  <Separator mx="-m" />
-                  <Stack gap="xs">
-                    <PreviewRow
-                      label={t("cards.multiply.maxApy")}
-                      value={
-                        <Text
-                          fs="p5"
-                          fw={600}
-                          lh={1}
-                          color={apyColor(pick.maxNetApy)}
-                        >
-                          {percent(pick.maxNetApy)}
-                        </Text>
-                      }
+              <Paper
+                shadow={false}
+                bg="dim"
+                sx={{ containerType: "inline-size" }}
+              >
+                <Flex align="center" justify="space-between" gap="m" p="xl">
+                  <AssetLabelFullContainer>
+                    <AssetLogo
+                      id={[
+                        display(pick.pair.collateralAssetId).logoId,
+                        display(pick.pair.debtAssetId).logoId,
+                      ]}
+                      collapsed
                     />
-                    <PreviewRow
-                      label={t("cards.multiply.maxLeverage")}
-                      value={leverage(pick.data!.maxLeverage)}
-                    />
-                    {pick.pair.eMode !== 0 && (
-                      <PreviewRow
-                        label={t("multiply.custom.eMode")}
-                        value={pick.collateralReserve!.eModeLabel}
-                      />
-                    )}
-                    <PreviewRow
-                      label={t("multiply.details.liquidityAvailable")}
-                      value={t("common:currency.compact", {
-                        value:
-                          Number(pick.data!.availableLiquidity) *
-                          Number(pick.debtReserve!.priceInUsd),
-                      })}
-                    />
-                    <PreviewRow
-                      label={t("multiply.pairDetails.largestFall")}
-                      tooltip={t("multiply.pairDetails.largestFallTooltip", {
+                    <AssetLabel
+                      symbol={`${symbol(pick.pair.collateralAssetId)} / ${symbol(pick.pair.debtAssetId)}`}
+                      name={t("multiply.custom.pairSubtitle", {
                         collateral: symbol(pick.pair.collateralAssetId),
                         debt: symbol(pick.pair.debtAssetId),
                       })}
-                      value={percent(pick.risk?.largestFall ?? null)}
                     />
-                    <PreviewRow
-                      label={t("multiply.pairDetails.penalty")}
-                      tooltip={t("multiply.pairDetails.penaltyTooltip")}
-                      value={percent(
+                  </AssetLabelFullContainer>
+                  {pick.risk && (
+                    <PairRiskIndicator
+                      withLabel
+                      risk={pick.risk}
+                      collateral={symbol(pick.pair.collateralAssetId)}
+                      debt={symbol(pick.pair.debtAssetId)}
+                      hf={pick.data!.maxLeverageHf}
+                    />
+                  )}
+                </Flex>
+                <Separator />
+                {/* stat tiles when the card is wide, plain rows when narrow */}
+                <Box sx={{ [WIDE]: { display: "none" } }}>
+                  <Summary
+                    px="xl"
+                    withTrailingSeparator
+                    separator={<Separator mx="-xl" />}
+                    rows={stats.map(({ label, value, color }) => ({
+                      label,
+                      content: (
+                        <SummaryRowValue color={color}>{value}</SummaryRowValue>
+                      ),
+                    }))}
+                  />
+                </Box>
+                <Box display="none" sx={{ [WIDE]: { display: "block" } }}>
+                  <Box p="xl">
+                    <ValueStatsGroup>
+                      {stats.map(({ label, value, color }) => (
+                        <Fragment key={label}>
+                          {stat(label, value, color)}
+                        </Fragment>
+                      ))}
+                    </ValueStatsGroup>
+                  </Box>
+                  <Separator />
+                </Box>
+                <Summary
+                  px="xl"
+                  separator={<Separator mx="-xl" />}
+                  rows={[
+                    ...(pick.pair.eMode !== 0
+                      ? [
+                          {
+                            label: t("multiply.custom.eMode"),
+                            content: pick.collateralReserve!.eModeLabel,
+                          },
+                        ]
+                      : []),
+                    {
+                      label: t("multiply.pairDetails.largestFall"),
+                      tooltip: t("multiply.pairDetails.largestFallTooltip", {
+                        collateral: symbol(pick.pair.collateralAssetId),
+                        debt: symbol(pick.pair.debtAssetId),
+                      }),
+                      content: percent(pick.risk?.largestFall ?? null),
+                    },
+                    {
+                      label: t("multiply.pairDetails.penalty"),
+                      tooltip: t("multiply.pairDetails.penaltyTooltip"),
+                      content: percent(
                         Number(
                           pick.pair.eMode !== 0 &&
                             pick.collateralReserve!.eModeCategoryId ===
@@ -412,10 +492,10 @@ export const CustomLoopWizard: React.FC<CustomLoopWizardProps> = ({
                             ? pick.collateralReserve!.eModeLiquidationBonus
                             : pick.collateralReserve!.liquidationBonus,
                         ),
-                      )}
-                    />
-                  </Stack>
-                </Stack>
+                      ),
+                    },
+                  ]}
+                />
               </Paper>
               {pick.reason && (
                 <Alert variant="warning" description={pick.reason} />
@@ -447,3 +527,6 @@ const StepList = ({ children }: { children: React.ReactNode }) => (
 )
 
 const STEPS = ["collateral", "borrow", "review"] as const
+
+// 580px
+const WIDE = "@container (width >= 29rem)"

@@ -433,7 +433,7 @@ export const MultiplyOpenForm: React.FC<MultiplyOpenFormProps> = ({
             />
           </Box>
 
-          <Separator mx="-xl" />
+          <Separator mx="-xl" mb="-base" />
 
           <MultiplyPositionPreview
             amount={collateralAmount}

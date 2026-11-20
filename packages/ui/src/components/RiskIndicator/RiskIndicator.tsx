@@ -5,6 +5,7 @@ import { Text } from "@/components/Text"
 import { getToken, pxToRem } from "@/utils"
 
 import {
+  RISK_COLORS,
   RISK_INDICATOR_SIZES,
   RiskIndicatorSize,
   RiskLevel,
@@ -18,12 +19,6 @@ const LIT_DOTS: Record<RiskLevel, number> = {
   medium: 2,
   high: 3,
 }
-
-const LABEL_COLORS = {
-  low: "tags.soft.green.foreground",
-  medium: "tags.soft.amber.foreground",
-  high: "tags.soft.red.foreground",
-} as const
 
 export type RiskIndicatorProps = Omit<FlexProps, "size"> & {
   readonly level: RiskLevel
@@ -43,7 +38,7 @@ export const RiskIndicator: React.FC<RiskIndicatorProps> = ({
   return (
     <Flex inline align="center" gap="base" {...props}>
       {withLabel && (
-        <Text fs={fs} fw={500} lh={1} color={getToken(LABEL_COLORS[level])}>
+        <Text fs={fs} fw={500} lh={1} color={getToken(RISK_COLORS[level])}>
           {t(`risk.${level}`)}
         </Text>
       )}

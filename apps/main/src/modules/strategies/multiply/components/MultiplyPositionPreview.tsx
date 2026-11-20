@@ -9,7 +9,7 @@ import {
   Tooltip,
   TooltipIcon,
 } from "@galacticcouncil/ui/components"
-import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -186,7 +186,7 @@ export const PreviewRow = ({
   tooltip?: string
 }) => (
   // a p5 line (24px), so a row holding a badge matches the rest
-  <Flex justify="space-between" align="center" sx={{ minHeight: pxToRem(24) }}>
+  <Flex justify="space-between" align="center">
     {tooltip ? (
       <Tooltip text={tooltip} side="left" asChild>
         <Box sx={{ width: "fit-content" }}>

@@ -1,8 +1,11 @@
 import { type ReserveSummary } from "@galacticcouncil/money-market/types"
 import {
   Amount,
+  Box,
+  Chip,
   Flex,
   Grid,
+  Icon,
   Modal,
   ModalBody,
   ModalContentDivider,
@@ -13,14 +16,15 @@ import {
   Summary,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { ChevronRight, Repeat, RotateCw } from "lucide-react"
 import { Fragment } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import { AddressTag } from "@/components/AddressTag/AddressTag"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useAssetColor } from "@/hooks/useAssetColor"
 import { AppSkeleton } from "@/modules/layout/components/LayoutSkeleton"
-import { ApyBreakdown } from "@/modules/money-market/apy/ApyTooltip"
 import { type ApyRate } from "@/modules/money-market/apy/effectiveApy"
 import { useResolveReserveApy } from "@/modules/money-market/apy/ReserveApyProvider"
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
@@ -49,44 +53,10 @@ export const MultiplyPairDetailsModal: React.FC<
   MultiplyPairDetailsModalProps
 > = ({ row, onClose }) => {
   const { t } = useTranslation("strategies")
-  const display = useResolveAssetDisplay()
-
-  const collateral = row ? display(row.pair.collateralAssetId) : null
-  const debt = row ? display(row.pair.debtAssetId) : null
 
   return (
     <Modal variant="popup" open={!!row} onOpenChange={onClose}>
-      <ModalHeader
-        title={
-          collateral && debt
-            ? t("multiply.pairDetails.title", {
-                pair: `${collateral.symbol}/${debt.symbol}`,
-              })
-            : ""
-        }
-        customTitle={
-          collateral &&
-          debt && (
-            <Flex align="center" gap="s">
-              <AssetLogo id={[collateral.logoId, debt.logoId]} collapsed />
-              <Stack gap="xs">
-                <Text
-                  font="primary"
-                  fs="p3"
-                  fw={500}
-                  lh={1}
-                  color={getToken("text.high")}
-                >
-                  {collateral.symbol}/{debt.symbol}
-                </Text>
-                <Text fs="p5" color={getToken("text.medium")} mt="-s">
-                  {t("multiply.pairDetails.subtitle")}
-                </Text>
-              </Stack>
-            </Flex>
-          )
-        }
-      />
+      <ModalHeader title={t("multiply.pairDetails.subtitle")} />
       <ModalBody>
         {row &&
           (row.data && row.collateralReserve && row.debtReserve ? (
@@ -186,12 +156,59 @@ const PairDetails: React.FC<{
   )
 
   return (
-    <Stack gap="m">
+    <Stack gap="xl">
+      <Paper bg="mid" variant="plain" shadow={false}>
+        <Flex align="center" justify="space-between" gap="m" wrap p="l">
+          <Flex align="center" gap="l" wrap>
+            <PairSide
+              assetId={pair.collateralAssetId}
+              label={t("multiply.pairDetails.collateralLabel", {
+                symbol: collateral,
+              })}
+            />
+            <PairSide
+              assetId={pair.debtAssetId}
+              label={t("multiply.pairDetails.debtLabel", { symbol: debt })}
+            />
+          </Flex>
+          <PairRiskIndicator
+            risk={risk ?? null}
+            collateral={collateral}
+            debt={debt}
+            hf={data.maxLeverageHf}
+            withLabel
+          />
+        </Flex>
+        <Separator />
+        <Grid columnTemplate={["1fr", "1fr auto 1fr"]}>
+          <RateCard
+            assetId={pair.collateralAssetId}
+            rate={resolveApy(collateralReserve).supply}
+            side="supply"
+            fallback={supplyApy}
+          />
+          <Separator orientation={["horizontal", "vertical"]} />
+          <RateCard
+            assetId={pair.debtAssetId}
+            rate={resolveApy(debtReserve).borrow}
+            side="borrow"
+            fallback={borrowApy}
+          />
+        </Grid>
+      </Paper>
+      <ModalContentDivider />
       <Section title={t("multiply.pairDetails.howItWorks")}>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {t("multiply.pairDetails.howItWorksText", { collateral, debt })}
-        </Text>
+        <Stack gap="l">
+          <HowItWorks
+            collateralAssetId={pair.collateralAssetId}
+            debtAssetId={pair.debtAssetId}
+          />
+          <Text fs="p5" color={getToken("text.medium")}>
+            {t("multiply.pairDetails.howItWorksText", { collateral, debt })}
+          </Text>
+        </Stack>
       </Section>
+      <ModalContentDivider />
       <Section title={t("multiply.pairDetails.capacity")}>
         <Summary
           mb="-base"
@@ -236,39 +253,24 @@ const PairDetails: React.FC<{
           ]}
         />
       </Section>
-      <Section title={t("multiply.pairDetails.yield")}>
-        <Grid columnTemplate={["1fr", "1fr auto 1fr"]} gap="xl">
-          <RateCard
-            assetId={pair.collateralAssetId}
-            rate={resolveApy(collateralReserve).supply}
-            side="supply"
-            fallback={supplyApy}
-          />
-          <Separator orientation={["horizontal", "vertical"]} />
-          <RateCard
-            assetId={pair.debtAssetId}
-            rate={resolveApy(debtReserve).borrow}
-            side="borrow"
-            fallback={borrowApy}
-          />
-        </Grid>
-      </Section>
-      <Section
-        title={t("multiply.pairDetails.risk")}
-        action={
-          <PairRiskIndicator
-            risk={risk ?? null}
-            collateral={collateral}
-            debt={debt}
-            hf={data.maxLeverageHf}
-            size="large"
-          />
-        }
-      >
+      <ModalContentDivider />
+      <Section title={t("multiply.pairDetails.risk")}>
         <Summary
           mb="-base"
           separator={<ModalContentDivider />}
           rows={[
+            {
+              label: t("multiply.pairDetails.riskLevel"),
+              content: (
+                <PairRiskIndicator
+                  risk={risk ?? null}
+                  collateral={collateral}
+                  debt={debt}
+                  hf={data.maxLeverageHf}
+                  withLabel
+                />
+              ),
+            },
             ...(atMax
               ? [
                   {
@@ -303,56 +305,65 @@ const PairDetails: React.FC<{
       </Section>
 
       {levels.length > 0 && (
-        <Section title={t("multiply.pairDetails.byLeverage")}>
-          <Grid
-            columnTemplate="repeat(4, auto)"
-            columnGap="m"
-            rowGap="s"
-            sx={{ fontVariantNumeric: "tabular-nums" }}
-          >
-            {[
-              t("multiply.open.leverage"),
-              t("multiply.open.netApy"),
-              t("common:healthFactor"),
-              t("multiply.pairDetails.toLiquidation"),
-            ].map((label, i) => (
-              <Text
-                key={label}
-                fs="p6"
-                color={getToken("text.medium")}
-                align={i ? "end" : "start"}
-              >
-                {label}
-              </Text>
-            ))}
-            {levels.map((level) => (
-              <Fragment key={level.leverage}>
-                <Text fs="p5" fw={600}>
-                  {leverageLabel(level.leverage)}
-                </Text>
+        <>
+          <ModalContentDivider />
+          <Section title={t("multiply.pairDetails.byLeverage")}>
+            <Grid
+              columnTemplate="repeat(4, auto)"
+              columnGap="m"
+              rowGap="m"
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {[
+                t("multiply.open.leverage"),
+                t("multiply.open.netApy"),
+                t("common:healthFactor"),
+                t("multiply.pairDetails.toLiquidation"),
+              ].map((label, i) => (
                 <Text
-                  fs="p5"
-                  fw={600}
-                  align="end"
-                  color={apyColor(level.netApy)}
+                  key={label}
+                  fs="p6"
+                  color={getToken("text.medium")}
+                  align={i ? "end" : "start"}
                 >
-                  {level.netApy === null ? "—" : percent(level.netApy)}
+                  {label}
                 </Text>
-                <Text fs="p5" fw={600} align="end">
-                  <HealthFactorNumber value={level.hf.toString()} />
-                </Text>
-                <Text fs="p5" fw={600} align="end">
-                  {t("common:percent", {
-                    prefix: "−",
-                    value: level.buffer * 100,
-                  })}
-                </Text>
-              </Fragment>
-            ))}
-          </Grid>
-        </Section>
+              ))}
+              {levels.map((level) => (
+                <Fragment key={level.leverage}>
+                  <Separator sx={{ gridColumn: "1 / -1" }} />
+                  <Text fs="p5" fw={600}>
+                    {leverageLabel(level.leverage)}
+                  </Text>
+                  <Text
+                    fs="p5"
+                    fw={600}
+                    align="end"
+                    color={apyColor(level.netApy)}
+                  >
+                    {level.netApy === null ? "—" : percent(level.netApy)}
+                  </Text>
+                  <Text fs="p5" fw={600} align="end">
+                    <HealthFactorNumber value={level.hf.toString()} />
+                  </Text>
+                  <Text fs="p5" fw={600} align="end">
+                    {t("common:percent", {
+                      prefix: "−",
+                      value: level.buffer * 100,
+                    })}
+                  </Text>
+                </Fragment>
+              ))}
+            </Grid>
+            <Flex align="center" gap="s" mt="l" color={getToken("text.medium")}>
+              <Icon component={Repeat} size="s" />
+              <Text fs="p6">{t("multiply.pairDetails.leverageNote")}</Text>
+            </Flex>
+          </Section>
+        </>
       )}
 
+      <ModalContentDivider />
       <Section title={t("multiply.pairDetails.parameters")}>
         <Summary
           mb="-base"
@@ -401,6 +412,7 @@ const PairDetails: React.FC<{
         />
       </Section>
 
+      <ModalContentDivider />
       <Section title={t("multiply.pairDetails.contracts")}>
         <Summary
           mb="-base"
@@ -431,25 +443,30 @@ const PairDetails: React.FC<{
 
 const Section: React.FC<{
   title: string
-  action?: React.ReactNode
   children: React.ReactNode
-}> = ({ title, action, children }) => (
-  <Paper p="xl" borderRadius="xl" shadow={false} bg="dim">
-    <Flex align="center" justify="space-between" gap="base">
-      <Text
-        font="primary"
-        fs="p3"
-        mb="base"
-        fw={600}
-        color={getToken("text.high")}
-      >
-        {title}
-      </Text>
-      {action}
-    </Flex>
+}> = ({ title, children }) => (
+  <Box>
+    <Text font="primary" fs="p3" mb="l" fw={600} color={getToken("text.high")}>
+      {title}
+    </Text>
     {children}
-  </Paper>
+  </Box>
 )
+
+const PairSide: React.FC<{ assetId: string; label: string }> = ({
+  assetId,
+  label,
+}) => {
+  const asset = useResolveAssetDisplay()(assetId)
+  return (
+    <Flex align="center" gap="s">
+      <AssetLogo id={asset.logoId} size="small" />
+      <Text fs="p4" fw={500} color={getToken("text.high")}>
+        {label}
+      </Text>
+    </Flex>
+  )
+}
 
 const RateCard: React.FC<{
   assetId: string
@@ -457,33 +474,147 @@ const RateCard: React.FC<{
   side: "supply" | "borrow"
   fallback: number | null
 }> = ({ assetId, rate, side, fallback }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "strategies"])
   const asset = useResolveAssetDisplay()(assetId)
+  const total = rate?.status === "known" ? Number(rate.total) : fallback
+  const parts = rate?.status === "known" ? rate.parts : []
+
   return (
-    <Stack gap="s" justify="flex-start">
+    <Stack gap="base" p="l" justify="flex-start">
       <Flex align="center" gap="s">
         <AssetLogo id={asset.logoId} size="small" />
-        <Text fs="p5" fw={500}>
+        <Text fs="p4" fw={500} color={getToken("text.high")}>
           {asset.symbol}
         </Text>
       </Flex>
-      {rate?.status === "known" ? (
-        <ApyBreakdown
-          parts={rate.parts}
-          total={rate.total}
-          side={side}
-          hideDescription
-        />
-      ) : (
-        <Stack gap="xs">
-          <Text fs="p6" color={getToken("text.medium")}>
-            {t(side === "supply" ? "supplyApy" : "borrowApy")}
-          </Text>
-          <Text fs="p4" fw={600}>
-            {fallback === null ? "—" : t("percent", { value: fallback * 100 })}
-          </Text>
-        </Stack>
+      <Stack gap="xs">
+        <Text fs="p6" color={getToken("text.medium")}>
+          {t(side === "supply" ? "supplyApy" : "borrowApy")}
+        </Text>
+        <Text font="primary" fs="h5" fw={500} lh={1} color={apyColor(total)}>
+          {total === null ? "—" : t("percent", { value: total * 100 })}
+        </Text>
+      </Stack>
+      {parts.length > 1 && (
+        <Text fs="p6" color={getToken("text.high")}>
+          {parts
+            .map((part) =>
+              t("strategies:multiply.pairDetails.apyPartValue", {
+                value: Number(part.rate) * 100,
+                label: t(
+                  `strategies:multiply.pairDetails.apyPart.${part.kind === "base" ? side : part.kind}`,
+                ),
+              }),
+            )
+            .join(" + ")}
+        </Text>
       )}
+    </Stack>
+  )
+}
+
+const HowItWorks: React.FC<{
+  collateralAssetId: string
+  debtAssetId: string
+}> = ({ collateralAssetId, debtAssetId }) => {
+  const { t } = useTranslation("strategies")
+  const display = useResolveAssetDisplay()
+  const getAssetColor = useAssetColor()
+  const collateral = display(collateralAssetId)
+  const debt = display(debtAssetId)
+
+  const steps = [
+    {
+      key: "supply" as const,
+      icon: <AssetLogo id={collateral.logoId} size="small" collapsed />,
+    },
+    {
+      key: "borrow" as const,
+      icon: <AssetLogo id={debt.logoId} size="small" collapsed />,
+    },
+    {
+      key: "repeat" as const,
+      icon: (
+        <Icon
+          component={RotateCw}
+          size="m"
+          color={getToken("accents.info.onPrimary")}
+        />
+      ),
+    },
+  ]
+
+  return (
+    <Stack gap="l" align="center">
+      <Grid columnTemplate="repeat(3, 1fr)" width="100%">
+        {steps.map(({ key, icon }, i) => (
+          <Stack key={key} gap="s" align="center">
+            <Flex align="center" width="100%" color={getToken("text.low")}>
+              <Separator
+                flex={1}
+                sx={{ visibility: i ? "visible" : "hidden" }}
+              />
+              <Icon
+                component={ChevronRight}
+                size="s"
+                ml="-s"
+                sx={{ visibility: i ? "visible" : "hidden" }}
+              />
+              <Flex
+                align="center"
+                justify="center"
+                size={pxToRem(40)}
+                mx="s"
+                borderRadius="full"
+                bg={getToken("controls.dim.base")}
+                flexShrink={0}
+              >
+                {icon}
+              </Flex>
+              <Separator
+                flex={1}
+                mr="s"
+                sx={{ visibility: i < steps.length - 1 ? "visible" : "hidden" }}
+              />
+            </Flex>
+            <Text fs="p4" fw={600} color={getToken("text.high")}>
+              {t(`multiply.pairDetails.step.${key}`)}
+            </Text>
+            <Text fs="p5" align="center" color={getToken("text.medium")}>
+              <Trans
+                t={t}
+                i18nKey={`multiply.pairDetails.step.${key}Text`}
+                values={{ collateral: collateral.symbol, debt: debt.symbol }}
+                components={[
+                  <Text
+                    key="collateral"
+                    as="span"
+                    fw={500}
+                    color={getAssetColor(collateralAssetId)}
+                  />,
+                  <Text
+                    key="debt"
+                    as="span"
+                    fw={500}
+                    color={getAssetColor(debtAssetId)}
+                  />,
+                ]}
+              />
+            </Text>
+          </Stack>
+        ))}
+      </Grid>
+      <Chip
+        variant="tertiary"
+        size="small"
+        rounded
+        sx={{ bg: getToken("surfaces.containers.dim.dimOnHigh") }}
+      >
+        <Flex align="center" gap="xs">
+          <Icon component={RotateCw} size="xs" />
+          {t("multiply.pairDetails.repeatsUntil")}
+        </Flex>
+      </Chip>
     </Stack>
   )
 }

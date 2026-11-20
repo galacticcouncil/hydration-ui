@@ -15,6 +15,13 @@ export const RISK_INDICATOR_SIZES: Record<
   large: { dot: 10, gap: 5, fs: "p4" },
 }
 
+// low/high: palette tokens, same in light and dark; medium matches the warning Alert
+export const RISK_COLORS = {
+  low: "colors.successGreen.500",
+  medium: "accents.alertAlt.primary",
+  high: "colors.utility.red.400",
+} as const
+
 export const SRiskDot = styled("span", {
   shouldForwardProp: (prop) => !["level", "size", "lit"].includes(prop),
 })<{ level: RiskLevel; size: RiskIndicatorSize; lit: boolean }>(({
@@ -23,19 +30,18 @@ export const SRiskDot = styled("span", {
   size,
   lit,
 }) => {
-  const { soft } = theme.tags
-  const litColors: Record<RiskLevel, string> = {
-    low: soft.green.foreground,
-    medium: soft.amber.foreground,
-    high: soft.red.foreground,
-  }
-
   return css`
     display: block;
     flex-shrink: 0;
     width: ${pxToRem(RISK_INDICATOR_SIZES[size].dot)};
     height: ${pxToRem(RISK_INDICATOR_SIZES[size].dot)};
     border-radius: ${theme.radii.full};
-    background-color: ${lit ? litColors[level] : theme.details.borders};
+    background-color: ${lit
+      ? {
+          low: theme.colors.successGreen[500],
+          medium: theme.accents.alertAlt.primary,
+          high: theme.colors.utility.red[400],
+        }[level]
+      : theme.details.borders};
   `
 })

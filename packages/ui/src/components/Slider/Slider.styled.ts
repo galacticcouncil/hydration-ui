@@ -43,10 +43,10 @@ export const STrack = styled(Track)(
   `,
 )
 
-export const SThumb = styled(Thumb)(
+export const SThumbHandle = styled.div(
   ({ theme }) => css`
-    all: unset;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
 
@@ -57,26 +57,8 @@ export const SThumb = styled(Thumb)(
     border-radius: ${theme.radii.full};
     transition: box-shadow ${theme.transitions.transform};
 
-    cursor: grab;
-
     & > span {
       display: none;
-    }
-
-    &:hover,
-    &:focus-visible,
-    &:active {
-      box-shadow: 0 0 0 4px
-        color-mix(in srgb, ${theme.controls.solid.accent} 30%, transparent);
-    }
-
-    &:active {
-      cursor: grabbing;
-    }
-
-    &[data-disabled] {
-      cursor: unset;
-      box-shadow: none;
     }
 
     @media (pointer: coarse) {
@@ -93,35 +75,63 @@ export const SThumb = styled(Thumb)(
       & > span {
         display: inline-flex;
       }
+    }
+  `,
+)
 
-      &:hover,
-      &:focus-visible,
-      &:active {
+// Zero-size thumb: Radix insets the thumb by its measured size to keep it in
+// bounds; at 0 it doesn't, so the handle centers exactly on value% and
+// overflows the track ends by half its width.
+export const SThumb = styled(Thumb)(
+  ({ theme }) => css`
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 0;
+    height: 0;
+
+    cursor: grab;
+
+    &:hover
+      > ${SThumbHandle},
+      &:focus-visible
+      > ${SThumbHandle},
+      &:active
+      > ${SThumbHandle} {
+      box-shadow: 0 0 0 4px
+        color-mix(in srgb, ${theme.controls.solid.accent} 30%, transparent);
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    &[data-disabled] {
+      cursor: unset;
+
+      & > ${SThumbHandle} {
+        box-shadow: none;
+      }
+    }
+
+    @media (pointer: coarse) {
+      &:hover
+        > ${SThumbHandle},
+        &:focus-visible
+        > ${SThumbHandle},
+        &:active
+        > ${SThumbHandle} {
         box-shadow:
           0 0 17.2px 0 rgba(0, 0, 0, 0.03),
           0 4px 2.8px 0 rgba(0, 0, 0, 0.1);
       }
 
-      &:hover {
+      &:hover > ${SThumbHandle} {
         transform: scale(0.9);
       }
     }
-  `,
-)
-
-export const SDash = styled.div<{
-  row: "top" | "bottom"
-  offset: number
-}>(
-  ({ theme, row, offset }) => css`
-    position: absolute;
-    ${row === "top" ? `top: 0;` : `bottom: 0;`};
-    ${offset ? `left: ${offset}px;` : "left: 0;"};
-
-    height: 3px;
-    width: 1px;
-
-    background-color: ${theme.controls.dim.accent};
   `,
 )
 
@@ -147,7 +157,8 @@ export const SMarkTick = styled.div<{ labelled: boolean }>(
     width: 1px;
     height: ${labelled ? theme.space.base : theme.space.s};
 
-    background-color: ${labelled ? theme.text.low : theme.controls.dim.accent};
+    background-color: ${theme.text.low};
+    opacity: ${labelled ? 0.8 : 0.45};
   `,
 )
 
@@ -157,7 +168,11 @@ export const SMarkLabel = styled.span<{ align: "start" | "center" | "end" }>(
     top: ${theme.space.m};
     left: 0;
     transform: translateX(
-      ${align === "start" ? "0" : align === "end" ? "-100%" : "-50%"}
+      ${align === "start"
+        ? `calc(-1 * ${theme.space.s})`
+        : align === "end"
+          ? `calc(-100% + ${theme.space.s})`
+          : "-50%"}
     );
 
     font-size: ${theme.fontSizes.p6};

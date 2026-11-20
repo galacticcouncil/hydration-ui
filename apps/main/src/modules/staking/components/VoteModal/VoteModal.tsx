@@ -298,7 +298,6 @@ const VoteForm = ({
                         min={0}
                         max={6}
                         step={1}
-                        dashCount={12}
                         value={field.value}
                         onChange={field.onChange}
                       />
