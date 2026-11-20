@@ -33,3 +33,11 @@ export const Hoverable: Story = {
     hoverable: true,
   },
 }
+
+export const Mid: Story = {
+  render: Template,
+  args: {
+    bg: "mid",
+    shadow: false,
+  },
+}

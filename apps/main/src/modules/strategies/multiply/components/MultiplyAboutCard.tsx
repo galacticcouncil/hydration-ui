@@ -52,7 +52,7 @@ export const MultiplyAboutCard: FC = () => {
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t(`multiply.about.${stage}.description`)}
                   </Text>
-                  <Text fs="p6" color={getToken("text.low")}>
+                  <Text fs="p5" color={getToken("text.medium")}>
                     {t(`multiply.about.${stage}.note`)}
                   </Text>
                 </SAboutPanel>

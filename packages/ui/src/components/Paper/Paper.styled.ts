@@ -41,9 +41,11 @@ export const SPaper = styled(Box, {
           0px 14px 37px 0px rgba(0, 0, 0, 0.04);
       `,
     css`
-      background-color: ${bg === "high"
-        ? theme.surfaces.themeBasePalette.surfaceHigh
-        : theme.controls.dim.base};
+      background-color: ${{
+        high: theme.surfaces.themeBasePalette.surfaceHigh,
+        dim: theme.controls.dim.base,
+        mid: theme.surfaces.containers.mid.primary,
+      }[bg]};
     `,
     bg === "dim" &&
       css`

@@ -5,7 +5,7 @@ import { SPaper } from "@/components/Paper/Paper.styled"
 
 export type PaperProps = BoxProps & {
   variant?: "plain" | "bordered"
-  bg?: "high" | "dim"
+  bg?: "high" | "dim" | "mid"
   shadow?: boolean
   hoverable?: boolean
 }
