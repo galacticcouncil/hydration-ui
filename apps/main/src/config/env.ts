@@ -2,6 +2,13 @@ import z from "zod"
 
 const coerceToBoolean = z.string().transform((v) => v === "true")
 
+// Unset or empty: the contract isn't deployed on this network.
+const contractAddress = z
+  .string()
+  .regex(/^(0x[0-9a-fA-F]{40})?$/)
+  .optional()
+  .transform((v) => (v || undefined) as `0x${string}` | undefined)
+
 const schema = z.object({
   VITE_PROVIDER_URL: z.url(),
   VITE_INDEXER_URL: z.url(),
@@ -21,15 +28,9 @@ const schema = z.object({
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
   // The rewards distributor contract and the URL its claim files are served
   // from. Both empty: the feature is off.
-  VITE_REWARDS_DISTRIBUTOR_ADDRESS: z
-    .string()
-    .regex(/^(0x[0-9a-fA-F]{40})?$/)
-    .default(""),
+  VITE_REWARDS_DISTRIBUTOR_ADDRESS: contractAddress,
   VITE_REWARDS_DISTRIBUTOR_URL: z.url().or(z.literal("")).default(""),
-  VITE_LOOPER_FACTORY_ADDRESS: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{40}$/)
-    .optional(),
+  VITE_LOOPER_FACTORY_ADDRESS: contractAddress,
 })
 
 export const ENV = schema.parse(import.meta.env)

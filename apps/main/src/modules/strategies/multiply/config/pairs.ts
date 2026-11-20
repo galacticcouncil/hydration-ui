@@ -11,9 +11,7 @@ import { type Hex, parseUnits } from "viem"
 import { ENV } from "@/config/env"
 import { HOLLAR_ADDRESS } from "@/modules/strategies/bil/config/constants"
 
-export const LOOPER_FACTORY_ADDRESS = ENV.VITE_LOOPER_FACTORY_ADDRESS as
-  | Hex
-  | undefined
+export const LOOPER_FACTORY_ADDRESS = ENV.VITE_LOOPER_FACTORY_ADDRESS
 
 export type MultiplyPair = {
   slug: string
