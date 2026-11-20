@@ -13,6 +13,7 @@ import {
 } from "@/modules/strategies/multiply/utils/loops"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useLooperSlippageBps } from "@/states/looperSettings"
 
 // ponytail: the wizard only gates on the smallest unwind; add rungs back if a size hint returns
 const PROBE_USD = [100]
@@ -90,6 +91,7 @@ export const useLoopFillHints = (
   const { isReady } = useRpcProvider()
   const quoteLoss = useQuoteLoss()
   const legsOf = useLegs()
+  const margin = useLooperSlippageBps() - FILL_MARGIN_BPS
 
   return useQueries({
     queries: loops.map(({ pair, prices }) => ({
@@ -105,11 +107,16 @@ export const useLoopFillHints = (
             unwindLossBps: await quoteLoss(unwind, usd),
           })),
         )
-        return getFillsUpTo(probes, pair.slippageBps - FILL_MARGIN_BPS)
+        return probes
       },
     })),
     combine: (results) =>
-      new Map(loops.map(({ pair }, i) => [pair.slug, results[i]?.data])),
+      new Map(
+        loops.map(({ pair }, i) => {
+          const probes = results[i]?.data
+          return [pair.slug, probes && getFillsUpTo(probes, margin)]
+        }),
+      ),
   })
 }
 
@@ -126,6 +133,7 @@ export const useLoopFillCheck = (
   const { isReady } = useRpcProvider()
   const quoteLoss = useQuoteLoss()
   const legsOf = useLegs()
+  const margin = useLooperSlippageBps() - FILL_MARGIN_BPS
   const [usd] = useDebouncedValue(Math.round(volumeUsd))
 
   return useQuery({
@@ -138,12 +146,13 @@ export const useLoopFillCheck = (
         quoteLoss(ramp, usd),
         quoteLoss(unwind, usd),
       ])
-      const margin = pair.slippageBps - FILL_MARGIN_BPS
-      return {
-        rampLossBps,
-        unwindLossBps,
-        fills: rampLossBps <= margin && unwindLossBps <= margin,
-      }
+      return { rampLossBps, unwindLossBps }
     },
+    // margin applied outside the query, so a slippage change doesn't re-quote
+    select: ({ rampLossBps, unwindLossBps }) => ({
+      rampLossBps,
+      unwindLossBps,
+      fills: rampLossBps <= margin && unwindLossBps <= margin,
+    }),
   })
 }

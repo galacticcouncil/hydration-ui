@@ -142,7 +142,6 @@ export const useMultiplyPositions = () => {
             }),
             minHf: params.minHf,
             stepHf: params.stepHf,
-            slippageBps: params.slippageBps,
             feeAssetId: params.feeAssetId.toString(),
             feeAsset: params.feeAsset,
             feeReserve: params.feeReserve,
