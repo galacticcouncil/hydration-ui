@@ -22,8 +22,16 @@ export const intentEntryToOrder = (
 ): OrderData | null => {
   const { data } = entry.intent
 
-  if (data.type === "Swap") {
-    const swap = data.value
+  // An Order Match swap only waits for opposite intents until `match_until`,
+  // otherwise it is a plain swap and lists like one
+  const swap =
+    data.type === "Swap"
+      ? data.value
+      : data.type === "MatchFirstSwap"
+        ? data.value.swap
+        : null
+
+  if (swap) {
     const from = getAsset(String(swap.asset_in))
     const to = getAsset(String(swap.asset_out))
     const isPartiallyFillable = swap.partial.type === "Yes"
