@@ -6,6 +6,8 @@ import {
 } from "@galacticcouncil/utils"
 import { type Hex } from "viem"
 
+import { IS_LARK_0 } from "@/modules/strategies/juicer/config/constants"
+
 export interface JuicerVaultConfig {
   assetId: string
   vaultAddress: Hex
@@ -30,7 +32,9 @@ export interface JuicerVaultConfig {
 export const JUICER_VAULTS: JuicerVaultConfig[] = [
   {
     assetId: GETH_ASSET_ID,
-    vaultAddress: "0x98db179d65b8abc53946bd89b3433a4fd3bfb60c",
+    vaultAddress: IS_LARK_0
+      ? "0xa64e418978482d5de91717cf6c77e1f40105f2ab"
+      : "0x98db179d65b8abc53946bd89b3433a4fd3bfb60c",
     shareAssetId: "5551",
     shareSymbol: "jETH",
     shareName: "Juicer ETH",
