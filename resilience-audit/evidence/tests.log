@@ -1,0 +1,33 @@
+yarn workspace v1.22.22
+warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+yarn run v1.22.22
+warning Skipping preferred cache folder "/home/mrq/.cache/yarn" because it is not writable.
+warning Selected the next writable cache folder in the list, will be "/tmp/.yarn-cache-1000".
+$ vitest run
+warning Cannot find a suitable global folder. Tried these: "/usr/local, /home/mrq/.yarn"
+
+ RUN  v3.2.7 /tmp/hydration-ui-resilience-20261001/apps/main
+
+ ✓ src/modules/transactions/utils/toasts/intentOutcomes.test.ts (3 tests) 11ms
+ ✓ src/modules/trade/swap/sections/XcSwap/lib/iceAmounts.test.ts (3 tests) 4ms
+stderr | src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/api/balances/account.utils.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+stderr | src/modules/trade/swap/lib/quotedPrice.test.ts
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+
+ ✓ src/api/balances/account.utils.test.ts (5 tests) 3ms
+ ✓ src/modules/trade/swap/sections/Limit/cascadeLogic.test.ts (5 tests) 24ms
+ ✓ src/modules/trade/swap/lib/quotedPrice.test.ts (18 tests) 28ms
+
+ Test Files  5 passed (5)
+      Tests  34 passed (34)
+   Start at  12:19:47
+   Duration  2.82s (transform 492ms, setup 0ms, collect 7.99s, tests 69ms, environment 1ms, prepare 519ms)
+
+Done in 3.38s.
+Done in 3.61s.

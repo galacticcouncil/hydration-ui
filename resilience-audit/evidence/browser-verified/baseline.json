@@ -1,0 +1,60 @@
+{
+  "name": "baseline",
+  "waitMs": 35000,
+  "externalRequests": [],
+  "websocketTraffic": {
+    "wss://rpc-catfish-1.catfish.hydration.cloud/": {
+      "sent": 1004,
+      "received": 1029,
+      "methods": {
+        "rpc_methods": 1,
+        "chain_subscribeAllHeads": 1,
+        "chain_subscribeFinalizedHeads": 1,
+        "chain_getBlockHash": 3,
+        "chain_getHeader": 24,
+        "state_getStorageHash": 14,
+        "state_getStorage": 197,
+        "state_call": 669,
+        "system_health": 8,
+        "state_getKeysPaged": 15,
+        "state_queryStorageAt": 15,
+        "eth_call": 15,
+        "eth_chainId": 22,
+        "system_name": 1,
+        "system_properties": 1,
+        "state_getReadProof": 17
+      },
+      "closed": false
+    }
+  },
+  "allowedWebsockets": [],
+  "blockedWebsockets": [],
+  "pageErrors": [],
+  "errors": [
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "State loaded from storage couldn't be migrated since no migrate function was provided",
+    "Access to XMLHttpRequest at 'https://1click.chaindefuser.com/v0/tokens' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "[RQ] AxiosError: Network Error\n    at g.onerror (http://127.0.0.1:4173/chunk-ASHyYjSo.js:3:19454)\n    at rr.request (http://127.0.0.1:4173/chunk-ASHyYjSo.js:5:2180)\n    at async Na (http://127.0.0.1:4173/chunk-ASHyYjSo.js:17:43607)\n    at async http://127.0.0.1:4173/chunk-ASHyYjSo.js:17:44293 ue",
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "elapsedMs": 36374,
+  "url": "http://127.0.0.1:4173/trade/swap/market?tab=myActivity&assetIn=%22222%22&assetOut=%220%22&destPlatform=hydration&allPairs=true",
+  "bodyText": "Trade\nBorrow\nStrategies\nLiquidity\nPortfolio\nCross-Chain\nStats\nStaking\nExplorer\nDeposit\n\nConnect Wallet\n\nSwap\nTrade OTC\n\nHydration\n\nHDX\n\n0.007187 HOLLAR\n\n-1.39% / 24H\nHDX/HOLLAR\n\n5M\n\n15M\n\n30M\n\n1H\n\n4H\n\n1D\n\n1W\n\n\t\n\t\n\n\t\n\t\nMarket\nLimit\nTWAP\nSell\nBalance: 0\nMAX\nHOLLAR\n$0.00\n\n1 HDX = 0.007187 HOLLAR\n\nBuy\nBalance: 0\nHDX\n$0.00\n\nConnect Wallet\n\nMy recent trades\nOpen orders\nOrder history\nMarket transactions\nFilled from / Filled to\t\nFill price\n\tStatus/Date\t\n\n\nNo orders yet\n\nSeems like you have not made any orders yet.\nHave fun trading on Hydration.\n\n\n15 255 658\n\nIntents are here!\n\nA new way to place trades that includes limit orders.\n\nYou can disable intents anytime in Trade settings.\n\nGot it",
+  "buttons": [
+    "-1.39% / 24H",
+    "HOLLAR",
+    "1 HDX = 0.007187 HOLLAR",
+    "HDX",
+    "15 255 658",
+    "",
+    "Got it"
+  ],
+  "links": [],
+  "inputs": 2,
+  "skeletons": 0,
+  "inputEditable": true,
+  "quoteInputValues": [
+    "1",
+    "138.728208058637"
+  ]
+}

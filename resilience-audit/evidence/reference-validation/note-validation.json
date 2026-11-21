@@ -1,0 +1,15 @@
+{
+  "renderer": "markdown-it preview; garden theme not built",
+  "desktop": {
+    "width": 1400,
+    "viewport": 1400,
+    "tables": 3,
+    "h2": 10
+  },
+  "detailed": {
+    "width": 1400,
+    "viewport": 1400,
+    "h2": 87,
+    "brokenImages": 0
+  }
+}

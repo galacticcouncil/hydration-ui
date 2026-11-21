@@ -13,7 +13,9 @@
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "i18n": "turbo i18n",
-    "test": "turbo test"
+    "test": "turbo test",
+    "audit:resilience": "node resilience-audit/run.cjs",
+    "audit:resilience:browser": "node resilience-audit/run.cjs --browser"
   },
   "resolutions": {
     "polkadot-api": "^2.1.7",

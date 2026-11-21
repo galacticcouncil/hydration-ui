@@ -1,0 +1,395 @@
+{
+  "snapshot": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+  "lockfileSha256": "4ba7f57c0fa6e56ad3832f958f2cfc3923acbfd90dea7d0d158ae352507e5e91",
+  "notes": [
+    "UI source lines link to the pinned GitHub commit. Installed dependency links use the exact npm artifact version.",
+    "Line numbers under audit/crosschain-sources or audit/*readable.mjs belong to formatted extracts, not the minified published file.",
+    "Install the frozen lockfile, verify original SHA-256, and format using Prettier3.3.3 parser:babel to recreate the readable line locations. No dependency bundles were copied into this reference."
+  ],
+  "artifacts": [
+    {
+      "formatted": "audit/crosschain-sources/common.mjs",
+      "formattedSha256": "ff161494045c34148d2248ee18e85a51c7773c3d3b8af142dbe1bd3a14f29f03",
+      "original": "node_modules/@galacticcouncil/common/build/index.mjs",
+      "sha256": "833f519aa624661a918ea32093f8ced0e4f9970bdb8d18117953c650626b9090",
+      "package": "@galacticcouncil/common",
+      "version": "1.2.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/walletconnect-core.js",
+      "formattedSha256": "6ff5e4d3a741da935d51de482efec0a5dcecaecc635f1d462c4ef7e69401e5f1",
+      "original": "node_modules/@walletconnect/core/dist/index.js",
+      "sha256": "26888ede8af3e7f223373142c443e8ce7b197f4c62ece94d2ecbf5d2d5e0ee54",
+      "package": "@walletconnect/core",
+      "version": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/walletconnect-jsonrpc-http-connection.js",
+      "formattedSha256": "b2be50c82b7eff189e74207e826cc9876eaa96b140ab07ba2a8a8ea7482951aa",
+      "original": "node_modules/@walletconnect/jsonrpc-http-connection/dist/index.es.js",
+      "sha256": "3cf70b37052ba8a2484bba1b371857e3b14b53ae49a5531f2922378f02e49118",
+      "package": "@walletconnect/jsonrpc-http-connection",
+      "version": "1.0.8",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/walletconnect-jsonrpc-ws-connection.js",
+      "formattedSha256": "06561b6a8f1afda2c6a1f46b6f6c7cc1b2e7a11ebe2ac7acb86065091d70413b",
+      "original": "node_modules/@walletconnect/jsonrpc-ws-connection/dist/index.es.js",
+      "sha256": "204edda2f56781538866d63fab007310995f1967b5413cdd7030856286fb1705",
+      "package": "@walletconnect/jsonrpc-ws-connection",
+      "version": "1.0.16",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/walletconnect-sign-client.js",
+      "formattedSha256": "1958b48517df61cdd6568a1a83ed06676e8d614e04531d379771024652f5be8a",
+      "original": "node_modules/@walletconnect/sign-client/dist/index.js",
+      "sha256": "6f3e49b04061ae0f05ded38732119632c6688e4d2ea1085fed797e9b4d793327",
+      "package": "@walletconnect/sign-client",
+      "version": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/walletconnect-universal-provider.js",
+      "formattedSha256": "1695eab04da46cad22af5e0d0162432af7a0a9f1dacf7386b48a0aaa4058dafe",
+      "original": "node_modules/@walletconnect/universal-provider/dist/index.js",
+      "sha256": "f9d3e9c0865abfa110d4a791250885f62d57cb593021da7f47891b0b16f2eee3",
+      "package": "@walletconnect/universal-provider",
+      "version": "2.23.7",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc-cfg.mjs",
+      "formattedSha256": "a2ab0e6ca2ba2830a32fed8934f2ac19a1a93cbbd63baa14bf8b218d6f13e184",
+      "original": "node_modules/@galacticcouncil/xc-cfg/build/index.mjs",
+      "sha256": "b816b8b2cc2bbed2efb089fb22b78fe289e5074338dea623ba074e507808dcba",
+      "package": "@galacticcouncil/xc-cfg",
+      "version": "2.7.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc-core.mjs",
+      "formattedSha256": "dcc64706ebf6c6b3b0afe9a3a043f3d9df839f2d2aad12ec4a72afd4af6f016a",
+      "original": "node_modules/@galacticcouncil/xc-core/build/index.mjs",
+      "sha256": "73fd3118cff20dcf5ac97dc426e1d9c3cb051bc5506a711ba71405c37503cd18",
+      "package": "@galacticcouncil/xc-core",
+      "version": "2.6.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc-scan.mjs",
+      "formattedSha256": "acc92e796a4090396c9b3b1807481265660704d54a599a254487539b586925ae",
+      "original": "node_modules/@galacticcouncil/xc-scan/build/index.mjs",
+      "sha256": "aea6892c1c98a9c02050fe007b4eca1d3e50388b23a6b9608316f9d2ae8fab8a",
+      "package": "@galacticcouncil/xc-scan",
+      "version": "0.5.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc-sdk.mjs",
+      "formattedSha256": "3f3f2b6cbcf5963da698cdd6f571352b300bcdf343772cdb49d00e0d5a61822f",
+      "original": "node_modules/@galacticcouncil/xc-sdk/build/index.mjs",
+      "sha256": "c770c37a952d38ad7c48496c8660dba51e6eab61d81d04dd038fba6d3381c76f",
+      "package": "@galacticcouncil/xc-sdk",
+      "version": "2.5.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc-swap.mjs",
+      "formattedSha256": "408c627c1c04e3fbf34cf9f6b05073aea76bbdfcf2e94d6dc1ac3f997272c6ea",
+      "original": "node_modules/@galacticcouncil/xc-swap/build/index.mjs",
+      "sha256": "a84cb108befe7ec7c5e50a620117a2360fd5e4f98572127ed5d9dd5f8a5b59b7",
+      "package": "@galacticcouncil/xc-swap",
+      "version": "0.9.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/crosschain-sources/xc.mjs",
+      "formattedSha256": "355f111728480287c8ddd2cad2e2547f10de05346b8b5cb0566c582d75c5bbd1",
+      "original": "node_modules/@galacticcouncil/xc/build/index.mjs",
+      "sha256": "8cb8134da3160e17a04a3f1340c46373a54f35d4192ce97d4aa74e5bf132e365",
+      "package": "@galacticcouncil/xc",
+      "version": "2.1.0",
+      "formatter": {
+        "package": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/sdk-next-readable.mjs",
+      "formattedSha256": "384dfa15fd06cc6eb3773e3ad15fa724feac2ac0e6974026205dac313df8ac3b",
+      "original": "node_modules/@galacticcouncil/sdk-next/build/index.mjs",
+      "sha256": "e0edcdae870020495cf977b60ac3e3c161c67e48e8c92a78693e33963447fa98",
+      "package": "@galacticcouncil/sdk-next",
+      "version": "2.3.2",
+      "formatter": {
+        "name": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "formatted": "audit/common-substrate-readable.mjs",
+      "formattedSha256": "09abe53e74ec054049d624a3aded9b7aa4f491f0743c6b0b6b399c282868b8f4",
+      "original": "node_modules/@galacticcouncil/common/build/substrate/index.mjs",
+      "sha256": "606ed26e91c5eb6e39f50209fd469a6f84b0991e7aa902b0f317498e0fbd7ea7",
+      "package": "@galacticcouncil/common",
+      "version": "1.2.0",
+      "formatter": {
+        "name": "prettier",
+        "version": "3.3.3",
+        "options": {
+          "parser": "babel"
+        }
+      }
+    },
+    {
+      "original": "node_modules/@defuse-protocol/one-click-sdk-typescript/dist/index.js",
+      "sha256": "e536c3caef9c22b6ea0cd4d5fbd7b74b31a046385b2db88349ac0fae417aec9d",
+      "package": "@defuse-protocol/one-click-sdk-typescript",
+      "version": "0.1.25"
+    },
+    {
+      "original": "node_modules/@galacticcouncil/descriptors/build/index.js",
+      "sha256": "456b4dff4c1b67cf0898fa621fe3295b80a8cec617ce35cdb606decb45f2dee4",
+      "package": "@galacticcouncil/descriptors",
+      "version": "2.9.0"
+    },
+    {
+      "original": "node_modules/@galacticcouncil/sdk-next/package.json",
+      "sha256": "ef74eb2a5f5ae6d844f68cda1139a1cd5eb5064ae0854e5ef641a181117803b4",
+      "package": "@galacticcouncil/sdk-next",
+      "version": "2.3.2"
+    },
+    {
+      "original": "node_modules/@mysten/sui/dist/esm/jsonRpc/http-transport.js",
+      "sha256": "6c0f0e9378b53c907e4b021e9ce396d561846fb13873ad27081a6c775d41210b",
+      "package": "@mysten/sui",
+      "version": "1.45.2"
+    },
+    {
+      "original": "node_modules/@polkadot-api/ws-provider/dist/provider.js",
+      "sha256": "f689359c88acc7431d87123b4d98748bd8fe78cfb2b1049c24c817c0023097a3",
+      "package": "@polkadot-api/ws-provider",
+      "version": "0.9.1"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/ApiController.js",
+      "sha256": "70217c7186bdfe0b7faa426ed020bcb7e02d0470d6d79e3a1c1d6be1d368422a",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/BlockchainApiController.js",
+      "sha256": "923df3131ae05c16b3c26240dc3734579514256c2b570bd563f6c925bde81581",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/controllers/EventsController.js",
+      "sha256": "dda32122381d4cae744ac5717c1e368e17e9d018a434fff7bd5a007968cf54f5",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/features/siwx/reown-authentication/ReownAuthentication.js",
+      "sha256": "704377f14e0c6a515312611a788549c8f3493248777ab19bee3a645bcf0caab6",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/ConstantsUtil.js",
+      "sha256": "30f1b948c3407972be626b828418e509bb40e9bab7bbe85301132ef0a8ec26cd",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/ExchangeUtil.js",
+      "sha256": "7376f781299ca687effe78f4be7160df194930af78acfb12b85bc04c8238903b",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-controllers/dist/esm/src/utils/FetchUtil.js",
+      "sha256": "e9080946691d860a2940483511c3686b26a76d0c63fed58c6ff57692f62e9607",
+      "package": "@reown/appkit-controllers",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-pay/dist/esm/src/utils/ApiUtil.js",
+      "sha256": "7d86bfb15d3cdfc7730fcf64d1f27245ac6c02530152066a042001720d1cd9ec",
+      "package": "@reown/appkit-pay",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-ui/dist/esm/src/utils/ThemeUtil.js",
+      "sha256": "2679548fe1c91360bd64394f50ff634628553857206c08350f831588204808de",
+      "package": "@reown/appkit-ui",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-utils/dist/esm/src/CaipNetworkUtil.js",
+      "sha256": "77fef3a6b3b5e3d3bbfaa6226acefb93dd9f1cc18133b1b419a0c41c33a936fb",
+      "package": "@reown/appkit-utils",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-utils/dist/esm/src/SemVerUtils.js",
+      "sha256": "052ba63dbd7172839830e98ffa624cc16c1ae381088519dd4bdb012b08afb1ae",
+      "package": "@reown/appkit-utils",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrame.js",
+      "sha256": "209b6d6b54b64dcd26a7ad7a46174d8ed8285b5e46d3d0cc6d2a72ccab3217d8",
+      "package": "@reown/appkit-wallet",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrameConstants.js",
+      "sha256": "7d3e474b348acd56ba0494be1a379215e2cbb58fc108c662dfa4c7772d8889d5",
+      "package": "@reown/appkit-wallet",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit-wallet/dist/esm/src/W3mFrameProvider.js",
+      "sha256": "11a77bf7c88a70396dc0146fc3b11427359f417762e312c2af37c22b33505a7f",
+      "package": "@reown/appkit-wallet",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit/dist/esm/src/client/appkit-base-client.js",
+      "sha256": "ae7dbd1fd8a10098946a4f4bc364fafe6adb800312d13862c6612d519536ec41",
+      "package": "@reown/appkit",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@reown/appkit/dist/esm/src/client/appkit.js",
+      "sha256": "27b5513d32558f03d59c12cae95ecbfbc7c3b285ee925eef1eee722589b02795",
+      "package": "@reown/appkit",
+      "version": "1.8.19"
+    },
+    {
+      "original": "node_modules/@solana/web3.js/lib/index.cjs.js",
+      "sha256": "796768bf5a689d808fb6fabfc5ce0db27eee064782cf87621331b807bab9f7e2",
+      "package": "@solana/web3.js",
+      "version": "1.98.4"
+    },
+    {
+      "original": "node_modules/@tanstack/query-core/src/queryClient.ts",
+      "sha256": "9f7e2ea8a2b983d00de106061a6ff7faed5df1511653ee46cb287ce161036dec",
+      "package": "@tanstack/query-core",
+      "version": "5.101.4"
+    },
+    {
+      "original": "node_modules/@tanstack/query-core/src/retryer.ts",
+      "sha256": "1bef7c7d3c702efd325d64fd7898c579411822ddba03703239bb19670460fa0c",
+      "package": "@tanstack/query-core",
+      "version": "5.101.4"
+    },
+    {
+      "original": "node_modules/p-wait-for/index.js",
+      "sha256": "aa8d3e6156d6c7ed4699614d2dca1f19e89d2d742911fac2507b5198451b5b4c",
+      "package": "p-wait-for",
+      "version": "6.0.0"
+    },
+    {
+      "original": "node_modules/viem/_esm/clients/transports/createTransport.js",
+      "sha256": "9cbd5a51741901e5c522ec098634a42f0216f5e95191a953084f51880a3b20d3",
+      "package": "viem",
+      "version": "2.56.8"
+    },
+    {
+      "original": "node_modules/viem/_esm/clients/transports/custom.js",
+      "sha256": "e9450ea820b8be5fefd743951aa41bc79f5c1cdd5ff228db95bccff0f67df0fe",
+      "package": "viem",
+      "version": "2.56.8"
+    },
+    {
+      "original": "node_modules/viem/_esm/utils/rpc/http.js",
+      "sha256": "4e931522a6a82fe8c3b4a1d426ac7fc942a2c865243c53cf312560cd5c3604d8",
+      "package": "viem",
+      "version": "2.56.8"
+    },
+    {
+      "original": "node_modules/zustand/middleware.js",
+      "sha256": "3515365ad62828b3eab5b80867b06bcb78fa72202cb62991d98bf5987d1fd8eb",
+      "package": "zustand",
+      "version": "5.0.12"
+    }
+  ]
+}

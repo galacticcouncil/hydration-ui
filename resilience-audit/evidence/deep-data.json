@@ -1,0 +1,3729 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-01T10:42:07.361581+00:00",
+  "repository": {
+    "path": "/tmp/hydration-ui-resilience-20261001",
+    "commit": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+    "branch": "master"
+  },
+  "scope": "Data/indexer/history/analytics/governance/APY sources and core money-market providers. UI/garden source unchanged. Foreign cross-chain RPC transports and application bootstrap are audited separately.",
+  "method": {
+    "source": "Exact checkout sourcecallsite inventory plusinstalledtransportinspection.",
+    "tests": "16 exact-source/installed-transport fault injections in audit/deep-data-faults.cjs. These are not browser route tests. Root audit separately verified malformed platform stats in the production browser.",
+    "testLimits": "APY cache harness stubs Zustand persistence and utility constants: cache operations are exact, but localStorage hydration is not tested. PRIME_APY stub0.1 is irrelevant to the nonempty malformed test; actual source static rate is0.075. The 100ms pending observation does not simulate long elapsed time; missing deadlines are separately established in source. Global Multix browser boundary outcome is inferred from global provider placement.",
+    "coldWarmRecovery": "Recorded per dependency and expanded from shared transport profile in failureMatrix."
+  },
+  "transportProfiles": {
+    "neckwork": {
+      "implementation": "packages/indexer/src/neckwork/index.ts; openapi-fetch 0.17.0",
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retry": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle.",
+      "dns": "Fetch rejects; query boundary catches.",
+      "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+      "http429": "Same; no Retry-After handling.",
+      "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+      "requestHang": "No deadline; query remains pending indefinitely.",
+      "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+      "malformedJson": "JSON parser rejects, query boundary catches.",
+      "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+      "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+      "warm": "React Query retains successful same-key cache during refetch/error; most consumers do not expose its freshness.",
+      "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight."
+    },
+    "graphql": {
+      "implementation": "GraphQLClient(url) in packages/indexer/src/{indexer,multix}/index.ts",
+      "deadlineMs": null,
+      "cancellation": "Generated SDK accepts optional signal, but query wrappers/clients do not supply it.",
+      "retry": "Browser React Query default 3 after rejection except outer transaction-toast retry=false; no retry until hang settles.",
+      "dns": "Rejected and caught by query boundary.",
+      "http404": "GraphQLClient throws HTTP/client error on completed response.",
+      "http429": "Same; no application Retry-After policy.",
+      "http5xx": "Same.",
+      "requestHang": "No deadline.",
+      "bodyHang": "No deadline.",
+      "malformedJson": "Rejected inside transport.",
+      "malformedBusinessData": "GraphQL envelope accepted without runtime validation of typed business data; tested valid envelope with invalid values and invalid accounts shape.",
+      "stale": "No source indexed block freshness validation; some queries default staleTime=0, OTC staleTime=Infinity.",
+      "warm": "Same-key successful query data retained in memory; no general persisted history fallback found.",
+      "recovery": "React Query stale focus/reconnect/remount; in-flight hang is never timed out."
+    },
+    "grafana": {
+      "implementation": "apps/main/src/api/grafana/fetchGrafana.ts POST",
+      "deadlineMs": null,
+      "cancellation": "React Query signal is consumed by tradeChart, reserveRate, dcaAmounts queryFns and passed to fetch, so unmount cancellation is available.",
+      "retry": "React Query browser default 3 after rejection.",
+      "dns": "Rejected at query boundary.",
+      "http404": "NonOK error awaits response.text then throws.",
+      "http429": "Same; no Retry-After.",
+      "http5xx": "Same.",
+      "requestHang": "No deadline while mounted.",
+      "bodyHang": "No deadline, even awaiting error text.",
+      "malformedJson": "Rejected within query.",
+      "malformedBusinessData": "Direct data.results[refId].frames[0].data.values indexing; no runtime schema/numeric checks.",
+      "stale": "Historical rate query 5min, no upstream sample-age validation.",
+      "warm": "Query cache retains same-key previous result; local chart flags may hide it on error.",
+      "recovery": "Query lifecycle/focus and chart range changes; signal can cancel old observers."
+    },
+    "apy-cache": {
+      "implementation": "fetchExternalApyWithCache; persisted Zustand external-apy store",
+      "deadlineMs": null,
+      "cancellation": "Bare fetch; no React Query signal passed.",
+      "retry": "Fetch/cache helper catches thrown errors and resolves cached number or null. React Query therefore sees success and does not retry; Kamino additionally retry=0.",
+      "dns": "Cold => null; warm <=7day receipt-age entry => last cached APY; older => null.",
+      "http404": "DeFiLlama nonOK throws into cache fallback; Kamino does not check response.ok and attempts parsing any status body.",
+      "http429": "Same; no Retry-After.",
+      "http5xx": "Same.",
+      "requestHang": "Cache fallback is attempted only after fetch rejects; a hung request never reaches it.",
+      "bodyHang": "Same; unbounded response.json.",
+      "malformedJson": "Caught, uses TTL fallback/null.",
+      "malformedBusinessData": "DeFiLlama validates number shape; Kamino validates APY only as string then BN -> NaN; no finite guard before live-cache write.",
+      "stale": "One-week TTL uses receipt timestamp (Date.now), not sample time. Old successful feed rows can refresh TTL indefinitely. Query staleTime=1h,gcTime=1day; returned fallback has no timestamp/error metadata.",
+      "warm": "Successful same-key React Query data retained; persisted fallback is only consulted on rejection; a cold mount with stored fallback still waits for network before displaying it.",
+      "recovery": "Queries resolve null/cached on errors; next stale focus/reconnect/remount can fetch again; no periodic interval. Cache expiry checked only on catch, not on mounted display."
+    },
+    "bare-fetch": {
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retry": "Consumer-specific React Query policy applies after rejection, never while hung.",
+      "requestHang": "Pending indefinitely.",
+      "bodyHang": "response.json may hang indefinitely.",
+      "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+      "recovery": "Query lifecycle only unless explicit interval noted."
+    },
+    "hydration-allowed": {
+      "implementation": "Hydration transport reused via shared EIP-1193 provider.",
+      "required": "Permitted by prime directive; not a non-Hydration runtime RPC dependency.",
+      "externalFailures": "Separate metadata/APY dependencies must remain optional and locally isolated."
+    }
+  },
+  "dependencies": [
+    {
+      "id": "neckwork-status",
+      "label": "Neckwork health and post-transaction index synchronization",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/status"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "DataProviderResolver (60s health loop)",
+        "DataProviderSelect status display",
+        "useNeckworkSync (10s while armed)",
+        "useTradeDataSource / useTradeOrdersBackend choose primary vs legacy"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/.env.production",
+          "line": 3,
+          "note": "Production base URL."
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.utils.ts",
+          "line": 26,
+          "note": "Health probe has 2000ms AbortSignal.timeout."
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 24,
+          "note": "Independent periodic health state."
+        },
+        {
+          "path": "apps/main/src/states/neckwork.ts",
+          "line": 21,
+          "note": "Network errors and >=500 mark dead; 404/429 mark unknown."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/tradeDataSource.ts",
+          "line": 18,
+          "note": "Dead health selects legacy GraphQL and Grafana; endpoint failures are not consulted."
+        },
+        {
+          "path": "apps/main/src/api/neckworkSync.ts",
+          "line": 39,
+          "note": "Armed query polls; 120000ms timeout evaluated only on render at line51."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Health display, history/backend selection and data invalidation",
+        "chainActions": "Hydration transactions do not await health probe."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Bounded health fetch can mark service dead and activate legacy fallback. Status2xx malformed/lagging body still marked alive.",
+        "partialOutage": "/v1/status success while /v1/prices/pair or schedules returns404/429/503 does not cause backend switch.",
+        "hang": "Health probe bounded; normal status query and armed synchronization are unbounded.",
+        "stale": "Frozen blockHeight may keep old indexed account data; timeout no real timer and identical structurally-shared status may suppress needed render (inference)."
+      },
+      "existingProtections": [
+        "2000ms health deadline",
+        "No health retries",
+        "Legacy GraphQL/Grafana backend fallback on dead health",
+        "Disarms sync when disabled/fork; nominal 120s refresh escape"
+      ],
+      "remediation": [
+        "Bound every actual request including body",
+        "Validate status and track last indexed block age",
+        "Use per-resource circuit breaker for 404/429/5xx",
+        "Give sync its own deadline timer independent of renders"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-200"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-404"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-429"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-503"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Frozen blockHeight may keep old indexed account data; timeout no real timer and identical structurally-shared status may suppress needed render (inference).",
+        "warm": "React Query retains successful same-key cache during refetch/error; most consumers do not expose its freshness.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Bounded health fetch can mark service dead and activate legacy fallback. Status2xx malformed/lagging body still marked alive.",
+        "partialOutage": "/v1/status success while /v1/prices/pair or schedules returns404/429/503 does not cause backend switch.",
+        "hang": "Health probe bounded; normal status query and armed synchronization are unbounded."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-wallet-balances",
+      "label": "Neckwork account USD balances",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/accounts/balances?accounts={comma-separated-public-keys}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/indexer",
+        "@galacticcouncil/web3-connect"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/web3-connect": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "AccountSelectContent useAccountsWithBalance (batches of 50 accounts)",
+        "AccountMultisigOption balance chip; global Services wallet modal"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/accounts.ts",
+          "line": 17,
+          "note": "GET with comma-separated accounts query; Number(totalUsd) minus Number(debtUsd ?? 0), without finite validation."
+        },
+        {
+          "path": "packages/web3-connect/src/components/content/AccountSelectContent.utils.ts",
+          "line": 78,
+          "note": "Batch query combines all pending state; any pending batch suppresses full balanceMap."
+        },
+        {
+          "path": "packages/web3-connect/src/components/content/AccountSelectContent.utils.ts",
+          "line": 108,
+          "note": "Missing failed-batch balances become 0."
+        },
+        {
+          "path": "packages/web3-connect/src/components/account/AccountMultisigOption.tsx",
+          "line": 35,
+          "note": "Independent multisig balance query; account selection remains available."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Wallet account valuation; portfolio live balances use chain sources separately.",
+        "featureGate": "All batch valuations wait for slowest batch; wallet account rows do not wait."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Rejected batches settle to zero in combined map; entire display loading while any hangs.",
+        "warm": "Effect can overwrite previously stored wallet USD balances with0 for missing failed batches.",
+        "malformed": "Number of bad numeric strings becomesNaN (no finite guard); no global provider throw identified for this response.",
+        "stale": "No indexed block-age check."
+      },
+      "existingProtections": [
+        "Account rows and selection independent of balance loading",
+        "Multisig chip uses undefined when no result"
+      ],
+      "remediation": [
+        "Represent unavailable as unknown; preserve individually successful batches",
+        "Apply per-batch deadlines and timestamps",
+        "Validate finite numeric conversions"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "No indexed block-age check.",
+        "warm": "Effect can overwrite previously stored wallet USD balances with0 for missing failed batches.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Rejected batches settle to zero in combined map; entire display loading while any hangs.",
+        "malformed": "Number of bad numeric strings becomesNaN (no finite guard); no global provider throw identified for this response."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-platform-stats",
+      "label": "Neckwork platform TVL and volume",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/stats/platform"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "PoolsHeader AllPools / Omnipool / Isolated",
+        "useTotalOmnipoolLiquidity -> PoolDetailsValues"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/stats.ts",
+          "line": 15,
+          "note": "Successful body mapped without runtime schema."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/PoolsHeader/AllPools.tsx",
+          "line": 26,
+          "note": "Only !==null guard; missing undefined fields reach Big math in render."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/PoolsHeader/Omnipool.tsx",
+          "line": 25,
+          "note": "Same missing/invalid numeric route crash path."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/PoolsHeader/Isolated.tsx",
+          "line": 25,
+          "note": "Isolated gated by Neckwork health; chain sum available fallback."
+        },
+        {
+          "path": "apps/main/src/api/omnipool.ts",
+          "line": 165,
+          "note": "Omnipool liquidity hook uses same query."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/PoolDetailsValues/PoolDetailsValues.tsx",
+          "line": 115,
+          "note": "Feature-only pool details consumer."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Liquidity statistics, pool detail TVL.",
+        "malformedBlastRadius": "Browser VERIFIED: liquidity route error screen, while header and navigation remain functional and Hydration remains healthy."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Normal reject yields no totals/placeholders; pool tables/actions chain-backed.",
+        "hang": "Headers loading indefinitely.",
+        "malformed": "HTTP 200 {\"tvl\":{},\"volume24h\":{}} returns undefined fields; AllPools Big(undefined).plus(...) throws. Production browser injection verified /liquidity route error screen, with navigation still present and 1224 Hydration messages received over about 35 seconds.",
+        "warm": "Cached totals can remain under ordinary refetch failure without freshness label."
+      },
+      "existingProtections": [
+        "NO_TOTALS missing-result placeholders",
+        "Isolated header can sum chain liquidity when health dead"
+      ],
+      "remediation": [
+        "Runtime schema with required finite nonnegative TVL/volume",
+        "Compute stats inside query/select with catches",
+        "Wrap optional headers in local error boundary"
+      ],
+      "confidence": "High: exact source query/math and production browser route injection both verified; global navigation survives.",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-missing-stats-values-pass-query"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-http-error-with-complete-body-rejects"
+        },
+        {
+          "path": "audit/browser-additional/neckwork-malformed-stats.json",
+          "check": "production-browser malformed /v1/stats/platform response"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached totals can remain under ordinary refetch failure without freshness label.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Normal reject yields no totals/placeholders; pool tables/actions chain-backed.",
+        "hang": "Headers loading indefinitely.",
+        "malformed": "HTTP 200 {\"tvl\":{},\"volume24h\":{}} returns undefined fields; AllPools Big(undefined).plus(...) throws. Production browser injection verified /liquidity route error screen, with navigation still present and 1224 Hydration messages received over about 35 seconds."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-pair-prices",
+      "label": "Neckwork historical pair prices, reference and tail",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/prices/pair?assetIn=...&assetOut=...&bucket=...&from=...&to=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeChart reference change",
+        "usePairCandleSeries infinite history +60s tail",
+        "XcSwapChart historical Hydration asset/USD leg (USDT bypasses this leg)"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/prices.ts",
+          "line": 55,
+          "note": "Number OHLC conversions with no finite guard."
+        },
+        {
+          "path": "packages/indexer/src/neckwork/prices.ts",
+          "line": 223,
+          "note": "Reference request."
+        },
+        {
+          "path": "packages/indexer/src/neckwork/prices.ts",
+          "line": 258,
+          "note": "Infinite historical request;300 buckets/page."
+        },
+        {
+          "path": "packages/indexer/src/neckwork/prices.ts",
+          "line": 304,
+          "note": "Tail request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/TradeChart/hooks/usePairCandleSeries.ts",
+          "line": 141,
+          "note": "History query."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/TradeChart/hooks/usePairCandleSeries.ts",
+          "line": 167,
+          "note": "Hydration chain spot query remains independent."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/TradeChart/hooks/usePairCandleSeries.ts",
+          "line": 217,
+          "note": "Synthetic point requires newestConfirmed history."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/XcSwapChart/XcSwapChart.data.ts",
+          "line": 111,
+          "note": "USD leg combines optional Neckwork history with Kraken candles."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Trade/XC charts; swap route and chain quotes remain usable.",
+        "fallback": "Legacy Grafana only health dead/fork, not an individual route failure."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Primary history error shows chart error; healthy chain spot alone cannot seed first confirmed candle.",
+        "warm": "Chain spot can extend existing confirmed history; isError on history may hide chart; tail error is not included in same error flag.",
+        "hang": "History remains loading; chart controls/form remain independent.",
+        "malformed": "NaN OHLC accepted as query data; some downstream math/charts may reject (inference).",
+        "stale": "No source candle-age/block-lag validation; chain synthetic last-point coverage depends on retained history."
+      },
+      "existingProtections": [
+        "Tail resampling/poll60s",
+        "Chain spot guard catch",
+        "Window-page cap and dedup merge",
+        "Legacy Grafana when health dead/fork"
+      ],
+      "remediation": [
+        "Bound history and tail requests",
+        "Per-resource fallback to legacy or honest chain spot seed",
+        "Finite OHLC/time validation and source-age indicators"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "No source candle-age/block-lag validation; chain synthetic last-point coverage depends on retained history.",
+        "warm": "Chain spot can extend existing confirmed history; isError on history may hide chart; tail error is not included in same error flag.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Primary history error shows chart error; healthy chain spot alone cannot seed first confirmed candle.",
+        "hang": "History remains loading; chart controls/form remain independent.",
+        "malformed": "NaN OHLC accepted as query data; some downstream math/charts may reject (inference)."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-omnipool-volumes",
+      "label": "Neckwork Omnipool 24h volume",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/omnipool/volumes?period=24h"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Liquidity useOmnipoolAssets"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 11,
+          "note": "GET; typed-only volume/fee body; maps fields."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 269,
+          "note": "Optional volume query independent of chain reserves/actions."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Liquidity volume/fees only; core reserve data and add/remove actions from Hydration."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "existingProtections": [
+        "Separate metric loading from reserves/transactions"
+      ],
+      "remediation": [
+        "Use unknown instead of invented0; validate finite values",
+        "Local optional-widget boundary",
+        "Bound body/network requests"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-stableswap-volumes",
+      "label": "Neckwork Stablepool 24h volume",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/stableswap/volumes?period=24h"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Liquidity useStablepools",
+        "Indirect combined stablepool-in-omnipool volume"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 29,
+          "note": "GET; typed-only volume/fee body; maps fields."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 150,
+          "note": "Volume loading separate; overall loading only chain pools at246."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Liquidity volume/fees only; core reserve data and add/remove actions from Hydration."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "existingProtections": [
+        "Separate metric loading from reserves/transactions"
+      ],
+      "remediation": [
+        "Use unknown instead of invented0; validate finite values",
+        "Local optional-widget boundary",
+        "Bound body/network requests"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-xyk-volumes",
+      "label": "Neckwork XYK 24h volume",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/xyk/volumes?period=24h"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Liquidity useIsolatedPools"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 84,
+          "note": "GET; typed-only volume/fee body; maps fields."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 494,
+          "note": "Optional metrics; actions allowed from chain pool data at625-626."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Liquidity volume/fees only; core reserve data and add/remove actions from Hydration."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "existingProtections": [
+        "Separate metric loading from reserves/transactions"
+      ],
+      "remediation": [
+        "Use unknown instead of invented0; validate finite values",
+        "Local optional-widget boundary",
+        "Bound body/network requests"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-uniswapv3-volumes",
+      "label": "Neckwork UniswapV3 24h volume and fees",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/uniswapv3/volumes?period=24h"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Vaults useVaultsData"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 104,
+          "note": "GET; typed-only volume/fee body; maps fields."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Vaults.utils.ts",
+          "line": 53,
+          "note": "Optional volume/fee lookup; chain vault TVL/shares independent."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Vaults.utils.ts",
+          "line": 123,
+          "note": "Big(fees24h) math downstream can fail for invalid numeric strings."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Liquidity volume/fees only; core reserve data and add/remove actions from Hydration."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "existingProtections": [
+        "Separate metric loading from reserves/transactions"
+      ],
+      "remediation": [
+        "Use unknown instead of invented0; validate finite values",
+        "Local optional-widget boundary",
+        "Bound body/network requests"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "No metric or placeholder; some combined volume uses??0 and valid empty vault feed interpreted0.",
+        "hang": "Metric loading indefinite but pool reserve loading independent.",
+        "malformed": "Bad numeric strings survive mapped fields and can fail render Big math; bad structure map fails within query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-omnipool-yield",
+      "label": "Neckwork Omnipool 30d fee APR",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/omnipool/yield?window=30d"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Liquidity useOmnipoolAssets",
+        "AddLiquidityYield omnipool estimate"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 47,
+          "note": "GET yield; no finite runtime validation."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 273,
+          "note": "Nullable fee retained in pool table."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/AddLiquidity/AddLiquidityYield.tsx",
+          "line": 35,
+          "note": "Optional add-liquidity estimate."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "LP APY/table estimates; chain supply/borrow/add/remove remain available."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Pool fee yield unknown; lending LP missing fee component passed0 so total can undercount.",
+        "warm": "Previous metrics remain, no source-age badge.",
+        "hang": "Stablepool yield query contributes to isLoading for all borrow APYs; one hang hides every aggregate APY.",
+        "malformed": "Number(invalid feeApyPerc) becomesNaN and may reach downstream Big; bad shape rejects in query."
+      },
+      "existingProtections": [
+        "Pool table comments/null handling preserve unknown yield",
+        "Financial actions use chain data"
+      ],
+      "remediation": [
+        "Propagate missing LP rate as unknown component",
+        "Progressive independent APYs",
+        "Finite validation and bounded deadlines"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Pool fee yield unknown; lending LP missing fee component passed0 so total can undercount.",
+        "hang": "Stablepool yield query contributes to isLoading for all borrow APYs; one hang hides every aggregate APY.",
+        "malformed": "Number(invalid feeApyPerc) becomesNaN and may reach downstream Big; bad shape rejects in query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-stableswap-yield",
+      "label": "Neckwork Stablepool 30d fee APR/APY",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/pools/stableswap/yield?window=30d"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "Liquidity useStablepools",
+        "AddLiquidityYield stablepool estimate",
+        "useBorrowAssetsApy -> BorrowContextProvider external APY calculations",
+        "useBorrowAssetsApy -> BorrowContextProvider useExternalApyData",
+        "useBorrowAssetsApy -> ApyProvider/APY columns and breakdowns",
+        "useStablepools -> liquidity tables (including PRIME stablepool)",
+        "AddStablepoolLiquidity summary",
+        "SupplyIsolatedLiquidity APY summary",
+        "Money-market reserve/user selectors and transaction modals"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/pools.ts",
+          "line": 65,
+          "note": "GET yield; no finite runtime validation."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 154,
+          "note": "Optional table metrics."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/AddLiquidity/AddLiquidityYield.tsx",
+          "line": 44,
+          "note": "Optional estimate."
+        },
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 75,
+          "note": "Lending APY aggregate waits on yield metrics."
+        },
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 150,
+          "note": "Missing LP APY sent to totals calculator as0."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/hooks/useExternalApyData.ts",
+          "line": 13,
+          "note": "Shared external APY map consumed by money-market context."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/context/ApyContext.tsx",
+          "line": 25,
+          "note": "APY context for reserve rows."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 203,
+          "note": "Liquidity table uses the same APY calculations."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.tsx",
+          "line": 466,
+          "note": "Add liquidity summary reuses APY data."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity.utils.ts",
+          "line": 144,
+          "note": "Isolated liquidity supply summary reuses APY data."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "LP APY/table estimates; chain supply/borrow/add/remove remain available."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Pool fee yield unknown; lending LP missing fee component passed0 so total can undercount.",
+        "warm": "Previous metrics remain, no source-age badge.",
+        "hang": "Stablepool yield query contributes to isLoading for all borrow APYs; one hang hides every aggregate APY.",
+        "malformed": "Number(invalid feeApyPerc) becomesNaN and may reach downstream Big; bad shape rejects in query."
+      },
+      "existingProtections": [
+        "Pool table comments/null handling preserve unknown yield",
+        "Financial actions use chain data"
+      ],
+      "remediation": [
+        "Propagate missing LP rate as unknown component",
+        "Progressive independent APYs",
+        "Finite validation and bounded deadlines"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous metrics remain, no source-age badge.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Pool fee yield unknown; lending LP missing fee component passed0 so total can undercount.",
+        "hang": "Stablepool yield query contributes to isLoading for all borrow APYs; one hang hides every aggregate APY.",
+        "malformed": "Number(invalid feeApyPerc) becomesNaN and may reach downstream Big; bad shape rejects in query."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-dca-schedules",
+      "label": "Neckwork DCA schedules",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/dca/schedules?owner=...&status=...&assets=...&limit=...&offset=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer",
+        "@galacticcouncil/money-market"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@galacticcouncil/money-market": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders useHistoryData",
+        "TradeOrders useDcaEnrichment",
+        "CollateralChangeModalContent open-budget-DCA warning/consent"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/dca.ts",
+          "line": 83,
+          "note": "Schedule request returns mapped business data."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useHistoryData.ts",
+          "line": 36,
+          "note": "History does not return isError."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useDcaEnrichment.ts",
+          "line": 73,
+          "note": "Indexed amounts reach render-time Big calculations."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/collateral/CollateralChangeModalContent.tsx",
+          "line": 74,
+          "note": "Schedules query captures only data; no loading/error distinction."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/collateral/CollateralChangeModalContent.tsx",
+          "line": 85,
+          "note": "undefined data treated as no open budget DCA."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/collateral/CollateralChangeModalContent.tsx",
+          "line": 169,
+          "note": "Warning consent skipped when source fails or remains pending."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "History/enrichment; current DCA open-order list has chain source.",
+        "safetyDependency": "Open-budget-DCA collateral warning currently relies solely on Neckwork successful response."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "History errors look like no orders; rejected/pending schedule data skips DCA collateral warning and consent.",
+        "warm": "Warm schedules may stale after new orders; no source-indexed-block check.",
+        "hang": "History loading indefinitely; collateral action does not wait, warning absent.",
+        "malformed": "Numeric schedule fields can escape query and throw in render enrichment."
+      },
+      "existingProtections": [
+        "Chain-based current orders remain available normally",
+        "Page limits200 in collateral query"
+      ],
+      "remediation": [
+        "Use Hydration schedule query for collateral risk checks; preserve unknown state until authoritative check",
+        "Explicit history failure view",
+        "Validate numeric fields before cache"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Warm schedules may stale after new orders; no source-indexed-block check.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "History errors look like no orders; rejected/pending schedule data skips DCA collateral warning and consent.",
+        "hang": "History loading indefinitely; collateral action does not wait, warning absent.",
+        "malformed": "Numeric schedule fields can escape query and throw in render enrichment."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-dca-executions",
+      "label": "Neckwork DCA fills",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/dca/schedules/{id}/executions"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders usePastExecutionsData"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/dca.ts",
+          "line": 153,
+          "note": "Execution request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/usePastExecutionsData.ts",
+          "line": 36,
+          "note": "Infinite fill history; skips planned outcomes and bounded empty page traversal."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Order past executions only."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "No fills/error exposed as empty history; settled errors stop next-page traversal.",
+        "warm": "Previous pages remain in query memory; no freshness metadata.",
+        "hang": "Panel pending indefinitely.",
+        "malformed": "Structural failures generally occur during query mapping; numeric fields still typed-only."
+      },
+      "existingProtections": [
+        "Maximum5 empty pages",
+        "Stops on isError",
+        "Chain order/cancel data independent"
+      ],
+      "remediation": [
+        "Local retry/error UI",
+        "Deadline and numeric schema"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous pages remain in query memory; no freshness metadata.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "No fills/error exposed as empty history; settled errors stop next-page traversal.",
+        "hang": "Panel pending indefinitely.",
+        "malformed": "Structural failures generally occur during query mapping; numeric fields still typed-only."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-intents",
+      "label": "Neckwork intent history and enrichment",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/intents?owner=...&status=...&kind=...&assets=...&limit=...&offset=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders useIntentHistoryData",
+        "TradeOrders useIntentEnrichment -> buildOrderRows"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/intents.ts",
+          "line": 101,
+          "note": "Intent listing request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useIntentEnrichment.ts",
+          "line": 35,
+          "note": "Shared listing data for order enrichment."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useIntentEnrichment.ts",
+          "line": 51,
+          "note": "BigInt filledAmountIn/Out occurs in memo outside query."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/lib/buildOrderRows.ts",
+          "line": 625,
+          "note": "Intent amount/id transformation outside source query."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Past intent history/fill enrichment, open order state chain-backed."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Settled failures appear as empty history/default enrichment.",
+        "warm": "Same-key cached history remains.",
+        "hang": "History loading indefinitely.",
+        "malformed": "HTTP200 invalid integer strings cause render-time BigInt exception and trade page error boundary."
+      },
+      "existingProtections": [
+        "Normal query error does not throw into global provider"
+      ],
+      "remediation": [
+        "Validate int strings/ids before cache",
+        "Keep failed enrichment local and chain row visible",
+        "Explicit source error + deadline"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Same-key cached history remains.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Settled failures appear as empty history/default enrichment.",
+        "hang": "History loading indefinitely.",
+        "malformed": "HTTP200 invalid integer strings cause render-time BigInt exception and trade page error boundary."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-intent-events",
+      "label": "Neckwork intent fill events",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/intents/{id}/events"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders useIntentPastExecutionsData"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/intents.ts",
+          "line": 186,
+          "note": "Events request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useIntentPastExecutionsData.ts",
+          "line": 49,
+          "note": "Fill-only infinite history; skips nonfill records."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Intent past executions only."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Failure looks like no fills; initial error not exposed.",
+        "warm": "Cached pages remain.",
+        "hang": "Panel remains loading.",
+        "malformed": "Typed-only amounts/timestamps can pass to downstream rows."
+      },
+      "existingProtections": [
+        "Max5 empty page traversal",
+        "Stops following error"
+      ],
+      "remediation": [
+        "Explicit failure/retry state",
+        "Deadline and finite/integer schema"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Cached pages remain.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Failure looks like no fills; initial error not exposed.",
+        "hang": "Panel remains loading.",
+        "malformed": "Typed-only amounts/timestamps can pass to downstream rows."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-routed-trades",
+      "label": "Neckwork Routed account trades",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/trades/routed?participant=...&assets=...&limit=...&offset=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders useRoutedTradesData"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/trades.ts",
+          "line": 42,
+          "note": "Trades request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useRoutedTradesData.ts",
+          "line": 28,
+          "note": "Consumer captures data/isLoading without isError."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useRoutedTradesData.ts",
+          "line": 49,
+          "note": "Big amount/price conversion occurs in memo after query."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Past trades table only."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Error looks like empty history.",
+        "warm": "Previous same-key trades remain; market query polls30s.",
+        "hang": "No bounded pending state.",
+        "malformed": "Bad successful amount fields can throw in render-time numeric conversion."
+      },
+      "existingProtections": [
+        "Chain swaps remain available"
+      ],
+      "remediation": [
+        "Error source badge and retry",
+        "Runtime amount validation before cache",
+        "Body and request deadline"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous same-key trades remain; market query polls30s.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Error looks like empty history.",
+        "hang": "No bounded pending state.",
+        "malformed": "Bad successful amount fields can throw in render-time numeric conversion."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-market-trades",
+      "label": "Neckwork Market trades",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/trades?assets=...&limit=...&offset=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "TradeOrders useMarketTradesData"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/trades.ts",
+          "line": 84,
+          "note": "Trades request."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useMarketTradesData.ts",
+          "line": 20,
+          "note": "Consumer captures data/isLoading without isError."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useMarketTradesData.ts",
+          "line": 40,
+          "note": "Big amount/price conversion occurs in memo after query."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Past trades table only."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Error looks like empty history.",
+        "warm": "Previous same-key trades remain; market query polls30s.",
+        "hang": "No bounded pending state.",
+        "malformed": "Bad successful amount fields can throw in render-time numeric conversion."
+      },
+      "existingProtections": [
+        "Chain swaps remain available"
+      ],
+      "remediation": [
+        "Error source badge and retry",
+        "Runtime amount validation before cache",
+        "Body and request deadline"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous same-key trades remain; market query polls30s.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Error looks like empty history.",
+        "hang": "No bounded pending state.",
+        "malformed": "Bad successful amount fields can throw in render-time numeric conversion."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-money-market-events",
+      "label": "Neckwork money-market history",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/accounts/{account}/money-market-events?events=...&search=...&limit=...&offset=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useMoneyMarketEvents -> BorrowHistoryTable"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/money-market.ts",
+          "line": 39,
+          "note": "Account history request."
+        },
+        {
+          "path": "apps/main/src/api/borrow/moneyMarketEvents.ts",
+          "line": 72,
+          "note": "keepPreviousData and select map; no isError returned."
+        },
+        {
+          "path": "apps/main/src/api/borrow/moneyMarketEvents.ts",
+          "line": 51,
+          "note": "new Date(timestamp) accepts invalid dates."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/history/BorrowHistoryTable.utils.ts",
+          "line": 23,
+          "note": "InvalidDate.toISOString throws in table row grouping outside query."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Borrow history only; market financial data from Hydration."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Settled error gives undefined/empty history; no explicit failure state.",
+        "warm": "Previous page held while paging via keepPreviousData.",
+        "hang": "History loading indefinite.",
+        "malformed": "Invalid timestamp succeeds select, then toISOString RangeError in page render."
+      },
+      "existingProtections": [
+        "History separated from lending action data",
+        "keepPreviousData"
+      ],
+      "remediation": [
+        "Validate finite valid date within query",
+        "Expose error and locally isolate table",
+        "Deadline"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "Previous page held while paging via keepPreviousData.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Settled error gives undefined/empty history; no explicit failure state.",
+        "hang": "History loading indefinite.",
+        "malformed": "Invalid timestamp succeeds select, then toISOString RangeError in page render."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-fees",
+      "label": "Neckwork fees and revenue charts",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/api/v1/fees/charts?productType=...&streamType=...&feeDestination=...&startTime=...&endTime=...&bucketSize=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "FeesAndRevenue 7 streams; omnipool,money-market,hollar variants"
+      ],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/fees.ts",
+          "line": 199,
+          "note": "Each fee stream queried separately, stale5min."
+        },
+        {
+          "path": "packages/indexer/src/neckwork/fees.ts",
+          "line": 215,
+          "note": "Maps bucket date with Number(newDate) without validity guard."
+        },
+        {
+          "path": "apps/main/src/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenue.tsx",
+          "line": 54,
+          "note": "Separate useQueries; partial successful streams folded."
+        },
+        {
+          "path": "apps/main/src/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenue.tsx",
+          "line": 77,
+          "note": "Any pending stream makes entire result pending."
+        },
+        {
+          "path": "apps/main/src/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenue.tsx",
+          "line": 88,
+          "note": "Manual lastLoadedRef preserves warm prior range until all settle."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Analytics charts only."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "cold": "Ordinary rejected one stream correctly displays partial values; all reject explicit chart error. One hanging stream hides all cold successes indefinitely behind loading.",
+        "warm": "Previous complete result displayed faded during pending new window; failing streams markedunknown.",
+        "malformed": "NaN dates/invalid values can survive typed response mapping and enter chart (boundary outcome inference).",
+        "stale": "No upstream freshness check."
+      },
+      "existingProtections": [
+        "Per-stream failures represented null",
+        "Partial successful streams supported after every pending stream settles",
+        "Warm lastLoadedRef"
+      ],
+      "remediation": [
+        "Render completed streams immediately",
+        "Bound each request; mark pending/failure locally",
+        "Finite timestamps/value schema"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "No upstream freshness check.",
+        "warm": "Previous complete result displayed faded during pending new window; failing streams markedunknown.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "cold": "Ordinary rejected one stream correctly displays partial values; all reject explicit chart error. One hanging stream hides all cold successes indefinitely behind loading.",
+        "malformed": "NaN dates/invalid values can survive typed response mapping and enter chart (boundary outcome inference)."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "neckwork-giga-apr",
+      "label": "Hardcoded Neckwork GIGA APR",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/staking/gigahdx/apr"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useGigaApr -> GigaStakeTotalsHeader"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/api/gigaApr.ts",
+          "line": 18,
+          "note": "Hardcoded mainnet URL, independent of configured ENV Neckwork."
+        },
+        {
+          "path": "apps/main/src/api/gigaApr.ts",
+          "line": 32,
+          "note": "Bare fetch no timeout/signal; schema nullable APR strings."
+        },
+        {
+          "path": "apps/main/src/modules/staking/gigaStaking/GigaStakeTotalsHeader.tsx",
+          "line": 47,
+          "note": "APR hook feature statistic; other totals chain-based."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "GIGA APR display only."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "dns": "Default browser retries then undefined APR/dash; no error surfaced by hook.",
+        "http404": "res.ok checked -> thrown then retries.",
+        "http429": "Same.",
+        "http5xx": "Same.",
+        "hang": "APR loading forever.",
+        "malformed": "JSON/schema reject in query; numeric string semantics not validated.",
+        "stale": "Query stale1h/gc1day, sample source freshness absent."
+      },
+      "existingProtections": [
+        "APR absent rendered dash",
+        "GIGA chain actions independent"
+      ],
+      "remediation": [
+        "Use configured endpoint",
+        "Finite APR schema",
+        "Bound fetch+body and expose stale indicator"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "dns": "Default browser retries then undefined APR/dash; no error surfaced by hook.",
+        "http404": "res.ok checked -> thrown then retries.",
+        "http429": "Same.",
+        "http5xx": "Same.",
+        "hang": "APR loading forever.",
+        "malformed": "JSON/schema reject in query; numeric string semantics not validated.",
+        "stale": "Query stale1h/gc1day, sample source freshness absent."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "legacy-indexer-graphql",
+      "label": "Legacy Hydration explorer GraphQL",
+      "endpoints": [
+        "https://explorer.hydradx.cloud/graphql",
+        "https://3-explorer.lark.hydration.cloud/graphql (node3 lark RPC override)"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "graphql-request": "7.4.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5",
+        "graphql": "16.13.2"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "ExtrinsicByHash / ExtrinsicByBlockAndIndex -> processTransactionToasts",
+        "YieldFarmCreated -> useNewFarms",
+        "OtcOrderStatus -> OfferStatusColumn",
+        "AccumulatedRpsUpdatedEvents / StakingInitializedEvents -> Staking Dashboard APR",
+        "ScheduledOrders / OrdersStatus -> useTradeOrdersHistoryData and legacy order merge",
+        "MigratedOrders -> useMigratedOrdersMerge",
+        "OrderTrades -> useOrderTradesData",
+        "IntentsSubmitted -> useIntentOrdersHistoryData",
+        "IntentEvents -> useIntentFillEnrichment/useIntentOrdersHistoryData/useIntentTradesData"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/.env.production",
+          "line": 2,
+          "note": "Default legacy endpoint."
+        },
+        {
+          "path": "apps/main/src/api/indexer.ts",
+          "line": 7,
+          "note": "Lark mapping."
+        },
+        {
+          "path": "packages/indexer/src/indexer/index.ts",
+          "line": 12,
+          "note": "No runtime schema/deadline on GraphQLClient."
+        },
+        {
+          "path": "packages/indexer/src/indexer/trade-orders.ts",
+          "line": 8,
+          "note": "SDK calls do not supply query cancellation signal."
+        },
+        {
+          "path": "packages/indexer/src/indexer/otc.ts",
+          "line": 11,
+          "note": "OTC history staleTimeInfinity."
+        },
+        {
+          "path": "apps/main/src/api/farms.ts",
+          "line": 169,
+          "note": "New-farm flags use indexer."
+        },
+        {
+          "path": "apps/main/src/modules/staking/DashboardStats.data.ts",
+          "line": 75,
+          "note": "Dashboard APR uses legacy event inputs."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/processors.ts",
+          "line": 164,
+          "note": "Recovered successful EVM transaction confirmation also awaits indexed extrinsic; substrate path204."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/hooks/useProcessTransactionToasts.ts",
+          "line": 132,
+          "note": "Independent per-toast queries; outer retryfalse does not bound nested fetch."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Historical orders/trades, farm flags, OTC original amounts and staking APR.",
+        "featureDependency": "Restored transaction toasts await indexed extrinsics even when a healthy Hydration receipt is already available."
+      },
+      "transportProfile": "graphql",
+      "failures": {
+        "cold": "Errors stay feature-local under ordinary rejection. Several history consumers suppress isError and display empty records.",
+        "warm": "Successful same-key data remains cached; OTC uses staleTime=Infinity and has no source freshness guard.",
+        "hang": "Historical panels, staking APR or an individual restored toast remain pending. Toast queries run independently, so one does not serially block all others.",
+        "malformed": "GraphQL does not validate business values. Invalid numeric strings can throw later Big/BigInt transformations; staking validates some argument shapes but not numeric semantics.",
+        "stale": "No common source indexed-block or sample-age check."
+      },
+      "existingProtections": [
+        "Chain-backed current open orders and pool actions independent",
+        "Per-toast queries",
+        "Some staking event args zod shape validation"
+      ],
+      "remediation": [
+        "Determine transaction outcome from Hydration receipts/events; enrich metadata from indexer optionally.",
+        "Validate runtime response shape and numeric semantics.",
+        "Add signal and request/body deadline to every SDK query.",
+        "Expose unavailable and stale history states."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "graphql-business-data-not-validated"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "graphql-hang-with-no-client-signal"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Rejected and caught by query boundary.",
+        "http404": "GraphQLClient throws HTTP/client error on completed response.",
+        "http429": "Same; no application Retry-After policy.",
+        "http5xx": "Same.",
+        "requestHang": "No deadline.",
+        "bodyHang": "No deadline.",
+        "malformedJson": "Rejected inside transport.",
+        "malformedBusinessData": "GraphQL envelope accepted without runtime validation of typed business data; tested valid envelope with invalid values and invalid accounts shape.",
+        "stale": "No common source indexed-block or sample-age check.",
+        "warm": "Successful same-key data remains cached; OTC uses staleTime=Infinity and has no source freshness guard.",
+        "recovery": "React Query stale focus/reconnect/remount; in-flight hang is never timed out.",
+        "cold": "Errors stay feature-local under ordinary rejection. Several history consumers suppress isError and display empty records.",
+        "hang": "Historical panels, staking APR or an individual restored toast remain pending. Toast queries run independently, so one does not serially block all others.",
+        "malformed": "GraphQL does not validate business values. Invalid numeric strings can throw later Big/BigInt transformations; staking validates some argument shapes but not numeric semantics."
+      },
+      "deadlineMs": null,
+      "cancellation": "Generated SDK accepts optional signal, but query wrappers/clients do not supply it.",
+      "retryPolicy": "Browser React Query default 3 after rejection except outer transaction-toast retry=false; no retry until hang settles."
+    },
+    {
+      "id": "multix-graphql",
+      "label": "Multix multisig discovery",
+      "endpoints": [
+        "https://multix-graphql.lark.hydration.cloud/graphql"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer",
+        "@galacticcouncil/web3-connect"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@galacticcouncil/web3-connect": "0.0.0 (workspace)",
+        "graphql-request": "7.4.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5",
+        "graphql": "16.13.2"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useAccountMultisigs -> global MultisigProvider",
+        "Wallet multisig account options/pending transaction count via MultisigContext"
+      ],
+      "evidence": [
+        {
+          "path": "packages/utils/src/helpers/multix.ts",
+          "line": 4,
+          "note": "Endpoint constant."
+        },
+        {
+          "path": "packages/web3-connect/src/hooks/useAccountMultisigs.ts",
+          "line": 18,
+          "note": "PublicKey account ID; current connected account required."
+        },
+        {
+          "path": "packages/indexer/src/multix/accounts.ts",
+          "line": 9,
+          "note": "SDK query only enabled for accountIds length>0."
+        },
+        {
+          "path": "packages/indexer/src/multix/__generated__/sdk.ts",
+          "line": 66,
+          "note": "Typed transport result lacks runtime schema."
+        },
+        {
+          "path": "apps/main/src/providers/MultisigProvider.tsx",
+          "line": 39,
+          "note": "accounts.map in provider useMemo with truthy-only guard."
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 80,
+          "note": "Global provider wraps MainLayout, Services, Footer and tabs."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Discovery of connected account multisigs and their pending transaction counts. Normal missing data still renders children.",
+        "malformedBlastRadius": "Global MultisigProvider throws during render when a connected account enables discovery. Actual GraphQL transport and exact provider memo body tested; browser error-boundary result is an inference."
+      },
+      "transportProfile": "graphql",
+      "failures": {
+        "cold": "Ordinary DNS or complete HTTP rejection leaves discovered multisigs unavailable; provider children still render.",
+        "warm": "Successful same-key multisig data remains cached during refetch rejection.",
+        "hang": "Discovery loading remains pending indefinitely; provider still renders children.",
+        "malformed": "HTTP 200 GraphQL envelope {\"data\":{\"accounts\":{}}} passes transport, then .map throws in global provider. {\"data\":{\"accounts\":[null]}} similarly throws reading pubKey.",
+        "stale": "No staleTime override or source indexed-block age check."
+      },
+      "existingProtections": [
+        "No network request is awaited as a global mount gate.",
+        "Missing data returns an empty discovery list.",
+        "Pending transactions of discovered multisigs come from Hydration."
+      ],
+      "remediation": [
+        "Validate the full accounts array and member shape inside the query.",
+        "Defend global provider with Array.isArray and valid members.",
+        "Expose a local discovery error without throwing above MainLayout.",
+        "Add deadline and cancellation."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "multix-provider-malformed-accounts-object"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "multix-provider-malformed-accounts-null-item"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Rejected and caught by query boundary.",
+        "http404": "GraphQLClient throws HTTP/client error on completed response.",
+        "http429": "Same; no application Retry-After policy.",
+        "http5xx": "Same.",
+        "requestHang": "No deadline.",
+        "bodyHang": "No deadline.",
+        "malformedJson": "Rejected inside transport.",
+        "malformedBusinessData": "GraphQL envelope accepted without runtime validation of typed business data; tested valid envelope with invalid values and invalid accounts shape.",
+        "stale": "No staleTime override or source indexed-block age check.",
+        "warm": "Successful same-key multisig data remains cached during refetch rejection.",
+        "recovery": "React Query stale focus/reconnect/remount; in-flight hang is never timed out.",
+        "cold": "Ordinary DNS or complete HTTP rejection leaves discovered multisigs unavailable; provider children still render.",
+        "hang": "Discovery loading remains pending indefinitely; provider still renders children.",
+        "malformed": "HTTP 200 GraphQL envelope {\"data\":{\"accounts\":{}}} passes transport, then .map throws in global provider. {\"data\":{\"accounts\":[null]}} similarly throws reading pubKey."
+      },
+      "deadlineMs": null,
+      "cancellation": "Generated SDK accepts optional signal, but query wrappers/clients do not supply it.",
+      "retryPolicy": "Browser React Query default 3 after rejection except outer transaction-toast retry=false; no retry until hang settles."
+    },
+    {
+      "id": "grafana-trade-price",
+      "label": "Grafana historical trade price SQL",
+      "endpoints": [
+        "https://grafana.hydradx.cloud/api/ds/query (POST rawSql; datasourceId10)"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "tradeChartQuery -> TradeChartGrafana (legacy/fork chart)"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/.env.production",
+          "line": 4,
+          "note": "Grafana endpoint; line5 datasourceID10."
+        },
+        {
+          "path": "apps/main/src/api/grafana/fetchGrafana.ts",
+          "line": 8,
+          "note": "HTTP POST forwards signal; no deadline; errorbody await."
+        },
+        {
+          "path": "apps/main/src/api/grafana/tradeChart.ts",
+          "line": 21,
+          "note": "Consumes React Query signal."
+        },
+        {
+          "path": "apps/main/src/api/grafana/TradeChartApi.ts",
+          "line": 110,
+          "note": "Historic transform casts values, missing rates fallback0."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/TradeChartGrafana/TradeChartGrafana.tsx",
+          "line": 60,
+          "note": "Local chart loading/error states; swap form unaffected."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Charts/legacy order enrichment only."
+      },
+      "transportProfile": "grafana",
+      "failures": {
+        "cold": "Explicit chart error after reject; chain trade form remains usable.",
+        "warm": "Cached result retained but error flags may hide it.",
+        "hang": "Mounted chart can load forever; unmount abort works.",
+        "malformed": "Unexpected frame shape rejects in fetch transform; nonfinite rates can pass and affect chart."
+      },
+      "existingProtections": [
+        "React Query cancellation signal forwarded",
+        "Local chart error handling or missing-enrichment fallback"
+      ],
+      "remediation": [
+        "Deadline including body",
+        "Schema finite rawSql results",
+        "Local stale/degraded chart display"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Rejected at query boundary.",
+        "http404": "NonOK error awaits response.text then throws.",
+        "http429": "Same; no Retry-After.",
+        "http5xx": "Same.",
+        "requestHang": "No deadline while mounted.",
+        "bodyHang": "No deadline, even awaiting error text.",
+        "malformedJson": "Rejected within query.",
+        "malformedBusinessData": "Direct data.results[refId].frames[0].data.values indexing; no runtime schema/numeric checks.",
+        "stale": "Historical rate query 5min, no upstream sample-age validation.",
+        "warm": "Cached result retained but error flags may hide it.",
+        "recovery": "Query lifecycle/focus and chart range changes; signal can cancel old observers.",
+        "cold": "Explicit chart error after reject; chain trade form remains usable.",
+        "hang": "Mounted chart can load forever; unmount abort works.",
+        "malformed": "Unexpected frame shape rejects in fetch transform; nonfinite rates can pass and affect chart."
+      },
+      "deadlineMs": null,
+      "cancellation": "React Query signal is consumed by tradeChart, reserveRate, dcaAmounts queryFns and passed to fetch, so unmount cancellation is available.",
+      "retryPolicy": "React Query browser default 3 after rejection."
+    },
+    {
+      "id": "grafana-reserve-rate",
+      "label": "Grafana historical lending rate SQL",
+      "endpoints": [
+        "https://grafana.hydradx.cloud/api/ds/query (POST rawSql; datasourceId10)"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "reserveRateQuery -> SupplyApyChart",
+        "reserveRateQuery -> BorrowApyChart"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/.env.production",
+          "line": 4,
+          "note": "Grafana endpoint; line5 datasourceID10."
+        },
+        {
+          "path": "apps/main/src/api/grafana/fetchGrafana.ts",
+          "line": 8,
+          "note": "HTTP POST forwards signal; no deadline; errorbody await."
+        },
+        {
+          "path": "apps/main/src/api/grafana/reserveRate.ts",
+          "line": 45,
+          "note": "stale5min; queryFn passes signal."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/reserve/components/SupplyApyChart.tsx",
+          "line": 23,
+          "note": "Explicit local isError chart handling."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/reserve/components/BorrowApyChart.tsx",
+          "line": 23,
+          "note": "Same reserve chart error handling."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Charts/legacy order enrichment only."
+      },
+      "transportProfile": "grafana",
+      "failures": {
+        "cold": "Local chart error; live supply/borrow rates still Hydration.",
+        "warm": "Same query data cached no freshness badge.",
+        "hang": "Only chart loading unbounded.",
+        "malformed": "Rate filtering drops <=0; NaN not caught by that test (source inference)."
+      },
+      "existingProtections": [
+        "React Query cancellation signal forwarded",
+        "Local chart error handling or missing-enrichment fallback"
+      ],
+      "remediation": [
+        "Deadline including body",
+        "Schema finite rawSql results",
+        "Local stale/degraded chart display"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Rejected at query boundary.",
+        "http404": "NonOK error awaits response.text then throws.",
+        "http429": "Same; no Retry-After.",
+        "http5xx": "Same.",
+        "requestHang": "No deadline while mounted.",
+        "bodyHang": "No deadline, even awaiting error text.",
+        "malformedJson": "Rejected within query.",
+        "malformedBusinessData": "Direct data.results[refId].frames[0].data.values indexing; no runtime schema/numeric checks.",
+        "stale": "Historical rate query 5min, no upstream sample-age validation.",
+        "warm": "Same query data cached no freshness badge.",
+        "recovery": "Query lifecycle/focus and chart range changes; signal can cancel old observers.",
+        "cold": "Local chart error; live supply/borrow rates still Hydration.",
+        "hang": "Only chart loading unbounded.",
+        "malformed": "Rate filtering drops <=0; NaN not caught by that test (source inference)."
+      },
+      "deadlineMs": null,
+      "cancellation": "React Query signal is consumed by tradeChart, reserveRate, dcaAmounts queryFns and passed to fetch, so unmount cancellation is available.",
+      "retryPolicy": "React Query browser default 3 after rejection."
+    },
+    {
+      "id": "grafana-dca-amounts",
+      "label": "Grafana legacy DCA amount SQL",
+      "endpoints": [
+        "https://grafana.hydradx.cloud/api/ds/query (POST rawSql; datasourceId10)"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "dcaAmountsQuery -> useDcaGrafanaEnrichment"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/.env.production",
+          "line": 4,
+          "note": "Grafana endpoint; line5 datasourceID10."
+        },
+        {
+          "path": "apps/main/src/api/grafana/fetchGrafana.ts",
+          "line": 8,
+          "note": "HTTP POST forwards signal; no deadline; errorbody await."
+        },
+        {
+          "path": "apps/main/src/api/grafana/dcaAmounts.ts",
+          "line": 21,
+          "note": "Query signal consumed, three vectors mapped."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/lib/useDcaGrafanaEnrichment.ts",
+          "line": 1,
+          "note": "Optional enrichment preserves order when no indexed amount."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Charts/legacy order enrichment only."
+      },
+      "transportProfile": "grafana",
+      "failures": {
+        "cold": "Enrichment missing, chain openorder remains.",
+        "warm": "Old enrichment cached.",
+        "hang": "Enrichment request remainsloading, does not block core chain row.",
+        "malformed": "Raw numeric SQL vectors unchecked, may fail Big math downstream."
+      },
+      "existingProtections": [
+        "React Query cancellation signal forwarded",
+        "Local chart error handling or missing-enrichment fallback"
+      ],
+      "remediation": [
+        "Deadline including body",
+        "Schema finite rawSql results",
+        "Local stale/degraded chart display"
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Rejected at query boundary.",
+        "http404": "NonOK error awaits response.text then throws.",
+        "http429": "Same; no Retry-After.",
+        "http5xx": "Same.",
+        "requestHang": "No deadline while mounted.",
+        "bodyHang": "No deadline, even awaiting error text.",
+        "malformedJson": "Rejected within query.",
+        "malformedBusinessData": "Direct data.results[refId].frames[0].data.values indexing; no runtime schema/numeric checks.",
+        "stale": "Historical rate query 5min, no upstream sample-age validation.",
+        "warm": "Old enrichment cached.",
+        "recovery": "Query lifecycle/focus and chart range changes; signal can cancel old observers.",
+        "cold": "Enrichment missing, chain openorder remains.",
+        "hang": "Enrichment request remainsloading, does not block core chain row.",
+        "malformed": "Raw numeric SQL vectors unchecked, may fail Big math downstream."
+      },
+      "deadlineMs": null,
+      "cancellation": "React Query signal is consumed by tradeChart, reserveRate, dcaAmounts queryFns and passed to fetch, so unmount cancellation is available.",
+      "retryPolicy": "React Query browser default 3 after rejection."
+    },
+    {
+      "id": "subsquare-titles",
+      "label": "Subsquare referendum titles",
+      "endpoints": [
+        "https://hydration-api.subsquare.io/gov2/referendums/{id}.json"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "referendumSubscanInfoQuery -> Referenda title cards"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/api/democracy.ts",
+          "line": 255,
+          "note": "Direct title endpoint."
+        },
+        {
+          "path": "apps/main/src/api/democracy.ts",
+          "line": 270,
+          "note": "NonOK immediately returnsnull; zod parsed title body."
+        },
+        {
+          "path": "apps/main/src/modules/staking/Referenda.tsx",
+          "line": 46,
+          "note": "Title separate from chain referenda."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Title text only; chain referendum/voting info unaffected."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "dns": "Default query retries after rejected fetch; no title on final failure.",
+        "http404": "Returns successful null without retries.",
+        "http429": "Returns successful null; no backoff or Retry-After handling.",
+        "http5xx": "Returns successful null without retries.",
+        "hang": "Title can remain loading indefinitely; chain referendum cards and voting data remain available.",
+        "malformed": "Zod rejects malformed body inside query; title unavailable.",
+        "stale": "No upstream timestamp check; default staleTime=0 allows focus/remount refresh."
+      },
+      "existingProtections": [
+        "NonOK => null",
+        "Runtime title shape schema",
+        "Chain referenda/actions separate"
+      ],
+      "remediation": [
+        "Bound request and body with cancellation.",
+        "Display title source as unavailable when appropriate.",
+        "Use a retry policy for transient 429/5xx errors."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "dns": "Default query retries after rejected fetch; no title on final failure.",
+        "http404": "Returns successful null without retries.",
+        "http429": "Returns successful null; no backoff or Retry-After handling.",
+        "http5xx": "Returns successful null without retries.",
+        "hang": "Title can remain loading indefinitely; chain referendum cards and voting data remain available.",
+        "malformed": "Zod rejects malformed body inside query; title unavailable.",
+        "stale": "No upstream timestamp check; default staleTime=0 allows focus/remount refresh."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "subsquare-votes",
+      "label": "Subsquare account vote history proxy",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/proxy/subsquare/users/{address}/referenda/votes?page_size=100&includes_title=1"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "accountVotesQuery -> openGovUnlockedTokensQuery",
+        "useUnlockableNativeTokens -> GIGA/OpenGov unlock display and action preparation"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/api/neckwork.ts",
+          "line": 5,
+          "note": "Proxy origin follows configured Neckwork."
+        },
+        {
+          "path": "apps/main/src/api/external/subsquare.ts",
+          "line": 7,
+          "note": "Proxy votes route."
+        },
+        {
+          "path": "apps/main/src/api/external/subsquare.ts",
+          "line": 47,
+          "note": "Bare fetch/json; no response.ok check."
+        },
+        {
+          "path": "apps/main/src/api/democracy.ts",
+          "line": 342,
+          "note": "Mandatory Promise.all with healthy-chain vote data."
+        },
+        {
+          "path": "apps/main/src/api/locks.ts",
+          "line": 47,
+          "note": "If OpenGov lock>0, awaits Subsquare-based query before independent GIGA unlock calculations."
+        },
+        {
+          "path": "apps/main/src/api/locks.ts",
+          "line": 127,
+          "note": "On combined failure returns zero unlockable/defaultempty and no isError."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "featureGate": "Native unlock calculation when the account has an OpenGov lock; unrelated GIGA unlock calculation is sequenced after this same dependency.",
+        "rationale": "Historical removed-vote conviction locks require history. An empty-list fallback may overstate unlockable funds.",
+        "chainActions": "Other governance, voting and GIGA staking actions use Hydration."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "dns": "Default retries then error; combined unlock hook returns default zero and empty lists without isError. Independent GIGA calculation is skipped.",
+        "http404": "No response.ok check. Error-shaped body rejects; a shaped votes body is accepted despite status.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "hang": "Combined unlock calculation stays pending without a deadline.",
+        "malformed": "Object shape is validated, but conviction uses z.custom without validation and balances are arbitrary strings. Invalid BigInt conversion rejects combined query.",
+        "warm": "Nested ensureQueryData can reuse cached vote history; no indexed-block freshness check.",
+        "stale": "Only page_size=100 requested; there is no pagination or source-block age validation."
+      },
+      "existingProtections": [
+        "Vote response object shape is validated.",
+        "Voting and referendum reads/actions remain independently chain-backed."
+      ],
+      "remediation": [
+        "Calculate independent GIGA unlocks even when historical vote source is unavailable.",
+        "Expose unknown historical unlockability rather than silently returning zero or using empty votes.",
+        "Add request/body deadline.",
+        "Validate conviction, integer balances and source block; paginate if necessary."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "Nested ensureQueryData can reuse cached vote history; no indexed-block freshness check.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "dns": "Default retries then error; combined unlock hook returns default zero and empty lists without isError. Independent GIGA calculation is skipped.",
+        "http404": "No response.ok check. Error-shaped body rejects; a shaped votes body is accepted despite status.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "hang": "Combined unlock calculation stays pending without a deadline.",
+        "malformed": "Object shape is validated, but conviction uses z.custom without validation and balances are arbitrary strings. Invalid BigInt conversion rejects combined query.",
+        "stale": "Only page_size=100 requested; there is no pagination or source-block age validation."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "defillama-apy",
+      "label": "DeFiLlama yield APYs",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/proxy/defillama/yields/chart/{poolId}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/money-market"
+      ],
+      "versions": {
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@galacticcouncil/money-market": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "bignumber.js": "9.3.1",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5",
+        "zustand": "5.0.12"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useExternalApys for vDOT,wstETH,sUSDe,sUSDS,jitoSOL,apyUSD",
+        "useBorrowAssetsApy -> lending table, user netAPY, SupplyModal APY",
+        "Liquidity borrowed-asset APY estimates",
+        "useBorrowAssetsApy -> BorrowContextProvider useExternalApyData",
+        "useBorrowAssetsApy -> ApyProvider/APY columns and breakdowns",
+        "useStablepools -> liquidity tables (including PRIME stablepool)",
+        "AddStablepoolLiquidity summary",
+        "SupplyIsolatedLiquidity APY summary",
+        "Money-market reserve/user selectors and transaction modals"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 27,
+          "note": "One-week TTL."
+        },
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 41,
+          "note": "Receipt timestamp recorded."
+        },
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 61,
+          "note": "Fallback only in catch; nofiniteguard before setApy."
+        },
+        {
+          "path": "apps/main/src/api/external/defillama.ts",
+          "line": 29,
+          "note": "Exact asset-to-pool UUID allowlist (6)."
+        },
+        {
+          "path": "apps/main/src/api/external/defillama.ts",
+          "line": 45,
+          "note": "HTTP check+json+zod; latest row selected with no agevalidation."
+        },
+        {
+          "path": "apps/main/src/api/external/defillama.ts",
+          "line": 54,
+          "note": "Emptyresponse and nullable rates converted0; apyBase0 falls through to totalapy."
+        },
+        {
+          "path": "apps/main/src/api/borrow/queries.ts",
+          "line": 977,
+          "note": "Any source isLoading joins every external APY."
+        },
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 107,
+          "note": "Any APY or stablepool yield pending hides all computed APYs."
+        },
+        {
+          "path": "packages/money-market/src/store/poolSelectors.ts",
+          "line": 201,
+          "note": "Unknown external APY from null-map becomes0 for SupplyModal selector."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/hooks/useExternalApyData.ts",
+          "line": 13,
+          "note": "Shared external APY map consumed by money-market context."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/context/ApyContext.tsx",
+          "line": 25,
+          "note": "APY context for reserve rows."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 203,
+          "note": "Liquidity table uses the same APY calculations."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.tsx",
+          "line": 466,
+          "note": "Add liquidity summary reuses APY data."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity.utils.ts",
+          "line": 144,
+          "note": "Isolated liquidity supply summary reuses APY data."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "External yield components, APY displays and user net APY. Core Aave reserves/actions use Hydration.",
+        "featureCoupling": "Any APY or stablepool-yield request still loading hides all aggregate APY results."
+      },
+      "transportProfile": "apy-cache",
+      "failures": {
+        "cold": "Thrown outage returns null: main APY/net APY preserve unknown, but non-PRIME supply modal reserve selectors convert null to zero. A valid empty feed returns and caches zero.",
+        "warm": "Persisted value received within seven days is reused only after fetch rejects; no stale label.",
+        "hang": "One source can keep every aggregate external APY loading, even with a warm persisted fallback.",
+        "malformed": "Number/schema violations are caught and use cached fallback or null. Empty data is schema-valid and becomes zero.",
+        "stale": "Last sample timestamp is not checked. A successful old sample resets receipt-based cache TTL.",
+        "http404": "HTTP nonOK throws into cache fallback/null.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same."
+      },
+      "existingProtections": [
+        "Persistent fallback within seven days on thrown errors.",
+        "Main APY table, breakdown and user net APY preserve null as unknown.",
+        "Core lending contract reads and actions use Hydration."
+      ],
+      "remediation": [
+        "Bound fetch and body; expose warm fallback immediately with its age.",
+        "Render each asset APY independently.",
+        "Validate source timestamp and distinguish empty from zero.",
+        "Carry value/status/source timestamp metadata through modal selectors."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "defillama-empty-response-cached-as-zero"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "external-apy-cold-warm-and-expired-outage"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "warm-apy-cache-not-used-until-hanging-fetch-settles"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Cold => null; warm <=7day receipt-age entry => last cached APY; older => null.",
+        "http404": "HTTP nonOK throws into cache fallback/null.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "requestHang": "Cache fallback is attempted only after fetch rejects; a hung request never reaches it.",
+        "bodyHang": "Same; unbounded response.json.",
+        "malformedJson": "Caught, uses TTL fallback/null.",
+        "malformedBusinessData": "DeFiLlama validates number shape; Kamino validates APY only as string then BN -> NaN; no finite guard before live-cache write.",
+        "stale": "Last sample timestamp is not checked. A successful old sample resets receipt-based cache TTL.",
+        "warm": "Persisted value received within seven days is reused only after fetch rejects; no stale label.",
+        "recovery": "Queries resolve null/cached on errors; next stale focus/reconnect/remount can fetch again; no periodic interval. Cache expiry checked only on catch, not on mounted display.",
+        "cold": "Thrown outage returns null: main APY/net APY preserve unknown, but non-PRIME supply modal reserve selectors convert null to zero. A valid empty feed returns and caches zero.",
+        "hang": "One source can keep every aggregate external APY loading, even with a warm persisted fallback.",
+        "malformed": "Number/schema violations are caught and use cached fallback or null. Empty data is schema-valid and becomes zero."
+      },
+      "deadlineMs": null,
+      "cancellation": "Bare fetch; no React Query signal passed.",
+      "retryPolicy": "Fetch/cache helper catches thrown errors and resolves cached number or null. React Query therefore sees success and does not retry; Kamino additionally retry=0."
+    },
+    {
+      "id": "kamino-apy",
+      "label": "Kamino PRIME APY",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/proxy/kamino/yields/3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7/history?start=now-2h&end=now"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/money-market"
+      ],
+      "versions": {
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@galacticcouncil/money-market": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "bignumber.js": "9.3.1",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5",
+        "zustand": "5.0.12"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useExternalApys PRIME",
+        "useBorrowAssetsApy -> BorrowContextProvider and financial action content",
+        "useBorrowAssetsApy -> BorrowContextProvider useExternalApyData",
+        "useBorrowAssetsApy -> ApyProvider/APY columns and breakdowns",
+        "useStablepools -> liquidity tables (including PRIME stablepool)",
+        "AddStablepoolLiquidity summary",
+        "SupplyIsolatedLiquidity APY summary",
+        "Money-market reserve/user selectors and transaction modals"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 27,
+          "note": "One-week TTL."
+        },
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 41,
+          "note": "Receipt timestamp recorded."
+        },
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 61,
+          "note": "Fallback only in catch; nofiniteguard before setApy."
+        },
+        {
+          "path": "apps/main/src/api/external/kamino.ts",
+          "line": 33,
+          "note": "Fetch lacks response.ok/signal/deadline; 2h requestedrange."
+        },
+        {
+          "path": "apps/main/src/api/external/kamino.ts",
+          "line": 21,
+          "note": "createdOn/apr/apy are arbitrary strings."
+        },
+        {
+          "path": "apps/main/src/api/external/kamino.ts",
+          "line": 43,
+          "note": "BN invalidstring yieldsNaN; emptyhistory uses static PRIME_APY."
+        },
+        {
+          "path": "packages/money-market/src/ui-config/misc.ts",
+          "line": 18,
+          "note": "Static PRIME_APY=0.075 (7.5%)."
+        },
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 319,
+          "note": "SuccessfulNaN becomes Big(NaN) during APY render calculations outsidequery."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/hooks/useExternalApyData.ts",
+          "line": 13,
+          "note": "Shared external APY map consumed by money-market context."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/context/ApyContext.tsx",
+          "line": 25,
+          "note": "APY context for reserve rows."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/Liquidity.utils.tsx",
+          "line": 203,
+          "note": "Liquidity table uses the same APY calculations."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.tsx",
+          "line": 466,
+          "note": "Add liquidity summary reuses APY data."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity.utils.ts",
+          "line": 144,
+          "note": "Isolated liquidity supply summary reuses APY data."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/supply/SupplyModalContent.tsx",
+          "line": 321,
+          "note": "PRIME special case displays static PRIME_APY, regardless live data."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "PRIME external yield in shared money-market and liquidity APY calculations.",
+        "malformedBlastRadius": "Borrow provider and any liquidity APY consumers that include PRIME may throw during render; route boundary outcome not browser-tested in this slice."
+      },
+      "transportProfile": "apy-cache",
+      "failures": {
+        "cold": "Thrown error returns null to main APY calculation. PRIME supply modal independently displays static PRIME_APY=7.5%, not the live Kamino rate. A valid empty history also returns 7.5%.",
+        "warm": "Within seven-day receipt age, fallback is used only after rejection; no stale marker.",
+        "hang": "One source keeps aggregate APYs loading; stored fallback is not consulted while request is pending.",
+        "malformed": "apy=\"not-a-number\" passes string schema, returns and writes NaN into the live cache. Later Big(NaN) throws in shared borrow/liquidity APY calculations.",
+        "http404": "No HTTP status check; a valid shaped APY history body can be accepted on nonOK status.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "stale": "createdOn is neither parsed nor checked; old successful row resets receipt-based cache age."
+      },
+      "existingProtections": [
+        "Seven-day persisted fallback on thrown errors.",
+        "Main APY/net APY supports unknown null.",
+        "Core reserve data and transactions use Hydration.",
+        "PRIME supply modal uses static 7.5% regardless of live APY."
+      ],
+      "remediation": [
+        "Validate finite decimal APY and sample timestamp before cache write.",
+        "Add HTTP status check and fetch/body deadline.",
+        "Return stored fallback immediately with freshness metadata.",
+        "Handle optional APY failures locally.",
+        "Display whether PRIME rate is static, live, stale or unavailable."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kamino-nonnumeric-string-cached-as-NaN"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kamino-stale-row-treated-as-current"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "external-apy-cold-warm-and-expired-outage"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "warm-apy-cache-not-used-until-hanging-fetch-settles"
+        }
+      ],
+      "failureMatrix": {
+        "dns": "Cold => null; warm <=7day receipt-age entry => last cached APY; older => null.",
+        "http404": "No HTTP status check; a valid shaped APY history body can be accepted on nonOK status.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "requestHang": "Cache fallback is attempted only after fetch rejects; a hung request never reaches it.",
+        "bodyHang": "Same; unbounded response.json.",
+        "malformedJson": "Caught, uses TTL fallback/null.",
+        "malformedBusinessData": "DeFiLlama validates number shape; Kamino validates APY only as string then BN -> NaN; no finite guard before live-cache write.",
+        "stale": "createdOn is neither parsed nor checked; old successful row resets receipt-based cache age.",
+        "warm": "Within seven-day receipt age, fallback is used only after rejection; no stale marker.",
+        "recovery": "Queries resolve null/cached on errors; next stale focus/reconnect/remount can fetch again; no periodic interval. Cache expiry checked only on catch, not on mounted display.",
+        "cold": "Thrown error returns null to main APY calculation. PRIME supply modal independently displays static PRIME_APY=7.5%, not the live Kamino rate. A valid empty history also returns 7.5%.",
+        "hang": "One source keeps aggregate APYs loading; stored fallback is not consulted while request is pending.",
+        "malformed": "apy=\"not-a-number\" passes string schema, returns and writes NaN into the live cache. Later Big(NaN) throws in shared borrow/liquidity APY calculations."
+      },
+      "deadlineMs": null,
+      "cancellation": "Bare fetch; no React Query signal passed.",
+      "retryPolicy": "Fetch/cache helper catches thrown errors and resolves cached number or null. React Query therefore sees success and does not retry; Kamino additionally retry=0."
+    },
+    {
+      "id": "kraken-prices",
+      "label": "Kraken NEAR/ZEC spot and historical USD",
+      "endpoints": [
+        "https://api.kraken.com/0/public/OHLC?pair=NEARUSD&interval=...",
+        "https://api.kraken.com/0/public/OHLC?pair=ZECUSD&interval=..."
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "useKrakenSpotPrice -> portfolio NEAR USD valuation",
+        "useKrakenSpotPrice -> XcSwapProvider destination balance display",
+        "useKrakenOhlc -> XcSwapChart with Neckwork historical sellleg"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/api/external/kraken.ts",
+          "line": 56,
+          "note": "Barefetch no deadline/signal; nonOK/errorarraythrows."
+        },
+        {
+          "path": "apps/main/src/api/external/kraken.ts",
+          "line": 83,
+          "note": "Tuple numericstrings Number->NaN accepted."
+        },
+        {
+          "path": "apps/main/src/api/external/kraken.ts",
+          "line": 93,
+          "note": "retry2; history stale1h/gc1day."
+        },
+        {
+          "path": "apps/main/src/api/external/kraken.ts",
+          "line": 120,
+          "note": "Spotstale5min selects lastclose withoutsample-ageguard."
+        },
+        {
+          "path": "apps/main/src/api/portfolio/multichain.ts",
+          "line": 185,
+          "note": "NEAR spotfallback consumer."
+        },
+        {
+          "path": "apps/main/src/api/portfolio/multichain.ts",
+          "line": 225,
+          "note": "Guard excludes undefined only; NaN is converted to string and reaches Big at line233 during memo."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/sections/XcSwap/XcSwapProvider.tsx",
+          "line": 184,
+          "note": "Destinationbalance valuation only."
+        },
+        {
+          "path": "apps/main/src/modules/trade/swap/components/XcSwapChart/XcSwapChart.data.ts",
+          "line": 123,
+          "note": "Historicforeignleg local chart."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "optional": "Foreign USD balance valuation and XC chart; Hydration trade remains available.",
+        "malformedBlastRadius": "Portfolio NEAR USD calculation can throw for a malformed successful close; route render impact follows source placement."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "dns": "Two retries then foreign USD unavailable; balance source remains separate.",
+        "http404": "NonOK rejects, retried twice.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "hang": "No request/body deadline; USD/chart request can remain pending indefinitely.",
+        "malformed": "Tuple validates OHLC fields as strings only. Number(bad) gives NaN; portfolio later evaluates Big(\"NaN\") and throws.",
+        "warm": "Cached same-key candles remain; no source freshness badge.",
+        "stale": "Last candle accepted as spot without an age check or periodic poll."
+      },
+      "existingProtections": [
+        "Explicit NEAR/ZEC pair allowlist.",
+        "Zod validates tuple/envelope shape.",
+        "Two query retries after rejection.",
+        "Undefined price permits balances without USD valuation."
+      ],
+      "remediation": [
+        "Require finite positive OHLC and valid sample timestamp.",
+        "Bound fetch and body.",
+        "Keep balance usable while USD valuation is unknown or stale."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kraken-NaN-close-is-successful-data"
+        }
+      ],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "Cached same-key candles remain; no source freshness badge.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "dns": "Two retries then foreign USD unavailable; balance source remains separate.",
+        "http404": "NonOK rejects, retried twice.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same.",
+        "hang": "No request/body deadline; USD/chart request can remain pending indefinitely.",
+        "malformed": "Tuple validates OHLC fields as strings only. Number(bad) gives NaN; portfolio later evaluates Big(\"NaN\") and throws.",
+        "stale": "Last candle accepted as spot without an age check or periodic poll."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "money-market-hydration-evm",
+      "label": "Money-market core Aave provider (Hydration EVM only)",
+      "endpoints": [
+        "Selected Hydration WebSocket RPC -> papiClient._request -> viem custom EIP-1193 transport (chainId222222 or333333)"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/money-market"
+      ],
+      "versions": {
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@galacticcouncil/money-market": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2",
+        "zod": "4.3.6 (where schema is used)",
+        "react": "19.2.5",
+        "@aave/contract-helpers": "1.23.1",
+        "@aave/math-utils": "1.23.1",
+        "ethers": "5.7.0"
+      },
+      "runtimeStatus": "active",
+      "consumers": [
+        "BorrowContextProvider SharedDependenciesProvider",
+        "UiPoolDataProvider/UiIncentiveDataProvider/Pool contracts",
+        "poolSlice refreshPoolData / refreshIncentiveData / refreshUserData / refreshUserIncentivesData / GHO",
+        "All supply/borrow/repay/withdraw/collateral transactions"
+      ],
+      "evidence": [
+        {
+          "path": "apps/main/src/modules/borrow/BorrowContextProvider.tsx",
+          "line": 94,
+          "note": "Money-market provider uses current Hydration evm.transport."
+        },
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 83,
+          "note": "Viem custom transport forwards EVM requests to selected Hydration PAPI."
+        },
+        {
+          "path": "apps/main/src/api/borrow/contracts.ts",
+          "line": 26,
+          "note": "Aave helpers use ethers Web3Provider around the same Hydration transport."
+        },
+        {
+          "path": "packages/money-market/src/utils/provider.ts",
+          "line": 6,
+          "note": "getProvider ignores chain ID and returns shared provider."
+        },
+        {
+          "path": "packages/money-market/src/store/poolSlice.ts",
+          "line": 263,
+          "note": "Pool/user/incentive refreshes write results separately; errors are logged and previous values retained."
+        },
+        {
+          "path": "packages/money-market/src/hooks/app-data-provider/useAppDataProvider.tsx",
+          "line": 1,
+          "note": "Core reserve/user loading is separate from optional external APYs."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "required": "Hydration RPC is the intentionally permitted hard dependency.",
+        "foreignRpc": "Core money-market provider does not use a foreign Ethereum RPC in current configuration.",
+        "optionalOutsideCore": "Neckwork events/yields/DCA warning, DeFiLlama/Kamino APYs and Grafana history are separate optional dependency entries."
+      },
+      "transportProfile": "hydration-allowed",
+      "failures": {
+        "externalAllDown": "Normal external-source failures do not prevent core lending contract reads. APY/history degrade.",
+        "warm": "Individual contract refresh failures retain previous data; no freshness/offline marker (Hydration failure is outside the prime directive).",
+        "malformedExternal": "Optional APY computation can throw in shared context before borrowing children render; see Kamino dependency."
+      },
+      "existingProtections": [
+        "Hydration transport reused for Aave contracts.",
+        "Refresh results are written independently.",
+        "Thrown refresh errors caught and logged."
+      ],
+      "remediation": [
+        "Keep optional APY/history calculations outside required provider rendering.",
+        "Expose source freshness when retaining previous values."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "externalAllDown": "Normal external-source failures do not prevent core lending contract reads. APY/history degrade.",
+        "warm": "Individual contract refresh failures retain previous data; no freshness/offline marker (Hydration failure is outside the prime directive).",
+        "malformedExternal": "Optional APY computation can throw in shared context before borrowing children render; see Kamino dependency."
+      },
+      "deadlineMs": null,
+      "cancellation": null,
+      "retryPolicy": null
+    },
+    {
+      "id": "dormant-neckwork-exports",
+      "label": "Dormant Neckwork count/single-intent exports",
+      "endpoints": [
+        "https://hydration-api.neckwork.net/v1/dca/schedules/count",
+        "https://hydration-api.neckwork.net/v1/intents/count",
+        "https://hydration-api.neckwork.net/v1/intents/{id}"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "openapi-fetch": "0.17.0",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2"
+      },
+      "runtimeStatus": "dormant",
+      "consumers": [],
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/dca.ts",
+          "line": 111,
+          "note": "dcaSchedulesCountQuery export has no current consumer."
+        },
+        {
+          "path": "packages/indexer/src/neckwork/intents.ts",
+          "line": 131,
+          "note": "intentsCountQuery and intentQuery exports have no current consumer."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "runtime": "No active fetch consumer found in current source. Do not count as a mandatory runtime dependency."
+      },
+      "transportProfile": "neckwork",
+      "failures": {
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "existingProtections": [],
+      "remediation": [
+        "Remove unused exports or document resilience requirements before activating them."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "dns": "Fetch rejects; query boundary catches.",
+        "http404": "Middleware waits for cloned JSON error body, then throws NeckworkApiError.",
+        "http429": "Same; no Retry-After handling.",
+        "http5xx": "Same. Separate health probe marks >=500 dead only if /v1/status fails.",
+        "requestHang": "No deadline; query remains pending indefinitely.",
+        "bodyHang": "No deadline, including HTTP error body: readErrorMessage awaits response.clone().json() before throwing.",
+        "malformedJson": "JSON parser rejects, query boundary catches.",
+        "malformedBusinessData": "Generated OpenAPI types are compile-time only; no complete runtime/numeric schema; some transformation errors occur inside query, others downstream in render.",
+        "stale": "Most queries staleTime=60000; staleTime triggers fetching eligibility, not maximum upstream sample age. No common response block/timestamp lag guard.",
+        "warm": "React Query retains successful same-key cache during refetch/error; most consumers do not expose its freshness.",
+        "recovery": "New query, focus/reconnect/remount for stale queries and enabled refetch intervals; no recovery while original hung request remains in flight.",
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "deadlineMs": null,
+      "cancellation": "Client/queryFns do not pass React Query AbortSignal. Optional HTTP health probe is separately bounded at 2000 ms.",
+      "retryPolicy": "React Query browser default 3 retries after rejection unless consumer override; retry requires request to settle."
+    },
+    {
+      "id": "dormant-subscan-supply",
+      "label": "Dormant Subscan HDX supply API",
+      "endpoints": [
+        "https://hydration.api.subscan.io/api/scan/token"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2"
+      },
+      "runtimeStatus": "dormant",
+      "consumers": [],
+      "evidence": [
+        {
+          "path": "packages/utils/src/constants/url.ts",
+          "line": 1,
+          "note": "SUBSCAN_HYDRADX_API constant."
+        },
+        {
+          "path": "apps/main/src/api/staking.ts",
+          "line": 61,
+          "note": "subscanHDXSupplyQuery is exported but unused; its key is only invalidated elsewhere."
+        },
+        {
+          "path": "apps/main/src/modules/staking/DashboardStats.data.ts",
+          "line": 34,
+          "note": "Current dashboard uses hardcoded HDX supply 5918000000000000000000."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "runtime": "No active fetch consumer found in current source. Do not count as a mandatory runtime dependency."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "existingProtections": [
+        "Noactivefetch"
+      ],
+      "remediation": [
+        "Remove unused exports or document resilience requirements before activating them."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "dormant-old-metrics",
+      "label": "Dormant former metrics aggregator API",
+      "endpoints": [
+        "https://hydration-metrics-aggregator.indexer.hydration.cloud/api/v1/fees/charts"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2"
+      },
+      "runtimeStatus": "dormant",
+      "consumers": [],
+      "evidence": [
+        {
+          "path": "apps/main/src/api/stats.ts",
+          "line": 31,
+          "note": "Oldmetrics URLconstant."
+        },
+        {
+          "path": "apps/main/src/api/stats.ts",
+          "line": 171,
+          "note": "useFeesChartsData export has no active import; current FeesAndRevenue uses Neckwork."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "runtime": "No active fetch consumer found in current source. Do not count as a mandatory runtime dependency."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "existingProtections": [
+        "Newactivefeesquery isseparateNeckwork entry"
+      ],
+      "remediation": [
+        "Remove unused exports or document resilience requirements before activating them."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    },
+    {
+      "id": "dormant-subscan-proxy",
+      "label": "Dormant Subscan API helper",
+      "endpoints": [
+        "https://unified-main-aggr-indx.indexer.hydration.cloud/proxy/subscan"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/indexer"
+      ],
+      "versions": {
+        "@galacticcouncil/indexer": "0.0.0 (workspace)",
+        "@galacticcouncil/main": "0.0.0 (workspace)",
+        "@tanstack/react-query": "5.101.4",
+        "big.js": "6.2.2"
+      },
+      "runtimeStatus": "dormant",
+      "consumers": [],
+      "evidence": [
+        {
+          "path": "packages/utils/src/helpers/subscan.ts",
+          "line": 12,
+          "note": "No active call to subscan.api found. Explorer link helpers are navigation links rather than fetched runtime sources."
+        }
+      ],
+      "requiredness": {
+        "globalMountGate": false,
+        "runtime": "No active fetch consumer found in current source. Do not count as a mandatory runtime dependency."
+      },
+      "transportProfile": "bare-fetch",
+      "failures": {
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "existingProtections": [],
+      "remediation": [
+        "Remove unused exports or document resilience requirements before activating them."
+      ],
+      "confidence": "high for source facts; downstream boundary/display impacts are source inference unless testRef says exact source function",
+      "testRefs": [],
+      "failureMatrix": {
+        "requestHang": "Pending indefinitely.",
+        "bodyHang": "response.json may hang indefinitely.",
+        "warm": "React Query same-key cache retained; no freshness indicator unless noted.",
+        "recovery": "Query lifecycle only unless explicit interval noted.",
+        "outage": "No effect on the current UI from this unused export/helper. Offsite explorer links may independently fail."
+      },
+      "deadlineMs": null,
+      "cancellation": "No AbortSignal supplied.",
+      "retryPolicy": "Consumer-specific React Query policy applies after rejection, never while hung."
+    }
+  ],
+  "findings": [
+    {
+      "id": "multix-global-malformed",
+      "severity": "high",
+      "title": "Malformed successful Multix response can crash global UI with Hydration healthy",
+      "dependencyIds": [
+        "multix-graphql"
+      ],
+      "blastRadius": "app-wide, connected account required",
+      "evidence": [
+        {
+          "path": "apps/main/src/providers/MultisigProvider.tsx",
+          "line": 39,
+          "note": "accounts.map outsidequery."
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 80,
+          "note": "Global treeplacement."
+        }
+      ],
+      "observation": "Actual graphql-request accepts {\"data\":{\"accounts\":{}}}; the exact provider memo body throws TypeError. The provider wraps MainLayout, Services and Footer. Global boundary outcome is source inference; no connected-account browser test was run.",
+      "remediation": "Validate the response inside query; defensively check array and members in global provider; isolate optional discovery errors.",
+      "confidence": "high",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "multix-provider-malformed-accounts-object"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "multix-provider-malformed-accounts-null-item"
+        }
+      ]
+    },
+    {
+      "id": "malformed-financial-data-render",
+      "severity": "high",
+      "title": "Unchecked valid JSON numeric/date data escapes query error handling and crashes feature pages",
+      "dependencyIds": [
+        "kamino-apy",
+        "neckwork-platform-stats",
+        "neckwork-intents",
+        "neckwork-dca-schedules",
+        "neckwork-money-market-events",
+        "kraken-prices"
+      ],
+      "blastRadius": "Borrow, liquidity, trade, or portfolio route depending on mounted consumer. Liquidity route error is browser verified; global navigation survives.",
+      "evidence": [
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 319,
+          "note": "Big(NaN) may throw during APY memo."
+        },
+        {
+          "path": "apps/main/src/modules/liquidity/components/PoolsHeader/AllPools.tsx",
+          "line": 37,
+          "note": "Big(undefined).plus(...) executes during header render."
+        },
+        {
+          "path": "apps/main/src/modules/borrow/history/BorrowHistoryTable.utils.ts",
+          "line": 23,
+          "note": "Invalid Date ISO conversion occurs during table grouping."
+        }
+      ],
+      "observation": "React Query catches transport and queryFn errors, but later memo/render conversions can still throw. Kamino NaN, Kraken NaN and Neckwork missing values were verified in exact-source tests. Production /liquidity browser injection also verified a route error while header/navigation and Hydration remain alive.",
+      "remediation": "Validate finite numbers, integer strings and dates before caching; isolate optional calculations locally.",
+      "confidence": "high",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kamino-nonnumeric-string-cached-as-NaN"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-missing-stats-values-pass-query"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kraken-NaN-close-is-successful-data"
+        },
+        {
+          "path": "audit/browser-additional/neckwork-malformed-stats.json",
+          "check": "production-browser route error with healthy Hydration"
+        }
+      ]
+    },
+    {
+      "id": "external-no-deadline",
+      "severity": "medium",
+      "title": "Health watchdog does not bound data requests; hangs bypass caches and partial rendering",
+      "dependencyIds": [
+        "neckwork-status",
+        "defillama-apy",
+        "kamino-apy",
+        "neckwork-fees",
+        "legacy-indexer-graphql",
+        "grafana-trade-price",
+        "grafana-reserve-rate",
+        "subsquare-votes",
+        "multix-graphql"
+      ],
+      "blastRadius": "Optional charts, history, APYs and unlock panels remain pending; core Hydration features generally remain usable.",
+      "evidence": [
+        {
+          "path": "packages/indexer/src/neckwork/index.ts",
+          "line": 52,
+          "note": "Error middleware awaits JSON error body without a deadline."
+        },
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 62,
+          "note": "Cached fallback is consulted only after fetch settles."
+        },
+        {
+          "path": "apps/main/src/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenue.tsx",
+          "line": 77,
+          "note": "Any pending stream hides all cold chart streams."
+        },
+        {
+          "path": "apps/main/src/api/borrow/queries.ts",
+          "line": 977,
+          "note": "Any loading APY source marks all APYs loading."
+        }
+      ],
+      "observation": "The 2000 ms status probe does not bound other data requests. Unfinished JSON body on 404/429/503 keeps Neckwork middleware pending before error classification. Aggregate APYs await the slowest request; a cold fee chart hides successful streams while any stream is pending.",
+      "remediation": "Bound request and body, pass cancellation signals, expose warm data immediately and render completed optional sources independently.",
+      "confidence": "high",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-200"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-404"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-429"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "neckwork-body-hang-503"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "warm-apy-cache-not-used-until-hanging-fetch-settles"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "graphql-hang-with-no-client-signal"
+        }
+      ]
+    },
+    {
+      "id": "collateral-dca-warning-failopen",
+      "severity": "high",
+      "title": "Neckwork schedules outage skips DCA collateral warning and consent",
+      "dependencyIds": [
+        "neckwork-dca-schedules"
+      ],
+      "blastRadius": "Collateral toggle warning and consent.",
+      "evidence": [
+        {
+          "path": "packages/money-market/src/components/transactions/collateral/CollateralChangeModalContent.tsx",
+          "line": 74,
+          "note": "Only schedules data is read; loading/error state ignored."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/collateral/CollateralChangeModalContent.tsx",
+          "line": 169,
+          "note": "Undefined schedules skip DCA consent requirement."
+        }
+      ],
+      "observation": "Rejected or pending schedules are treated as no open-budget DCA. The modal consequently skips the DCA warning and its consent requirement. This dependency is safety-related even though the same endpoint mostly supplies optional history.",
+      "remediation": "Use authoritative Hydration DCA state for the risk check; preserve an explicit unknown state until checked.",
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "subsquare-blocks-giga-unlock",
+      "severity": "medium",
+      "title": "Subsquare vote history failure also suppresses unrelated GIGA unlock calculation",
+      "dependencyIds": [
+        "subsquare-votes"
+      ],
+      "blastRadius": "Native and GIGA unlock feature for accounts with an OpenGov lock.",
+      "evidence": [
+        {
+          "path": "apps/main/src/api/locks.ts",
+          "line": 47,
+          "note": "Historical vote fetch awaited before GIGA chain calculation."
+        },
+        {
+          "path": "apps/main/src/api/locks.ts",
+          "line": 127,
+          "note": "Zero and empty defaults returned without source error."
+        }
+      ],
+      "observation": "If referendaLock>0, the hook awaits Subsquare history before calculating unrelated GIGA unlocks. Outage/hang therefore skips the GIGA path; settled error defaults the UI to zero without isError.",
+      "remediation": "Split independent GIGA computation; expose unknown historical unlockability without an unsafe empty-votes fallback.",
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "unknown-rates-converted-zero",
+      "severity": "medium",
+      "title": "Unavailable APY becomes 0 in supply modal/LP total and empty DeFiLlama feed",
+      "dependencyIds": [
+        "defillama-apy",
+        "kamino-apy",
+        "neckwork-stableswap-yield"
+      ],
+      "blastRadius": "Financial rate displays and aggregate APYs.",
+      "evidence": [
+        {
+          "path": "packages/money-market/src/store/poolSelectors.ts",
+          "line": 201,
+          "note": "Unknown external APY converted to zero by reserve selector."
+        },
+        {
+          "path": "apps/main/src/api/borrow/hooks.ts",
+          "line": 150,
+          "note": "Missing LP fee APY passed into totals as zero."
+        },
+        {
+          "path": "apps/main/src/api/external/defillama.ts",
+          "line": 54,
+          "note": "Valid empty DeFiLlama feed becomes zero."
+        },
+        {
+          "path": "packages/money-market/src/components/transactions/supply/SupplyModalContent.tsx",
+          "line": 321,
+          "note": "PRIME special case displays static 7.5% rather than live Kamino rate."
+        }
+      ],
+      "observation": "Main APY/net APY supports null, but non-PRIME supply modal selectors convert null to zero and LP fee totals substitute zero. A valid empty DeFiLlama feed becomes cached zero. PRIME supply modal separately always displays static 7.5%, regardless Kamino result.",
+      "remediation": "Preserve unavailable rate status through totals and modals; label static/live/stale rates and distinguish empty feed from zero.",
+      "confidence": "high",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "defillama-empty-response-cached-as-zero"
+        }
+      ]
+    },
+    {
+      "id": "sample-freshness-not-enforced",
+      "severity": "medium",
+      "title": "External yield cache TTL measures receipt rather than source age",
+      "dependencyIds": [
+        "defillama-apy",
+        "kamino-apy",
+        "kraken-prices"
+      ],
+      "blastRadius": "External APY and USD price freshness.",
+      "evidence": [
+        {
+          "path": "apps/main/src/states/externalApy.ts",
+          "line": 41,
+          "note": "Receipt timestamp recorded as Date.now()."
+        },
+        {
+          "path": "apps/main/src/api/external/kamino.ts",
+          "line": 41,
+          "note": "Last sample accepted without checking createdOn."
+        },
+        {
+          "path": "apps/main/src/api/external/kraken.ts",
+          "line": 121,
+          "note": "Last close accepted without checking candle age."
+        }
+      ],
+      "observation": "Old successful samples refresh receipt-based TTL. Fallback values have no source timestamp/error metadata. TTL is only checked in the fetch error path, so displayed query data can also outlive it without another fetch.",
+      "remediation": "Validate source timestamp and cache original sample time; carry status/age metadata and enforce a maximum display age.",
+      "confidence": "high",
+      "testRefs": [
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "kamino-stale-row-treated-as-current"
+        },
+        {
+          "path": "audit/deep-data-faults.json",
+          "check": "external-apy-cold-warm-and-expired-outage"
+        }
+      ]
+    },
+    {
+      "id": "resource-health-fallback-gap",
+      "severity": "medium",
+      "title": "Global healthy status prevents fallback for partial Neckwork route failures",
+      "dependencyIds": [
+        "neckwork-status",
+        "neckwork-pair-prices",
+        "neckwork-dca-schedules"
+      ],
+      "blastRadius": "Trade history and chart features.",
+      "evidence": [
+        {
+          "path": "apps/main/src/modules/trade/swap/tradeDataSource.ts",
+          "line": 18,
+          "note": "Backend selection uses global health and fork only."
+        },
+        {
+          "path": "apps/main/src/states/neckwork.ts",
+          "line": 21,
+          "note": "404/429 unknown status leaves Neckwork enabled."
+        }
+      ],
+      "observation": "Status200 with 404/429/5xx on prices or schedules keeps Neckwork primary selected. Legacy GraphQL/Grafana fallback is keyed to global health rather than the failed resource.",
+      "remediation": "Use bounded per-resource fallback/circuit breaker and preserve independent chain actions.",
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "sync-timeout-no-timer",
+      "severity": "medium",
+      "title": "Nominal 120-second indexer sync timeout has no independent timer",
+      "dependencyIds": [
+        "neckwork-status"
+      ],
+      "blastRadius": "Post-transaction account data freshness.",
+      "evidence": [
+        {
+          "path": "apps/main/src/api/neckworkSync.ts",
+          "line": 51,
+          "note": "Date.now deadline checked during render only."
+        }
+      ],
+      "observation": "The 120-second timeout is checked only when the hook renders. Frozen structurally shared status may not cause a later render, and there is no independent timer. This risk is source inference, not an actual React timer test.",
+      "remediation": "Schedule an explicit timeout while armed and invalidate on deadline independently of response renders.",
+      "confidence": "medium (source inference)",
+      "testRefs": []
+    },
+    {
+      "id": "history-failure-as-empty",
+      "severity": "low",
+      "title": "Most history hooks discard source error and expose empty records",
+      "dependencyIds": [
+        "neckwork-dca-schedules",
+        "neckwork-intents",
+        "neckwork-market-trades",
+        "neckwork-routed-trades",
+        "neckwork-money-market-events",
+        "legacy-indexer-graphql"
+      ],
+      "blastRadius": "History tables.",
+      "evidence": [
+        {
+          "path": "apps/main/src/api/borrow/moneyMarketEvents.ts",
+          "line": 89,
+          "note": "Returns data/loading/fetching only, no error."
+        },
+        {
+          "path": "apps/main/src/modules/trade/orders/TradeOrders/lib/useMarketTradesData.ts",
+          "line": 71,
+          "note": "Returns trades/count/loading only, no error."
+        }
+      ],
+      "observation": "A settled cold outage is indistinguishable from no activity in several history tables, while other Hydration features remain available.",
+      "remediation": "Expose source unavailable state and local retry.",
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "wallet-balances-zero-overwrite",
+      "severity": "medium",
+      "title": "Failed wallet balance batches can overwrite warm account valuation with 0",
+      "dependencyIds": [
+        "neckwork-wallet-balances"
+      ],
+      "blastRadius": "Wallet balance chips and account sorting.",
+      "evidence": [
+        {
+          "path": "packages/web3-connect/src/components/content/AccountSelectContent.utils.ts",
+          "line": 108,
+          "note": "Missing entry from failed batch becomes zero."
+        }
+      ],
+      "observation": "After all batches settle, entries missing from failed batches become zero and are written via effect. One hanging batch hides all batch values.",
+      "remediation": "Maintain independent batch status, use unknown values and retain old data with age rather than replacing it with zero.",
+      "confidence": "high",
+      "testRefs": []
+    },
+    {
+      "id": "legacy-indexer-toast-recovery-dependency",
+      "severity": "medium",
+      "title": "Recovered transaction success toast waits on external legacy extrinsic indexer",
+      "dependencyIds": [
+        "legacy-indexer-graphql"
+      ],
+      "blastRadius": "Individual restored transaction toast.",
+      "evidence": [
+        {
+          "path": "apps/main/src/modules/transactions/utils/toasts/processors.ts",
+          "line": 164,
+          "note": "External extrinsic lookup follows chain receipt."
+        },
+        {
+          "path": "apps/main/src/modules/transactions/hooks/useProcessTransactionToasts.ts",
+          "line": 132,
+          "note": "Per-toast queries avoid a serial queue-wide gate."
+        }
+      ],
+      "observation": "A recovered Hydration receipt may be healthy, but an external extrinsic lookup can keep an individual restored toast pending. Queries run independently. Normal transaction finalization is audited in another slice.",
+      "remediation": "Determine success/failure from Hydration receipt/events and make indexed metadata optional.",
+      "confidence": "high",
+      "testRefs": []
+    }
+  ],
+  "dormancySearch": "Exact unused symbols and subscan.api searched recursively in apps/main and packages. Codegen schema URLs and offsite explorer hyperlinks are not counted as fetched runtime dependencies.",
+  "summary": {
+    "dependencies": 34,
+    "active": 30,
+    "dormant": 4,
+    "findings": 12,
+    "appWideHighConfidenceCase": "Malformed successful Multix response throws in a global provider when a connected account enables discovery. Exact transport/provider expression verified; global browser boundary impact is source inference."
+  },
+  "browserEvidence": [
+    {
+      "path": "audit/browser-additional/neckwork-malformed-stats.json",
+      "result": "Malformed HTTP200 stats produced liquidity route error, while navigation and healthy Hydration remained."
+    },
+    {
+      "path": "audit/browser-additional/warm-all-external-hang.json",
+      "result": "Root browser test: after warm cached reload, every optional source hung while a native live quote remained functional (input1, output138.444360570251) with about1140 Hydration frames."
+    }
+  ]
+}

@@ -1,0 +1,1670 @@
+{
+  "title": "Hydration UI deep startup/runtime dependency audit",
+  "snapshot": {
+    "checkout": "19f54bf5bde252a407e23e7ce3e4a8f6e3992182",
+    "packages": {
+      "typescript": "5.7.3",
+      "react": "19.2.5",
+      "react-dom": "19.2.5",
+      "@tanstack/react-query": "5.101.4",
+      "@tanstack/query-core": "5.101.4",
+      "@tanstack/react-router": "1.170.10",
+      "polkadot-api": "2.2.2",
+      "viem": "2.56.8",
+      "@galacticcouncil/common": "1.2.0",
+      "@galacticcouncil/descriptors": "2.9.0",
+      "@galacticcouncil/sdk-next": "2.3.2",
+      "@galacticcouncil/xc": "2.1.0",
+      "@galacticcouncil/xc-cfg": "2.7.0",
+      "@galacticcouncil/xc-core": "2.6.0",
+      "@galacticcouncil/xc-sdk": "2.5.0",
+      "@galacticcouncil/xc-swap": "0.9.0",
+      "@galacticcouncil/xc-scan": "0.5.0"
+    }
+  },
+  "scope": "Assigned startup/metadata/SDK/common/descriptors/papi/viem/pricing/persistence/hosting slice. Exact locked installed artifacts; no product source edits. First-party hosting and browser storage explicitly separated from external-service directive.",
+  "limitations": [
+    "Direct method/source fault injection supplements existing production metadata browser tests. Not every root blast radius independently rendered in browser.",
+    "Pending results measured at120/250ms, never asserted observed infinity; source confirms missing deadlines.",
+    "SDK aggregate test mocks family getPools and cannot negate underlying scoped15s deadlines.",
+    "All npm runtime packages are code, not necessarily network services; pure math/framework/type libraries have no independent remote uptime dependency."
+  ],
+  "dependencies": [
+    {
+      "id": "hosting",
+      "label": "Application hosting and executable/static assets",
+      "endpoints": [
+        "window.location.origin/index.html",
+        "window.location.origin/chunk-[hash].js",
+        "window.location.origin/assets/*"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/ui"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/ui": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/index.html",
+          "line": 10,
+          "note": "<script type=\"module\""
+        },
+        {
+          "path": "apps/main/vite.config.ts",
+          "line": 92,
+          "note": "autoCodeSplitting: true"
+        },
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 97,
+          "note": "window.addEventListener(\"vite:preloadError\""
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 28,
+          "note": "const TransactionManager = lazy"
+        }
+      ],
+      "requiredness": "Mandatory for uncached first document/entry load. Already loaded UI should survive later host loss, but current lazy chunk handler can reload it.",
+      "failures": {
+        "dns_http": "Initial missing entry script prevents bootstrap. Warm cached/executed features continue until missing route/service/descriptor chunk is requested.",
+        "hang": "Dynamic module fetch has no application deadline; Suspense can remain loading.",
+        "malformed_stale": "Old HTML referencing removed hash rejects imports; wrong MIME/HTML SPA fallback at a chunk URL also rejects imports.",
+        "recovery": "vite:preloadError unconditionally requests full reload; persistent hosting outage can repeat failure and discard warm state. Loaded-vs-initial hosting distinction is explicit; no app can execute uncached code without its host."
+      },
+      "existingProtections": [
+        "Local font assets use font-display:swap. Existing route error/pending components. Same-origin entry/static deployment; no third-party runtime CDN for framework JS."
+      ],
+      "remediation": [
+        "Retain currently usable UI when a later chunk fails; show local retry/reload controls. Keep historical immutable chunks available during deploy overlap; consider preload/cache coverage for essential routes."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#preload_error_unconditionally_reloads"
+      ]
+    },
+    {
+      "id": "hydration-rpc",
+      "label": "Hydration shared WebSocket RPC",
+      "endpoints": [
+        "wss://hydration-rpc.n.dwellir.com",
+        "wss://hydration.rotko.net",
+        "wss://subway.sin.hydration.cloud",
+        "wss://subway.coke.hydration.cloud",
+        "wss://subway.shellfish.hydration.cloud",
+        "wss://rpc-catfish-1.catfish.hydration.cloud",
+        "wss://rpc-catfish-2.catfish.hydration.cloud",
+        "wss://rpc-catfish-3.catfish.hydration.cloud",
+        "wss://rpc-catfish-4.catfish.hydration.cloud",
+        "ENV.VITE_PROVIDER_URL",
+        "user configured endpoint"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/common",
+        "polkadot-api"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/common": "1.2.0",
+        "polkadot-api": "2.2.2"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 77,
+          "note": "const papiClient = apis.api"
+        },
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 92,
+          "note": "const genesisHash = await"
+        },
+        {
+          "path": "apps/main/src/providers/rpcProvider.tsx",
+          "line": 107,
+          "note": "const { data } = useSuspenseQuery"
+        },
+        {
+          "path": "node_modules/@polkadot-api/ws-provider/dist/provider.js",
+          "line": 9,
+          "note": "timeout: 5e3"
+        },
+        {
+          "path": "node_modules/@polkadot-api/ws-provider/dist/provider.js",
+          "line": 10,
+          "note": "heartbeatTimeout: 4e4"
+        },
+        {
+          "path": "apps/main/src/providers/rpcProvider.tsx",
+          "line": 111,
+          "note": "Common library block-health probe explicitly disabled in this UI"
+        }
+      ],
+      "requiredness": "Intentionally mandatory chain dependency; root provider suspense waits identity and SDK context.",
+      "failures": {
+        "dns_http": "WS connection failure rotates configured endpoints. JSON-RPC method errors reject required provider/asset work; optional useQuery failures generally local.",
+        "hang": "Provider defaults bound socket connect 5s and inactivity 40s. They are transport watchdogs, not a deadline for every pending request; incoming irrelevant traffic can keep socket alive. App getProviderData has no enclosing deadline.",
+        "malformed_stale": "Papi typed descriptors enforce runtime compatibility; malformed RPC messages may throw inside WS message callback. Cached same-genesis chain data survives endpoint switches, but fresh cross-chain switch reloads.",
+        "recovery": "Same-chain switch preserves query data. UI reloads on refocus if block subscription older than 3min, after2s grace. Common blockProbe is disabled here; SDK watcher uses health recovery."
+      },
+      "existingProtections": [
+        "Multiple primary RPC endpoints; 5s connect/40s inactivity; chain identity cache guard; same-chain query preservation; 3min block-stale reload on visibility."
+      ],
+      "remediation": [
+        "No independent external service identified in this transport. Keep optional method/contract capabilities isolated from ordinary chain availability; make primary-RPC recovery state explicit."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "hydration-http-probes",
+      "label": "Hydration HTTP endpoint discovery",
+      "endpoints": [
+        "https://hydration-rpc.n.dwellir.com",
+        "https://hydration.rotko.net",
+        "https://subway.sin.hydration.cloud",
+        "https://subway.coke.hydration.cloud",
+        "https://subway.shellfish.hydration.cloud",
+        "https://rpc-catfish-1.catfish.hydration.cloud",
+        "https://rpc-catfish-2.catfish.hydration.cloud",
+        "https://rpc-catfish-3.catfish.hydration.cloud",
+        "https://rpc-catfish-4.catfish.hydration.cloud"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 66,
+          "note": "await pingWorker.getBestRpcs"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 93,
+          "note": "setIsBestProviderFound(true)"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 109,
+          "note": "if (!isBestProviderFound) return null"
+        },
+        {
+          "path": "apps/main/src/workers/ping/ping.worker.ts",
+          "line": 114,
+          "note": "const data = await res.json()"
+        },
+        {
+          "path": "apps/main/src/workers/ping/ping.worker.ts",
+          "line": 183,
+          "note": "throw new Error(\"All RPC providers failed or timed out\")"
+        }
+      ],
+      "requiredness": "Currently mandatory before any RouterProvider render when autoMode enabled; WS connectivity is not attempted if all probes fail.",
+      "failures": {
+        "dns_http": "Any healthy probe may permit startup; all rejected/HTTP error/malformed probes make getBestRpcs throw; useAsyncFn catches and resolver stays null. Healthy WS with unavailable HTTP counterparts is not sufficient.",
+        "hang": "Worker 5s default Promise.race bounds fetch and response body and aborts request; UI rpcStatus uses10s. Inline head probe also5s.",
+        "malformed_stale": "Worker checks Array.isArray, finite blockNumber and timestamp extrinsic string. Genesis hash may be null. Ranked by timestamp; no independent chain-tip freshness/expected-genesis filter at startup. Status queries preserve previous successful result on current failure.",
+        "recovery": "Cold failure readiness flag remains false; no explicit retry timer after all probes fail. Head cache consumed once. Warm polling keeps last successful status."
+      },
+      "existingProtections": [
+        "Probe race includes body parsing; abort controller; malformed shape checks; rank top3; inline early top5 probe; cached previous status."
+      ],
+      "remediation": [
+        "On total HTTP probe failure proceed to configured WS fallback and render shell; expose retry selection. Distinguish same-chain HTTP vs WS availability. This is primary-chain transport coupling, not a separate third-party outage."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "rpc-ping-worker",
+      "label": "Ping Web Worker and Comlink control channel",
+      "endpoints": [
+        "window.location.origin/[bundled ping.worker asset]"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/workers/ping/index.ts",
+          "line": 6,
+          "note": "new PingWorker()"
+        },
+        {
+          "path": "apps/main/src/workers/ping/ping.worker.ts",
+          "line": 190,
+          "note": "expose(worker)"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 66,
+          "note": "await pingWorker.getBestRpcs"
+        }
+      ],
+      "requiredness": "Module constructs worker eagerly; resolver depends on its response in autoMode.",
+      "failures": {
+        "dns_http": "Missing worker asset, CSP worker denial, or constructor exception may prevent loading imported module.",
+        "hang": "Worker crash/message-channel failure has no outer Comlink-call deadline in resolver, despite network probes having deadlines.",
+        "malformed_stale": "Worker protocol/version mismatch after deployment can fail calls.",
+        "recovery": "No visible worker restart or inline-main-thread fallback at call sites."
+      },
+      "existingProtections": [
+        "Probe deadlines exist within worker. Inline head prewarm can bypass worker discovery if it has successful cached results."
+      ],
+      "remediation": [
+        "Handle worker error/messageerror; add outer call deadline and main-thread/configured-endpoint fallback."
+      ],
+      "confidence": "medium",
+      "testReferences": []
+    },
+    {
+      "id": "asset-metadata-cdn",
+      "label": "Asset/chain metadata manifests",
+      "endpoints": [
+        "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/assets-v2.json",
+        "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/chains-v2.json",
+        "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/metadata.json"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/utils"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/utils": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/utils/src/lib/AssetMetadataFactory.ts",
+          "line": 56,
+          "note": "const response = await fetch"
+        },
+        {
+          "path": "packages/utils/src/lib/AssetMetadataFactory.ts",
+          "line": 70,
+          "note": "this.assets = data.items.map"
+        },
+        {
+          "path": "packages/utils/src/lib/AssetMetadataFactory.ts",
+          "line": 83,
+          "note": "this.chains = data.items.map"
+        },
+        {
+          "path": "apps/main/src/api/metadata.ts",
+          "line": 18,
+          "note": "await Promise.all(["
+        },
+        {
+          "path": "apps/main/src/api/assets.ts",
+          "line": 166,
+          "note": "queryClient.ensureQueryData(assetMetadataQuery()),"
+        },
+        {
+          "path": "apps/main/src/providers/AssetRegistryGate.tsx",
+          "line": 25,
+          "note": "useSuspenseQuery(assetsQuery"
+        }
+      ],
+      "requiredness": "Semantically optional decoration, currently mandatory inside cold assets query and root asset gate.",
+      "failures": {
+        "dns_http": "DNS rejection/HTTPnon2xx/JSON parse rejection becomes safe empty factory values.",
+        "hang": "No fetch or body deadline/cancel signal; one hanging resource leaves cold registry unresolved. Browser verified at35s with healthy RPC, not claimed as measured infinity.",
+        "malformed_stale": "HTTP200 object with missing/non-array items throws outside fetchData catch and reaches root route error. Metadata payload itself also lacks schema validation. @master mutable resource has no version/age validation.",
+        "recovery": "Successful empty fallback is cached with staleTime Infinity and no window-focus refetch; no scheduled automatic warming retry. Warm persisted asset cache uses non-suspense query so current usable UI survives metadata query error/hang."
+      },
+      "existingProtections": [
+        "Empty defaults and catch for fetch/JSON parsing; cached registry avoids cold suspense on same genesis."
+      ],
+      "remediation": [
+        "Decouple default registry construction from CDN warm/enrichment; deadline including body; validate resources; independently retry recovery and refresh stored icon URLs."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/metadata-faults.results.json",
+        "audit/browser-verified/metadata-hang.json",
+        "audit/browser-verified/metadata-malformed.json"
+      ]
+    },
+    {
+      "id": "asset-icon-cdn",
+      "label": "Passive asset/chain image downloads",
+      "endpoints": [
+        "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@master/[data.path]/[items containing icon]"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/ui",
+        "@galacticcouncil/utils"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/ui": "0.0.0",
+        "@galacticcouncil/utils": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/utils/src/lib/AssetMetadataFactory.ts",
+          "line": 102,
+          "note": "return [METADATA_CDN_URL, data.path]"
+        },
+        {
+          "path": "packages/ui/src/components/Image/Image.tsx",
+          "line": 23,
+          "note": "setHasError(true)"
+        },
+        {
+          "path": "packages/ui/src/components/Image/Image.tsx",
+          "line": 27,
+          "note": "if (placeholder && (!src || hasError))"
+        }
+      ],
+      "requiredness": "Optional decoration after manifests; no registry await on image pixels.",
+      "failures": {
+        "dns_http": "Broken icons/placeholder; normal balance/amount/trade controls remain available.",
+        "hang": "Browser image loading can remain pending without application deadline, but not awaited by root.",
+        "malformed_stale": "Invalid URLs/image bytes fail img load; cached registry retains old icon URLs until remapped.",
+        "recovery": "Image hasError local state; fallback shown if supplied; same component may not retry a once-failed URL automatically."
+      },
+      "existingProtections": [
+        "Image onError and optional placeholder; lazy loading; bundled local UI illustrations/icons."
+      ],
+      "remediation": [
+        "Ensure every logo has a local fallback; make retry/reset react to source changes."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "descriptors",
+      "label": "Bundled typed runtime descriptors and metadata cache",
+      "endpoints": [
+        "same-origin descriptor/metadata split chunks",
+        "Hydration runtime metadata over shared RPC on cache miss"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/descriptors",
+        "polkadot-api",
+        "@galacticcouncil/common"
+      ],
+      "version": {
+        "@galacticcouncil/descriptors": "2.9.0",
+        "polkadot-api": "2.2.2",
+        "@galacticcouncil/common": "1.2.0"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/@galacticcouncil/descriptors/build/index.js",
+          "line": 17,
+          "note": "const descriptorValues$3 = import("
+        },
+        {
+          "path": "node_modules/@galacticcouncil/descriptors/build/index.js",
+          "line": 23,
+          "note": "const getMetadata$4 = () => import("
+        },
+        {
+          "path": "node_modules/@galacticcouncil/descriptors/build/index.js",
+          "line": 139,
+          "note": "const getMetadata = async"
+        },
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 70,
+          "note": "apis.configureMetadataCache({"
+        }
+      ],
+      "requiredness": "Typed descriptor values required; known metadata-byte cache optional because getMetadata returns null on miss/import failure.",
+      "failures": {
+        "dns_http": "No independent remote descriptor registry at runtime. Bundler serves dynamic descriptor/metadata imports from application host. Unknown codeHash or cached-metadata import failure returns null for chain-fetch path.",
+        "hang": "Imported module promise can remain pending on app-host hang; no application deadline.",
+        "malformed_stale": "Descriptor/runtime incompatibility can reject typed chain calls even with reachable node; byte caches keyed by codeHash avoid silently using wrong runtime.",
+        "recovery": "RPC metadata fallback for unknown/unavailable cached metadata; dynamic descriptor import failure retains same rejected module promise until document refresh; global preload handler may force reload."
+      },
+      "existingProtections": [
+        "Code-hash metadata lookup; cache exceptions return null. Separate hydration/current-next-ice descriptors."
+      ],
+      "remediation": [
+        "Retain availability for optional incompatible runtime capabilities; handle essential split-chunk failures explicitly and serve deploy-overlap chunks."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "sdk-context",
+      "label": "SDK context and required DCA parameters",
+      "endpoints": [
+        "Hydration constants DCA.MinBudgetInNativeCurrency and DCA.MinimalPeriod"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/sdk-next",
+        "polkadot-api"
+      ],
+      "version": {
+        "@galacticcouncil/sdk-next": "2.3.2",
+        "polkadot-api": "2.2.2"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 98,
+          "note": "const sdk = await createSdkContext"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 9179,
+          "note": "async function g0("
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 9183,
+          "note": "[i, a] = await Promise.all([n.getMinOrderBudget(), n.getMinimalPeriod()])"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 1626,
+          "note": "async getMinimalPeriod()"
+        }
+      ],
+      "requiredness": "Mandatory in rpcProviderQuery before full root render; pure client construction except required chain constant reads.",
+      "failures": {
+        "dns_http": "Uses supplied Hydration typed client; no external SDK HTTP service required for context creation.",
+        "hang": "Required constant reads have no enclosing context deadline.",
+        "malformed_stale": "Unavailable/incompatible DCA constants reject global context even for UI features not requiring DCA; memoized per context.",
+        "recovery": "rpcProviderQuery retry:false/staleTimeInfinity; failed fresh context escalates root error; reload/remount needed unless explicitly invalidated."
+      },
+      "existingProtections": [
+        "Shared primary RPC fallback. Context returned only after required constants."
+      ],
+      "remediation": [
+        "Separate scheduler parameter initialization from basic chain/client context if partial capability failures must be tolerated."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "sdk-pool-context",
+      "label": "SDK pool families and shared router readiness",
+      "endpoints": [
+        "Hydration Omni/Stable/XYK/Aave/V3 runtime storage and EVM calls; optional HSM when VITE_HSM_ENABLED"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/sdk-next"
+      ],
+      "version": {
+        "@galacticcouncil/sdk-next": "2.3.2"
+      },
+      "evidence": [
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 9179,
+          "note": "async function g0("
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 1817,
+          "note": "SDK QueryCache scoped fetch deadline15s"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 7451,
+          "note": "(this.pending = Promise.all(t.map((n) => n.getPools(e)))"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 93,
+          "note": "async resolveBlock("
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 3263,
+          "note": "let t = await mo(this.loadPools(e), 6e4, \"seed stalled\")"
+        },
+        {
+          "path": "apps/main/src/api/assets.ts",
+          "line": 163,
+          "note": "sdk.api.router.getTradeableAssets(),"
+        },
+        {
+          "path": "apps/main/src/api/pools.ts",
+          "line": 43,
+          "note": "const pools = await sdk.api.router.getPools()"
+        }
+      ],
+      "requiredness": "All activated families currently required as a combined result for cold assets/tradable assets; Aave and V3 semantically separable.",
+      "failures": {
+        "dns_http": "All reads inspected share Hydration client. A family error rejects combined pool result, including healthy families.",
+        "hang": "Scoped QueryCache reads have15s rejection deadline without cancelling underlying request; background whole seed has60s. Direct aggregate has no outer deadline; bestBlocks$ first emission in resolveBlock unbounded. Aggregate test mocks a family getPools that never settles and shows no partial result; this does not override real scoped-read deadlines.",
+        "malformed_stale": "Bad contract data/runtime incompatibility can reject required family. V3 missing/zero factory is handled as [] when recognized unsupported parameter. Aave fallback initial reserve enumeration remains required, but individual reserve-pool fallback uses allSettled.",
+        "recovery": "Rejected QueryCache promises evicted; loadAll finally clears pending; next call can recover. Live pool sync catches seed/sync errors and retries on future blocks, connection recovery, finality gaps and hourly reseed; still combined isReady waits each activated family."
+      },
+      "existingProtections": [
+        "Scoped15s query rejection; seed60s; family reseed/watchdog; QueryCache eviction on reject; missing V3 factory tolerated; reserve fallback allSettled."
+      ],
+      "remediation": [
+        "Track readiness/errors per family and retain healthy pools; do not require auxiliary family discovery to populate base asset registry. Bound first block emission and aggregate; propagate stale-family status into routing correctness."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#sdk_pool_aggregate_v3_reject",
+        "audit/deep-startup-faults.results.json#sdk_pool_aggregate_v3_hang"
+      ]
+    },
+    {
+      "id": "hydration-evm",
+      "label": "Hydration EVM custom transport and contract data",
+      "endpoints": [
+        "shared Hydration WS _request eth_*",
+        "Hydration EthereumRuntimeRPCApi.call"
+      ],
+      "consumerPackages": [
+        "viem",
+        "@galacticcouncil/sdk-next",
+        "@galacticcouncil/main"
+      ],
+      "version": {
+        "viem": "2.56.8",
+        "@galacticcouncil/sdk-next": "2.3.2",
+        "@galacticcouncil/main": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 83,
+          "note": "transport: custom({"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 740,
+          "note": "getWsProvider()"
+        },
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 1273,
+          "note": "this.api.apis.EthereumRuntimeRPCApi.call("
+        },
+        {
+          "path": "node_modules/viem/_esm/clients/transports/createTransport.js",
+          "line": 6,
+          "note": "retryCount = 3"
+        },
+        {
+          "path": "node_modules/viem/_esm/clients/transports/custom.js",
+          "line": 11,
+          "note": "request: provider.request.bind(provider)"
+        }
+      ],
+      "requiredness": "Shared primary-chain dependency; contract failures are capability failures, not independent EVM service outages.",
+      "failures": {
+        "dns_http": "No third-party HTTP RPC is used for core custom transport; errors from shared client become query/contract failures.",
+        "hang": "custom transport has no supplied timeout. Default retryCount3/retryDelay150ms concerns rejections, not never-settling requests. Pool QueryCache wraps many SDK calls15s; direct UI contract reads lack that wrapper.",
+        "malformed_stale": "ABI/type decoding failures reject per call. RPC provider identity does not validate each EVM contract capability.",
+        "recovery": "Custom request retries retryable errors; chain endpoint switching improves transport; local ordinary queries can refetch; boot aggregate contract errors can escalate."
+      },
+      "existingProtections": [
+        "Primary RPC pool; viem retries retryable errors; typed ABI decoding; many SDK scoped timeouts."
+      ],
+      "remediation": [
+        "Use capability-specific unavailable states and full operation deadlines for direct optional contract calls; avoid silent financial defaults."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#viem_custom_shared_papi_hang_has_no_deadline"
+      ]
+    },
+    {
+      "id": "gamma-symbol-filter",
+      "label": "Gamma vault share filtering and V3 bootstrap",
+      "endpoints": [
+        "Gamma contracts on Hydration EVM"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "viem"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "viem": "2.56.8"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/assets.ts",
+          "line": 169,
+          "note": "const gammaVaultShareSymbols = await"
+        },
+        {
+          "path": "apps/main/src/api/assets.ts",
+          "line": 119,
+          "note": ".catch(() => null)"
+        },
+        {
+          "path": "apps/main/src/api/gamma/config.ts",
+          "line": 11,
+          "note": "export const MAINNET_GAMMA_CONTRACTS"
+        },
+        {
+          "path": "apps/main/src/api/pools.ts",
+          "line": 149,
+          "note": "const bootstrap = await loadBootstrapV3Pools("
+        },
+        {
+          "path": "apps/main/src/api/gamma/v3Bootstrap.ts",
+          "line": 55,
+          "note": "const poolAddress = await evm.readContract("
+        }
+      ],
+      "requiredness": "Symbol discovery is awaited inside required asset registry; read failures soften to null, hangs delay registry. Bootstrap V3 reads are feature-query work.",
+      "failures": {
+        "dns_http": "Contract method rejections swallowed for symbol filtering. Bootstrap rejection is local useV3Pools query error. Same Hydration evm transport, not Gamma-hosted HTTP API.",
+        "hang": "No explicit deadline around symbol or bootstrap readContract; custom transport can wait.",
+        "malformed_stale": "Symbol non-string can throw during toLowerCase; wrong deployed address returns ABI/revert failures. Missing filter data can retain ERC20 vault share tokens that should be excluded.",
+        "recovery": "Initial assets staleTimeInfinity; endpoint-specific contract mapping. V3 query polls60s/stale30s. Symbols not independently retried after soft failure."
+      },
+      "existingProtections": [
+        "Per-symbol discovery catches contract rejection; zero-address ignored; configured mainnet/lark4 addresses."
+      ],
+      "remediation": [
+        "Decouple vault-share enrichment from general registry; validate symbol strings and preserve conservative identification; bound contract calls."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "chain-prices",
+      "label": "Hydration spot-price and share-token display pricing",
+      "endpoints": [
+        "Hydration SDK router pools",
+        "Hydration Aave contracts for SC_ASSETS816/1816"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/sdk-next"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/sdk-next": "2.3.2"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/api/spotPrice.ts",
+          "line": 110,
+          "note": "export const getSpotPrice ="
+        },
+        {
+          "path": "apps/main/src/api/spotPrice.ts",
+          "line": 131,
+          "note": "catch (e)"
+        },
+        {
+          "path": "apps/main/src/api/spotPrice.ts",
+          "line": 66,
+          "note": "const prices = await Promise.all("
+        },
+        {
+          "path": "apps/main/src/states/displayAsset.ts",
+          "line": 13,
+          "note": "const SPOT_PRICE_MAX_AGE"
+        },
+        {
+          "path": "apps/main/src/states/displayAsset.ts",
+          "line": 88,
+          "note": "Date.now() - (stored.updatedAt ?? 0)"
+        },
+        {
+          "path": "apps/main/src/api/spotPrice.ts",
+          "line": 83,
+          "note": "staleTime: 10000,"
+        }
+      ],
+      "requiredness": "Optional display enrichment; quotes/transaction correctness continue to require route-specific chain data.",
+      "failures": {
+        "dns_http": "Primary-chain failures yield null price via getSpotPrice catch; no CoinGecko/independent external price feed in inspected path.",
+        "hang": "One never-settling spot-price read holds batch updates for all active display assets; no batch deadline. Previously stored prices persist.",
+        "malformed_stale": "Decimal conversion errors softened to null. Persisted values lack value schema; initial persisted cache5min age rule applies only during restore. Once loaded prices are not aged by render-time TTL; stalled refresh can keep stale values without freshness badge. store.updatedAt changes only when prices differ, so unchanged healthy prices appear old on disk.",
+        "recovery": "Subscribed per-asset query staleInfinity; aggregate displayPrices stale10s and updated through subscriptions/block-driven cache interactions. Individual null is isValid:false; missing price is isLoading:true. Same-asset price1 bypasses fetch."
+      },
+      "existingProtections": [
+        "Errors become null/invalid display value;5min restore TTL; separate query subscriptions; no global Suspense on display price subscriber."
+      ],
+      "remediation": [
+        "Bound/reconcile per-asset price refresh independently; expose observedAt/status; age live cached prices and validate numeric finite values without inventing zero."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "query-framework",
+      "label": "TanStack Query cache/retry/cancellation",
+      "endpoints": [
+        "No own service; wraps each configured query operation"
+      ],
+      "consumerPackages": [
+        "@tanstack/react-query",
+        "@tanstack/query-core"
+      ],
+      "version": {
+        "@tanstack/react-query": "5.101.4",
+        "@tanstack/query-core": "5.101.4"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 27,
+          "note": "const queryClient = new QueryClient("
+        },
+        {
+          "path": "node_modules/@tanstack/query-core/src/retryer.ts",
+          "line": 170,
+          "note": "const retry = config.retry ??"
+        },
+        {
+          "path": "node_modules/@tanstack/query-core/src/retryer.ts",
+          "line": 50,
+          "note": "return Math.min(1000 * 2 ** failureCount, 30000)"
+        },
+        {
+          "path": "node_modules/@tanstack/query-core/src/queryClient.ts",
+          "line": 358,
+          "note": "defaultedOptions.retry = false"
+        },
+        {
+          "path": "apps/main/src/api/assets.ts",
+          "line": 253,
+          "note": "retry: false,"
+        },
+        {
+          "path": "apps/main/src/hooks/useObservableQuery.ts",
+          "line": 52,
+          "note": "queryFn: () => promise,"
+        }
+      ],
+      "requiredness": "Required framework code; query dependencies optional or required according to consumer hook.",
+      "failures": {
+        "dns_http": "Browser observed queries default3 retries with exponential1s/2s/4s delay; ensureQueryData/fetchQuery explicitly default retry:false. Global caches log errors only; ordinary useQuery does not throw unless configured.",
+        "hang": "Retries wait for rejection. No generic request deadline. Unused query abort signal does not cancel underlying fetch; useObservableQuery promise resolves first value only and no error/reject bridge.",
+        "malformed_stale": "Data schemas are application responsibility. Cached success remains available through refetch errors. staleTimeInfinity removes routine refetch and may cache safe-empty outage outcomes indefinitely.",
+        "recovery": "Depends on individual stale/refetch/enable policies; root suspense throws cold required query error. Mounted ordinary queries contain errors in result state."
+      },
+      "existingProtections": [
+        "Retry/backoff/cache reuse; non-suspense result error containment; query gc/cancellation infrastructure."
+      ],
+      "remediation": [
+        "Specify dependency-specific deadlines and propagate query signals to underlying work; document success-empty versus unavailable; localize suspense/error boundaries."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "router-boundaries",
+      "label": "TanStack Router and root render boundaries",
+      "endpoints": [
+        "Same-origin code-split route chunks"
+      ],
+      "consumerPackages": [
+        "@tanstack/react-router",
+        "@galacticcouncil/main"
+      ],
+      "version": {
+        "@tanstack/react-router": "1.170.10",
+        "@galacticcouncil/main": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 61,
+          "note": "defaultErrorComponent: RouteError"
+        },
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 78,
+          "note": "<DataProviderResolver>"
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 54,
+          "note": "pendingComponent: RootPendingComponent"
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 81,
+          "note": "<AssetRegistryGate>"
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 125,
+          "note": "<Suspense fallback={null}>"
+        },
+        {
+          "path": "apps/main/src/providers/rpcProvider.tsx",
+          "line": 39,
+          "note": "Code comment documents root loading shell outside provider"
+        }
+      ],
+      "requiredness": "Required navigation; root-level failures affect all root children; nested route failures can retain surrounding layout.",
+      "failures": {
+        "dns_http": "Nested route fetch/import error may render RouteError inside current layout. Root provider/registry/lazy service failure can replace entire route root. Resolver failure sits outside RouterProvider and returns null, so router error UI cannot contain it.",
+        "hang": "Root suspense keeps shell visible but unusable base content when required async dependencies pending. Service-only Suspense fallback:null hides TransactionManager/Web3ConnectModal while waiting.",
+        "malformed_stale": "Corrupted asset store errors in AssetsProvider can propagate to root boundary; exact final error fallback may itself lack provider context, so not guaranteed full error UI for every root failure.",
+        "recovery": "Current RouteError offers full page reload. No independent optional-service error boundary in root Services; Suspense handles pending only, not rejection."
+      },
+      "existingProtections": [
+        "Loading skeleton root pending; default route error UI; local lazy-service Suspense; cached assets branch ordinary query."
+      ],
+      "remediation": [
+        "Place optional services behind their own error boundaries; keep shell/navigation mounted and providers/default state safe during root errors. Add explicit resolver fallback outside router."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "app-update",
+      "label": "Background app-version detection",
+      "endpoints": [
+        "window.location.origin/index.html"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/utils/appUpdate.ts",
+          "line": 20,
+          "note": "const res = await fetch("
+        },
+        {
+          "path": "apps/main/src/utils/appUpdate.ts",
+          "line": 27,
+          "note": "const baseline = fetchIndex().catch"
+        },
+        {
+          "path": "apps/main/src/utils/appUpdate.ts",
+          "line": 33,
+          "note": "const loaded = await baseline"
+        },
+        {
+          "path": "apps/main/src/utils/appUpdate.ts",
+          "line": 48,
+          "note": "setInterval(check, UPDATE_CHECK_INTERVAL)"
+        },
+        {
+          "path": "apps/main/src/components/AppUpdateBanner/AppUpdateBanner.tsx",
+          "line": 18,
+          "note": "return isAvailable ?"
+        }
+      ],
+      "requiredness": "Optional non-blocking background request and banner.",
+      "failures": {
+        "dns_http": "Baseline rejection becomes null; checks catch network errors and never throw into UI.",
+        "hang": "Baseline/body/refresh fetch lack deadline; hangs remain background and do not gate App. Hung baseline holds every future check; repeated checks can accumulate waiting tasks.",
+        "malformed_stale": "HTML compared byte-for-byte; transient HTTP200 content mismatch can trigger false banner. Baseline null after startup failure is never replaced.",
+        "recovery": "Hourly/refocus checks retry refreshed index but never recover absent/hung baseline, so update awareness remains disabled for tab lifetime."
+      },
+      "existingProtections": [
+        "Import side effect not awaited by App; catch; suppress banner while transactions/overlays/tutorials active; reload only on user click."
+      ],
+      "remediation": [
+        "Add full-body deadline/inflight guard; reacquire baseline after initial failure; compare explicit build ID."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#app_update_baseline_rejection",
+        "audit/deep-startup-faults.results.json#app_update_baseline_hang"
+      ]
+    },
+    {
+      "id": "indexeddb",
+      "label": "IndexedDB asset/account/portfolio persistence",
+      "endpoints": [
+        "browser IndexedDB hydration-db version2: asset-registry/account-balances/portfolio-balances"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "zustand"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "zustand": "5.0.12"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/utils/indexedDB.ts",
+          "line": 31,
+          "note": "const request = indexedDB.open("
+        },
+        {
+          "path": "apps/main/src/utils/indexedDB.ts",
+          "line": 46,
+          "note": "request.onerror = () => {"
+        },
+        {
+          "path": "apps/main/src/utils/indexedDB.ts",
+          "line": 169,
+          "note": "Object.keys(parsedState.state).forEach(async"
+        },
+        {
+          "path": "apps/main/src/utils/indexedDB.ts",
+          "line": 200,
+          "note": "persist(creator, {"
+        },
+        {
+          "path": "apps/main/src/states/assetRegistry.ts",
+          "line": 28,
+          "note": "createIndexedDBStore<AssetRegistryStore>"
+        },
+        {
+          "path": "apps/main/src/providers/assetsProvider.tsx",
+          "line": 146,
+          "note": "return assets.reduce<TAssetsState>("
+        },
+        {
+          "path": "apps/main/src/api/rpcClient.ts",
+          "line": 149,
+          "note": "await clearIndexedDBStore("
+        }
+      ],
+      "requiredness": "Storage is intended optional and restore is asynchronous/ungated. Malformed restored asset state is effectively trusted by required root provider.",
+      "failures": {
+        "dns_http": "No network service. Open onerror resolvesnull and in-memory data can continue; thrown open produces rejected cached singleton.",
+        "hang": "No open/blocked/transaction deadline; missing onblocked handling. Initial in-memory fresh registry can still populate because app does not await store hydration. Cross-chain switch awaits cache clear and can be held by blocked/open transaction. Portfolio restore/save pipeline also stalls.",
+        "malformed_stale": "Persisted records merged without schema or freshness validation; invalid assets type can reach root AssetsProvider.reduce and fail render. Matching-genesis stale registry may boot immediately and refetch background; unrelated-genesis cache rejected by gate. Late hydration may overwrite fresher in-memory state.",
+        "recovery": "Singleton caches successful/rejected/pending open forever; no reset/reopen on versionchange/close. Writes use async forEach so outer catch does not catch each rejected put; quota may cause unhandled rejections. Browser unhandled rejection alone is not proven to unmount React."
+      },
+      "existingProtections": [
+        "Open/read request onerror softer values; read JSON aggregation try/catch; same-genesis registry guard; in-memory Zustand defaults."
+      ],
+      "remediation": [
+        "Treat storage as best-effort; validate restored asset schema; deadline/onblocked/versionchange close/reset; await Promise.allSettled writes; ensure old asynchronous restore cannot clobber current chain snapshot."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#idb_synchronous_open_failure",
+        "audit/deep-startup-faults.results.json#idb_open_never_fires_success_error",
+        "audit/deep-startup-faults.results.json#idb_malformed_registry_shape_reaches_consumer"
+      ]
+    },
+    {
+      "id": "portfolio-cache",
+      "label": "Validated portfolio query persistence",
+      "endpoints": [
+        "browser IndexedDB portfolio-balances/balances"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@tanstack/query-persist-client-core"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@tanstack/query-persist-client-core": "5.101.4"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 40,
+          "note": "setupPortfolioPersistence(queryClient)"
+        },
+        {
+          "path": "apps/main/src/api/portfolio/persistence.ts",
+          "line": 70,
+          "note": "export const reconstructPersistedClient"
+        },
+        {
+          "path": "apps/main/src/api/portfolio/persistence.ts",
+          "line": 88,
+          "note": "Failed to restore persisted portfolio cache"
+        },
+        {
+          "path": "apps/main/src/api/portfolio/persistence.ts",
+          "line": 141,
+          "note": "persistQueryClientRestore({"
+        },
+        {
+          "path": "apps/main/src/config/portfolio.ts",
+          "line": 5,
+          "note": "hoursToMilliseconds(24)"
+        }
+      ],
+      "requiredness": "Optional initial paint cache; setup is called and returns without awaiting restore.",
+      "failures": {
+        "dns_http": "No remote dependency. Failed local restore logs and ordinary queries fetch; write failure logs.",
+        "hang": "Underlying IndexedDB open/read can stall restore/save subscription setup, but not root render.",
+        "malformed_stale": "Balances validated array and required fields including bigint, reconstructed as AssetAmount. Invalid cache discarded;24h maxAge/cache-buster; does not validate whole stale upstream financial truth.",
+        "recovery": "Restore rejection caught then installs save subscription. A permanently hanging restore never reaches subscription; current portfolio fetch remains independent."
+      },
+      "existingProtections": [
+        "Shape validation;24h maxAge;buster portfolio-v1;best-effort catches;non-blocking startup setup."
+      ],
+      "remediation": [
+        "Add storage operation deadlines/recovery; keep unavailable vs zero and observation timestamps when cached data shown."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "local-storage",
+      "label": "LocalStorage preferences, RPC selection and price/trade state",
+      "endpoints": [
+        "browser localStorage rpcUrl/rpcList/theme/trade-settings/hdx-display-asset/prices-* and other Zustand stores"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "@galacticcouncil/utils",
+        "zustand"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "@galacticcouncil/utils": "0.0.0",
+        "zustand": "5.0.12"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/states/provider.ts",
+          "line": 74,
+          "note": "name: \"rpcUrl\""
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 86,
+          "note": "useProviderRpcUrlStore.setState({"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 93,
+          "note": "setIsBestProviderFound(true)"
+        },
+        {
+          "path": "node_modules/zustand/middleware.js",
+          "line": 368,
+          "note": "return setItem();"
+        },
+        {
+          "path": "packages/utils/src/lib/zustandStorage.ts",
+          "line": 57,
+          "note": "window.localStorage.setItem(key, value)"
+        },
+        {
+          "path": "apps/main/src/utils/head.js",
+          "line": 52,
+          "note": "} catch (error) {"
+        }
+      ],
+      "requiredness": "Intended optional persistence; currently provider-resolution writes are required to reach outer startup readiness flag.",
+      "failures": {
+        "dns_http": "No network service. Default createJSONStorage catches denied storage getter and gives memory fallback; hydration read errors caught by middleware. Available object whose setItem throws quota/security is not softened.",
+        "hang": "Browser localStorage synchronous operations; no async network timeout.",
+        "malformed_stale": "Most default persist stores merge same-version payload without schema. Custom helper validates but returns original invalid JSON on schema mismatch; same-version invalid object is then merged. Head theme script removes invalid theme in normal supported execution.",
+        "recovery": "Writes propagate after in-memory state updated. Resolver setState throw occurs before setIsBestProviderFound(true), captured by useAsyncFn; component stays null outside router. This entire-boot blast radius is a source-path inference plus directly reproduced provider write exception, not yet full browser quota injection."
+      },
+      "existingProtections": [
+        "Default Zustand storage getter/hydration catches;inline theme/head probes catch;some store-specific validation/TTL."
+      ],
+      "remediation": [
+        "Soft-fail all persistence writes and preserve in-memory state; always settle resolver readiness via explicit fallback; reject/reset invalid same-version stored values."
+      ],
+      "confidence": "high",
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#provider_resolution_persist_write_failure",
+        "audit/deep-startup-faults.results.json#local_storage_schema_invalid_same_version_passes_through"
+      ]
+    },
+    {
+      "id": "bundled-i18n",
+      "label": "Bundled English translations",
+      "endpoints": [
+        "Bundled module JSON; no runtime translation endpoint"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "react-i18next",
+        "i18next"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "react-i18next": "15.7.4",
+        "i18next": "23.16.8"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/i18n/index.ts",
+          "line": 6,
+          "note": "import common from"
+        },
+        {
+          "path": "apps/main/src/i18n/index.ts",
+          "line": 37,
+          "note": "fallbackLng: \"en\""
+        },
+        {
+          "path": "apps/main/src/i18n/index.ts",
+          "line": 36,
+          "note": "resources,"
+        }
+      ],
+      "requiredness": "Required local UI data with English fallback; network only application-code serving.",
+      "failures": {
+        "dns_http": "No runtime remote backend installed in initialization. Uncached translation-containing code still shares application host requirement.",
+        "hang": "No runtime fetch awaits translations.",
+        "malformed_stale": "JSON bundled at build; translation-key issue stays text/local formatting concern.",
+        "recovery": "Deterministic bundle version; English resources local."
+      },
+      "existingProtections": [
+        "Bundled resources;fixed English fallback."
+      ],
+      "remediation": [
+        "Keep core translation resources bundled; no runtime-service isolation change needed."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "bundled-fonts",
+      "label": "Bundled fonts and design assets",
+      "endpoints": [
+        "same-origin/assets/Geist*.woff2",
+        "same-origin/assets/Gazpacho*.woff2"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/ui"
+      ],
+      "version": {
+        "@galacticcouncil/ui": "0.0.0"
+      },
+      "evidence": [
+        {
+          "path": "packages/ui/src/assets/fonts/fonts.css",
+          "line": 6,
+          "note": "font-display: swap;"
+        },
+        {
+          "path": "apps/main/vite.config.ts",
+          "line": 31,
+          "note": "const fontPreload"
+        },
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 1,
+          "note": "import \"@galacticcouncil/ui/fonts.css\""
+        }
+      ],
+      "requiredness": "Optional visual assets; CSS/code required to render structure.",
+      "failures": {
+        "dns_http": "Font load failure uses CSS fallback fonts; no independent Google Fonts service.",
+        "hang": "font-display:swap permits text visibility while fetching.",
+        "malformed_stale": "Browser ignores invalid font bytes; appearance only.",
+        "recovery": "Browser cache/new bundle URLs; no root-await coupling."
+      },
+      "existingProtections": [
+        "Local packaged fonts;font-display swap."
+      ],
+      "remediation": [
+        "Keep explicit fallback font families and avoid external required font fetches."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    },
+    {
+      "id": "bundled-sdk-math",
+      "label": "SDK Rust/WASM math modules",
+      "endpoints": [
+        "same-origin packaged/inlined SDK math binaries"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/sdk-next"
+      ],
+      "version": {
+        "@galacticcouncil/sdk-next": "2.3.2"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/vite.config.ts",
+          "line": 102,
+          "note": "wasm(),"
+        },
+        {
+          "path": "node_modules/@galacticcouncil/sdk-next/package.json",
+          "line": 101,
+          "note": "\"@galacticcouncil/math-omnipool\""
+        },
+        {
+          "path": "apps/main/src/index.tsx",
+          "line": 1,
+          "note": "import { patchBigJs }"
+        }
+      ],
+      "requiredness": "Executable math required for affected quotes/rewards; no independent math HTTP API.",
+      "failures": {
+        "dns_http": "Packaged binaries share app host/bundle requirement; no third-party API request for math.",
+        "hang": "Lazy binary initialization depends on bundled/built Vite WASM loading; enclosing math initialization deadline not visible here.",
+        "malformed_stale": "Invalid/incompatible binary/build artifact can fail import/instantiate before affected calculation.",
+        "recovery": "Reload correct coherent deployment; keep loaded UI/error boundary for optional code failure."
+      },
+      "existingProtections": [
+        "Pinned yarn.lock math dependencies;bundled deployment."
+      ],
+      "remediation": [
+        "Serve immutable coherent binary/code assets; verify quote math and isolate optional code loading."
+      ],
+      "confidence": "medium",
+      "testReferences": []
+    },
+    {
+      "id": "build-env",
+      "label": "Bundled runtime configuration validation",
+      "endpoints": [
+        "import.meta.env literals; no endpoint to fetch config"
+      ],
+      "consumerPackages": [
+        "@galacticcouncil/main",
+        "zod"
+      ],
+      "version": {
+        "@galacticcouncil/main": "0.0.0",
+        "zod": "4.3.6"
+      },
+      "evidence": [
+        {
+          "path": "apps/main/src/config/env.ts",
+          "line": 7,
+          "note": "VITE_INDEXER_URL: z.url()"
+        },
+        {
+          "path": "apps/main/src/config/env.ts",
+          "line": 9,
+          "note": "VITE_GRAFANA_URL: z.url()"
+        },
+        {
+          "path": "apps/main/src/config/env.ts",
+          "line": 21,
+          "note": "export const ENV = schema.parse(import.meta.env)"
+        }
+      ],
+      "requiredness": "Current global module initialization requires valid optional service URL literals too.",
+      "failures": {
+        "dns_http": "Service outage itself does not invalidate URL literal. Missing/malformed optional config values reject global module evaluation before boot.",
+        "hang": "Synchronous schema parsing; no fetch.",
+        "malformed_stale": "Invalid environmental build config throws globally even if optional feature unused.",
+        "recovery": "Requires valid/rebuilt bundle; not an independent service outage."
+      },
+      "existingProtections": [
+        "Explicit URL/type/boolean validation catches misconfiguration."
+      ],
+      "remediation": [
+        "Separate primary required config from optional integrations; disable unavailable optional feature when config absent."
+      ],
+      "confidence": "high",
+      "testReferences": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "hosting",
+      "to": "router-boundaries",
+      "relation": "serves entry/route/service chunks",
+      "required": true
+    },
+    {
+      "from": "hosting",
+      "to": "descriptors",
+      "relation": "serves dynamically imported descriptors/metadata",
+      "required": true
+    },
+    {
+      "from": "hosting",
+      "to": "rpc-ping-worker",
+      "relation": "serves worker executable",
+      "required": true
+    },
+    {
+      "from": "rpc-ping-worker",
+      "to": "hydration-http-probes",
+      "relation": "executes startup discovery",
+      "required": true
+    },
+    {
+      "from": "hydration-http-probes",
+      "to": "hydration-rpc",
+      "relation": "current startup gate precedes WS construction",
+      "required": true
+    },
+    {
+      "from": "local-storage",
+      "to": "hydration-http-probes",
+      "relation": "resolver persists selected endpoint before readiness",
+      "required": true
+    },
+    {
+      "from": "hydration-rpc",
+      "to": "sdk-context",
+      "relation": "chain constants and shared typed clients",
+      "required": true
+    },
+    {
+      "from": "sdk-context",
+      "to": "sdk-pool-context",
+      "relation": "activates Aave/Omni/Stable/XYK/V3",
+      "required": true
+    },
+    {
+      "from": "hydration-rpc",
+      "to": "hydration-evm",
+      "relation": "custom transport shares papi _request/runtime",
+      "required": true
+    },
+    {
+      "from": "hydration-evm",
+      "to": "gamma-symbol-filter",
+      "relation": "symbol discovery and V3 bootstrap reads",
+      "required": true
+    },
+    {
+      "from": "sdk-pool-context",
+      "to": "asset-registry-gate",
+      "relation": "allPools/tradeable assets Promise.all",
+      "required": true
+    },
+    {
+      "from": "asset-metadata-cdn",
+      "to": "asset-registry-gate",
+      "relation": "currently awaited despite optional semantics",
+      "required": true
+    },
+    {
+      "from": "gamma-symbol-filter",
+      "to": "asset-registry-gate",
+      "relation": "symbol filtering awaited before registry sync",
+      "required": true
+    },
+    {
+      "from": "indexeddb",
+      "to": "asset-registry-gate",
+      "relation": "same-genesis cache can bypass suspense; malformed data trusted",
+      "required": false
+    },
+    {
+      "from": "asset-registry-gate",
+      "to": "router-boundaries",
+      "relation": "root wraps MainLayout/services/footer",
+      "required": true
+    },
+    {
+      "from": "sdk-pool-context",
+      "to": "chain-prices",
+      "relation": "source of pool routing spot prices",
+      "required": false
+    },
+    {
+      "from": "hosting",
+      "to": "app-update",
+      "relation": "background HTML comparison",
+      "required": false
+    },
+    {
+      "from": "indexeddb",
+      "to": "portfolio-cache",
+      "relation": "best-effort optional restore/save",
+      "required": false
+    },
+    {
+      "from": "asset-metadata-cdn",
+      "to": "asset-icon-cdn",
+      "relation": "URLs for passive pixel fetch",
+      "required": false
+    },
+    {
+      "from": "hosting",
+      "to": "bundled-fonts",
+      "relation": "serves font pixels",
+      "required": false
+    },
+    {
+      "from": "hosting",
+      "to": "bundled-sdk-math",
+      "relation": "serves/inlines required binary code",
+      "required": true
+    }
+  ],
+  "newFindings": [
+    {
+      "id": "storage-quota-startup",
+      "priority": "P1",
+      "title": "Available-but-unwritable localStorage can prevent outer resolver readiness",
+      "dependencyIds": [
+        "local-storage"
+      ],
+      "scope": "Entire boot outside RouterProvider, including navigation.",
+      "proof": "Actual provider store setState throws injected QuotaExceededError after changing memory; source resolver persists at86 before flag93; useAsyncFn contains rejection but flag remains false and resolver returnsnull109. Full-browser blast radius not injected yet.",
+      "evidence": [
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 86,
+          "note": "useProviderRpcUrlStore.setState({"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 109,
+          "note": "if (!isBestProviderFound) return null"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#provider_resolution_persist_write_failure"
+      ],
+      "remediation": "Best-effort persistent writes; always render/configured-WS fallback when storage persist fails."
+    },
+    {
+      "id": "malformed-persisted-asset-registry",
+      "priority": "P1",
+      "title": "Malformed persisted asset state reaches root render without validation",
+      "dependencyIds": [
+        "indexeddb"
+      ],
+      "scope": "Required AssetsProvider root, potentially replacing root with error fallback; exact fallback robustness not guaranteed.",
+      "proof": "Actual IndexedDB adapter+Zustand rehydrated assets:string without validation; same assets.reduce used by AssetsProvider throws. Root unmount/error blast radius inferred from root placement, not independently rendered in browser.",
+      "evidence": [
+        {
+          "path": "apps/main/src/utils/indexedDB.ts",
+          "line": 200,
+          "note": "persist(creator, {"
+        },
+        {
+          "path": "apps/main/src/providers/assetsProvider.tsx",
+          "line": 146,
+          "note": "return assets.reduce<TAssetsState>("
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 47,
+          "note": "<AssetsProvider>"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#idb_malformed_registry_shape_reaches_consumer"
+      ],
+      "remediation": "Validate persisted registry and default/refetch after malformed records; avoid late restore overwriting current snapshot."
+    },
+    {
+      "id": "viem-response-body-deadline",
+      "priority": "P2",
+      "title": "Viem HTTP request timeout ends at headers and does not cover stalled response body",
+      "dependencyIds": [
+        "hydration-evm"
+      ],
+      "scope": "Any external EVM HTTP consumer using exact viem2.56.8; core custom Hydration transport is separate.",
+      "proof": "Exact createPublicClient/http with timeout25ms and hanging ReadableStream remained pending at120ms; supplied signal stayed unaborted. getHttpRpcClient reads body outside withTimeout.",
+      "evidence": [
+        {
+          "path": "node_modules/viem/_esm/utils/rpc/http.js",
+          "line": 19,
+          "note": "const response = await withTimeout"
+        },
+        {
+          "path": "node_modules/viem/_esm/utils/rpc/http.js",
+          "line": 53,
+          "note": "const responseBody = await readResponseBody"
+        },
+        {
+          "path": "node_modules/viem/_esm/utils/rpc/http.js",
+          "line": 133,
+          "note": "const { done, value } = await reader.read()"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#viem_http_response_body_hang_outlives_configured_timeout"
+      ],
+      "remediation": "Wrap whole network operation including parsing/reading with deadline and abort signal; validate per-feature fallback."
+    },
+    {
+      "id": "warm-host-chunk-reload",
+      "priority": "P2",
+      "title": "Later app-host chunk failure can trigger unconditional document reload",
+      "dependencyIds": [
+        "hosting",
+        "router-boundaries"
+      ],
+      "scope": "Previously loaded/warm application; initial uncached application-host availability is physically mandatory.",
+      "proof": "Exact vite:preloadError callback requested reload for each of3 injected events. Effect on deployment outage inferred; no full production-host outage performed.",
+      "evidence": [
+        {
+          "path": "apps/main/src/App.tsx",
+          "line": 97,
+          "note": "window.addEventListener(\"vite:preloadError\""
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#preload_error_unconditionally_reloads"
+      ],
+      "remediation": "Preserve current shell and cached route; local retry UI and deploy-overlap immutable chunks."
+    },
+    {
+      "id": "hydration-http-only-startup-gate",
+      "priority": "P2",
+      "title": "Total HTTP probe failure prevents healthy Hydration WS fallback",
+      "dependencyIds": [
+        "hydration-http-probes"
+      ],
+      "scope": "Entire boot; coupling within primary Hydration transport, not independent service outage.",
+      "proof": "All HTTP worker probes rejected => worker throws before resolver flag; WS client not constructed. Source verified.",
+      "evidence": [
+        {
+          "path": "apps/main/src/workers/ping/ping.worker.ts",
+          "line": 183,
+          "note": "throw new Error(\"All RPC providers failed or timed out\")"
+        },
+        {
+          "path": "apps/main/src/components/DataProviderSelect/DataProviderResolver.tsx",
+          "line": 66,
+          "note": "await pingWorker.getBestRpcs"
+        }
+      ],
+      "testReferences": [],
+      "remediation": "Use configured WS fallback even if ranking unavailable; settle resolver and expose status."
+    },
+    {
+      "id": "sdk-auxiliary-pool-coupling",
+      "priority": "P2",
+      "title": "One activated pool family failure rejects healthy families during cold registry initialization",
+      "dependencyIds": [
+        "sdk-pool-context"
+      ],
+      "scope": "Cold base assets via SDK allPools/tradeAssets; underlying reads are all Hydration.",
+      "proof": "Exact aggregate method V3 rejection withheld healthy Omni pool; next call recovered. Scoped actual reads have15s deadlines; aggregate itself no partial returns/deadline, seed60s.",
+      "evidence": [
+        {
+          "path": "audit/sdk-next-readable.mjs",
+          "line": 7451,
+          "note": "(this.pending = Promise.all(t.map((n) => n.getPools(e)))"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#sdk_pool_aggregate_v3_reject"
+      ],
+      "remediation": "Separate essential registry data from pool-family capabilities; track readiness and routing availability independently."
+    },
+    {
+      "id": "storage-schema-pass-through",
+      "priority": "P2",
+      "title": "Schema-invalid same-version local preference payload is still restored",
+      "dependencyIds": [
+        "local-storage"
+      ],
+      "scope": "Affected preference consumers; trade/chart/settings may render invalid states/errors, not proven entire root.",
+      "proof": "Actual helper safeParse failed number validation but returned same JSON, restoring count:string under same version; default Zustand merge trusts it.",
+      "evidence": [
+        {
+          "path": "packages/utils/src/lib/zustandStorage.ts",
+          "line": 45,
+          "note": "return data"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#local_storage_schema_invalid_same_version_passes_through"
+      ],
+      "remediation": "Only pass old versions to migration; same-version invalid data resets defaults."
+    },
+    {
+      "id": "app-update-baseline-no-recovery",
+      "priority": "P3",
+      "title": "Failed or hanging baseline permanently disables version awareness for current tab",
+      "dependencyIds": [
+        "app-update"
+      ],
+      "scope": "Update banner only; main UI remains available.",
+      "proof": "Exact module probe baseline rejection softensnull; later successful check did not mark available. Hanging baseline held check at120ms; source memoizes it forever.",
+      "evidence": [
+        {
+          "path": "apps/main/src/utils/appUpdate.ts",
+          "line": 27,
+          "note": "const baseline = fetchIndex().catch"
+        }
+      ],
+      "testReferences": [
+        "audit/deep-startup-faults.results.json#app_update_baseline_rejection",
+        "audit/deep-startup-faults.results.json#app_update_baseline_hang"
+      ],
+      "remediation": "Bound/retry baseline initialization and compare build identifiers."
+    }
+  ],
+  "tests": {
+    "metadata": "audit/metadata-faults.cjs",
+    "metadataResults": "audit/metadata-faults.results.json",
+    "deep": "audit/deep-startup-faults.cjs",
+    "deepResults": "audit/deep-startup-faults.results.json",
+    "counts": {
+      "metadataCases": 15,
+      "deepCases": 14
+    },
+    "readableArtifacts": {
+      "audit/common-substrate-readable.mjs": "Reformatted exact installed @galacticcouncil/common1.2.0 build/substrate/index.mjs; original minified one line",
+      "audit/sdk-next-readable.mjs": "Reformatted exact installed @galacticcouncil/sdk-next2.3.2 build/index.mjs; original minified one line"
+    }
+  },
+  "consumerNodes": [
+    {
+      "id": "asset-registry-gate",
+      "label": "Root base asset registry gate",
+      "evidence": [
+        {
+          "path": "apps/main/src/providers/AssetRegistryGate.tsx",
+          "line": 25,
+          "note": "cold cache useSuspenseQuery(assetsQuery(...)) controls children"
+        },
+        {
+          "path": "apps/main/src/routes/__root.tsx",
+          "line": 81,
+          "note": "root AssetRegistryGate wraps primary layout/services/footer"
+        }
+      ]
+    }
+  ]
+}

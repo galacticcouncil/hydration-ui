@@ -1,0 +1,145 @@
+{
+  "kind": "Actual locked 1Click SDK and xc-swap helper with mocked Axios adapter; no live API calls or transactions",
+  "observationMs": 150,
+  "assertions": 27,
+  "observations": [
+    {
+      "api": "tokens",
+      "mode": "network-reject",
+      "state": "rejected",
+      "message": "simulated 1Click network failure",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/tokens",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    },
+    {
+      "api": "quote-helper",
+      "mode": "network-reject",
+      "state": "rejected",
+      "message": "simulated 1Click network failure",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/quote",
+          "method": "post",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": false
+    },
+    {
+      "api": "status-sdk-only",
+      "mode": "network-reject",
+      "state": "rejected",
+      "message": "simulated 1Click network failure",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/status?depositAddress=audit-deposit",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    },
+    {
+      "api": "tokens",
+      "mode": "http-503",
+      "state": "rejected",
+      "message": "Service Unavailable",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/tokens",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    },
+    {
+      "api": "quote-helper",
+      "mode": "http-503",
+      "state": "rejected",
+      "message": "Service Unavailable",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/quote",
+          "method": "post",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": false
+    },
+    {
+      "api": "status-sdk-only",
+      "mode": "http-503",
+      "state": "rejected",
+      "message": "Service Unavailable",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/status?depositAddress=audit-deposit",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    },
+    {
+      "api": "tokens",
+      "mode": "silent-hang",
+      "state": "pending",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/tokens",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    },
+    {
+      "api": "quote-helper",
+      "mode": "silent-hang",
+      "state": "pending",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/quote",
+          "method": "post",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": false
+    },
+    {
+      "api": "status-sdk-only",
+      "mode": "silent-hang",
+      "state": "pending",
+      "requests": [
+        {
+          "url": "https://1click.chaindefuser.com/v0/status?depositAddress=audit-deposit",
+          "method": "get",
+          "timeoutMs": 0,
+          "hasCancelToken": true
+        }
+      ],
+      "exposesCancel": true
+    }
+  ],
+  "sourceConclusions": [
+    "Axios request timeout is zero. Silent requests stayed pending during the observation window; source supplies no network deadline.",
+    "Direct service methods expose cancellation; the xc-swap async quote helper returns a native Promise and does not expose cancel.",
+    "The quote payload deadline describes swap validity, and does not configure an HTTP request timeout.",
+    "Current UI does not use the tested SDK status method; it separately fetches IntentScan order status."
+  ]
+}

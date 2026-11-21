@@ -1,0 +1,206 @@
+[
+  {
+    "formattedPath": "audit/crosschain-sources/common.mjs",
+    "formattedSha256": "ff161494045c34148d2248ee18e85a51c7773c3d3b8af142dbe1bd3a14f29f03",
+    "originalPath": "node_modules/@galacticcouncil/common/build/index.mjs",
+    "originalSha256": "833f519aa624661a918ea32093f8ced0e4f9970bdb8d18117953c650626b9090",
+    "packageName": "@galacticcouncil/common",
+    "packageVersion": "1.2.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/walletconnect-core.js",
+    "formattedSha256": "6ff5e4d3a741da935d51de482efec0a5dcecaecc635f1d462c4ef7e69401e5f1",
+    "originalPath": "node_modules/@walletconnect/core/dist/index.js",
+    "originalSha256": "26888ede8af3e7f223373142c443e8ce7b197f4c62ece94d2ecbf5d2d5e0ee54",
+    "packageName": "@walletconnect/core",
+    "packageVersion": "2.23.7",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/walletconnect-jsonrpc-http-connection.js",
+    "formattedSha256": "b2be50c82b7eff189e74207e826cc9876eaa96b140ab07ba2a8a8ea7482951aa",
+    "originalPath": "node_modules/@walletconnect/jsonrpc-http-connection/dist/index.es.js",
+    "originalSha256": "3cf70b37052ba8a2484bba1b371857e3b14b53ae49a5531f2922378f02e49118",
+    "packageName": "@walletconnect/jsonrpc-http-connection",
+    "packageVersion": "1.0.8",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/walletconnect-jsonrpc-ws-connection.js",
+    "formattedSha256": "06561b6a8f1afda2c6a1f46b6f6c7cc1b2e7a11ebe2ac7acb86065091d70413b",
+    "originalPath": "node_modules/@walletconnect/jsonrpc-ws-connection/dist/index.es.js",
+    "originalSha256": "204edda2f56781538866d63fab007310995f1967b5413cdd7030856286fb1705",
+    "packageName": "@walletconnect/jsonrpc-ws-connection",
+    "packageVersion": "1.0.16",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/walletconnect-sign-client.js",
+    "formattedSha256": "1958b48517df61cdd6568a1a83ed06676e8d614e04531d379771024652f5be8a",
+    "originalPath": "node_modules/@walletconnect/sign-client/dist/index.js",
+    "originalSha256": "6f3e49b04061ae0f05ded38732119632c6688e4d2ea1085fed797e9b4d793327",
+    "packageName": "@walletconnect/sign-client",
+    "packageVersion": "2.23.7",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/walletconnect-universal-provider.js",
+    "formattedSha256": "1695eab04da46cad22af5e0d0162432af7a0a9f1dacf7386b48a0aaa4058dafe",
+    "originalPath": "node_modules/@walletconnect/universal-provider/dist/index.js",
+    "originalSha256": "f9d3e9c0865abfa110d4a791250885f62d57cb593021da7f47891b0b16f2eee3",
+    "packageName": "@walletconnect/universal-provider",
+    "packageVersion": "2.23.7",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc-cfg.mjs",
+    "formattedSha256": "a2ab0e6ca2ba2830a32fed8934f2ac19a1a93cbbd63baa14bf8b218d6f13e184",
+    "originalPath": "node_modules/@galacticcouncil/xc-cfg/build/index.mjs",
+    "originalSha256": "b816b8b2cc2bbed2efb089fb22b78fe289e5074338dea623ba074e507808dcba",
+    "packageName": "@galacticcouncil/xc-cfg",
+    "packageVersion": "2.7.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc-core.mjs",
+    "formattedSha256": "dcc64706ebf6c6b3b0afe9a3a043f3d9df839f2d2aad12ec4a72afd4af6f016a",
+    "originalPath": "node_modules/@galacticcouncil/xc-core/build/index.mjs",
+    "originalSha256": "73fd3118cff20dcf5ac97dc426e1d9c3cb051bc5506a711ba71405c37503cd18",
+    "packageName": "@galacticcouncil/xc-core",
+    "packageVersion": "2.6.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc-scan.mjs",
+    "formattedSha256": "acc92e796a4090396c9b3b1807481265660704d54a599a254487539b586925ae",
+    "originalPath": "node_modules/@galacticcouncil/xc-scan/build/index.mjs",
+    "originalSha256": "aea6892c1c98a9c02050fe007b4eca1d3e50388b23a6b9608316f9d2ae8fab8a",
+    "packageName": "@galacticcouncil/xc-scan",
+    "packageVersion": "0.5.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc-sdk.mjs",
+    "formattedSha256": "3f3f2b6cbcf5963da698cdd6f571352b300bcdf343772cdb49d00e0d5a61822f",
+    "originalPath": "node_modules/@galacticcouncil/xc-sdk/build/index.mjs",
+    "originalSha256": "c770c37a952d38ad7c48496c8660dba51e6eab61d81d04dd038fba6d3381c76f",
+    "packageName": "@galacticcouncil/xc-sdk",
+    "packageVersion": "2.5.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc-swap.mjs",
+    "formattedSha256": "408c627c1c04e3fbf34cf9f6b05073aea76bbdfcf2e94d6dc1ac3f997272c6ea",
+    "originalPath": "node_modules/@galacticcouncil/xc-swap/build/index.mjs",
+    "originalSha256": "a84cb108befe7ec7c5e50a620117a2360fd5e4f98572127ed5d9dd5f8a5b59b7",
+    "packageName": "@galacticcouncil/xc-swap",
+    "packageVersion": "0.9.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  },
+  {
+    "formattedPath": "audit/crosschain-sources/xc.mjs",
+    "formattedSha256": "355f111728480287c8ddd2cad2e2547f10de05346b8b5cb0566c582d75c5bbd1",
+    "originalPath": "node_modules/@galacticcouncil/xc/build/index.mjs",
+    "originalSha256": "8cb8134da3160e17a04a3f1340c46373a54f35d4192ce97d4aa74e5bf132e365",
+    "packageName": "@galacticcouncil/xc",
+    "packageVersion": "2.1.0",
+    "formatter": {
+      "package": "prettier",
+      "version": "3.3.3",
+      "options": {
+        "parser": "babel"
+      }
+    },
+    "transformation": "Prettier formatting of the published ESM entry; no semantic edits.",
+    "purpose": "Evidence uses readable formatted line numbers. Reinstall the frozen lockfile to retrieve the original source identified by path, version and SHA-256."
+  }
+]
