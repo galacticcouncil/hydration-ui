@@ -16,6 +16,18 @@ import {
 } from "./network.mjs"
 export { publicAddress, publicNetworkPolicy } from "./network.mjs"
 
+// netlify's bot check: a 403 page that solves a proof of work, posts it and reloads
+async function netlifyChallenge(response) {
+  if (response.status() !== 403 || !/netlify/i.test(response.headers().server))
+    return false
+  const body = await response.body().catch(() => Buffer.alloc(0))
+  return (
+    body.length < 65536 &&
+    body.includes("submit-challenge") &&
+    body.includes("www.netlify.com/security")
+  )
+}
+
 export async function probeBrowser(
   c,
   reference,
@@ -38,6 +50,7 @@ export async function probeBrowser(
     responses: [],
     evidence: [],
     documents: [],
+    challenges: [],
   }
   const issueKeys = new Set(),
     origins = new Set(),
@@ -189,7 +202,12 @@ export async function probeBrowser(
 
       let documentJob = Promise.resolve(),
         pageReference = reference,
-        pageRoot = rootHash
+        pageRoot = rootHash,
+        challenged = false,
+        passed = false,
+        pass
+      const documentJobs = [],
+        realDocument = new Promise((resolve) => (pass = resolve))
       page.on("pageerror", (error) =>
         add({
           kind: "browser-error",
@@ -213,6 +231,16 @@ export async function probeBrowser(
           const mainDocument =
             type === "document" && response.frame() === page.mainFrame()
           if (!mainDocument) await documentJob
+          // the reloaded page after the challenge is verified like any other
+          if (mainDocument && (await netlifyChallenge(response))) {
+            challenged = true
+            out.challenges.push(route)
+            return
+          }
+          if (mainDocument) {
+            passed = true
+            pass()
+          }
           const boundReference = pageReference,
             boundRoot = pageRoot
           const expected = sameOrigin
@@ -327,8 +355,10 @@ export async function probeBrowser(
         if (
           response.request().resourceType() === "document" &&
           response.frame() === page.mainFrame()
-        )
+        ) {
           documentJob = job
+          documentJobs.push(job)
+        }
         jobs.push(job)
       }
       page.on("response", onResponse)
@@ -368,6 +398,15 @@ export async function probeBrowser(
             waitUntil: "domcontentloaded",
             timeout: 30000,
           })
+        await Promise.allSettled(documentJobs)
+        if (challenged && !passed) {
+          await deadline(
+            realDocument,
+            c.timeoutMs || 30000,
+            "Netlify challenge did not complete",
+          )
+          await page.waitForLoadState("domcontentloaded")
+        }
         if (c.routes.includes(route))
           await page.waitForFunction(
             () =>
