@@ -1,3 +1,4 @@
+import { Ellipsis } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
@@ -6,19 +7,27 @@ import {
   ChipProps,
   CollapsibleContent,
   CollapsibleRoot,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Flex,
   Grid,
   Icon,
   LoadingButton,
+  MenuItemIcon,
+  MenuItemLabel,
+  MenuSelectionItem,
   Paper,
   PositionCard,
   Separator,
   Stack,
   Text,
+  Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ChevronDown } from "lucide-react"
+import { ArrowUpFromLine, ChevronDown, X } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
@@ -28,8 +37,10 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { useResolveAssetDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
 import { MultiplyAmountModal } from "@/modules/strategies/multiply/components/MultiplyAmountModal"
+import { MultiplyCloseModal } from "@/modules/strategies/multiply/components/MultiplyCloseModal"
 import { MultiplyDepositSummary } from "@/modules/strategies/multiply/components/MultiplyDepositSummary"
 import { type MultiplyPairRow } from "@/modules/strategies/multiply/components/MultiplyPairs.columns"
+import { SMenuLabelText } from "@/modules/strategies/multiply/components/MultiplyPairs.styled"
 import {
   SChevron,
   SPositionHeader,
@@ -63,7 +74,7 @@ const statusVariant: Record<MultiplyPositionStatus, ChipProps["variant"]> = {
   building: "blue",
   withdrawing: "cyan",
   closing: "amber",
-  paused: "red",
+  paused: "orange",
 }
 
 const stallKey = (stall: Stall) => {
@@ -79,7 +90,7 @@ const stallKey = (stall: Stall) => {
     | "feeBudgetLow"
 }
 
-type ModalKind = "deposit" | "withdraw"
+type ModalKind = "deposit" | "withdraw" | "close"
 
 export const MultiplyPositionsCard: React.FC<{
   pairs: MultiplyPairRow[]
@@ -150,6 +161,8 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
   const collateral = display(pair.collateralAssetId)
   const debt = display(pair.debtAssetId)
   const feeAsset = display(pair.feeAssetId)
+  const pairLabel = `${collateral.symbol}/${debt.symbol}`
+  const isExiting = writes.withdraw.isPending || writes.close.isPending
 
   const amount = (value: bigint) => formatUnits(value, collateral.decimals)
   const leverage = (wad: bigint) => Number(formatUnits(wad, WAD_DECIMALS))
@@ -218,6 +231,14 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
           ) : (
             <Chip variant={statusVariant[status]} rounded size="small">
               {t(`multiply.status.${status}`)}
+              {/* preventDefault keeps the click from toggling the card */}
+              {reason && (
+                <Tooltip
+                  text={reason}
+                  preventDefault
+                  iconColor="currentColor"
+                />
+              )}
             </Chip>
           )
 
@@ -279,14 +300,6 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                         />
                         {status === "paused" && statusChip}
                       </Flex>
-                      {reason && (
-                        <Text
-                          fs="p6"
-                          color={getToken("accents.danger.emphasis")}
-                        >
-                          {reason}
-                        </Text>
-                      )}
                     </Stack>
                   }
                   // one column: the stats spread evenly between the value and the actions
@@ -339,7 +352,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                         {isBusy ? (
                           statusChip
                         ) : (
-                          <Flex gap="xs" align="center">
+                          <Flex gap="s" align="center">
                             {status === "paused" && (
                               <LoadingButton
                                 size="small"
@@ -357,20 +370,56 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                                   setModal({ kind: "deposit", position })
                                 }
                               >
-                                {t("common:deposit")}
+                                {t("common:add")}
                               </Button>
                             )}
                             {/* a paused rung still in flight must be resumed first */}
                             {position.pendingKind === 0 && (
-                              <Button
-                                variant="tertiary"
-                                size="small"
-                                onClick={() =>
-                                  setModal({ kind: "withdraw", position })
-                                }
-                              >
-                                {t("common:withdraw")}
-                              </Button>
+                              <DropdownMenu modal={false}>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="tertiary"
+                                    outline
+                                    size="small"
+                                    icon={Ellipsis}
+                                    disabled={isExiting}
+                                  />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" size="small">
+                                  <DropdownMenuItem asChild>
+                                    <MenuSelectionItem
+                                      variant="filterLink"
+                                      onClick={() =>
+                                        setModal({ kind: "withdraw", position })
+                                      }
+                                    >
+                                      <MenuItemIcon
+                                        component={ArrowUpFromLine}
+                                      />
+                                      <MenuItemLabel>
+                                        <SMenuLabelText>
+                                          {t("common:withdraw")}
+                                        </SMenuLabelText>
+                                      </MenuItemLabel>
+                                    </MenuSelectionItem>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <MenuSelectionItem
+                                      variant="filterLink"
+                                      onClick={() =>
+                                        setModal({ kind: "close", position })
+                                      }
+                                    >
+                                      <MenuItemIcon component={X} />
+                                      <MenuItemLabel>
+                                        <SMenuLabelText>
+                                          {t("common:close")}
+                                        </SMenuLabelText>
+                                      </MenuItemLabel>
+                                    </MenuSelectionItem>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
                           </Flex>
                         )}
@@ -443,9 +492,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
 
       {modal?.kind === "deposit" && (
         <MultiplyAmountModal
-          title={t("multiply.deposit.title", {
-            id: modal.position.id.toString(),
-          })}
+          title={t("multiply.deposit.title", { pair: pairLabel })}
           cta={t("multiply.deposit.cta")}
           summary={(value) => (
             <MultiplyDepositSummary
@@ -471,9 +518,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
 
       {modal?.kind === "withdraw" && (
         <MultiplyAmountModal
-          title={t("multiply.withdraw.title", {
-            id: modal.position.id.toString(),
-          })}
+          title={t("multiply.withdraw.title", { pair: pairLabel })}
           cta={t("multiply.withdraw.cta")}
           maxCta={t("multiply.withdraw.maxCta")}
           note={t("multiply.withdraw.note", { symbol: collateral.symbol })}
@@ -492,7 +537,7 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
           max={amount(modal.position.nav)}
           maxLabel={t("multiply.positions.netValue")}
           priceUsd={collateralPriceUsd}
-          isPending={writes.withdraw.isPending || writes.close.isPending}
+          isPending={isExiting}
           onSubmit={(value, isMax) => {
             // max is the net value as last read; close() empties the position
             // even after interest has moved it, a withdraw of it could leave dust
@@ -502,6 +547,20 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
                 position: modal.position,
                 amount: value,
               })
+            setModal(null)
+          }}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal?.kind === "close" && (
+        <MultiplyCloseModal
+          pair={pair}
+          position={modal.position}
+          collateralPriceUsd={collateralPriceUsd}
+          debtPriceUsd={debtPriceUsd}
+          isPending={writes.close.isPending}
+          onSubmit={() => {
+            writes.close.mutate(modal.position)
             setModal(null)
           }}
           onClose={() => setModal(null)}

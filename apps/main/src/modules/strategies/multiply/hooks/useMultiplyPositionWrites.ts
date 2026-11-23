@@ -99,6 +99,7 @@ export const useMultiplyPositionWrites = (pair: MultiplyPair) => {
         amount,
         symbol: collateral.symbol,
         id: position.id.toString(),
+        pair: `${collateral.symbol}/${display(pair.debtAssetId).symbol}`,
       }
       return submit(calls, {
         submitted: t("multiply.deposit.toast.submitted", values),

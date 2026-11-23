@@ -11,11 +11,18 @@ export const SRowContainer = styled(Flex)(
     justify-content: space-between;
     gap: ${theme.space.l};
 
+    /* On one row, equal side columns put the stats at the same place on every
+       card, centred between the name and the actions, whatever their widths.
+       A side wider than its share still grows to fit its content. */
     ${containerSize(
       "md",
       css`
+        display: grid;
+        grid-template-columns:
+          minmax(max-content, 1fr)
+          minmax(0, 2fr)
+          minmax(max-content, 1fr);
         gap: ${theme.space.xxl};
-        flex-wrap: nowrap;
       `,
     )}
   `,

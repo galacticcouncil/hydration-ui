@@ -1,13 +1,15 @@
-import { AnimatedValue, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  AnimatedValue,
+  Flex,
+  ProgressBar,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  PROGRESS_MOVE_MS,
-  SFill,
-  STrack,
-} from "@/modules/strategies/multiply/components/MultiplyProgress.styled"
+// the numbers count over the same 900ms the bar's width takes to move
+const PROGRESS_MOVE_MS = 900
 
 type Props = {
   readonly label: string
@@ -16,23 +18,20 @@ type Props = {
   readonly leverage: number
 }
 
-const width = (fraction: number) =>
-  `${Math.min(1, Math.max(0, fraction)) * 100}%`
-
 // Ladder progress: a striped bar with the status and percent above it, and the
 // current leverage on the right. Both numbers count to their new value.
 export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
   const { t } = useTranslation(["strategies", "common"])
 
   return (
-    <Flex
-      direction="column"
-      gap="xs"
-      width={pxToRem(160)}
-      color={getToken("tags.soft.blue.foreground")}
-    >
+    <Flex direction="column" width={pxToRem(160)}>
       <Flex justify="space-between" align="baseline" gap="m">
-        <Text fs="p6" fw={500} whiteSpace="nowrap">
+        <Text
+          fs="p6"
+          fw={500}
+          whiteSpace="nowrap"
+          color={getToken("text.high")}
+        >
           {label}{" "}
           <AnimatedValue
             value={progress}
@@ -45,7 +44,7 @@ export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
             }
           />
         </Text>
-        <Text fs="p6" fw={500} whiteSpace="nowrap">
+        <Text fs="p6" fw={500} whiteSpace="nowrap" color={getToken("text.low")}>
           <AnimatedValue
             value={leverage}
             duration={PROGRESS_MOVE_MS}
@@ -53,15 +52,21 @@ export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
           />
         </Text>
       </Flex>
-      <STrack
+      <div
         role="progressbar"
         aria-label={label}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(progress * 100)}
       >
-        <SFill style={{ width: width(progress) }} />
-      </STrack>
+        <ProgressBar
+          value={progress * 100}
+          variant="gradient"
+          animated
+          size="medium"
+          hideLabel
+        />
+      </div>
     </Flex>
   )
 }

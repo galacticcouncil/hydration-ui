@@ -545,64 +545,121 @@ const HowItWorks: React.FC<{
   ]
 
   return (
-    <Stack gap="l" align="center">
-      <Grid columnTemplate="repeat(3, 1fr)" width="100%">
-        {steps.map(({ key, icon }, i) => (
-          <Stack key={key} gap="s" align="center">
-            <Flex align="center" width="100%" color={getToken("text.low")}>
-              <Separator
-                flex={1}
-                sx={{ visibility: i ? "visible" : "hidden" }}
-              />
-              <Icon
-                component={ChevronRight}
-                size="s"
-                ml="-s"
-                sx={{ visibility: i ? "visible" : "hidden" }}
-              />
+    <Stack gap="l" align="center" sx={{ containerType: "inline-size" }}>
+      {/* vertical stepper when narrow, horizontal when the container is wide */}
+      <Grid
+        columnTemplate="1fr"
+        width="100%"
+        sx={{ [STEPPER_WIDE]: { gridTemplateColumns: "repeat(3, 1fr)" } }}
+      >
+        {steps.map(({ key, icon }, i) => {
+          const isLast = i === steps.length - 1
+          return (
+            <Grid
+              key={key}
+              columnTemplate={`${pxToRem(40)} 1fr`}
+              columnGap="m"
+              sx={{
+                [STEPPER_WIDE]: {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "s",
+                  textAlign: "center",
+                },
+              }}
+            >
               <Flex
+                direction="column"
                 align="center"
-                justify="center"
-                size={pxToRem(40)}
-                mx="s"
-                borderRadius="full"
-                bg={getToken("controls.dim.base")}
-                flexShrink={0}
+                color={getToken("text.low")}
+                sx={{ [STEPPER_WIDE]: { flexDirection: "row", width: "100%" } }}
               >
-                {icon}
+                <Separator
+                  flex={1}
+                  display="none"
+                  sx={{
+                    visibility: i ? "visible" : "hidden",
+                    [STEPPER_WIDE]: { display: "block" },
+                  }}
+                />
+                <Icon
+                  component={ChevronRight}
+                  size="s"
+                  ml="-s"
+                  sx={{
+                    display: "none",
+                    visibility: i ? "visible" : "hidden",
+                    [STEPPER_WIDE]: { display: "flex" },
+                  }}
+                />
+                <Flex
+                  align="center"
+                  justify="center"
+                  size={pxToRem(40)}
+                  borderRadius="full"
+                  bg={getToken("controls.dim.base")}
+                  flexShrink={0}
+                  sx={{ [STEPPER_WIDE]: { mx: "s" } }}
+                >
+                  {icon}
+                </Flex>
+                <Separator
+                  flex={1}
+                  mr="s"
+                  display="none"
+                  sx={{
+                    visibility: isLast ? "hidden" : "visible",
+                    [STEPPER_WIDE]: { display: "block" },
+                  }}
+                />
+                {/* vertical connector to the next step */}
+                {!isLast && (
+                  <Box
+                    flex={1}
+                    width="1px"
+                    my="s"
+                    bg={getToken("details.separators")}
+                    sx={{ [STEPPER_WIDE]: { display: "none" } }}
+                  />
+                )}
               </Flex>
-              <Separator
-                flex={1}
-                mr="s"
-                sx={{ visibility: i < steps.length - 1 ? "visible" : "hidden" }}
-              />
-            </Flex>
-            <Text fs="p4" fw={600} color={getToken("text.high")}>
-              {t(`multiply.pairDetails.step.${key}`)}
-            </Text>
-            <Text fs="p5" align="center" color={getToken("text.medium")}>
-              <Trans
-                t={t}
-                i18nKey={`multiply.pairDetails.step.${key}Text`}
-                values={{ collateral: collateral.symbol, debt: debt.symbol }}
-                components={[
-                  <Text
-                    key="collateral"
-                    as="span"
-                    fw={500}
-                    color={getAssetColor(collateralAssetId)}
-                  />,
-                  <Text
-                    key="debt"
-                    as="span"
-                    fw={500}
-                    color={getAssetColor(debtAssetId)}
-                  />,
-                ]}
-              />
-            </Text>
-          </Stack>
-        ))}
+              <Stack
+                gap="s"
+                pb={isLast ? undefined : "l"}
+                sx={{ [STEPPER_WIDE]: { pb: 0 } }}
+              >
+                <Text fs="p4" fw={600} color={getToken("text.high")}>
+                  {t(`multiply.pairDetails.step.${key}`)}
+                </Text>
+                <Text fs="p5" color={getToken("text.medium")}>
+                  <Trans
+                    t={t}
+                    i18nKey={`multiply.pairDetails.step.${key}Text`}
+                    values={{
+                      collateral: collateral.symbol,
+                      debt: debt.symbol,
+                    }}
+                    components={[
+                      <Text
+                        key="collateral"
+                        as="span"
+                        fw={500}
+                        color={getAssetColor(collateralAssetId)}
+                      />,
+                      <Text
+                        key="debt"
+                        as="span"
+                        fw={500}
+                        color={getAssetColor(debtAssetId)}
+                      />,
+                    ]}
+                  />
+                </Text>
+              </Stack>
+            </Grid>
+          )
+        })}
       </Grid>
       <Chip
         variant="tertiary"
@@ -622,3 +679,6 @@ const HowItWorks: React.FC<{
 const Address: React.FC<{ value: string }> = ({ value }) => (
   <AddressTag address={value} linkType="contract" fs="p5" />
 )
+
+// ~460px at the app's 110% root font size
+const STEPPER_WIDE = "@container (width >= 26rem)"

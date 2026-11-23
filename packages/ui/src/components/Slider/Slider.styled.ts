@@ -6,6 +6,7 @@ import { pxToRem } from "@/utils"
 
 export const SRoot = styled(Root)`
   position: relative;
+  z-index: 1;
   width: 100%;
   height: 24px;
 
@@ -147,15 +148,15 @@ export const SMark = styled.div<{ position: number }>(
   ({ position }) => css`
     position: absolute;
     top: 0;
-    left: ${position}%;
-    transform: translateX(-50%);
+    left: round(${position}%, 1px);
   `,
 )
 
 export const SMarkTick = styled.div<{ labelled: boolean }>(
   ({ theme, labelled }) => css`
     width: 1px;
-    height: ${labelled ? theme.space.base : theme.space.s};
+    /* rem heights turn fractional under the UI scale; snap them like the left */
+    height: round(${labelled ? theme.space.base : theme.space.s}, 1px);
 
     background-color: ${theme.text.low};
     opacity: ${labelled ? 0.8 : 0.45};

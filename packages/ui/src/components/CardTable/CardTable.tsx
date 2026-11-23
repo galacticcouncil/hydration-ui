@@ -142,7 +142,10 @@ const CardTable = <TData,>({
             {isMobile && action && (
               <Box
                 mt="l"
-                sx={{ "& > *": { width: "100%" }, "& button": { flex: 1 } }}
+                sx={{
+                  "& > *": { width: "100%" },
+                  "& button:not([data-icon-only])": { flex: 1 },
+                }}
               >
                 {action}
               </Box>

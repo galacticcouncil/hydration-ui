@@ -32,7 +32,8 @@ export const SChevron = styled.span<{ isOpen: boolean }>(
 export const STAT_COLUMN_WIDTH = 150
 
 // Wrapped under the value (narrow card), the stats take the details' columns
-// so the two line up; on one row (PositionCard's md) they spread out evenly.
+// so the two line up; on one row (PositionCard's md) they split it into equal
+// columns, so every card's stats start at the same place.
 export const SStats = styled.div(
   ({ theme }) => css`
     display: grid;
@@ -45,8 +46,9 @@ export const SStats = styled.div(
     ${containerSize(
       "md",
       css`
-        display: flex;
-        justify-content: space-evenly;
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
         gap: ${theme.space.xxl};
       `,
     )}
