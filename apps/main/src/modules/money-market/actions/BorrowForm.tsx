@@ -11,6 +11,7 @@ import {
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
 import {
+  Alert,
   AssetInput,
   LoadingButton,
   Separator,
@@ -33,6 +34,7 @@ import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorC
 import { useActionPlanMutation } from "@/modules/money-market/actions/useActionPlanMutation"
 import { useUserAddress } from "@/modules/money-market/hooks"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { useHollarDebtRewardsNotice } from "@/modules/money-market/rewards/useHollarDebtRewardsNotice"
 import { ReserveApyCell } from "@/modules/money-market/table/cells"
 
 type Props = {
@@ -68,6 +70,10 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
   const [amount, setAmount] = useState("")
   const assessment = useBorrowAssessment({ user, asset, amount })
   const current = useAccountSummary(user)
+  const amountUsd = Big(summary?.priceInUsd ?? "0")
+    .times(amount || "0")
+    .toString()
+  const rewardsNotice = useHollarDebtRewardsNotice(asset, amountUsd)
 
   const {
     control,
@@ -148,11 +154,7 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
               setAmount(value)
               setValue("acknowledged", false)
             }}
-            displayValue={t("common:currency", {
-              value: Big(summary?.priceInUsd ?? "0")
-                .times(amount || "0")
-                .toString(),
-            })}
+            displayValue={t("common:currency", { value: amountUsd })}
             amountError={fieldState.error?.message}
           />
         )}
@@ -206,7 +208,7 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
             loading={isAssessing || current.isPending}
           />
         )}
-        {findings.length > 0 && (
+        {(findings.length > 0 || rewardsNotice) && (
           <Stack gap="base" py="base">
             <Controller
               control={control}
@@ -219,6 +221,7 @@ export const BorrowForm: FC<Props> = ({ asset, onSubmitted }) => {
                 />
               )}
             />
+            {rewardsNotice && <Alert {...rewardsNotice} />}
           </Stack>
         )}
       </Summary>

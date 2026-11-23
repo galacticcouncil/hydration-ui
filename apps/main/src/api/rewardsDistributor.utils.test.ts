@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   claimsFileSchema,
   getAccruedRewards,
+  getHollarDebtUsd,
   getOwedReward,
   getRewardsProgramApr,
   getRewardsReadTime,
@@ -12,10 +13,12 @@ import {
   getRewardsRootsRefetchInterval,
   getRewardsTokenAddress,
   hasRewardsProgramEnded,
+  type HollarDebtMarket,
   latestFileSchema,
   mergeRewardsIncentive,
   type RewardsClaimsFile,
   type RewardsLatestFile,
+  suppliesRewardsProgramAsset,
 } from "@/api/rewardsDistributor.utils"
 
 const ACCOUNT = "0x03ec4ec5810c3dfe15b706dfd7639b9565f30414"
@@ -1137,5 +1140,134 @@ describe("mergeRewardsIncentive", () => {
     const own = [streamed]
 
     expect(mergeRewardsIncentive(own, undefined)).toBe(own)
+  })
+})
+
+describe("suppliesRewardsProgramAsset", () => {
+  const HUSDC: Hex = "0x000000000000000000000000000000010000006e"
+  const HUSDT: Hex = "0x000000000000000000000000000000010000006F"
+  const position = (underlyingAsset: Hex, scaledATokenBalance: string) => ({
+    underlyingAsset,
+    scaledATokenBalance,
+  })
+
+  it("finds a supply of any earning asset, in any letter case", () => {
+    expect(
+      suppliesRewardsProgramAsset(
+        [position(HUSDC, "0"), position(HUSDT, "1")],
+        [HUSDC, HUSDT.toLowerCase()],
+      ),
+    ).toBe(true)
+  })
+
+  it("does not count an empty position or another asset", () => {
+    expect(
+      suppliesRewardsProgramAsset(
+        [position(HUSDC, "0"), position(`0x${"1".repeat(40)}`, "5")],
+        [HUSDC, HUSDT],
+      ),
+    ).toBe(false)
+  })
+})
+
+describe("getHollarDebtUsd", () => {
+  // matched in any letter case
+  const HOLLAR: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
+  const HOLLAR_LOWERCASE: Hex = "0x531a654d1696ed52e7275a8cede955e82620f99a"
+  const NOW = 1794902400
+  const RAY = 10n ** 27n
+  const ONE = 10n ** 18n
+
+  // a market whose HOLLAR debt index is `index` (a ray), at `price` dollars
+  // with 8 decimals, accruing at `rate` (a ray) since `lastUpdateTimestamp`
+  const market = ({
+    scaledDebt,
+    index = RAY,
+    rate = 0n,
+    price = "100000000",
+    lastUpdateTimestamp = NOW,
+  }: {
+    scaledDebt: bigint
+    index?: bigint
+    rate?: bigint
+    price?: string
+    lastUpdateTimestamp?: number
+  }): HollarDebtMarket => ({
+    hollar: HOLLAR,
+    positions: [
+      {
+        underlyingAsset: HOLLAR_LOWERCASE,
+        scaledVariableDebt: scaledDebt.toString(),
+      },
+    ],
+    reserves: {
+      reserves: [
+        {
+          underlyingAsset: HOLLAR,
+          decimals: 18,
+          variableBorrowIndex: index.toString(),
+          variableBorrowRate: rate.toString(),
+          lastUpdateTimestamp,
+          priceInMarketReferenceCurrency: price,
+        },
+      ],
+      baseCurrency: {
+        marketReferenceCurrencyDecimals: 8,
+        marketReferenceCurrencyPriceInUsd: "100000000",
+      },
+    },
+  })
+
+  it("values each market's debt at its index and price, and adds them up", () => {
+    expect(
+      getHollarDebtUsd(
+        [
+          market({ scaledDebt: 100n * ONE, index: (RAY * 11n) / 10n }),
+          market({ scaledDebt: 10n * ONE, price: "99000000" }),
+        ],
+        NOW,
+      ),
+    ).toBe("119.9")
+  })
+
+  it("accrues the debt up to now", () => {
+    const debt = (now: number) =>
+      getHollarDebtUsd(
+        [
+          market({
+            scaledDebt: 100n * ONE,
+            rate: RAY / 10n,
+            lastUpdateTimestamp: NOW - 86400,
+          }),
+        ],
+        now,
+      )
+
+    expect(debt(NOW - 86400)).toBe("100")
+    expect(Number(debt(NOW))).toBeGreaterThan(100)
+  })
+
+  it("is zero without HOLLAR debt, whatever the reserves", () => {
+    expect(
+      getHollarDebtUsd(
+        [
+          { ...market({ scaledDebt: 0n }), reserves: undefined },
+          { hollar: HOLLAR, positions: [], reserves: undefined },
+        ],
+        NOW,
+      ),
+    ).toBe("0")
+  })
+
+  it("is not known while a market holding the debt has no reserves read", () => {
+    expect(
+      getHollarDebtUsd(
+        [
+          market({ scaledDebt: ONE }),
+          { ...market({ scaledDebt: ONE }), reserves: undefined },
+        ],
+        NOW,
+      ),
+    ).toBeUndefined()
   })
 })

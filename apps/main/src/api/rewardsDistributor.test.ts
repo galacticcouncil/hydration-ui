@@ -4,6 +4,7 @@ import { type Hex, zeroHash } from "viem"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  getHollarDebtChangeNotice,
   getRewardsDistributorAccrued,
   getRewardsProgram,
   getRewardsProgramIncentives,
@@ -15,6 +16,7 @@ import {
   rewardsDistributorRootQuery,
   rewardsDistributorTimelockQuery,
   type RewardsProgram,
+  type RewardsProgramLive,
 } from "@/api/rewardsDistributor"
 import { latestFileSchema } from "@/api/rewardsDistributor.utils"
 import { type TProviderContext } from "@/providers/rpcProvider"
@@ -334,6 +336,7 @@ describe("the reward program as an account meets it", () => {
   const BORROWER = "0x08668d9785b8ab9246b45cbf26998563eac007d2"
   // not in the file: it supplied none of the assets at the snapshot
   const NEWCOMER = "0x0468ae64c87bbe7b2cef012bdf51bd8e544df5f5"
+  const EXCLUDED = "0x00000000000000000000000000000000000000e1"
   const HUSDC = "0x000000000000000000000000000000010000006e"
   const HUSDT = "0x000000000000000000000000000000010000006f"
   const PRICE = "2"
@@ -362,12 +365,16 @@ describe("the reward program as an account meets it", () => {
           reason: "hollar_debt",
           hollarDebtUsd: "250944.35",
         },
+        [EXCLUDED]: { earning: false, reason: "excluded" },
       },
       latestTree: null,
     })
 
   const NO_PROGRAM = {
     notEarningReason: undefined,
+    earningResumes: false,
+    suppliesEarningAsset: undefined,
+    hollarDebtUsd: undefined,
     maxHollarDebtUsd: "0",
     latest: undefined,
   }
@@ -390,6 +397,9 @@ describe("the reward program as an account meets it", () => {
 
     expect(program).toEqual({
       notEarningReason: undefined,
+      earningResumes: false,
+      suppliesEarningAsset: undefined,
+      hollarDebtUsd: undefined,
       maxHollarDebtUsd: "5.00",
       latest,
     })
@@ -496,5 +506,138 @@ describe("the reward program as an account meets it", () => {
     })
 
     expect(getRewardsProgramIncentives(program, undefined).size).toBe(0)
+  })
+
+  describe("with the account's positions now", () => {
+    const supplying = (hollarDebtUsd: string) =>
+      ({ supplies: true, hollarDebtUsd }) as const
+    const meet = (account: string, live: RewardsProgramLive) =>
+      getRewardsProgram({ latest: file(), account, readAt: READ_AT, live })
+
+    it("pays an account that has repaid its HOLLAR debt since the snapshot, and says so", () => {
+      const program = meet(BORROWER, supplying("0.42"))
+
+      expect(program.notEarningReason).toBeUndefined()
+      expect(program.earningResumes).toBe(true)
+      expect(program.suppliesEarningAsset).toBe(true)
+      expect(program.hollarDebtUsd).toBe("0.42")
+      expect(rates(program)).toEqual({ [HUSDC]: "0.1", [HUSDT]: "0.05" })
+    })
+
+    it.each([
+      ["an account that earned", ACCOUNT],
+      ["an account the file does not list", NEWCOMER],
+    ])("stops paying %s once it has borrowed HOLLAR", (_, account) => {
+      const program = meet(account, supplying("5.01"))
+
+      expect(program.notEarningReason).toBe("hollar_debt")
+      expect(program.earningResumes).toBe(false)
+      expect(rates(program)).toEqual({})
+    })
+
+    it("lets the allowance itself through, as the runner does", () => {
+      const program = meet(BORROWER, supplying("5"))
+
+      expect(program.notEarningReason).toBeUndefined()
+      expect(program.earningResumes).toBe(true)
+    })
+
+    it("tells an account that no longer supplies an earning asset nothing", () => {
+      const program = meet(BORROWER, { supplies: false })
+
+      expect(program.notEarningReason).toBeUndefined()
+      expect(program.earningResumes).toBe(false)
+      expect(program.suppliesEarningAsset).toBe(false)
+    })
+
+    it("says nothing yet, until the positions are read", () => {
+      const program = getRewardsProgram({
+        latest: file(),
+        account: BORROWER,
+        readAt: READ_AT,
+      })
+
+      // the file's verdict still keeps the rate away
+      expect(program.notEarningReason).toBe("hollar_debt")
+      expect(program.suppliesEarningAsset).toBeUndefined()
+      expect(rates(program)).toEqual({})
+    })
+
+    it("keeps an exclusion, which only the file knows", () => {
+      const program = meet(EXCLUDED, supplying("0"))
+
+      expect(program.notEarningReason).toBe("excluded")
+      expect(program.earningResumes).toBe(false)
+      expect(program.suppliesEarningAsset).toBe(true)
+      expect(rates(program)).toEqual({})
+    })
+
+    it("tells an excluded account that holds none of the assets nothing", () => {
+      const program = meet(EXCLUDED, { supplies: false })
+
+      expect(program.notEarningReason).toBe("excluded")
+      expect(program.suppliesEarningAsset).toBe(false)
+    })
+
+    describe("on a HOLLAR borrow or repay", () => {
+      const notice = (
+        account: string,
+        live: RewardsProgramLive,
+        changeUsd: string,
+      ) => getHollarDebtChangeNotice(meet(account, live), changeUsd)
+
+      it("warns an earning account whose borrow takes its debt over the allowance", () => {
+        expect(notice(ACCOUNT, supplying("2"), "3.01")).toBe("notEarning")
+        expect(notice(NEWCOMER, supplying("0"), "100")).toBe("notEarning")
+      })
+
+      it("says nothing to one that stays within it, the allowance itself included", () => {
+        expect(notice(ACCOUNT, supplying("2"), "3")).toBeUndefined()
+        expect(notice(ACCOUNT, supplying("0"), "0")).toBeUndefined()
+      })
+
+      it("keeps the warning for an account over it until a repay brings it back within", () => {
+        expect(notice(BORROWER, supplying("20"), "0")).toBe("notEarning")
+        expect(notice(BORROWER, supplying("20"), "-14.99")).toBe("notEarning")
+        expect(notice(BORROWER, supplying("20"), "-15")).toBe("earningResumes")
+        expect(notice(NEWCOMER, supplying("20"), "-20")).toBe("earningResumes")
+      })
+
+      it("tells an account that has repaid since the snapshot it earns again, unless it borrows back over", () => {
+        expect(notice(BORROWER, supplying("1"), "0")).toBe("earningResumes")
+        expect(notice(BORROWER, supplying("1"), "4.01")).toBe("notEarning")
+      })
+
+      it("says nothing to an account that supplies none of the assets, or is excluded", () => {
+        expect(notice(BORROWER, { supplies: false }, "100")).toBeUndefined()
+        expect(notice(EXCLUDED, supplying("0"), "100")).toBeUndefined()
+        expect(notice(EXCLUDED, supplying("20"), "-20")).toBeUndefined()
+      })
+
+      it("says nothing before the positions are read, nor without a program", () => {
+        const fromFile = (latest: ReturnType<typeof file> | undefined) =>
+          getRewardsProgram({ latest, account: BORROWER, readAt: READ_AT })
+
+        expect(
+          getHollarDebtChangeNotice(fromFile(file()), "100"),
+        ).toBeUndefined()
+        expect(
+          getHollarDebtChangeNotice(fromFile(undefined), "100"),
+        ).toBeUndefined()
+      })
+    })
+
+    it("does not bring back a stale file", () => {
+      const sixHours = (HOUR + 6 * 3600) * millisecondsInSecond
+
+      expect(
+        getRewardsProgram({
+          latest: file(),
+          account: BORROWER,
+          readAt: sixHours + 1,
+          live: supplying("0"),
+        }),
+      ).toEqual(NO_PROGRAM)
+    })
   })
 })
