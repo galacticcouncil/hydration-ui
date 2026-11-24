@@ -1216,5 +1216,46 @@ describe("http mode is unchanged by the fixture demonstration (invariant 6)", ()
       unsigned(APPROVE_DATA),
       unsigned(REDEEM_DATA),
     ])
+    // B1 (fix round 1): the real status says nothing of a demonstration, and
+    // neither does the list of withdrawals.
+    await waitFor(() =>
+      expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+    )
+    expect(text()).not.toContain("bank.cashOut.status.demoNote")
+    await click("bank.cashOut.status.viewTransfers")
+    await waitFor(() => expect(text()).toContain("bank.cashOut.history.empty"))
+    expect(text()).not.toContain("bank.cashOut.history.demoNote")
   })
+
+  it.each([
+    ["an empty redeem calldata", { redeemTx: unsigned("0x") }],
+    [
+      "a zero-address redeem",
+      {
+        redeemTx: {
+          ...unsigned(REDEEM_DATA),
+          to: "0x0000000000000000000000000000000000000000",
+        },
+      },
+    ],
+    ["an empty approve calldata", { approveTx: unsigned("0x") }],
+  ])(
+    "fix round 1: a build with %s is refused with a message before anything is recorded",
+    async (_label, overrides) => {
+      // A fresh spy: nothing should reach createTransaction at all.
+      const spy = vi.fn(async () => undefined)
+      useTransactionsStore.setState({ createTransaction: spy })
+      buildAnswer = built(overrides)
+      await toReview()
+      await click("bank.cashOut.review.sign")
+      expect(text()).toContain("bank.cashOut.error.couldNotPrepare")
+      expect(spy).not.toHaveBeenCalled()
+      expect(signer.sendPreparedTransaction).not.toHaveBeenCalled()
+      expect(useBankCashOutStore.getState().records).toEqual({})
+      // a second press hands over nothing either; the message stays
+      await click("bank.cashOut.review.sign")
+      expect(spy).not.toHaveBeenCalled()
+      expect(text()).toContain("bank.cashOut.error.couldNotPrepare")
+    },
+  )
 })

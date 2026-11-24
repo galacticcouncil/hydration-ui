@@ -178,7 +178,12 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
         currency={currency}
       />
       <Text fs="p4" color={getToken("text.medium")}>
-        {t("bank.cashOut.review.validUntil", { value: validUntil })}
+        {t(
+          demo
+            ? "bank.cashOut.review.demoValidUntil"
+            : "bank.cashOut.review.validUntil",
+          { value: validUntil },
+        )}
       </Text>
       <Stack gap="xs">
         {hasApprove && (

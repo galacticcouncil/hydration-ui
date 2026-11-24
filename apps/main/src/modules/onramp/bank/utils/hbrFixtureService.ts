@@ -70,14 +70,16 @@ type FixtureBankAccount = {
 
 type OnrampStage = "not_requested" | "preparing" | "refused" | "ready"
 
-// A demonstration cash-out: the build's fields and how often it was read.
+// A demonstration cash-out: the build's fields and, once the tester pressed
+// Continue (the report), the step of the walk it has reached.
 type DemoRamp = {
   id: string
   bankAccountId: string
   usdcAmount: string
   validUntil: string
   createdAt: string
-  reads: number
+  // null until Continue: the ramp stays `built`, as an unsigned one does.
+  step: number | null
 }
 
 type WalletState = {
@@ -93,12 +95,12 @@ type WalletState = {
 // GET reads of a `preparing` account before it reads `ready`.
 const PREPARING_READS = 2
 
-// The demonstration's view after `reads` reads: one status of the walk per
-// read, then `paid` for good.
+// The demonstration's view: `built` until Continue, then one status of the
+// walk per read, then `paid` for good.
 const demoRampView = (ramp: DemoRamp) => {
   const step =
     FIXTURE_DEMO_RAMP_WALK[
-      Math.min(ramp.reads, FIXTURE_DEMO_RAMP_WALK.length - 1)
+      Math.min(ramp.step ?? 0, FIXTURE_DEMO_RAMP_WALK.length - 1)
     ]
   return {
     id: ramp.id,
@@ -150,10 +152,13 @@ const randomToken = () =>
  * calldata, no value, so it never hands out a transaction a wallet could use
  * to move funds (invariant 2a), and `buildCashOutTransaction` refuses it
  * (2b). The cash-out screen shows it as a demonstration and never hands it to
- * a wallet (invariant 1). Its GET /v1/ramps/:id walks FIXTURE_DEMO_RAMP_WALK
- * to `paid`, one status per read, and GET /v1/ramps lists it first; the
- * report route still answers 404 ramp_not_found (nothing is ever sent). All of
- * it lives in this service's memory only and ends with the tab.
+ * a wallet (invariant 1). It stays `built` (as an unsigned cash-out does)
+ * until the demo's Continue reports it (POST /v1/ramps/:id/report, answered
+ * here only, with no transaction behind the hash); from then on GET
+ * /v1/ramps/:id walks FIXTURE_DEMO_RAMP_WALK to `paid`, one status per read.
+ * GET /v1/ramps lists it first without walking it. A report for any other
+ * ramp answers 404 ramp_not_found. All of it lives in this service's memory
+ * only and ends with the tab.
  */
 export const createHbrFixtureService = (args: {
   session: HbrSessionAccess
@@ -447,7 +452,7 @@ export const createHbrFixtureService = (args: {
           usdcAmount: quote.quote.usdcAmount,
           validUntil: new Date(now + FIXTURE_DEMO_VALID_MS).toISOString(),
           createdAt: new Date(now).toISOString(),
-          reads: 0,
+          step: null,
         }
         wallet.demoRamps.push(ramp)
         // Invariant 2a: both steps are fixtureDemoTx (no contract, no calldata).
@@ -461,11 +466,16 @@ export const createHbrFixtureService = (args: {
           payoutLimit: quote.payoutLimit,
         })
       },
-      reportRamp: async (_id, txHash) => {
-        await withCustomer(forH160)
+      reportRamp: async (id, txHash) => {
+        const { wallet } = await withCustomer(forH160)
         if (!rampReportRequestSchema.safeParse({ txHash }).success)
           return refuse(400, "invalid_tx_hash")
-        return refuse(404, "ramp_not_found")
+        // The demo's Continue: the walk starts at `submitted` (a repeat keeps
+        // the step it reached, as the server keeps the first report).
+        const demo = wallet.demoRamps.find((r) => r.id === id)
+        if (!demo) return refuse(404, "ramp_not_found")
+        demo.step ??= 1
+        return rampResponseSchema.parse({ ramp: demoRampView(demo) })
       },
       listRamps: async () => {
         const { wallet } = await withCustomer(forH160)
@@ -484,7 +494,7 @@ export const createHbrFixtureService = (args: {
         const demo = wallet.demoRamps.find((r) => r.id === id)
         if (demo) {
           const view = demoRampView(demo)
-          demo.reads += 1
+          if (demo.step !== null) demo.step += 1
           return rampResponseSchema.parse({ ramp: view })
         }
         const ramp =

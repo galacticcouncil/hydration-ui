@@ -6,6 +6,7 @@ import {
 import { Query, QueryClient } from "@tanstack/react-query"
 import { millisecondsInWeek } from "date-fns/constants"
 
+import { shouldDehydratePortfolioMutation } from "@/api/portfolio/persistence"
 import { IndexedDBStores } from "@/utils/indexedDB"
 import { createIndexedDbPersister } from "@/utils/indexedDbPersister"
 
@@ -70,6 +71,10 @@ export const setupExternalApyPersistence = (queryClient: QueryClient) => {
         buster: EXTERNAL_APY_CACHE_BUSTER,
         dehydrateOptions: {
           shouldDehydrateQuery: shouldDehydrateExternalApyQuery,
+          // The portfolio persister's mutation filter: paused mutations as
+          // react-query's default, except those under a sensitive key root
+          // (HBR: bank details never reach IndexedDB).
+          shouldDehydrateMutation: shouldDehydratePortfolioMutation,
         },
       }
       persistQueryClientSubscribe(persistOptions)

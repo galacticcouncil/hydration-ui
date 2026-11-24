@@ -17,6 +17,7 @@ import type { BankCashOutFormValues } from "@/modules/onramp/bank/components/Ban
 import { BankCashOutQuote } from "@/modules/onramp/bank/components/BankCashOutQuote"
 import { BankCashOutReview } from "@/modules/onramp/bank/components/BankCashOutReview"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
+import { FIXTURE_DEMO_CONTINUE_HASH } from "@/modules/onramp/bank/config/fixtures"
 import type {
   BankAccountView,
   RampBuildResponse,
@@ -33,7 +34,10 @@ import {
   PreparedCashOut,
   reportRedeemHash,
 } from "@/modules/onramp/bank/utils/cashOut"
-import { buildCashOutTransaction } from "@/modules/onramp/bank/utils/cashOutTransaction"
+import {
+  buildCashOutTransaction,
+  isFixtureCashOut,
+} from "@/modules/onramp/bank/utils/cashOutTransaction"
 import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 import { strictEvmDigest } from "@/modules/transactions/utils/strictEvm"
 import { useTransactionsStore } from "@/states/transactions"
@@ -94,6 +98,8 @@ export const BankCashOut: FC<BankCashOutProps> = ({
   const service = useHbrService()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const [stage, setStage] = useState<Stage>({ kind: "quote" })
+  // A build the hand-over refused (see handOver): the review says so.
+  const [refused, setRefused] = useState(false)
   const prepared = useRef<PreparedCashOut | null>(null)
   const [quotedAt, setQuotedAt] = useState(0)
   const [, setTick] = useState(0)
@@ -150,6 +156,19 @@ export const BankCashOut: FC<BankCashOutProps> = ({
     // fixture build behind it (invariant 2b).
     if (service.mode === "fixture") return
     const next = prepared.current
+    // Refused before anything is cleared or recorded: a build with a step that
+    // names no contract (the zero address) or carries no calldata is a fixture
+    // build (isFixtureCashOut). The HBR server never builds one (redeemBuilder
+    // refuses the zero address and always encodes the approve and the redeem),
+    // so this fires only on a wrongly wired or malformed build: the review
+    // shows "could not prepare, nothing was sent", nothing is recorded and
+    // nothing reaches the wallet. buildCashOutTransaction still throws on the
+    // same builds as the last line.
+    if (next && isFixtureCashOut(next)) {
+      prepared.current = null
+      setRefused(true)
+      return
+    }
     prepared.current = null
     if (!next || next.rampId !== stage.build.ramp.id) return
     const rampId = next.rampId
@@ -188,9 +207,23 @@ export const BankCashOut: FC<BankCashOutProps> = ({
 
   const leaveTo = (rampId: string) => {
     prepared.current = null
+    setRefused(false)
     quote.reset()
     build.reset()
     onStatus(rampId)
+  }
+
+  // The demonstration's Continue: tells the fixture service the tester went
+  // on, so only this cash-out walks to Paid (Not now and Back leave it at its
+  // prepared label, as an unsigned one). In-memory fixture call only; it is
+  // re-checked against the mode so it can never report to an HBR server.
+  const continueDemo = (rampId: string) => {
+    if (service.mode === "fixture")
+      void service
+        .forWallet(h160)
+        .reportRamp(rampId, FIXTURE_DEMO_CONTINUE_HASH)
+        .catch(() => undefined)
+    leaveTo(rampId)
   }
 
   if (stage.kind === "review")
@@ -207,9 +240,15 @@ export const BankCashOut: FC<BankCashOutProps> = ({
             hasApprove={stage.hasApprove}
             chainId={stage.chainId}
             demo={demo}
-            onSign={demo ? () => leaveTo(stage.build.ramp.id) : handOver}
+            onSign={demo ? () => continueDemo(stage.build.ramp.id) : handOver}
             onLeave={() => leaveTo(stage.build.ramp.id)}
           />
+          {refused && (
+            <Alert
+              variant="warning"
+              description={t("bank.cashOut.error.couldNotPrepare")}
+            />
+          )}
         </ModalBody>
       </BankStepShell>
     )

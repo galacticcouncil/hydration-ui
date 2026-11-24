@@ -266,7 +266,9 @@ describe("fixture service: the cash-out is a demonstration", () => {
     await toReview()
     // the build: binding quote, valid-until and the two steps
     expect(text()).toContain("bank.cashOut.quote.bridgeCredited")
-    expect(text()).toContain("bank.cashOut.review.validUntil")
+    // R5: the valid-until stays, worded without signing
+    expect(text()).toContain("bank.cashOut.review.demoValidUntil")
+    expect(text()).not.toContain("bank.cashOut.review.validUntil")
     expect(text()).toContain("bank.cashOut.review.stepApprove")
     expect(text()).toContain("bank.cashOut.review.stepRedeem")
     // the tester is told; the button is not signing; no network switch
@@ -322,6 +324,51 @@ describe("fixture service: the cash-out is a demonstration", () => {
       [...seen.map((l) => order.indexOf(l))].sort((a, b) => a - b),
     )
     expect(text()).toContain("bank.cashOut.status.demoNote")
+    expectNothingReachedAWallet()
+  })
+
+  it.each([
+    ["Not now", "bank.cashOut.review.leave"],
+    ["the header Back", "header-back"],
+  ])(
+    "fix round 1: %s reaches no wallet, records nothing, and the cash-out stays prepared",
+    async (_label, button) => {
+      setUp()
+      await toReview()
+      await click(button)
+      await waitFor(() =>
+        expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+      )
+      expectNothingReachedAWallet()
+      expect(useBankCashOutStore.getState().records).toEqual({})
+      expect(useStrictEvmLedger.getState().entries).toEqual({})
+      expect(useTransactionsStore.getState().transactions).toEqual([])
+      expect(text()).toContain("bank.cashOut.status.demoNote")
+      // R7: only Continue starts the walk; reads keep it at its prepared label
+      for (let i = 0; i < 4; i++) {
+        await act(async () => {
+          await client.refetchQueries({ type: "active" })
+        })
+        await flush()
+      }
+      expect(text()).toContain(FIXTURE_DEMO_RAMP_WALK[0].label)
+      expect(text()).not.toContain(FIXTURE_DEMO_RAMP_WALK[1].label)
+      expectNothingReachedAWallet()
+    },
+  )
+
+  it("fix round 1 (R6): the withdrawals list says it is a demonstration", async () => {
+    setUp()
+    await toReview()
+    await click("bank.cashOut.review.demoContinue")
+    await waitFor(() =>
+      expect(document.querySelector("[data-cash-out-status]")).not.toBeNull(),
+    )
+    await click("bank.cashOut.status.viewTransfers")
+    await waitFor(() =>
+      expect(document.querySelector("[data-ramp-row]")).not.toBeNull(),
+    )
+    expect(text()).toContain("bank.cashOut.history.demoNote")
     expectNothingReachedAWallet()
   })
 })

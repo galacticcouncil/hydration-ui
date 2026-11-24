@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
+  FIXTURE_DEMO_CONTINUE_HASH,
   FIXTURE_DEMO_RAMP_WALK,
   FIXTURE_QUOTE,
   FIXTURE_RAMP_LIST,
@@ -372,7 +373,7 @@ describe("HBR fixture service, stage 2 walk", () => {
       ).toThrow(FixtureCashOutRefusal)
     })
 
-    it("walks to paid over successive reads; the list shows it first without walking it", async () => {
+    it("stays built until Continue reports it, then walks to paid over successive reads; the list shows it first without walking it", async () => {
       const api = await signedIn()
       const account = await api.createBankAccount(ACH)
       const { ramp } = await api.buildRamp({
@@ -381,22 +382,32 @@ describe("HBR fixture service, stage 2 walk", () => {
       })
       const listed = async () => (await api.listRamps()).ramps[0]
       expect(await listed()).toMatchObject({ id: ramp.id, status: "built" })
+      // R7 (fix round 1): reads alone never start the walk (Not now, Back)
+      for (let i = 0; i < 3; i++)
+        expect((await api.getRamp(ramp.id)).ramp.status).toBe("built")
+      // the demo's Continue
+      const reported = await api.reportRamp(ramp.id, FIXTURE_DEMO_CONTINUE_HASH)
+      expect(reported.ramp.status).toBe("submitted")
       const reads = []
-      for (let i = 0; i < FIXTURE_DEMO_RAMP_WALK.length + 1; i++)
+      for (let i = 0; i < FIXTURE_DEMO_RAMP_WALK.length; i++)
         reads.push((await api.getRamp(ramp.id)).ramp)
       expect(reads.map((r) => r.status)).toEqual([
-        ...FIXTURE_DEMO_RAMP_WALK.map((w) => w.status),
+        ...FIXTURE_DEMO_RAMP_WALK.slice(1).map((w) => w.status),
         "paid",
       ])
       expect(reads.at(-1)).toMatchObject({ label: "Paid", tone: "success" })
+      // a repeated report keeps the step reached
+      expect(
+        (await api.reportRamp(ramp.id, FIXTURE_DEMO_CONTINUE_HASH)).ramp.status,
+      ).toBe("paid")
       expect(await listed()).toMatchObject({ id: ramp.id, status: "paid" })
       // the doc's example list still follows
       expect((await api.listRamps()).ramps).toHaveLength(
         1 + FIXTURE_RAMP_LIST.length,
       )
-      // nothing was sent, so there is nothing to report
+      // a report for any other ramp is not found
       await expect(
-        api.reportRamp(ramp.id, `0x${"ab".repeat(32)}`),
+        api.reportRamp(FIXTURE_RAMP_LIST[0]!.id, `0x${"ab".repeat(32)}`),
       ).rejects.toMatchObject({ status: 404, code: "ramp_not_found" })
     })
 

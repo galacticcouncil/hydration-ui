@@ -1,4 +1,5 @@
 import {
+  Alert,
   Flex,
   Paper,
   Separator,
@@ -13,7 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useRampLabel } from "@/modules/onramp/bank/components/BankRampLabel"
 import { BankStatusPill } from "@/modules/onramp/bank/components/BankStatusPill"
 import type { RampView } from "@/modules/onramp/bank/config/schemas"
-import { useHbrRamps } from "@/modules/onramp/bank/hooks/useHbr"
+import { useHbrRamps, useHbrService } from "@/modules/onramp/bank/hooks/useHbr"
 import {
   formatUsdcBaseUnits,
   getTransferGroup,
@@ -88,7 +89,9 @@ const RampRow: FC<{
  * GET /v1/ramps as Figma M05 cards: cash-outs, then, apart and titled as
  * such, redemptions the server has not matched to a cash-out (rule 9). Each
  * shows its label as returned (rule 2); a row's Details opens that cash-out
- * in place of this list.
+ * in place of this list. On the fixture service (`service.mode`, the one
+ * condition of the demonstration) every row is an example, and the list says
+ * so first.
  */
 export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   h160,
@@ -97,12 +100,19 @@ export const BankCashOutHistory: FC<BankCashOutHistoryProps> = ({
   hideTitle = false,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const demo = useHbrService().mode === "fixture"
   const list = useHbrRamps(h160)
   const data = list.data
   if (!data) return null
 
   return (
     <Stack gap="l">
+      {demo && (
+        <Alert
+          variant="info"
+          description={t("bank.cashOut.history.demoNote")}
+        />
+      )}
       <Stack gap="m">
         {!hideTitle && (
           <Text fs="p3" fw={500}>

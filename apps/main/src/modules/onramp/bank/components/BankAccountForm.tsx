@@ -46,8 +46,9 @@ type BankAccountFormProps = {
 /**
  * POST /v1/bank-accounts. Bank details are held in this form's state and the
  * mutation's variables, in memory only: not in a URL; not in the global
- * react-query error log (key under SENSITIVE_KEY_ROOTS); not in the portfolio
- * persister (it skips sensitive keys, and HBR mutations never pause:
+ * react-query error log (key under SENSITIVE_KEY_ROOTS); not in either
+ * IndexedDB persister, portfolio or external APY (both skip sensitive keys
+ * with shouldDehydratePortfolioMutation, and HBR mutations never pause:
  * HBR_NETWORK_MODE). Browser extensions reading the page are out of reach.
  * One `clientRequestId` per submission, reused while the same body is sent
  * again (lost on back or remount: then a new id, see utils/bankAccounts.ts).

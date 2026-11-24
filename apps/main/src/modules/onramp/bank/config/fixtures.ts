@@ -264,6 +264,10 @@ export const FIXTURE_DEMO_RAMP_WALK = [
 // How long a fixture build may be "signed" (the doc example's 30 minutes).
 export const FIXTURE_DEMO_VALID_MS = 30 * 60_000
 
+// What the demonstration's Continue reports to the fixture service (never to
+// an HBR server): a well-formed hash of no transaction, so the walk starts.
+export const FIXTURE_DEMO_CONTINUE_HASH = `0x${"00".repeat(32)}`
+
 // API doc 4, GET /v1/onramp/accounts.
 export const FIXTURE_ONRAMP_ACCOUNTS = {
   accounts: [

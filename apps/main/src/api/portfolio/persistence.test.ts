@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { setupExternalApyPersistence } from "@/api/external/persistence"
 import {
   setupPortfolioPersistence,
   shouldDehydratePortfolioMutation,
@@ -25,8 +26,12 @@ import { logMutationError, logQueryError } from "@/utils/queryErrorLog"
 
 // IndexedDB stubbed: every write the persister makes is recorded.
 const stored = vi.hoisted(() => [] as string[])
+const storedBy = vi.hoisted(() => ({}) as Record<string, string[]>)
 vi.mock("@/utils/indexedDB", () => ({
-  IndexedDBStores: { PortfolioBalances: "PortfolioBalances" },
+  IndexedDBStores: {
+    PortfolioBalances: "PortfolioBalances",
+    ExternalApy: "ExternalApy",
+  },
   IndexedDBManager: { getInstance: async () => ({}) },
   getItemFromStore: async () => undefined,
   setItemInStore: async (
@@ -35,11 +40,11 @@ vi.mock("@/utils/indexedDB", () => ({
     _key: string,
     data: unknown,
   ) => {
-    stored.push(
-      JSON.stringify(data, (_k, v: unknown) =>
-        typeof v === "bigint" ? v.toString() : v,
-      ),
+    const json = JSON.stringify(data, (_k, v: unknown) =>
+      typeof v === "bigint" ? v.toString() : v,
     )
+    stored.push(json)
+    ;(storedBy[_store] ??= []).push(json)
   },
   removeItemFromStore: async () => {},
 }))
@@ -78,6 +83,7 @@ const appClient = async () => {
 
 beforeEach(() => {
   stored.length = 0
+  for (const k of Object.keys(storedBy)) delete storedBy[k]
   vi.spyOn(console, "error").mockImplementation(() => {})
   useHbrSessionStore.getState().setSession({
     token: "A".repeat(43),
@@ -141,6 +147,59 @@ describe("the portfolio persister never stores HBR data", () => {
     await tick()
 
     expect(stored.join("\n")).toContain("kept-as-before")
+  })
+})
+
+describe("both IndexedDB persisters skip HBR mutations (fix round 1, review R3)", () => {
+  // The QueryClient with both persisters, as apps/main/src/App.tsx sets it up.
+  const bothClient = async () => {
+    const client = new QueryClient({
+      queryCache: new QueryCache({ onError: logQueryError }),
+      mutationCache: new MutationCache({ onError: logMutationError }),
+    })
+    client.mount()
+    setupPortfolioPersistence(client)
+    setupExternalApyPersistence(client)
+    await tick(10)
+    return client
+  }
+  const pausedMutation = async (
+    client: QueryClient,
+    mutationKey: readonly unknown[],
+    variables: unknown,
+  ) => {
+    // networkMode "online" (not HBR's "always"): the positive control that
+    // the mutation does pause and would be dehydrated without the filter.
+    const observer = new MutationObserver(client, {
+      mutationKey,
+      networkMode: "online",
+      mutationFn: async (_body: unknown) => undefined,
+    })
+    void observer.mutate(variables).catch(() => {})
+    await tick()
+    expect(observer.getCurrentResult().isPaused).toBe(true)
+  }
+
+  it("a paused HBR mutation is written by neither persister", async () => {
+    const client = await bothClient()
+    onlineManager.setOnline(false)
+    await pausedMutation(client, hbrQueryKeys.mutation(A, "anything"), SEPA)
+    expect(storedBy.ExternalApy?.length ?? 0).toBeGreaterThan(0)
+    expect(storedBy.PortfolioBalances?.length ?? 0).toBeGreaterThan(0)
+    expect((storedBy.ExternalApy ?? []).join("\n")).not.toContain(IBAN)
+    expect((storedBy.PortfolioBalances ?? []).join("\n")).not.toContain(IBAN)
+  })
+
+  it("a paused non-sensitive mutation is still written by both", async () => {
+    const client = await bothClient()
+    onlineManager.setOnline(false)
+    await pausedMutation(client, ["portfolio", "something"], {
+      marker: "kept-as-before",
+    })
+    expect((storedBy.ExternalApy ?? []).join("\n")).toContain("kept-as-before")
+    expect((storedBy.PortfolioBalances ?? []).join("\n")).toContain(
+      "kept-as-before",
+    )
   })
 })
 
