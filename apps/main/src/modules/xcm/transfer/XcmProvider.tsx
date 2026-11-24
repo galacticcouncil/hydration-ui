@@ -30,7 +30,6 @@ import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransfe
 import {
   isOmniRoute,
   resolveValidBridgeProvider,
-  shouldPreserveSnowbridgeSubSelection,
 } from "@/modules/xcm/transfer/utils/bridge"
 import {
   isAccountValidOnChain,
@@ -129,11 +128,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   )
 
   // The SDK only sets isTagSelect when every route in the pair delivers the
-  // same destination asset (e.g. outbound Snowbridge V2/V1, all → ETH).
-  // Inbound, Snowbridge and Wormhole deliver *different* assets, so the pair
-  // is isAssetSelect and isTagSelect is false — yet once a destination asset
-  // is picked there can still be multiple bridge variants for it (Snowbridge
-  // V2 + V1). Surface those by falling back to the routes matching the
+  // same destination asset. Inbound from Ethereum, Snowbridge and Wormhole
+  // deliver *different* assets, so the pair is isAssetSelect and isTagSelect
+  // is false — yet once a destination asset is picked there can still be
+  // multiple bridges for it (Wormhole, its executor route and Basejump into
+  // usdc_wh). Surface those by falling back to the routes matching the
   // selected destination asset.
   const availableBridgeRoutes = useMemo<AssetRoute[]>(() => {
     if (!destPair) return []
@@ -166,8 +165,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     )
 
     if (!matchingRoutes.length) return
-
-    if (shouldPreserveSnowbridgeSubSelection(bridgeProvider, destPair)) return
 
     const validProvider = resolveValidBridgeProvider(
       bridgeProvider,
