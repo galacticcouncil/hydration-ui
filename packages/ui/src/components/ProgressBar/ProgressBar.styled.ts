@@ -73,17 +73,19 @@ const crestStyles = (theme: Theme) => css`
     bottom: 0;
     left: -${CREST_PERIOD}px;
     right: 0;
-    background-image: linear-gradient(
+    background-color: ${theme.text.high};
+    mix-blend-mode: overlay;
+    mask-image: linear-gradient(
       90deg,
       transparent 0,
-      rgba(255, 255, 255, 0.7) ${crestStop(0.18)},
+      rgb(0 0 0 / 70%) ${crestStop(0.18)},
       transparent ${crestStop(0.34)},
-      rgba(255, 255, 255, 0.16) ${crestStop(0.55)},
-      ${theme.colors.greys[100]} ${crestStop(0.78)},
+      rgb(0 0 0 / 16%) ${crestStop(0.55)},
+      black ${crestStop(0.78)},
       transparent ${CREST_TILE}px
     );
-    background-size: ${CREST_PERIOD}px 100%;
-    background-repeat: repeat-x;
+    mask-size: ${CREST_PERIOD}px 100%;
+    mask-repeat: repeat-x;
     will-change: transform;
     animation: ${crest} 2000ms linear infinite;
   }
@@ -167,6 +169,7 @@ export const SProgressBarFill = styled.div<{
     border-radius: inherit;
     overflow: hidden;
 
+    isolation: isolate;
     background: ${fills(theme)[variant]};
 
     transition: width ${MOVE};
