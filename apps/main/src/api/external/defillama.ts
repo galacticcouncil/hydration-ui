@@ -7,10 +7,16 @@ import {
   WSTETH_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
+import Big from "big.js"
+import { millisecondsInHour } from "date-fns/constants"
 import z from "zod/v4"
 
-import { fetchExternalApyWithCache } from "@/states/externalApy"
-import { GC_TIME, STALE_TIME } from "@/utils/consts"
+import { fetchFeedJson, retryFeedQuery } from "@/api/external/feed"
+import {
+  assertPlausibleApy,
+  ExternalApyReading,
+  newestBy,
+} from "@/api/external/reading"
 
 const defillamaApyHistoryEntrySchema = z.object({
   timestamp: z.string(),
@@ -37,32 +43,53 @@ export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
 
 const DEFILLAMA_YIELDS_CHART = "defillama/yields/chart"
 
+export const parseDefillamaReading = (
+  json: unknown,
+  source: string,
+): ExternalApyReading => {
+  const entries = defillamaApiResponseSchema.parse(json).data.map((entry) => ({
+    percent: entry.apyBase ?? entry.apy,
+    asOf: Date.parse(entry.timestamp),
+  }))
+  const newest = newestBy(
+    entries.filter(({ asOf }) => Number.isFinite(asOf)),
+    ({ asOf }) => asOf,
+  )
+
+  if (!newest) {
+    throw new Error(`No entries from ${source}`)
+  }
+
+  if (newest.percent === null) {
+    throw new Error(`No APY in the newest entry from ${source}`)
+  }
+
+  return {
+    apy: assertPlausibleApy(Big(newest.percent).div(100).toFixed(), source),
+    asOf: newest.asOf,
+  }
+}
+
 const fetchDefillamaLatestApy = async (
   id: string,
   indexerUrl: string,
-): Promise<number> => {
-  const endpoint = `${indexerUrl}/${DEFILLAMA_YIELDS_CHART}/${id}`
-  const res = await fetch(endpoint)
+  signal: AbortSignal,
+): Promise<ExternalApyReading> => {
+  const source = `defillama:${id}`
+  const json = await fetchFeedJson(
+    `${indexerUrl}/${DEFILLAMA_YIELDS_CHART}/${id}`,
+    source,
+    signal,
+  )
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch DeFiLlama APY: ${res.statusText}`)
-  }
-
-  const json = await res.json()
-  const parsed = defillamaApiResponseSchema.parse(json)
-  const latestEntry = parsed.data[parsed.data.length - 1]
-  const latestApy = latestEntry?.apyBase || latestEntry?.apy || 0
-  return latestApy
+  return parseDefillamaReading(json, source)
 }
 
 export const defillamaLatestApyQuery = (id: string, indexerUrl: string) =>
   queryOptions({
-    queryKey: ["defillamaApyHistory", id],
-    queryFn: () =>
-      fetchExternalApyWithCache(id, () =>
-        fetchDefillamaLatestApy(id, indexerUrl),
-      ),
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
+    queryKey: ["externalApy", "defillama", id],
+    queryFn: ({ signal }) => fetchDefillamaLatestApy(id, indexerUrl, signal),
+    staleTime: millisecondsInHour,
+    retry: retryFeedQuery,
     enabled: !!id,
   })

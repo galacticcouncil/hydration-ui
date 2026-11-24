@@ -1,4 +1,4 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import {
   createContext,

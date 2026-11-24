@@ -1,11 +1,12 @@
+import { moneyMarketKeys } from "@galacticcouncil/money-market/react"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { userGigaBorrowSummaryQueryKey } from "@/api/borrow"
 import { accountUnlockClassesQuery } from "@/api/democracy"
 import { gigaQueryKey } from "@/api/gigaStake"
+import { GIGA_MARKET } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -110,7 +111,7 @@ export const useClaimAndCompound = () => {
       return createTransaction({
         tx,
         invalidateQueries: [
-          userGigaBorrowSummaryQueryKey(accountAddress),
+          [...moneyMarketKeys.market(GIGA_MARKET.market)],
           gigaQueryKey(accountAddress),
         ],
         toasts,

@@ -1,4 +1,3 @@
-export * from "./contracts"
+export * from "./externalApys"
 export * from "./hooks"
 export * from "./moneyMarketEvents"
-export * from "./queries"

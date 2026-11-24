@@ -57,7 +57,7 @@ const FEES_API_PARAMS = {
       },
     },
   },
-  moneyMarket: {
+  borrow: {
     protocol: {
       liquidationPenalty: {
         productType: ProductType.MoneyMarket,
@@ -140,14 +140,14 @@ const getFeesQueries = (viewMode: ViewMode) => {
     return {
       asset: FEES_API_PARAMS.omnipool.total.asset,
       protocol: FEES_API_PARAMS.omnipool.total.protocol,
-      ...FEES_API_PARAMS.moneyMarket.protocol,
+      ...FEES_API_PARAMS.borrow.protocol,
       ...FEES_API_PARAMS.hollar.protocol,
     }
   } else {
     return {
       asset: FEES_API_PARAMS.omnipool.protocol.asset,
       protocol: FEES_API_PARAMS.omnipool.protocol.protocol,
-      ...FEES_API_PARAMS.moneyMarket.protocol,
+      ...FEES_API_PARAMS.borrow.protocol,
       ...FEES_API_PARAMS.hollar.protocol,
     }
   }

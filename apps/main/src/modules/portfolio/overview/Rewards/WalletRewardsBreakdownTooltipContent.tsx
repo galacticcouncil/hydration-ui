@@ -3,7 +3,9 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useRewardsDistributorAccrued } from "@/api/rewardsDistributor"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { DistributorAccruedRewards } from "@/components/DistributorAccruedRewards/DistributorAccruedRewards"
 import { useWalletRewardsSectionData } from "@/modules/portfolio/overview/Rewards/WalletRewardsSection.data"
 
 type BreakdownRowProps = {
@@ -35,6 +37,7 @@ export const WalletRewardsBreakdownTooltipContent: FC = () => {
   const { t } = useTranslation("wallet")
 
   const { incentives, farming, referral } = useWalletRewardsSectionData()
+  const distributorAccrued = useRewardsDistributorAccrued()
 
   const [incentivesDisplay, { isLoading: incentivesLoading }] =
     useDisplayAssetPrice(incentives.assetId, incentives.value)
@@ -53,6 +56,12 @@ export const WalletRewardsBreakdownTooltipContent: FC = () => {
         label={t("rewards.incentives")}
         value={incentivesDisplay}
         isLoading={incentives.loading || incentivesLoading}
+      />
+      {/* not claimable yet, so not in the value above; colored as the labels */}
+      <DistributorAccruedRewards
+        stages={distributorAccrued.stages}
+        symbol={distributorAccrued.symbol}
+        color={getToken("text.medium")}
       />
       <BreakdownRow
         label={t("rewards.farmingRewards")}

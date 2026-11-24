@@ -30,6 +30,13 @@ const schema = z.object({
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
   VITE_BANK_FLOW_ENABLED: coerceToBoolean,
   VITE_HBR_API_URL: hbrApiUrl,
+  // The rewards distributor contract and the URL its claim files are served
+  // from. Both empty: the feature is off.
+  VITE_REWARDS_DISTRIBUTOR_ADDRESS: z
+    .string()
+    .regex(/^(0x[0-9a-fA-F]{40})?$/)
+    .default(""),
+  VITE_REWARDS_DISTRIBUTOR_URL: z.url().or(z.literal("")).default(""),
 })
 
 export const ENV = schema.parse(import.meta.env)

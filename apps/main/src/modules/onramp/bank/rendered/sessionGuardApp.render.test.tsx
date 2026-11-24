@@ -48,6 +48,9 @@ vi.mock("@tanstack/react-router", () => ({
 }))
 vi.mock("sonner", () => ({ Toaster: () => null }))
 vi.mock("@/api/portfolio", () => ({ setupPortfolioPersistence: () => {} }))
+vi.mock("@/api/external/persistence", () => ({
+  setupExternalApyPersistence: () => {},
+}))
 vi.mock("@/components/DataProviderSelect/DataProviderResolver", () => ({
   DataProviderResolver: Pass,
 }))

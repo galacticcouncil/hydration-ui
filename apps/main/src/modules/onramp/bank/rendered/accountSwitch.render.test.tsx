@@ -18,7 +18,15 @@ import {
   waitFor,
 } from "@testing-library/react"
 import { StrictMode, useSyncExternalStore } from "react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest"
 
 // ---- wallet mock -------------------------------------------------------
 type Acc = { rawAddress: string; address: string } | null
@@ -260,7 +268,7 @@ const signNext = async () => {
 }
 
 let activeClient: QueryClient
-let errorSpy: ReturnType<typeof vi.spyOn>
+let errorSpy: MockInstance<typeof console.error>
 const makeClient = () =>
   // exactly the App.tsx wiring
   new QueryClient({

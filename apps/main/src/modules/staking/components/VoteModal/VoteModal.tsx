@@ -26,7 +26,6 @@ import { CSSProperties } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useUserGigaBorrowSummary } from "@/api/borrow"
 import {
   Conviction,
   CONVICTIONS,
@@ -45,6 +44,7 @@ import {
   SRewardMultiplierCard,
 } from "@/modules/staking/components/VoteModal/VoteModal.styled"
 import { useClaimAndCompound } from "@/modules/staking/gigaStaking/GigaHDXPosition.utils"
+import { useGigaBorrowSummary } from "@/modules/staking/gigaStaking/useGigaBorrowSummary"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -469,12 +469,12 @@ const ClaimableRewardsField = () => {
     gigaAccountStakesQuery(rpc, account?.address ?? ""),
   )
 
-  const { data: gigaBorrowSummary } = useUserGigaBorrowSummary()
-  const { hdxReserve } = gigaBorrowSummary ?? {}
+  const { data: gigaBorrowSummary } = useGigaBorrowSummary()
 
   const claimMutation = useClaimAndCompound()
 
-  const gigaHdxBalanceHuman = hdxReserve?.underlyingBalance ?? "0"
+  const gigaHdxBalanceHuman =
+    gigaBorrowSummary?.hdxPosition?.underlyingBalance ?? "0"
 
   const stakedHdxHuman = Big(gigaHdxBalanceHuman)
     .times(exchangeRate?.toString() || "0")

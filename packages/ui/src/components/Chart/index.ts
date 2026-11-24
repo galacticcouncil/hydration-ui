@@ -1,5 +1,6 @@
 export * from "./Chart"
 export * from "./ChartCrosshair"
+export * from "./ChartLegend"
 export * from "./ChartSkeleton"
 export * from "./ChartStatus"
 export * from "./ChartTooltip"

@@ -1,5 +1,7 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { isEthereumSigner } from "@galacticcouncil/web3-connect"
+import {
+  ExtendedEvmCall,
+  isEthereumSigner,
+} from "@galacticcouncil/web3-connect"
 import type {
   PreparedEvmTransaction,
   PreparedSendOutcome,
