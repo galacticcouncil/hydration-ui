@@ -1,3 +1,13 @@
+import {
+  getCompoundedBalance,
+  getMarketReferenceCurrencyAndUsdBalance,
+  USD_DECIMALS,
+} from "@galacticcouncil/money-market/core"
+import type {
+  BaseCurrency,
+  Position,
+  Reserve,
+} from "@galacticcouncil/money-market/types"
 import Big from "big.js"
 import {
   millisecondsInHour,
@@ -460,4 +470,107 @@ export const mergeRewardsIncentive = <T extends RewardsIncentive>(
         }
       : incentive,
   )
+}
+
+const isSameAddress = (a: string, b: string) =>
+  a.toLowerCase() === b.toLowerCase()
+
+type HollarDebtPosition = Pick<
+  Position,
+  "underlyingAsset" | "scaledVariableDebt"
+>
+
+/** Whether any of `positions` supplies one of the `underlyings`. */
+export const suppliesRewardsProgramAsset = (
+  positions: ReadonlyArray<
+    Pick<Position, "underlyingAsset" | "scaledATokenBalance">
+  >,
+  underlyings: ReadonlyArray<string>,
+) =>
+  positions.some(
+    ({ underlyingAsset, scaledATokenBalance }) =>
+      BigInt(scaledATokenBalance) > 0n &&
+      underlyings.some((underlying) =>
+        isSameAddress(underlying, underlyingAsset),
+      ),
+  )
+
+/** The scaled HOLLAR debt in one market's positions, 0n without any. */
+export const getScaledHollarDebt = (
+  positions: ReadonlyArray<HollarDebtPosition>,
+  hollar: string,
+) =>
+  BigInt(
+    positions.find(({ underlyingAsset }) =>
+      isSameAddress(underlyingAsset, hollar),
+    )?.scaledVariableDebt ?? 0,
+  )
+
+export type HollarDebtMarket = {
+  hollar: string
+  positions: ReadonlyArray<HollarDebtPosition>
+  /** Needed only when the positions hold HOLLAR debt. */
+  reserves:
+    | {
+        reserves: ReadonlyArray<
+          Pick<
+            Reserve,
+            | "underlyingAsset"
+            | "decimals"
+            | "variableBorrowIndex"
+            | "variableBorrowRate"
+            | "lastUpdateTimestamp"
+            | "priceInMarketReferenceCurrency"
+          >
+        >
+        baseCurrency: Pick<
+          BaseCurrency,
+          | "marketReferenceCurrencyDecimals"
+          | "marketReferenceCurrencyPriceInUsd"
+        >
+      }
+    | undefined
+}
+
+/**
+ * HOLLAR debt in dollars over several markets at `currentTimestamp` (unix s),
+ * at each market's oracle price as the runner values it; undefined until read.
+ */
+export const getHollarDebtUsd = (
+  markets: ReadonlyArray<HollarDebtMarket>,
+  currentTimestamp: number,
+) => {
+  let total = Big(0)
+
+  for (const { hollar, positions, reserves } of markets) {
+    const scaledDebt = getScaledHollarDebt(positions, hollar)
+    if (scaledDebt === 0n) continue
+
+    const reserve = reserves?.reserves.find(({ underlyingAsset }) =>
+      isSameAddress(underlyingAsset, hollar),
+    )
+    if (!reserves || !reserve) return undefined
+
+    const debt = getCompoundedBalance({
+      principalBalance: scaledDebt,
+      reserveIndex: BigInt(reserve.variableBorrowIndex),
+      reserveRate: BigInt(reserve.variableBorrowRate),
+      lastUpdateTimestamp: reserve.lastUpdateTimestamp,
+      currentTimestamp,
+    })
+    const { usdBalance } = getMarketReferenceCurrencyAndUsdBalance({
+      balance: debt.toString(),
+      priceInMarketReferenceCurrency: reserve.priceInMarketReferenceCurrency,
+      marketReferenceCurrencyDecimals:
+        reserves.baseCurrency.marketReferenceCurrencyDecimals,
+      decimals: reserve.decimals,
+      marketReferencePriceInUsdNormalized: Big(
+        reserves.baseCurrency.marketReferenceCurrencyPriceInUsd,
+      ).div(Big(10).pow(USD_DECIMALS)),
+    })
+
+    total = total.plus(usdBalance.toString())
+  }
+
+  return total.toString()
 }

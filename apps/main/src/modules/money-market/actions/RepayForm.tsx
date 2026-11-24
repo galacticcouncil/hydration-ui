@@ -11,6 +11,7 @@ import {
   useReserveSummaries,
 } from "@galacticcouncil/money-market/react"
 import {
+  Alert,
   AssetInput,
   LoadingButton,
   Separator,
@@ -35,6 +36,7 @@ import { useSpendable } from "@/modules/money-market/actions/useSpendable"
 import { useUserAddress } from "@/modules/money-market/hooks"
 import { reserveAssetId } from "@/modules/money-market/reserves/reserves"
 import { useReserveDisplay } from "@/modules/money-market/reserves/useReserveDisplay"
+import { useHollarDebtRewardsNotice } from "@/modules/money-market/rewards/useHollarDebtRewardsNotice"
 
 type Props = {
   readonly asset: Address
@@ -83,6 +85,18 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
   const [amount, setAmount] = useState("")
   const assessment = useRepayAssessment({ user, asset, amount, spendable })
   const current = useAccountSummary(user)
+  const price = Big(summary?.priceInUsd ?? "0")
+  const amountUsd = price.times(amount || "0")
+  // a repay takes off at most the debt in this market, while the rewards
+  // program counts the account's HOLLAR debt in every market
+  const debt =
+    current.data?.positions.find((p) => isAsset(p.underlyingAsset, asset))
+      ?.variableBorrows ?? "0"
+  const repaid = Big(amount || "0").gt(debt) ? debt : amount || "0"
+  const rewardsNotice = useHollarDebtRewardsNotice(
+    asset,
+    price.times(repaid).neg().toString(),
+  )
 
   const { control, formState, handleSubmit, setValue, trigger, getValues } =
     useRepayForm(assessment.data, decimals)
@@ -166,9 +180,7 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
               setValue("isMax", false)
             }}
             displayValue={t("common:currency", {
-              value: Big(summary?.priceInUsd ?? "0")
-                .times(amount || "0")
-                .toString(),
+              value: amountUsd.toString(),
             })}
             amountError={fieldState.error?.message}
           />
@@ -195,9 +207,10 @@ export const RepayForm: FC<Props> = ({ asset, onSubmitted }) => {
             loading={isAssessing || current.isPending}
           />
         )}
-        {findings.length > 0 && (
+        {(findings.length > 0 || rewardsNotice) && (
           <Stack gap="base" py="base">
             <FindingsList findings={findings} />
+            {rewardsNotice && <Alert {...rewardsNotice} />}
           </Stack>
         )}
       </Summary>

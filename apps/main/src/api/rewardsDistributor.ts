@@ -1,13 +1,29 @@
-import { markets, summarizeReserves } from "@galacticcouncil/money-market/core"
-import { useMarketReserves } from "@galacticcouncil/money-market/react"
-import { type EvmCall } from "@galacticcouncil/money-market/types"
+import {
+  markets,
+  readReserves,
+  summarizeReserves,
+} from "@galacticcouncil/money-market/core"
+import {
+  type MoneyMarketConnection,
+  moneyMarketKeys,
+  RESERVES_STALE_TIME,
+  useMarketPositions,
+  useMarketReserves,
+  useMoneyMarket,
+} from "@galacticcouncil/money-market/react"
+import {
+  type EvmCall,
+  type MarketDescriptor,
+  type MarketPositions,
+} from "@galacticcouncil/money-market/types"
 import {
   getAssetIdFromAddress,
   safeConvertAnyToH160,
 } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, useEvmAddress } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
+import { getUnixTime } from "date-fns"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { useCallback, useMemo } from "react"
 import {
@@ -22,6 +38,7 @@ import { AAVE_GAS_LIMIT } from "@/api/aave"
 import {
   claimsFileSchema,
   getAccruedRewards,
+  getHollarDebtUsd,
   getOwedReward,
   getRewardsClaimStatus,
   getRewardsProgramApr,
@@ -29,6 +46,7 @@ import {
   getRewardsRetryInterval,
   getRewardsRootsRefetchInterval,
   getRewardsTokenAddress,
+  getScaledHollarDebt,
   hasRewardsProgramEnded,
   isRewardsLatestStale,
   latestFileSchema,
@@ -37,6 +55,7 @@ import {
   type RewardsIncentive,
   type RewardsLatestFile,
   type RewardsPendingRoot,
+  suppliesRewardsProgramAsset,
 } from "@/api/rewardsDistributor.utils"
 import { ENV } from "@/config/env"
 import { useAssets } from "@/providers/assetsProvider"
@@ -644,12 +663,36 @@ export const useRewardsDistributorAccrued = (): RewardsDistributorAccrued => {
 export type RewardsProgram = {
   /** Why the connected account earns nothing, when it supplies and does not. */
   notEarningReason: string | undefined
+  /**
+   * The newest snapshot found too much HOLLAR debt, which has been repaid
+   * since: the account earns again from the next hourly check.
+   */
+  earningResumes: boolean
+  /**
+   * Supplies an earning asset now, undefined until read. Notices are for such
+   * an account only: the file lists an excluded account whatever it holds.
+   */
+  suppliesEarningAsset: boolean | undefined
+  /** HOLLAR debt now over the counted markets, in dollars; suppliers only. */
+  hollarDebtUsd: string | undefined
   maxHollarDebtUsd: string
   latest: RewardsLatestFile | undefined
 }
 
+/** The account's positions now, as far as the program's rule looks at them. */
+export type RewardsProgramLive =
+  | { supplies: false }
+  | {
+      supplies: true
+      /** Over the markets the program counts, in dollars. */
+      hollarDebtUsd: string
+    }
+
 const NO_PROGRAM: RewardsProgram = {
   notEarningReason: undefined,
+  earningResumes: false,
+  suppliesEarningAsset: undefined,
+  hollarDebtUsd: undefined,
   maxHollarDebtUsd: "0",
   latest: undefined,
 }
@@ -661,16 +704,21 @@ const NO_PROGRAM: RewardsProgram = {
  *
  * Both are judged at the read and not by a running clock, so the answer is
  * the same on every render between two reads.
+ *
+ * Positions now, when known, decide the HOLLAR rule, as the next hourly check
+ * will see them; only the file knows an exclusion.
  */
 export const getRewardsProgram = ({
   latest,
   account,
   readAt,
+  live,
 }: {
   latest: RewardsLatestFile | null | undefined
   /** Lowercase, as the file keys its accounts. */
   account: string | undefined
   readAt: number
+  live?: RewardsProgramLive
 }): RewardsProgram => {
   if (
     !latest ||
@@ -681,18 +729,189 @@ export const getRewardsProgram = ({
   }
 
   const status = account ? latest.accounts[account] : undefined
+  const fileReason =
+    status?.earning === false ? (status.reason ?? "unknown") : undefined
+  const maxHollarDebtUsd = latest.program.maxHollarDebtUsd
+  const hollarDebtUsd = live?.supplies ? live.hollarDebtUsd : undefined
+
+  if (!live || (fileReason !== undefined && fileReason !== "hollar_debt")) {
+    return {
+      notEarningReason: fileReason,
+      earningResumes: false,
+      suppliesEarningAsset: live?.supplies,
+      hollarDebtUsd,
+      maxHollarDebtUsd,
+      latest,
+    }
+  }
+
+  // only more than the allowance disqualifies, as at the runner
+  const isOverAllowance =
+    live.supplies && Big(live.hollarDebtUsd).gt(maxHollarDebtUsd)
 
   return {
-    notEarningReason:
-      status?.earning === false ? (status.reason ?? "unknown") : undefined,
-    maxHollarDebtUsd: latest.program.maxHollarDebtUsd,
+    notEarningReason: isOverAllowance ? "hollar_debt" : undefined,
+    earningResumes:
+      live.supplies && !isOverAllowance && fileReason === "hollar_debt",
+    suppliesEarningAsset: live.supplies,
+    hollarDebtUsd,
+    maxHollarDebtUsd,
     latest,
   }
 }
 
+/** What the program tells an account about a change to its HOLLAR debt. */
+export type HollarDebtChangeNotice = "notEarning" | "earningResumes"
+
 /**
- * The reward program's newest snapshot, left out once it is stale or the
- * program has ended.
+ * What changing the HOLLAR debt by `changeUsd` (negative for a repay) means for
+ * a supplier's rewards; nothing when its earning does not change.
+ */
+export const getHollarDebtChangeNotice = (
+  {
+    latest,
+    notEarningReason,
+    earningResumes,
+    suppliesEarningAsset,
+    hollarDebtUsd,
+    maxHollarDebtUsd,
+  }: RewardsProgram,
+  changeUsd: string,
+): HollarDebtChangeNotice | undefined => {
+  if (!latest || !suppliesEarningAsset || hollarDebtUsd === undefined) {
+    return undefined
+  }
+  // an exclusion is the denylist's, and no amount of debt changes it
+  if (notEarningReason !== undefined && notEarningReason !== "hollar_debt") {
+    return undefined
+  }
+
+  // only more than the allowance disqualifies, as at the runner
+  if (Big(hollarDebtUsd).plus(changeUsd).gt(maxHollarDebtUsd)) {
+    return "notEarning"
+  }
+
+  return notEarningReason === "hollar_debt" || earningResumes
+    ? "earningResumes"
+    : undefined
+}
+
+/**
+ * A market's reserves under the money market's own query, read only while
+ * `enabled`: the HOLLAR rule needs them only where the account holds debt.
+ */
+const hollarDebtReservesQuery = (
+  config: MoneyMarketConnection["config"],
+  market: MarketDescriptor,
+  enabled: boolean,
+) =>
+  queryOptions({
+    queryKey: moneyMarketKeys.reserves(market.market),
+    queryFn: () => readReserves(config, market),
+    staleTime: RESERVES_STALE_TIME,
+    refetchInterval: RESERVES_STALE_TIME,
+    enabled,
+  })
+
+const hasHollarDebt = (
+  data: MarketPositions | undefined,
+  market: MarketDescriptor,
+) =>
+  getScaledHollarDebt(data?.positions ?? [], market.addresses.HOLLAR_TOKEN) > 0n
+
+/**
+ * The account's positions now, under the money market's query keys so its own
+ * actions refresh them; GIGAHDX and BIL are read for a supplier only.
+ */
+const useRewardsProgramLive = (
+  latest: RewardsLatestFile | undefined,
+): RewardsProgramLive | undefined => {
+  const { config } = useMoneyMarket()
+  const evmAddress = useEvmAddress()
+  // the money market's own form of the address, which its query keys carry
+  const user =
+    latest && evmAddress && isAddress(evmAddress) ? evmAddress : undefined
+
+  // the markets whose HOLLAR debt the program counts, as the rewards runner's
+  // config/mainnet.json lists them; the earning assets are in the main one
+  const { hydration_v3: main, gigahdx_v3: gigahdx, bil_v3: bil } = markets
+
+  const { data: mainData } = useMarketPositions(user, main)
+  const underlyings = useMemo(
+    () =>
+      Object.keys(latest?.assets ?? {}).flatMap(
+        (name) => PROGRAM_ASSET_UNDERLYING[name] ?? [],
+      ),
+    [latest],
+  )
+  const supplies = mainData
+    ? suppliesRewardsProgramAsset(mainData.positions, underlyings)
+    : undefined
+
+  const debtUser = supplies ? user : undefined
+  const { data: gigahdxData } = useMarketPositions(debtUser, gigahdx)
+  const { data: bilData } = useMarketPositions(debtUser, bil)
+
+  const { data: mainReserves } = useQuery(
+    hollarDebtReservesQuery(
+      config,
+      main,
+      !!debtUser && hasHollarDebt(mainData, main),
+    ),
+  )
+  const { data: gigahdxReserves } = useQuery(
+    hollarDebtReservesQuery(
+      config,
+      gigahdx,
+      !!debtUser && hasHollarDebt(gigahdxData, gigahdx),
+    ),
+  )
+  const { data: bilReserves } = useQuery(
+    hollarDebtReservesQuery(
+      config,
+      bil,
+      !!debtUser && hasHollarDebt(bilData, bil),
+    ),
+  )
+
+  return useMemo(() => {
+    if (supplies === undefined) return undefined
+    if (!supplies) return { supplies: false }
+    if (!mainData || !gigahdxData || !bilData) return undefined
+
+    const hollarDebtUsd = getHollarDebtUsd(
+      [
+        { market: main, data: mainData, reserves: mainReserves },
+        { market: gigahdx, data: gigahdxData, reserves: gigahdxReserves },
+        { market: bil, data: bilData, reserves: bilReserves },
+      ].map(({ market, data, reserves }) => ({
+        hollar: market.addresses.HOLLAR_TOKEN,
+        positions: data.positions,
+        reserves,
+      })),
+      getUnixTime(Date.now()),
+    )
+
+    return hollarDebtUsd === undefined
+      ? undefined
+      : { supplies: true, hollarDebtUsd }
+  }, [
+    bil,
+    bilData,
+    bilReserves,
+    gigahdx,
+    gigahdxData,
+    gigahdxReserves,
+    main,
+    mainData,
+    mainReserves,
+    supplies,
+  ])
+}
+
+/**
+ * The reward program's newest snapshot, left out once stale or ended, with the
+ * HOLLAR rule judged on the account's positions now once they are read.
  */
 export const useRewardsProgram = (): RewardsProgram => {
   const rpc = useRpcProvider()
@@ -705,9 +924,18 @@ export const useRewardsProgram = (): RewardsProgram => {
     rewardsDistributorLatestQuery(rpc, isDeployed),
   )
 
-  return useMemo(
+  const fromFile = useMemo(
     () => getRewardsProgram({ latest, account, readAt: dataUpdatedAt }),
     [account, dataUpdatedAt, latest],
+  )
+  const live = useRewardsProgramLive(fromFile.latest)
+
+  return useMemo(
+    () =>
+      live
+        ? getRewardsProgram({ latest, account, readAt: dataUpdatedAt, live })
+        : fromFile,
+    [account, dataUpdatedAt, fromFile, latest, live],
   )
 }
 
