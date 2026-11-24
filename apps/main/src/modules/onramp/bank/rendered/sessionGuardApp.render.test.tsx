@@ -66,7 +66,7 @@ vi.mock("@/modules/tutorials/utils/resetTutorials", () => ({
 }))
 vi.mock("@/routeTree.gen", () => ({ routeTree: {} }))
 vi.mock("@/config/env", () => ({
-  ENV: { VITE_HBR_API_URL: "https://hbr.test" },
+  ENV: { VITE_BANK_FLOW_ENABLED: true, VITE_HBR_API_URL: "https://hbr.test" },
 }))
 
 import { App } from "@/App"

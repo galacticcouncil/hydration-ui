@@ -103,7 +103,7 @@ vi.mock("react-i18next", () => ({
 }))
 vi.mock("@/i18n", () => ({ default: { t: (k: string) => k } }))
 vi.mock("@/config/env", () => ({
-  ENV: { VITE_HBR_API_URL: "https://hbr.test" },
+  ENV: { VITE_BANK_FLOW_ENABLED: true, VITE_HBR_API_URL: "https://hbr.test" },
 }))
 
 import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
