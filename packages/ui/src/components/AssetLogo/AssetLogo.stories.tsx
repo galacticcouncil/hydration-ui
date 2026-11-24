@@ -1,5 +1,4 @@
 import { METADATA_CDN_URL } from "@galacticcouncil/utils"
-import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import React from "react"
 
@@ -17,16 +16,17 @@ const ETH_SRC = `${METADATA_CDN_URL}/v2/ethereum/1/icon.svg`
 const AAVE_SRC = `${METADATA_CDN_URL}/v2/ethereum/1/assets/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9/icon.svg`
 const HDX_SRC = `${METADATA_CDN_URL}/v2/polkadot/2034/assets/0/icon.svg`
 const USDT_SRC = `${METADATA_CDN_URL}/v2/polkadot/2034/assets/10/icon.svg`
+const TBTC_SRC = `${METADATA_CDN_URL}/v2/polkadot/2034/assets/1000765/icon.svg`
+const HOLLAR_SRC = `${METADATA_CDN_URL}/v2/polkadot/2034/assets/222/icon.svg`
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof AssetLogo>) => (
-  <TooltipProvider>
-    <Stack gap="xl">
-      <AssetLogo {...args} size="extra-small" />
-      <AssetLogo {...args} size="small" />
-      <AssetLogo {...args} size="medium" />
-      <AssetLogo {...args} size="large" />
-    </Stack>
-  </TooltipProvider>
+  <Stack gap="xl">
+    <AssetLogo {...args} size="extra-small" />
+    <AssetLogo {...args} size="small" />
+    <AssetLogo {...args} size="medium" />
+    <AssetLogo {...args} size="large" />
+    <AssetLogo {...args} size="extra-large" />
+  </Stack>
 )
 
 const MultipleAssetsTemplate = (
@@ -58,6 +58,43 @@ export const WithChain: Story = {
   },
 }
 
+export const WithSideChain: Story = {
+  render: (args) => (
+    <Stack gap="xl">
+      <Template {...args} />
+      <Template {...args} decoration="atoken" />
+      <Stack gap="xl">
+        <MultipleAssetsTemplate size="extra-small" chainSrc={ETH_SRC} />
+        <MultipleAssetsTemplate size="small" chainSrc={ETH_SRC} />
+        <MultipleAssetsTemplate size="medium" chainSrc={ETH_SRC} />
+        <MultipleAssetsTemplate size="large" chainSrc={ETH_SRC} />
+        <MultipleAssetsTemplate size="extra-large" chainSrc={ETH_SRC} />
+      </Stack>
+      <Stack gap="xl">
+        {[2, 3, 4].map((count) => (
+          <MultipleAssetLogoWrapper
+            key={count}
+            size="large"
+            chainSrc={ETH_SRC}
+            collapsed
+          >
+            {[HDX_SRC, AAVE_SRC, ETH_SRC, USDT_SRC]
+              .slice(0, count)
+              .map((src) => (
+                <AssetLogo key={src} src={src} />
+              ))}
+          </MultipleAssetLogoWrapper>
+        ))}
+      </Stack>
+    </Stack>
+  ),
+  args: {
+    src: AAVE_SRC,
+    chainSrc: ETH_SRC,
+    chainPosition: "side",
+  },
+}
+
 export const WithMultipleAssets: Story = {
   render: () => (
     <Stack gap="xl">
@@ -65,6 +102,44 @@ export const WithMultipleAssets: Story = {
       <MultipleAssetsTemplate size="small" />
       <MultipleAssetsTemplate size="medium" />
       <MultipleAssetsTemplate size="large" />
+      <Stack gap="xl">
+        {(
+          ["extra-small", "small", "medium", "large", "extra-large"] as const
+        ).map((size) => (
+          <MultipleAssetLogoWrapper key={size} size={size}>
+            <AssetLogo src={TBTC_SRC} chainSrc={ETH_SRC} decoration="atoken" />
+            <AssetLogo src={HOLLAR_SRC} />
+          </MultipleAssetLogoWrapper>
+        ))}
+      </Stack>
+    </Stack>
+  ),
+}
+
+export const Collapsed: Story = {
+  render: () => (
+    <Stack gap="xl">
+      {[2, 3, 4].map((count) => (
+        <Stack
+          key={count}
+          direction="row"
+          gap="xl"
+          align="center"
+          justify="start"
+        >
+          {(
+            ["extra-small", "small", "medium", "large", "extra-large"] as const
+          ).map((size) => (
+            <MultipleAssetLogoWrapper key={size} size={size} collapsed>
+              {[HDX_SRC, AAVE_SRC, ETH_SRC, USDT_SRC]
+                .slice(0, count)
+                .map((src) => (
+                  <AssetLogo key={src} src={src} chainSrc={ETH_SRC} />
+                ))}
+            </MultipleAssetLogoWrapper>
+          ))}
+        </Stack>
+      ))}
     </Stack>
   ),
 }
@@ -82,24 +157,6 @@ export const WithAtokenDecoration: Story = {
   args: {
     decoration: "atoken",
     src: AAVE_SRC,
-  },
-}
-
-export const WithYellowBadge: Story = {
-  render: Template,
-  args: {
-    badge: "yellow",
-    badgeTooltip: "Warning",
-    src: HDX_SRC,
-  },
-}
-
-export const WithRedBadge: Story = {
-  render: Template,
-  args: {
-    badge: "red",
-    badgeTooltip: "Danger",
-    src: HDX_SRC,
   },
 }
 

@@ -19,6 +19,7 @@ export type XcChainAssetSelectProps = Omit<
   readonly modalTitle: string
   readonly onSelectionChange?: (selection: XcChainAssetPair) => void
   readonly disabledAssetSelector?: boolean
+  readonly showSideChain?: boolean
 }
 
 export const XcChainAssetSelect = ({
@@ -28,6 +29,7 @@ export const XcChainAssetSelect = ({
   modalTitle,
   onSelectionChange,
   disabledAssetSelector = false,
+  showSideChain = false,
   ...assetInputProps
 }: XcChainAssetSelectProps) => {
   const [open, setOpen] = useState(false)
@@ -45,7 +47,15 @@ export const XcChainAssetSelect = ({
           currentSelection
             ? {
                 symbol: currentSelection.asset.symbol,
-                icon: <XcAssetLogo asset={currentSelection.asset} />,
+                icon: (
+                  <XcAssetLogo
+                    asset={currentSelection.asset}
+                    sideChainSrc={
+                      showSideChain ? currentSelection.chain.logo : undefined
+                    }
+                    collapsed={showSideChain}
+                  />
+                ),
               }
             : null
         }

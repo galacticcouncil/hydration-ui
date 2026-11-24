@@ -129,8 +129,6 @@
   "xc.swap.field.allContacts": "All contacts",
   "xc.swap.field.modeContacts": "{{mode}} contacts",
   "xc.swap.field.myContacts": "My Contacts",
-  "xc.swap.field.sourceChainTooltip": "Source chain",
-  "xc.swap.field.destChainTooltip": "Destination chain",
   "xc.swap.summary.estimatedTime": "Estimated time",
   "xc.swap.cta.enterAmount": "Enter an amount",
   "xc.swap.cta.selectRecipient": "Select a recipient",

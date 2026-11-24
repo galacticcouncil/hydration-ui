@@ -7,9 +7,8 @@ import { LOGO_SIZES } from "@/components/Logo/Logo.styled"
 import { ThemeProps } from "@/theme"
 import { createVariants, pxToRem } from "@/utils"
 
-import { Icon } from "../Icon"
 import { Image } from "../Image"
-import { AssetLogoDecoration } from "./AssetLogo"
+import { AssetLogoChainPosition, AssetLogoDecoration } from "./AssetLogo"
 
 const LOGO_OVERLAP = {
   "extra-small": 2,
@@ -35,6 +34,23 @@ const DECOR_PADDING = {
   "extra-large": 2.5,
 } as const
 
+const LOGO_GAP = {
+  "extra-small": 1,
+  small: 2,
+  medium: 2,
+  large: 3,
+  "extra-large": 3,
+} as const
+
+const SIDE_CHAIN_RATIO = 0.75
+const SIDE_CHAIN_OVERLAP = 0.25
+
+const getSideChainSize = (size: LogoSize) =>
+  Math.round(LOGO_SIZES[size] * SIDE_CHAIN_RATIO)
+
+const getSideChainVisibleWidth = (size: LogoSize) =>
+  Math.round(getSideChainSize(size) * (1 - SIDE_CHAIN_OVERLAP))
+
 const getATokenDecorationStyles = (
   theme: ThemeProps,
   thickness: number,
@@ -55,6 +71,7 @@ const getATokenDecorationStyles = (
         content: "";
         position: absolute;
         inset: -${pxToRem(thickness)};
+        left: calc(var(--decor-offset, 0rem) - ${pxToRem(thickness)});
         background: linear-gradient(
           to right,
           #39a5ff,
@@ -150,72 +167,194 @@ export const SAssetChainLogo = styled(Image)<{ size: LogoSize }>(({
   `
 })
 
-export const SAssetBadge = styled(Icon)<{
-  type: "red" | "yellow"
-}>(({ theme, type }) => {
-  const colorMap = {
-    red: theme.colors.utility.warningPrimary[500],
-    yellow: theme.colors.utility.warningSecondary[500],
-  }
-
+const getSideChainStyles = (
+  size: LogoSize,
+  decoration: AssetLogoDecoration,
+) => {
+  const isAToken = decoration === "atoken"
+  const ring = isAToken ? DECOR_THICKNESS[size] : 0
+  const diameter = LOGO_SIZES[size]
+  const chain = getSideChainSize(size)
+  const visible = getSideChainVisibleWidth(size)
+  const cutout = Math.round(diameter / 2 + ring + LOGO_GAP[size])
   return css`
-    display: flex;
-    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.85));
-    color: ${colorMap[type]};
+    align-items: center;
+    --decor-offset: ${pxToRem(visible)};
+
+    /* stacked logos decorate themselves; don't inherit the shift */
+    > * {
+      --decor-offset: 0rem;
+    }
+
+    && > ${SAssetChainLogo} {
+      position: static;
+      order: -1;
+      width: ${pxToRem(chain)};
+      height: ${pxToRem(chain)};
+      margin: 0 -${pxToRem(chain - visible)} 0 0;
+      border: none;
+      background: none;
+      mask-image: radial-gradient(
+        circle at ${pxToRem(visible + diameter / 2)} 50%,
+        transparent ${pxToRem(cutout)},
+        black ${pxToRem(cutout + 0.5)}
+      );
+    }
   `
-})
+}
 
-export const SBadgeSlot = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+export const SSideChainSkeleton = styled.span<{ size: LogoSize }>(
+  ({ size }) => css`
+    display: inline-flex;
+    flex-shrink: 0;
+    padding-left: ${pxToRem(getSideChainVisibleWidth(size))};
+  `,
+)
 
-  position: absolute;
-  right: -10%;
-  bottom: -10%;
+const getStackGapStyles = (size: LogoSize) => {
+  const diameter = LOGO_SIZES[size]
+  const thickness = DECOR_THICKNESS[size]
+  const nextCenter = diameter * 1.5 - LOGO_OVERLAP[size]
+  const cutout = diameter / 2 + LOGO_GAP[size]
+  const gap = (x: number) => `radial-gradient(
+    circle at ${pxToRem(x)} 50%,
+    transparent ${pxToRem(cutout)},
+    black ${pxToRem(cutout + 0.5)}
+  )`
+  return css`
+    > div:not(:last-of-type) > ${SAssetLogo} {
+      mask-image: ${gap(nextCenter)};
+    }
 
-  z-index: 1;
+    /* the ring box starts one ring thickness left of the logo; keep its own mask */
+    > div:not(:last-of-type)::before {
+      mask-image: ${gap(nextCenter + thickness)},
+        ${generateATokenMask(1, diameter, LOGO_OVERLAP[size], thickness)};
+      mask-composite: intersect;
+    }
+  `
+}
 
-  width: 50%;
-  height: 50%;
-`
+const COLLAPSED_GAP = {
+  "extra-small": 1,
+  small: 1,
+  medium: 1,
+  large: 2,
+  "extra-large": 2,
+} as const
+
+const COLLAPSED_SECTORS: Record<number, [number, number][]> = {
+  2: [
+    [180, 360],
+    [0, 180],
+  ],
+  // Y split
+  3: [
+    [300, 420],
+    [60, 180],
+    [180, 300],
+  ],
+  4: [
+    [270, 360],
+    [0, 90],
+    [180, 270],
+    [90, 180],
+  ],
+}
+
+const getSectorClip = (
+  [from, to]: [number, number],
+  diameter: number,
+  gap: number,
+) => {
+  const r = diameter / 2
+  const far = diameter * 2
+  type Point = [number, number]
+  const point = (
+    deg: number,
+    dist: number,
+    [ox, oy]: Point = [r, r],
+  ): Point => {
+    const rad = (deg * Math.PI) / 180
+    return [ox + Math.sin(rad) * dist, oy - Math.cos(rad) * dist]
+  }
+  const half = (to - from) / 2
+  // corner where both pulled-in edges meet, on the sector's bisector
+  const apex = point(from + half, gap / 2 / Math.sin((half * Math.PI) / 180))
+  const arc = Array.from({ length: Math.ceil((to - from) / 45) + 1 }, (_, i) =>
+    point(Math.min(from + i * 45, to), far),
+  )
+  return `polygon(${[apex, point(from, far, apex), ...arc, point(to, far, apex)]
+    .map(([x, y]) => `${pxToRem(x)} ${pxToRem(y)}`)
+    .join(", ")})`
+}
 
 export const SDecorationContainer = styled.div<{
   size: LogoSize
   count: number
+  collapsed?: number
   decoration?: AssetLogoDecoration
-}>(({ decoration = "none", count, size }) => {
-  const overlap = LOGO_OVERLAP[size]
-  const thickness = DECOR_THICKNESS[size]
-  const padding = DECOR_PADDING[size]
-  const diameter = LOGO_SIZES[size]
-  return [
-    css`
-      font-size: ${pxToRem(diameter)};
-      position: relative;
-      display: inline-flex;
-      width: fit-content;
-      flex-shrink: 0;
-
-      > :not(:first-of-type) {
-        margin-left: -${pxToRem(overlap)};
-      }
-    `,
-    decorations(thickness, padding)(decoration),
-    decoration === "atoken" &&
+  chainPosition?: AssetLogoChainPosition
+}>(
+  ({
+    decoration = "none",
+    chainPosition = "corner",
+    count,
+    collapsed,
+    size,
+  }) => {
+    const overlap = LOGO_OVERLAP[size]
+    const collapsedOffset =
+      chainPosition === "side" ? getSideChainVisibleWidth(size) : 0
+    const thickness = DECOR_THICKNESS[size]
+    const padding = DECOR_PADDING[size]
+    const diameter = LOGO_SIZES[size]
+    return [
       css`
-        &::before {
-          width: ${pxToRem(
-            diameter * count - overlap * (count - 1) + (thickness + padding),
-          )};
+        font-size: ${pxToRem(diameter)};
+        position: relative;
+        display: inline-flex;
+        width: fit-content;
+        flex-shrink: 0;
 
-          mask-image: ${generateATokenMask(
-            count,
-            diameter,
-            overlap,
-            thickness,
-          )};
+        > :not(:first-of-type) {
+          margin-left: -${pxToRem(overlap)};
         }
       `,
-  ]
-})
+      !!collapsed &&
+        css`
+          > div:not(:first-of-type) {
+            position: absolute;
+            top: 0;
+            left: ${pxToRem(collapsedOffset)};
+            margin-left: 0;
+          }
+
+          ${(COLLAPSED_SECTORS[collapsed] ?? [])
+            .map(
+              (sector, i) =>
+                `> div:nth-of-type(${i + 1}) { clip-path: ${getSectorClip(sector, diameter, COLLAPSED_GAP[size])}; }`,
+            )
+            .join("\n")}
+        `,
+      decorations(thickness, padding)(decoration),
+      chainPosition === "side" && getSideChainStyles(size, decoration),
+      count > 1 && getStackGapStyles(size),
+      decoration === "atoken" &&
+        css`
+          &::before {
+            width: ${pxToRem(
+              diameter * count - overlap * (count - 1) + (thickness + padding),
+            )};
+
+            mask-image: ${generateATokenMask(
+              count,
+              diameter,
+              overlap,
+              thickness,
+            )};
+          }
+        `,
+    ]
+  },
+)
