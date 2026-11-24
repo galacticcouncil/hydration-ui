@@ -6,14 +6,17 @@ import {
   buildFixtureQuote,
   FIXTURE_CUSTOMER_ID,
   FIXTURE_DELETE_BANK_ACCOUNT,
+  FIXTURE_DEMO_RAMP_WALK,
+  FIXTURE_DEMO_VALID_MS,
   FIXTURE_DEPOSIT_HISTORY,
   FIXTURE_ONBOARDING_SEQUENCE,
   FIXTURE_ONRAMP_VIEWS,
-  FIXTURE_RAMP_BUILD_REFUSAL,
   FIXTURE_RAMP_BUILT,
   FIXTURE_RAMP_LIST,
   FIXTURE_RAMPS_LIST_RESPONSE,
   FIXTURE_UNBOUND_ONBOARDING,
+  fixtureDemoRampId,
+  fixtureDemoTx,
   renderFixtureBindMessage,
   renderFixtureLoginMessage,
 } from "@/modules/onramp/bank/config/fixtures"
@@ -38,6 +41,7 @@ import {
   onrampAccountResponseSchema,
   onrampAccountsResponseSchema,
   OnrampCurrency,
+  rampBuildResponseSchema,
   rampQuoteResponseSchema,
   rampReportRequestSchema,
   rampRequestSchema,
@@ -66,6 +70,16 @@ type FixtureBankAccount = {
 
 type OnrampStage = "not_requested" | "preparing" | "refused" | "ready"
 
+// A demonstration cash-out: the build's fields and how often it was read.
+type DemoRamp = {
+  id: string
+  bankAccountId: string
+  usdcAmount: string
+  validUntil: string
+  createdAt: string
+  reads: number
+}
+
 type WalletState = {
   customerType: CustomerType | null
   bound: boolean
@@ -73,10 +87,30 @@ type WalletState = {
   bankAccounts: FixtureBankAccount[]
   createdAccounts: number
   onramp: Record<OnrampCurrency, { stage: OnrampStage; reads: number }>
+  demoRamps: DemoRamp[]
 }
 
 // GET reads of a `preparing` account before it reads `ready`.
 const PREPARING_READS = 2
+
+// The demonstration's view after `reads` reads: one status of the walk per
+// read, then `paid` for good.
+const demoRampView = (ramp: DemoRamp) => {
+  const step =
+    FIXTURE_DEMO_RAMP_WALK[
+      Math.min(ramp.reads, FIXTURE_DEMO_RAMP_WALK.length - 1)
+    ]
+  return {
+    id: ramp.id,
+    bankAccountId: ramp.bankAccountId,
+    usdcAmount: ramp.usdcAmount,
+    validUntil: ramp.validUntil,
+    createdAt: ramp.createdAt,
+    ...step,
+    retryable: false,
+    unlinkedRedeemId: null,
+  }
+}
 
 const onrampViewOf = (wallet: WalletState, currency: OnrampCurrency) => {
   const { stage } = wallet.onramp[currency]
@@ -107,9 +141,19 @@ const randomToken = () =>
  * (authRoutes R2, customerRoutes C1 LINK): a sign-in of a wallet with no
  * customer keeps a link grant for THAT session until the signed message
  * expires, and that session's create binds the wallet (one signature); a
- * wallet that had a customer at sign-in binds with the two-step bind. It never verifies a
- * signature and never hands out a transaction: the off-ramp build answers
- * `503 ramp_build_unavailable` as a server that builds no redeem does.
+ * wallet that had a customer at sign-in binds with the two-step bind. It never
+ * verifies a signature.
+ *
+ * The off-ramp build is a demonstration: it answers a schema-valid build (the
+ * binding quote, validUntil 30 minutes on, and the two steps a wallet would be
+ * asked for) whose transactions are `fixtureDemoTx`: no contract, no
+ * calldata, no value, so it never hands out a transaction a wallet could use
+ * to move funds (invariant 2a), and `buildCashOutTransaction` refuses it
+ * (2b). The cash-out screen shows it as a demonstration and never hands it to
+ * a wallet (invariant 1). Its GET /v1/ramps/:id walks FIXTURE_DEMO_RAMP_WALK
+ * to `paid`, one status per read, and GET /v1/ramps lists it first; the
+ * report route still answers 404 ramp_not_found (nothing is ever sent). All of
+ * it lives in this service's memory only and ends with the tab.
  */
 export const createHbrFixtureService = (args: {
   session: HbrSessionAccess
@@ -144,6 +188,7 @@ export const createHbrFixtureService = (args: {
         usd: { stage: "not_requested", reads: 0 },
         eur: { stage: "not_requested", reads: 0 },
       },
+      demoRamps: [],
     }
     wallets.set(h160, fresh)
     return fresh
@@ -384,10 +429,36 @@ export const createHbrFixtureService = (args: {
           return refuse(422, "below_floor", { nothingBroadcast: true })
         return rampQuoteResponseSchema.parse(quote)
       },
-      buildRamp: async () => {
-        await withCustomer(forH160)
-        return refuse(503, FIXTURE_RAMP_BUILD_REFUSAL.error, {
-          nothingBroadcast: FIXTURE_RAMP_BUILD_REFUSAL.nothingBroadcast,
+      buildRamp: async (body) => {
+        const { h160, wallet } = await withCustomer(forH160)
+        if (!rampRequestSchema.safeParse(body).success)
+          return refuse(400, "bad_request", { nothingBroadcast: true })
+        if (!wallet.bankAccounts.some((a) => a.id === body.bankAccountId))
+          return refuse(404, "bank_account_not_found", {
+            nothingBroadcast: true,
+          })
+        const quote = buildFixtureQuote(body.usdcAmount)
+        if (!quote)
+          return refuse(422, "below_floor", { nothingBroadcast: true })
+        const now = Date.now()
+        const ramp: DemoRamp = {
+          id: fixtureDemoRampId(wallet.demoRamps.length + 1),
+          bankAccountId: body.bankAccountId,
+          usdcAmount: quote.quote.usdcAmount,
+          validUntil: new Date(now + FIXTURE_DEMO_VALID_MS).toISOString(),
+          createdAt: new Date(now).toISOString(),
+          reads: 0,
+        }
+        wallet.demoRamps.push(ramp)
+        // Invariant 2a: both steps are fixtureDemoTx (no contract, no calldata).
+        return rampBuildResponseSchema.parse({
+          ramp: demoRampView(ramp),
+          approveTx: fixtureDemoTx(h160),
+          redeemTx: fixtureDemoTx(h160),
+          quote: quote.quote,
+          validUntil: ramp.validUntil,
+          hollarBurn: (BigInt(quote.quote.usdcAmount) * 10n ** 12n).toString(),
+          payoutLimit: quote.payoutLimit,
         })
       },
       reportRamp: async (_id, txHash) => {
@@ -397,11 +468,25 @@ export const createHbrFixtureService = (args: {
         return refuse(404, "ramp_not_found")
       },
       listRamps: async () => {
-        await withCustomer(forH160)
-        return listRampsResponseSchema.parse(FIXTURE_RAMPS_LIST_RESPONSE)
+        const { wallet } = await withCustomer(forH160)
+        // The list reads the demonstrations as they stand; only GET
+        // /v1/ramps/:id walks them on.
+        return listRampsResponseSchema.parse({
+          ...FIXTURE_RAMPS_LIST_RESPONSE,
+          ramps: [
+            ...[...wallet.demoRamps].reverse().map(demoRampView),
+            ...FIXTURE_RAMPS_LIST_RESPONSE.ramps,
+          ],
+        })
       },
       getRamp: async (id) => {
-        await withCustomer(forH160)
+        const { wallet } = await withCustomer(forH160)
+        const demo = wallet.demoRamps.find((r) => r.id === id)
+        if (demo) {
+          const view = demoRampView(demo)
+          demo.reads += 1
+          return rampResponseSchema.parse({ ramp: view })
+        }
         const ramp =
           id === FIXTURE_RAMP_BUILT.id
             ? FIXTURE_RAMP_BUILT

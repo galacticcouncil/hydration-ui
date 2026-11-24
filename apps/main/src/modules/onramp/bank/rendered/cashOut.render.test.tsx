@@ -1196,3 +1196,25 @@ describe("fix round 1", () => {
     expect(text()).not.toContain("bank.accounts.row.last4")
   })
 })
+
+describe("http mode is unchanged by the fixture demonstration (invariant 6)", () => {
+  it("the review is the real one, and its Sign hands the prepared transactions to createTransaction exactly once", async () => {
+    const real = useTransactionsStore.getState().createTransaction
+    const spy = vi.fn(real)
+    useTransactionsStore.setState({ createTransaction: spy })
+    await toReview()
+    expect(text()).not.toContain("bank.cashOut.review.demoNote")
+    expect(buttons().map((b) => b.textContent)).not.toContain(
+      "bank.cashOut.review.demoContinue",
+    )
+    await handOver()
+    expect(spy).toHaveBeenCalledTimes(1)
+    const steps = (spy.mock.calls[0]![0] as { tx: unknown[] }).tx as {
+      strictEvm: { prepared: unknown }
+    }[]
+    expect(steps.map((s) => s.strictEvm.prepared)).toEqual([
+      unsigned(APPROVE_DATA),
+      unsigned(REDEEM_DATA),
+    ])
+  })
+})

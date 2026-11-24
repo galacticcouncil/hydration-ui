@@ -7,9 +7,11 @@ vi.mock("@galacticcouncil/web3-connect", () => ({
 import onrampCopy from "@/i18n/locales/en/onramp.json"
 import {
   buildFixtureQuote,
+  FIXTURE_DEMO_RAMP_WALK,
   FIXTURE_QUOTE,
   FIXTURE_RAMP_BUILT,
   FIXTURE_RAMP_LIST,
+  fixtureDemoTx,
 } from "@/modules/onramp/bank/config/fixtures"
 import { RAMP_STATUSES } from "@/modules/onramp/bank/config/schemas"
 import {
@@ -21,7 +23,11 @@ import {
   reportRedeemHash,
   showsLocalChecking,
 } from "@/modules/onramp/bank/utils/cashOut"
-import { buildCashOutTransaction } from "@/modules/onramp/bank/utils/cashOutTransaction"
+import {
+  buildCashOutTransaction,
+  FixtureCashOutRefusal,
+  isFixtureCashOut,
+} from "@/modules/onramp/bank/utils/cashOutTransaction"
 import {
   HbrApiError,
   HbrNetworkError,
@@ -223,6 +229,29 @@ describe("the createTransaction input", () => {
     expect(steps).toHaveLength(1)
     expect(steps[0]!.strictEvm.after).toBeNull()
   })
+  it("invariant 2b: a fixture step (the zero address, or no calldata) is refused, on either step", () => {
+    const demo = fixtureDemoTx(A)
+    const cases = [
+      { ...prepared, redeemTx: demo, approveTx: demo },
+      { ...prepared, redeemTx: demo, approveTx: null },
+      { ...prepared, approveTx: demo },
+      { ...prepared, redeemTx: { ...prepared.redeemTx, data: "0x" } },
+      { ...prepared, approveTx: { ...prepared.approveTx, to: demo.to } },
+    ]
+    for (const c of cases) {
+      expect(isFixtureCashOut(c)).toBe(true)
+      expect(() =>
+        buildCashOutTransaction({
+          prepared: c,
+          sessionAddress: A,
+          onRedeemHash: vi.fn(),
+          copy,
+        }),
+      ).toThrow(FixtureCashOutRefusal)
+    }
+    // a build with a contract and calldata on both steps is not refused
+    expect(isFixtureCashOut(prepared)).toBe(false)
+  })
 })
 
 describe("report of the redeem hash", () => {
@@ -288,7 +317,8 @@ describe("report of the redeem hash", () => {
   })
 })
 
-// The fixture build refusal (503 ramp_build_unavailable) is pinned in hbrService.test.ts.
+// The fixture build (a demonstration since 2026-11-24, no longer a 503) is
+// pinned in hbrService.test.ts.
 describe("fixtures (testnet): quote from the server's formula", () => {
   it("the doc example comes out of the formula; below the floor is refused", () => {
     expect(buildFixtureQuote("25.5")).toEqual(FIXTURE_QUOTE)
@@ -301,6 +331,17 @@ describe("fixture ramps carry the 5.1 label of their status (fix round 2, item 5
   const TABLE: Record<string, [string, string, string | null]> = {
     built: ["Prepared - not yet seen on chain", "pending", null],
     submitted: ["Checking", "pending", null],
+    burn_observed: [
+      "Redeemed on Hydration",
+      "pending",
+      "Waiting for the credit on Base.",
+    ],
+    payout_observed: [
+      "Delivered to Bridge",
+      "pending",
+      "Waiting for Bridge to record the payout.",
+    ],
+    bridge_funds_received: ["Processing at Bridge", "pending", null],
     credited: [
       "Queued on Base",
       "pending",
@@ -324,8 +365,12 @@ describe("fixture ramps carry the 5.1 label of their status (fix round 2, item 5
       "The vault could not pay the payout address; the amount is held for it.",
     ],
   }
-  it("every listed ramp and the built ramp read their own status's row", () => {
-    for (const ramp of [FIXTURE_RAMP_BUILT, ...FIXTURE_RAMP_LIST]) {
+  it("every listed ramp, the built ramp and each step of the demonstration's walk read their own status's row", () => {
+    for (const ramp of [
+      FIXTURE_RAMP_BUILT,
+      ...FIXTURE_RAMP_LIST,
+      ...FIXTURE_DEMO_RAMP_WALK,
+    ]) {
       const row = TABLE[ramp.status]
       expect(row, ramp.status).toBeDefined()
       expect([ramp.label, ramp.tone, ramp.detail]).toEqual(row)

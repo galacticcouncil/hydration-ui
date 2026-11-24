@@ -20,7 +20,7 @@ import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import { BankTimeline } from "@/modules/onramp/bank/components/BankTimeline"
 import type { RampView } from "@/modules/onramp/bank/config/schemas"
 import { useCashOutLocalSend } from "@/modules/onramp/bank/hooks/useCashOutLocalSend"
-import { useHbrRamp } from "@/modules/onramp/bank/hooks/useHbr"
+import { useHbrRamp, useHbrService } from "@/modules/onramp/bank/hooks/useHbr"
 import { getLitStages } from "@/modules/onramp/bank/utils/cashOut"
 import { classifyBankError } from "@/modules/onramp/bank/utils/onboarding"
 import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
@@ -63,7 +63,9 @@ const Progress: FC<{ h160: string; view: RampView }> = ({ h160, view }) => {
  * local "Checking" while it says `built`); the timeline is the 5.5 visual.
  * It replaces the list, never sits above it, and offers no action on the
  * ramp and no way to start a cash-out from it (a ramp in Checking must not
- * read as "try again"): only back to the list of withdrawals.
+ * read as "try again"): only back to the list of withdrawals. On the fixture
+ * service (`service.mode === "fixture"`, invariant 3) every ramp is a
+ * demonstration, and the screen says so first (invariant 4).
  */
 export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
   h160,
@@ -72,6 +74,7 @@ export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
   onViewTransfers,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const demo = useHbrService().mode === "fixture"
   const ramp = useHbrRamp(h160, rampId)
   const local = useCashOutLocalSend(h160, rampId)
   const view = ramp.data?.ramp
@@ -85,6 +88,12 @@ export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
     >
       <ModalBody>
         <Stack gap="l" data-cash-out-status={rampId}>
+          {demo && (
+            <Alert
+              variant="info"
+              description={t("bank.cashOut.status.demoNote")}
+            />
+          )}
           {ramp.isError && (
             <Alert
               variant="warning"

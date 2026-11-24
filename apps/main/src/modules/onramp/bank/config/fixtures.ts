@@ -197,12 +197,72 @@ export const FIXTURE_RAMPS = {
   unlinkedRedeemsTruncated: false,
 }
 
-// API doc rule 16: what a server that builds no redeem answers. The fixture
-// service never hands out a transaction a wallet could send.
-export const FIXTURE_RAMP_BUILD_REFUSAL = {
-  error: "ramp_build_unavailable",
-  nothingBroadcast: true,
-}
+/**
+ * The "transaction" of a fixture build (invariant 2a of the demonstration).
+ * The wire schema requires `redeemTx`, so the fixture fills it with a step
+ * that does nothing a wallet could use: it names no contract (the zero
+ * address, never the facilitator or the HOLLAR token), carries no calldata
+ * ("0x") and no value. `buildCashOutTransaction` refuses any step with an
+ * empty `data` or the zero address as `to` (invariant 2b), so even a wrongly
+ * wired hand-over of a fixture build builds no wallet input.
+ */
+export const FIXTURE_DEMO_TX_TO = "0x0000000000000000000000000000000000000000"
+export const fixtureDemoTx = (from: string) => ({
+  chainId: 222222,
+  from,
+  to: FIXTURE_DEMO_TX_TO,
+  data: "0x",
+  value: "0x0",
+})
+
+/**
+ * The statuses a demonstration cash-out walks through, one per read of
+ * GET /v1/ramps/:id, ending on `paid`. Label, tone and detail are rows of
+ * API doc 5.1, verbatim.
+ */
+export const FIXTURE_DEMO_RAMP_WALK = [
+  {
+    status: "built",
+    label: "Prepared - not yet seen on chain",
+    tone: "pending",
+    detail: null,
+  },
+  { status: "submitted", label: "Checking", tone: "pending", detail: null },
+  {
+    status: "burn_observed",
+    label: "Redeemed on Hydration",
+    tone: "pending",
+    detail: "Waiting for the credit on Base.",
+  },
+  {
+    status: "credited",
+    label: "Queued on Base",
+    tone: "pending",
+    detail: "A queue position is not a payout date.",
+  },
+  {
+    status: "payout_observed",
+    label: "Delivered to Bridge",
+    tone: "pending",
+    detail: "Waiting for Bridge to record the payout.",
+  },
+  {
+    status: "bridge_funds_received",
+    label: "Processing at Bridge",
+    tone: "pending",
+    detail: null,
+  },
+  {
+    status: "bridge_payment_submitted",
+    label: "Bank payout submitted",
+    tone: "pending",
+    detail: null,
+  },
+  { status: "paid", label: "Paid", tone: "success", detail: null },
+] as const
+
+// How long a fixture build may be "signed" (the doc example's 30 minutes).
+export const FIXTURE_DEMO_VALID_MS = 30 * 60_000
 
 // API doc 4, GET /v1/onramp/accounts.
 export const FIXTURE_ONRAMP_ACCOUNTS = {
@@ -551,3 +611,7 @@ export const FIXTURE_RAMPS_LIST_RESPONSE = {
   ...FIXTURE_RAMPS,
   ramps: FIXTURE_RAMP_LIST,
 }
+
+/** The id of the n-th demonstration cash-out of a fixture wallet (n from 1). */
+export const fixtureDemoRampId = (n: number) =>
+  `00000000-0000-4000-8000-00000003${n.toString(16).padStart(4, "0")}`

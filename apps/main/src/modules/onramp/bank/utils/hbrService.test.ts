@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
+  FIXTURE_DEMO_RAMP_WALK,
+  FIXTURE_QUOTE,
+  FIXTURE_RAMP_LIST,
+} from "@/modules/onramp/bank/config/fixtures"
+import {
   hbrSessionAccess,
   liveSessionFor,
   useHbrSessionStore,
@@ -10,6 +15,12 @@ import {
   classifyRemoveBankAccount,
   isBankAccountSubmissionDone,
 } from "@/modules/onramp/bank/utils/bankAccounts"
+import { toPreparedCashOut } from "@/modules/onramp/bank/utils/cashOut"
+import {
+  buildCashOutTransaction,
+  FixtureCashOutRefusal,
+  isFixtureCashOut,
+} from "@/modules/onramp/bank/utils/cashOutTransaction"
 import { createHbrService } from "@/modules/onramp/bank/utils/createHbrService"
 import {
   HbrApiError,
@@ -243,23 +254,9 @@ describe("HBR fixture service", () => {
     expect(useHbrSessionStore.getState().session).toBeNull()
   })
 
-  it("hands out no transaction: the build is refused", async () => {
-    const service = createHbrFixtureService({ session, delayMs: 0 })
-    const challenge = await service.createChallenge(H160)
-    useHbrSessionStore.getState().setSession(
-      await service.openSession({
-        nonce: challenge.nonce,
-        signature: SIGNATURE,
-      }),
-    )
-    await service.forWallet(H160).createCustomer("individual")
-    await expect(
-      service.forWallet(H160).buildRamp({
-        bankAccountId: "00000000-0000-4000-8000-0000000000b1",
-        usdcAmount: "25",
-      }),
-    ).rejects.toMatchObject({ status: 503, code: "ramp_build_unavailable" })
-  })
+  // The 503 ramp_build_unavailable this test pinned is replaced by the
+  // display-only demonstration (owner decision 2026-11-24); its pins are in
+  // "the fixture cash-out is a demonstration" below.
 })
 
 describe("HBR calls are bound to the session's wallet", () => {
@@ -325,6 +322,104 @@ describe("HBR fixture service, stage 2 walk", () => {
       country: "USA",
     },
   }
+
+  describe("the fixture cash-out is a demonstration", () => {
+    // The facilitator proxy on Hydration (hydration-ramp CLAUDE.md).
+    const FACILITATOR = "0xda30cfdf3647c291cb3b0eed6ac5f0fea7f393c4"
+
+    it("invariant 2a: the build carries the binding quote and no usable transaction", async () => {
+      const api = await signedIn()
+      const account = await api.createBankAccount(ACH)
+      const before = Date.now()
+      const build = await api.buildRamp({
+        bankAccountId: account.bankAccount.id,
+        usdcAmount: "25.5",
+      })
+      expect(build.quote).toEqual(FIXTURE_QUOTE.quote)
+      expect(build.ramp).toMatchObject({
+        bankAccountId: account.bankAccount.id,
+        usdcAmount: "25500000",
+        status: "built",
+      })
+      expect(Date.parse(build.validUntil)).toBeGreaterThan(before)
+      expect(build.hollarBurn).toBe("25500000000000000000")
+      for (const tx of [build.approveTx, build.redeemTx]) {
+        expect(tx).toEqual({
+          chainId: 222222,
+          from: H160,
+          to: "0x0000000000000000000000000000000000000000",
+          data: "0x",
+          value: "0x0",
+        })
+        expect(tx?.to.toLowerCase()).not.toBe(FACILITATOR)
+      }
+      // 2b on the very build the service answers
+      const prepared = toPreparedCashOut(build)
+      expect(isFixtureCashOut(prepared)).toBe(true)
+      expect(() =>
+        buildCashOutTransaction({
+          prepared,
+          sessionAddress: H160,
+          onRedeemHash: () => {},
+          copy: {
+            approveStep: "",
+            redeemStep: "",
+            approveTitle: "",
+            redeemTitle: "",
+            toasts: { submitted: "", success: "" },
+          },
+        }),
+      ).toThrow(FixtureCashOutRefusal)
+    })
+
+    it("walks to paid over successive reads; the list shows it first without walking it", async () => {
+      const api = await signedIn()
+      const account = await api.createBankAccount(ACH)
+      const { ramp } = await api.buildRamp({
+        bankAccountId: account.bankAccount.id,
+        usdcAmount: "25.5",
+      })
+      const listed = async () => (await api.listRamps()).ramps[0]
+      expect(await listed()).toMatchObject({ id: ramp.id, status: "built" })
+      const reads = []
+      for (let i = 0; i < FIXTURE_DEMO_RAMP_WALK.length + 1; i++)
+        reads.push((await api.getRamp(ramp.id)).ramp)
+      expect(reads.map((r) => r.status)).toEqual([
+        ...FIXTURE_DEMO_RAMP_WALK.map((w) => w.status),
+        "paid",
+      ])
+      expect(reads.at(-1)).toMatchObject({ label: "Paid", tone: "success" })
+      expect(await listed()).toMatchObject({ id: ramp.id, status: "paid" })
+      // the doc's example list still follows
+      expect((await api.listRamps()).ramps).toHaveLength(
+        1 + FIXTURE_RAMP_LIST.length,
+      )
+      // nothing was sent, so there is nothing to report
+      await expect(
+        api.reportRamp(ramp.id, `0x${"ab".repeat(32)}`),
+      ).rejects.toMatchObject({ status: 404, code: "ramp_not_found" })
+    })
+
+    it("refuses an account it does not list and an amount below the floor", async () => {
+      const api = await signedIn()
+      const account = await api.createBankAccount(ACH)
+      await expect(
+        api.buildRamp({
+          bankAccountId: "00000000-0000-4000-8000-0000000000b9",
+          usdcAmount: "25",
+        }),
+      ).rejects.toMatchObject({ status: 404, code: "bank_account_not_found" })
+      await expect(
+        api.buildRamp({
+          bankAccountId: account.bankAccount.id,
+          usdcAmount: "2",
+        }),
+      ).rejects.toMatchObject({ status: 422, code: "below_floor" })
+      expect((await api.listRamps()).ramps).toHaveLength(
+        FIXTURE_RAMP_LIST.length,
+      )
+    })
+  })
 
   it("adds, lists and removes a bank account; a retry converges", async () => {
     const api = await signedIn()

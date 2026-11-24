@@ -18,23 +18,33 @@ type BankCashOutReviewProps = {
   hasApprove: boolean
   /** The chain the server prepared both transactions for. */
   chainId: number
+  /**
+   * The fixture service's demonstration (`service.mode === "fixture"`): the
+   * review reads nothing from the wallet and its button only opens the status.
+   */
+  demo: boolean
+  /** Sign (the hand-over), or in a demonstration the way on to the status. */
   onSign: () => void
   onLeave: () => void
 }
 
 const CLOCK_MS = 5_000
 
+type ActionsProps = {
+  chainId: number
+  expired: boolean
+  onSign: () => void
+  onLeave: () => void
+}
+
 /**
- * The binding quote of POST /v1/ramps, its validUntil and the steps the
- * wallet will be asked for. Sign is offered while the wallet is on the
- * prepared chain and validUntil has not passed; it is pressed once (the
- * caller drops the transactions when it hands them over).
+ * The real review's actions: the wallet's chain, the network switch and Sign.
+ * Sign is offered while the wallet is on the prepared chain and validUntil
+ * has not passed. The only part of the review that reads the wallet.
  */
-export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
-  build,
-  currency,
-  hasApprove,
+const SignActions: FC<ActionsProps> = ({
   chainId,
+  expired,
   onSign,
   onLeave,
 }) => {
@@ -42,7 +52,6 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
   const wallet = useWallet()
   const signer = isEthereumSigner(wallet?.signer) ? wallet.signer : null
   const [walletChain, setWalletChain] = useState<number | null>(null)
-  const [now, setNow] = useState(() => Date.now())
 
   const readChain = useCallback(async () => {
     if (!signer) return setWalletChain(null)
@@ -60,40 +69,10 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
     void readChain()
   }, [readChain])
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), CLOCK_MS)
-    return () => clearInterval(timer)
-  }, [])
-
-  const expired = now >= Date.parse(build.validUntil)
   const onChain = walletChain === chainId
-  const validUntil = new Date(build.validUntil)
 
   return (
-    <Stack gap="m">
-      <Text fs="p2" fw={500} font="primary">
-        {t("bank.cashOut.review.title")}
-      </Text>
-      <BankCashOutQuote
-        quote={build.quote}
-        payoutLimit={build.payoutLimit}
-        currency={currency}
-      />
-      <Text fs="p4" color={getToken("text.medium")}>
-        {t("bank.cashOut.review.validUntil", { value: validUntil })}
-      </Text>
-      <Stack gap="xs">
-        {hasApprove && (
-          <Text fs="p4">{t("bank.cashOut.review.stepApprove")}</Text>
-        )}
-        <Text fs="p4">
-          {t(
-            hasApprove
-              ? "bank.cashOut.review.stepRedeem"
-              : "bank.cashOut.review.stepRedeemOnly",
-          )}
-        </Text>
-      </Stack>
+    <>
       <Alert variant="info" description={t("bank.cashOut.review.once")} />
       {expired && (
         <Alert
@@ -127,6 +106,102 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
       <Button variant="tertiary" onClick={onLeave}>
         {t("bank.cashOut.review.leave")}
       </Button>
+    </>
+  )
+}
+
+/**
+ * Invariant 1 of the fixture demonstration: these actions use no wallet hook,
+ * so the demo review makes no signer or provider request and offers no
+ * network switch. Invariant 4: the note says that nothing is signed or sent
+ * and no money moves, and the button is not labelled as signing.
+ */
+const DemoActions: FC<Omit<ActionsProps, "chainId">> = ({
+  expired,
+  onSign,
+  onLeave,
+}) => {
+  const { t } = useTranslation(["onramp"])
+  return (
+    <>
+      <Alert variant="info" description={t("bank.cashOut.review.demoNote")} />
+      {expired && (
+        <Alert
+          variant="warning"
+          description={t("bank.cashOut.review.expired")}
+        />
+      )}
+      <Button size="large" disabled={expired} onClick={onSign}>
+        {t("bank.cashOut.review.demoContinue")}
+      </Button>
+      <Button variant="tertiary" onClick={onLeave}>
+        {t("bank.cashOut.review.leave")}
+      </Button>
+    </>
+  )
+}
+
+/**
+ * The binding quote of POST /v1/ramps, its validUntil and the steps the
+ * wallet will be asked for. Sign is pressed once (the caller drops the
+ * transactions when it hands them over). In a demonstration the same layout
+ * shows the demo actions instead of the wallet's.
+ */
+export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
+  build,
+  currency,
+  hasApprove,
+  chainId,
+  demo,
+  onSign,
+  onLeave,
+}) => {
+  const { t } = useTranslation(["onramp"])
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), CLOCK_MS)
+    return () => clearInterval(timer)
+  }, [])
+
+  const expired = now >= Date.parse(build.validUntil)
+  const validUntil = new Date(build.validUntil)
+
+  return (
+    <Stack gap="m">
+      <Text fs="p2" fw={500} font="primary">
+        {t("bank.cashOut.review.title")}
+      </Text>
+      <BankCashOutQuote
+        quote={build.quote}
+        payoutLimit={build.payoutLimit}
+        currency={currency}
+      />
+      <Text fs="p4" color={getToken("text.medium")}>
+        {t("bank.cashOut.review.validUntil", { value: validUntil })}
+      </Text>
+      <Stack gap="xs">
+        {hasApprove && (
+          <Text fs="p4">{t("bank.cashOut.review.stepApprove")}</Text>
+        )}
+        <Text fs="p4">
+          {t(
+            hasApprove
+              ? "bank.cashOut.review.stepRedeem"
+              : "bank.cashOut.review.stepRedeemOnly",
+          )}
+        </Text>
+      </Stack>
+      {demo ? (
+        <DemoActions expired={expired} onSign={onSign} onLeave={onLeave} />
+      ) : (
+        <SignActions
+          chainId={chainId}
+          expired={expired}
+          onSign={onSign}
+          onLeave={onLeave}
+        />
+      )}
     </Stack>
   )
 }

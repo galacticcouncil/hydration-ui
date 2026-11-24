@@ -77,6 +77,11 @@ const sameRequest = (
  * strict steps (W06: approve, then redeem) to createTransaction. The build's
  * unsigned transactions live in `prepared` (a ref) only until they are handed
  * over, once; then the ref is cleared and the flow shows the ramp's status.
+ *
+ * On the fixture service (`service.mode === "fixture"`, the one condition of
+ * the demonstration, invariant 3) the same screens are a demonstration: the
+ * review says so, its button opens the status and hands nothing over, and
+ * the review reads nothing from the wallet (invariant 1).
  */
 export const BankCashOut: FC<BankCashOutProps> = ({
   h160,
@@ -133,9 +138,17 @@ export const BankCashOut: FC<BankCashOutProps> = ({
 
   const currency = account.currency === "eur" ? "eur" : "usd"
   const accountLine = useBankAccountLine()(account)
+  // Invariant 3: demo or real derives from the service's mode alone; the
+  // review's button label, its handler and its notes all follow `demo`.
+  const demo = service.mode === "fixture"
 
   const handOver = () => {
     if (stage.kind !== "review") return
+    // Invariant 1: a fixture service's cash-out never reaches a wallet. The
+    // demo review offers leaveTo, not this handler; this guard holds should a
+    // later change wire it here anyway, and buildCashOutTransaction refuses a
+    // fixture build behind it (invariant 2b).
+    if (service.mode === "fixture") return
     const next = prepared.current
     prepared.current = null
     if (!next || next.rampId !== stage.build.ramp.id) return
@@ -193,7 +206,8 @@ export const BankCashOut: FC<BankCashOutProps> = ({
             currency={stage.currency}
             hasApprove={stage.hasApprove}
             chainId={stage.chainId}
-            onSign={handOver}
+            demo={demo}
+            onSign={demo ? () => leaveTo(stage.build.ramp.id) : handOver}
             onLeave={() => leaveTo(stage.build.ramp.id)}
           />
         </ModalBody>
