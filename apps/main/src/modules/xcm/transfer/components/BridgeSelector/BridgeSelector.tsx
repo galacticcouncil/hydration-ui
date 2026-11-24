@@ -2,7 +2,6 @@ import { OptionCard, Stack } from "@galacticcouncil/ui/components"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
 
-import { SnowbridgeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/SnowbridgeOptions"
 import { WormholeOptions } from "@/modules/xcm/transfer/components/BridgeSelector/WormholeOptions"
 import {
   BridgeEntryKind,
@@ -22,9 +21,9 @@ type BridgeSelectorProps = {
 
 export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
   const { watch, setValue } = useFormContext<XcmFormValues>()
-  const [destAsset, bridgeProvider] = watch(["destAsset", "bridgeProvider"])
+  const bridgeProvider = watch("bridgeProvider")
 
-  const { options, hasVisibleOptions } = useBridgeOptions(routes, destAsset)
+  const { options, hasVisibleOptions } = useBridgeOptions(routes)
 
   if (!hasVisibleOptions) return null
 
@@ -49,16 +48,6 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
                 icon={BRIDGE_ICON[entry.tag]}
                 isActive={bridgeProvider === entry.tag}
                 onClick={() => handleSelect(entry.tag)}
-              />
-            )
-          case BridgeEntryKind.Snowbridge:
-            return (
-              <SnowbridgeOptions
-                key={BridgeEntryKind.Snowbridge}
-                activeProvider={bridgeProvider ?? null}
-                hasV2={!!entry.v2}
-                hasV1={!!entry.v1}
-                onSelect={handleSelect}
               />
             )
           case BridgeEntryKind.Wormhole:

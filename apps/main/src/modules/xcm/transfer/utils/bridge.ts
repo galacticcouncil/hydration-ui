@@ -4,7 +4,6 @@ import { ComponentType } from "react"
 import { isNonNullish, sortBy } from "remeda"
 
 import i18n from "@/i18n"
-import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BRIDGE_PROVIDER_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 
 export const WORMHOLE_FAMILY_TAGS: XcmTags = [
@@ -58,37 +57,6 @@ export const isOmniRoute = (route: AssetRoute | null): boolean => {
   return tags.includes(XcmTag.Omni)
 }
 
-export const isSnowbridgeV1Route = (route: AssetRoute): boolean => {
-  const tags = (route.tags ?? []) as string[]
-  return tags.includes(XcmTag.SnowbridgeV1)
-}
-
-export const isSnowbridgeV1Tag = (tag: string | null | undefined): boolean =>
-  tag === XcmTag.SnowbridgeV1
-
-// A Snowbridge "sub" selection is one that's not surfaced as a top-level
-// bridge tag (SnowbridgeV1 = V1) — it must be preserved across the
-// default-selection effect, which only knows about the top-level Snowbridge
-// tag.
-export const isSnowbridgeSubTag = (tag: string | null | undefined): boolean =>
-  isSnowbridgeV1Tag(tag)
-
-export const isSnowbridgeTag = (tag: string | null | undefined): boolean =>
-  tag === XcmTag.Snowbridge || isSnowbridgeSubTag(tag)
-
-export const pickSnowbridgeVariants = (
-  routes: AssetRoute[],
-): {
-  v2: AssetRoute | null
-  v1: AssetRoute | null
-} => {
-  const snowbridge = routes.filter(isSnowbridgeRoute)
-  return {
-    v2: snowbridge.find((r) => !isSnowbridgeV1Route(r)) ?? null,
-    v1: snowbridge.find(isSnowbridgeV1Route) ?? null,
-  }
-}
-
 // Drop bridgeTag / destAsset values that don't match any route in the
 // current pair — the SDK's ConfigBuilder.build asserts route non-null but
 // can return undefined when the (tag, destAsset) combo has no match, which
@@ -119,16 +87,6 @@ export const resolveRouteBuilderArgs = <T extends string | Asset>(
 export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
   const tags = (route?.tags ?? []) as XcmTags
   return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
-}
-
-export function shouldPreserveSnowbridgeSubSelection(
-  currentProvider: string | null,
-  destPair: ChainAssetPair,
-): boolean {
-  if (!isSnowbridgeSubTag(currentProvider)) return false
-  return destPair.routes.some((r) =>
-    (r.tags ?? []).includes(currentProvider as string),
-  )
 }
 
 export function resolveValidBridgeProvider(

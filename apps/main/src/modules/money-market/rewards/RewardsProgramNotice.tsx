@@ -3,19 +3,35 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useRewardsProgram } from "@/api/rewardsDistributor"
+import { getRewardsProgramNoticeValues } from "@/modules/money-market/rewards/RewardsProgramNotice.utils"
 
-/** Tells a supplier of an earning asset why the reward program pays it nothing. */
+/**
+ * Why a supplier of an earning asset earns nothing, or that it earns again
+ * after a HOLLAR repay. Silent until its positions are read.
+ */
 export const RewardsProgramNotice: FC = () => {
   const { t } = useTranslation("borrow")
-  const { latest, notEarningReason, maxHollarDebtUsd } = useRewardsProgram()
+  const program = useRewardsProgram()
+  const { latest, notEarningReason, earningResumes, suppliesEarningAsset } =
+    program
 
-  if (!latest || !notEarningReason) return null
+  if (
+    !latest ||
+    !suppliesEarningAsset ||
+    (!notEarningReason && !earningResumes)
+  ) {
+    return null
+  }
 
-  // not `symbol`: the currency formatter would print the allowance in it
-  const values = {
-    reward: latest.reward.symbol,
-    assets: Object.keys(latest.assets).join(", "),
-    value: maxHollarDebtUsd,
+  const values = getRewardsProgramNoticeValues(program)
+
+  if (earningResumes) {
+    return (
+      <Alert
+        variant="info"
+        description={t("distributorRewards.earningResumes", values)}
+      />
+    )
   }
 
   return (
