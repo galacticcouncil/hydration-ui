@@ -2,12 +2,14 @@ import { Children, cloneElement, isValidElement, useState } from "react"
 
 import { LogoProps, LogoSize } from "@/components"
 import { LogoSkeleton } from "@/components/Logo/LogoSkeleton"
+import { Skeleton } from "@/components/Skeleton"
 
 import {
   SAssetChainLogo,
   SAssetLogo,
   SDecorationContainer,
   SSideChainSkeleton,
+  SSideChainSkeletonChain,
 } from "./AssetLogo.styled"
 
 export type AssetLogoDecoration = "none" | "atoken"
@@ -38,7 +40,10 @@ export const AssetLogo = ({
 
   if (isLoading) {
     return chainPosition === "side" ? (
-      <SSideChainSkeleton size={size}>
+      <SSideChainSkeleton>
+        <SSideChainSkeletonChain size={size}>
+          <Skeleton circle sx={{ size: "100%", display: "flex" }} />
+        </SSideChainSkeletonChain>
         <LogoSkeleton size={size} />
       </SSideChainSkeleton>
     ) : (

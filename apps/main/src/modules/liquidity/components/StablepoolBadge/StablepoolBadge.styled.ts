@@ -1,37 +1,39 @@
-import { css, keyframes } from "@emotion/react"
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-
-const popBounce = keyframes`
-  0% { transform: scaleX(1); }
-  60% { transform: scaleX(1.15); }
-  80% { transform: scaleX(0.97); }
-  100% { transform: scaleX(1); }
-`
+import { pxToRem } from "@galacticcouncil/ui/utils"
 
 export const Pill = styled.div<{ disableAnimation?: boolean }>(
   ({ theme, disableAnimation }) => css`
-    display: flex;
+    display: inline-grid;
+    grid-template-columns: auto 0fr;
+    justify-content: start;
     align-items: center;
+    inline-size: fit-content;
+    flex-shrink: 0;
+    min-inline-size: ${theme.sizes.s};
+    block-size: ${theme.sizes.s};
 
-    overflow: hidden;
-    border-radius: 9999px;
+    overflow: clip;
+    border-radius: ${theme.radii.full};
     background: ${theme.buttons.primary.high.rest};
-    color: #fff;
+    color: oklch(1 0 none);
 
-    font-size: 12px;
+    font-size: ${theme.fontSizes.p5};
     font-weight: 700;
     font-family: ${theme.fontFamilies1.primary};
     line-height: 1;
-
-    cursor: pointer;
-    width: 14px;
-    height: 14px;
-    transition: width 0.3s ease-out;
-
     white-space: nowrap;
 
-    &:hover {
-      width: 100%;
+    cursor: pointer;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: grid-template-columns 0.4s ${theme.easings.outQuint};
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        grid-template-columns: auto 1fr;
+      }
     }
 
     ${disableAnimation &&
@@ -41,31 +43,29 @@ export const Pill = styled.div<{ disableAnimation?: boolean }>(
   `,
 )
 
-export const Label = styled.span`
-  display: inline-block;
-  position: relative;
-  transform-origin: left center;
-
-  margin-left: 3px;
-  padding-right: 4px;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 8px;
-    width: 58px;
-    background: #e2437a;
-    transition: opacity 0.3s ease-out;
-    pointer-events: none;
-  }
-
-  ${Pill}:hover &::after {
-    opacity: 0;
-  }
-
-  ${Pill}:hover & {
-    animation: ${popBounce} 0.3s ease-out;
-  }
+export const Initial = styled.span`
+  padding-inline-start: ${pxToRem(3)};
+  line-height: 1.3;
 `
+
+export const Rest = styled.span(
+  ({ theme }) => css`
+    min-inline-size: 0;
+    overflow: clip;
+    opacity: 0;
+    transition: opacity 0.15s ${theme.easings.outQuint};
+    line-height: 1.3;
+
+    & > span {
+      display: block;
+      padding-inline-end: ${theme.space.s};
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      ${Pill}:hover & {
+        opacity: 1;
+        transition: opacity 0.3s ${theme.easings.outQuint} 0.05s;
+      }
+    }
+  `,
+)

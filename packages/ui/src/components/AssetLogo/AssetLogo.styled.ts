@@ -72,11 +72,9 @@ const getATokenDecorationStyles = (
         position: absolute;
         inset: -${pxToRem(thickness)};
         left: calc(var(--decor-offset, 0rem) - ${pxToRem(thickness)});
-        background: linear-gradient(
-          to right,
-          #39a5ff,
-          #0063b5 50%,
-          transparent
+        background: var(
+          --atoken-ring,
+          linear-gradient(to right, #39a5ff, #0063b5 50%, transparent)
         );
       }
     }
@@ -203,12 +201,31 @@ const getSideChainStyles = (
   `
 }
 
-export const SSideChainSkeleton = styled.span<{ size: LogoSize }>(
-  ({ size }) => css`
-    display: inline-flex;
-    flex-shrink: 0;
-    padding-left: ${pxToRem(getSideChainVisibleWidth(size))};
-  `,
+export const SSideChainSkeleton = styled.span`
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+`
+
+/** Chain placeholder beside a loading logo, cut out like the real side chain. */
+export const SSideChainSkeletonChain = styled.span<{ size: LogoSize }>(
+  ({ size }) => {
+    const diameter = LOGO_SIZES[size]
+    const chain = getSideChainSize(size)
+    const visible = getSideChainVisibleWidth(size)
+    const cutout = Math.round(diameter / 2 + LOGO_GAP[size])
+    return css`
+      display: flex;
+      width: ${pxToRem(chain)};
+      height: ${pxToRem(chain)};
+      margin-right: -${pxToRem(chain - visible)};
+      mask-image: radial-gradient(
+        circle at ${pxToRem(visible + diameter / 2)} 50%,
+        transparent ${pxToRem(cutout)},
+        black ${pxToRem(cutout + 0.5)}
+      );
+    `
+  },
 )
 
 const getStackGapStyles = (size: LogoSize) => {
@@ -330,6 +347,11 @@ export const SDecorationContainer = styled.div<{
             margin-left: 0;
           }
 
+          /* an aToken slice shows only part of its ring; a gradient would fade it out */
+          > div {
+            --atoken-ring: #0b74d1;
+          }
+
           ${(COLLAPSED_SECTORS[collapsed] ?? [])
             .map(
               (sector, i) =>
@@ -339,7 +361,8 @@ export const SDecorationContainer = styled.div<{
         `,
       decorations(thickness, padding)(decoration),
       chainPosition === "side" && getSideChainStyles(size, decoration),
-      count > 1 && getStackGapStyles(size),
+      // an aToken stack keeps one continuous ring; the gap would expose it behind each logo
+      count > 1 && decoration !== "atoken" && getStackGapStyles(size),
       decoration === "atoken" &&
         css`
           &::before {
@@ -353,6 +376,20 @@ export const SDecorationContainer = styled.div<{
               overlap,
               thickness,
             )};
+          }
+        `,
+      // collapsed sectors are split by gaps: hollow the ring so they show the backdrop
+      decoration === "atoken" &&
+        !!collapsed &&
+        css`
+          &::before {
+            mask-image: radial-gradient(
+                circle at ${pxToRem(thickness + diameter / 2)} 50%,
+                transparent ${pxToRem(diameter / 2)},
+                black ${pxToRem(diameter / 2 + 0.5)}
+              ),
+              ${generateATokenMask(1, diameter, overlap, thickness)};
+            mask-composite: intersect;
           }
         `,
     ]
