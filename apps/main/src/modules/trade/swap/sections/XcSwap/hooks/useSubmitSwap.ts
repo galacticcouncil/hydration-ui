@@ -6,10 +6,13 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
+import { blockTimeQuery } from "@/api/chain"
 import { getIntentDeadline } from "@/api/intents"
 import { bestBuyQuery, bestSellQuery, TradeType } from "@/api/trade"
+import { getMatchWindowMs } from "@/modules/trade/swap/lib/orderMatch"
 import { SellAllAlert } from "@/modules/trade/swap/sections/XcSwap/components/SellAllAlert"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
+import { isATokenPair } from "@/modules/trade/swap/sections/XcSwap/lib/isATokenPair"
 import { SwapSubmitValues } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -22,7 +25,10 @@ import {
 } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-const MARKET_INTENT_DURATION_MS = minutesToMilliseconds(10)
+// The deadline is fixed here but the match window starts at inclusion; the gap
+// between the two, minus the time to sign, is what the AMM has to fill the rest
+const MARKET_INTENT_DURATION_MS = minutesToMilliseconds(1)
+const ORDER_MATCH_INTENT_DURATION_MS = minutesToMilliseconds(2)
 
 export const useSubmitSwap = (actions?: TransactionActions) => {
   const { t } = useTranslation(["common", "trade"])
@@ -95,26 +101,39 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
         }
       })()
 
-      // An aToken and its underlying are always 1:1, so the router swaps them
-      // directly instead of going through ICE
-      const isATokenPair =
-        getErc20AToken(sellAsset.id)?.underlyingAssetId === buyAsset.id ||
-        getErc20AToken(buyAsset.id)?.underlyingAssetId === sellAsset.id
-
-      if (isIceEnabled && !isATokenPair) {
+      if (
+        isIceEnabled &&
+        !isATokenPair(getErc20AToken, sellAsset.id, buyAsset.id)
+      ) {
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
+
+        const [deadline, blockTimeMs] = await Promise.all([
+          getIntentDeadline(
+            rpc,
+            values.isOrderMatch
+              ? ORDER_MATCH_INTENT_DURATION_MS
+              : MARKET_INTENT_DURATION_MS,
+          ),
+          rpc.queryClient.ensureQueryData(blockTimeQuery(sdk)),
+        ])
 
         // Swap intents are exact-in: amount_in is always spent, amount_out is
         // the floor. intentMarket builds every trade as a sell, so a buy would
         // only guarantee buyAmount minus slippage. Build from the amounts the
         // summary shows instead (the builder reads amountIn/amountOut/swaps).
-        const tx = await sdk.tx
+        const txBuilder = sdk.tx
           .intentLimit({ ...swap, amountIn: iceAmounts.amountIn })
           .withBeneficiary(account.address)
           .withMinAmountOut(iceAmounts.amountOut)
-          .withPartial(false)
-          .withDeadline(await getIntentDeadline(rpc, MARKET_INTENT_DURATION_MS))
-          .build()
+          // Opposite orders rarely match in value exactly, so an all-or-nothing
+          // intent would never fill in its match window; it is always partial
+          .withPartial(true)
+          .withDeadline(deadline)
+          .withMatchWindow(
+            BigInt(getMatchWindowMs(values.isOrderMatch, blockTimeMs)),
+          )
+
+        const tx = await txBuilder.build()
 
         // Exact-in for both trade types: sell `in`, receive at least `out`
         const iceParams = {
