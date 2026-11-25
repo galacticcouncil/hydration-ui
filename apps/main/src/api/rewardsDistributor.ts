@@ -67,8 +67,16 @@ const { VITE_REWARDS_DISTRIBUTOR_ADDRESS: ADDRESS } = ENV
 const DISTRIBUTOR_ADDRESS = isAddress(ADDRESS, { strict: false })
   ? ADDRESS
   : undefined
-const DATA_URL = ENV.VITE_REWARDS_DISTRIBUTOR_URL.replace(/\/+$/, "")
-const IS_CONFIGURED = !!DISTRIBUTOR_ADDRESS && !!DATA_URL
+
+// TEMPORARY, remove after the Lark 3 testing: any fork reads Lark 3's rewards
+// runner, which publishes for the distributor at the mainnet address.
+const FORK_DATA_URL = "https://3-rewards.lark.hydration.cloud"
+
+const getDataUrl = ({ isFork }: TProviderContext): string =>
+  (isFork ? FORK_DATA_URL : ENV.VITE_REWARDS_DISTRIBUTOR_URL).replace(
+    /\/+$/,
+    "",
+  )
 
 // latest.json names each earning asset by symbol only, so the address of the
 // reserve's underlying token is mapped here.
@@ -132,17 +140,21 @@ const DISTRIBUTOR_ABI = [
   },
 ] as const
 
-// The chain is picked at run time and the address at build time, so every key
-// carries the chain the answer was read from.
-const queryKey = ({ genesisHash }: TProviderContext, ...rest: string[]) => [
+// The chain and its data URL are picked at run time and the address at build
+// time, so every key carries the chain and the files the answer was read from.
+const queryKey = (rpc: TProviderContext, ...rest: string[]) => [
   "rewardsDistributor",
-  genesisHash,
+  rpc.genesisHash,
   DISTRIBUTOR_ADDRESS ?? "",
+  getDataUrl(rpc),
   ...rest,
 ]
 
-const fetchPublicFile = async (path: string): Promise<unknown> => {
-  const res = await fetch(`${DATA_URL}/${path}`)
+const fetchPublicFile = async (
+  rpc: TProviderContext,
+  path: string,
+): Promise<unknown> => {
+  const res = await fetch(`${getDataUrl(rpc)}/${path}`)
   // not written yet: no root accepted, or no snapshot taken
   if (res.status === 404) return null
   if (!res.ok) throw new Error(`Rewards file ${path}: HTTP ${res.status}`)
@@ -153,7 +165,7 @@ const fetchPublicFile = async (path: string): Promise<unknown> => {
 export const rewardsDistributorDeployedQuery = (rpc: TProviderContext) =>
   queryOptions({
     queryKey: queryKey(rpc, "deployed"),
-    enabled: rpc.isReady && IS_CONFIGURED,
+    enabled: rpc.isReady && !!DISTRIBUTOR_ADDRESS && !!getDataUrl(rpc),
     staleTime: Infinity,
     queryFn: async () => {
       if (!DISTRIBUTOR_ADDRESS) return false
@@ -262,7 +274,7 @@ export const rewardsDistributorClaimsQuery = (
     // a root's file never changes; a missing one may still be on its way
     staleTime: ({ state }) => (state.data ? Infinity : millisecondsInMinute),
     queryFn: async () => {
-      const json = await fetchPublicFile(`trees/${root}.json`)
+      const json = await fetchPublicFile(rpc, `trees/${root}.json`)
       if (json === null) return null
 
       const file = claimsFileSchema.parse(json)
@@ -331,7 +343,7 @@ export const rewardsDistributorLatestQuery = (
     staleTime: 5 * millisecondsInMinute,
     refetchInterval: 5 * millisecondsInMinute,
     queryFn: async () => {
-      const json = await fetchPublicFile("latest.json")
+      const json = await fetchPublicFile(rpc, "latest.json")
       return json === null ? null : latestFileSchema.parse(json)
     },
   })
