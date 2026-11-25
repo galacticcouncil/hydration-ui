@@ -148,7 +148,9 @@ export const useXcSwapQuote = ({
       : ""
     : debouncedAmountIn
 
-  const twapEnabled = !isCrossChain && isTwapEnabled(omnipoolTrade)
+  // A split trade is always an intent, so it needs intents turned on
+  const twapEnabled =
+    isIceEnabled && !isCrossChain && isTwapEnabled(omnipoolTrade)
 
   const {
     data: twap,
@@ -163,7 +165,6 @@ export const useXcSwapQuote = ({
         assetOut: omnipoolAssetOut,
         amountIn: twapBudget,
       },
-      isIceEnabled,
       twapEnabled,
     ),
     placeholderData: twapBudget ? keepPreviousData : undefined,

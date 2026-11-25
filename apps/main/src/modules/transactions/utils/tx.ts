@@ -3,7 +3,7 @@ import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { toZecPaymentUri } from "@galacticcouncil/xc-sdk"
 import { Binary, SizedHex } from "polkadot-api"
-import { first, isBigInt, isNumber, isObjectType } from "remeda"
+import { first, isBigInt, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
 import { Papi } from "@/api/rpcClient"
@@ -265,21 +265,6 @@ export const getExplorerTxLink = (
   return meta.activity
     ? neckwork.activityExtrinsic(meta.activity, blockNumber, extrinsicIndex)
     : neckwork.extrinsic(blockNumber, extrinsicIndex)
-}
-
-export const getDcaScheduleIdFromEvents = (
-  events: ReadonlyArray<{ type: string; value: unknown }>,
-): number | null => {
-  for (const event of events) {
-    if (event.type !== "DCA" || !isObjectType(event.value)) continue
-    if (!("type" in event.value) || event.value.type !== "Scheduled") continue
-    if (!("value" in event.value) || !isObjectType(event.value.value)) continue
-    if (!("id" in event.value.value) || !isNumber(event.value.value.id)) {
-      continue
-    }
-    return event.value.value.id
-  }
-  return null
 }
 
 export const parseTxMethodName = (

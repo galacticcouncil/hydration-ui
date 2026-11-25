@@ -22,6 +22,7 @@ import {
   XcSwapProvider,
 } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSummary } from "@/modules/trade/swap/sections/XcSwap/XcSwapSummary"
+import { useIsIceEnabled } from "@/states/intents"
 
 export const XcSwap: React.FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
@@ -68,12 +69,13 @@ const XcSwapForm: React.FC = () => {
 
   const { watch, setValue } = form
 
+  const isIceEnabled = useIsIceEnabled()
   const onChainSwap = quote?.kind === "oc" ? quote.swap : undefined
   useEffect(() => {
-    if (onChainSwap && !isTwapEnabled(onChainSwap)) {
+    if (!isIceEnabled || (onChainSwap && !isTwapEnabled(onChainSwap))) {
       setValue("isSingleTrade", true, { shouldValidate: true })
     }
-  }, [onChainSwap, setValue])
+  }, [isIceEnabled, onChainSwap, setValue])
 
   useEffect(() => {
     const subscription = watch((values, { type, name }) => {

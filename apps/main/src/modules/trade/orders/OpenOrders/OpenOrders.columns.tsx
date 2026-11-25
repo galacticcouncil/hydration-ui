@@ -8,7 +8,6 @@ import {
   ExternalLink,
   Flex,
   Icon,
-  Modal,
   TableRowDetailsExpand,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -17,7 +16,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
@@ -28,14 +27,12 @@ import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
 import {
-  isDcaScheduleOrder,
   isIntentOrder,
   OrderData,
   OrderKind,
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
-import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -136,7 +133,6 @@ export const useOpenOrdersColumns = () => {
               isLimit={
                 "limitPrice" in row.original && !!row.original.limitPrice
               }
-              isLegacyDca={isDcaScheduleOrder(row.original)}
             />
           </Flex>
         )
@@ -172,81 +168,54 @@ export const useOpenOrdersColumns = () => {
     const actionColumn = columnHelper.display({
       id: "actions",
       cell: function Cell({ row }) {
-        const [modal, setModal] = useState<"confirmation" | "none">("none")
         const removeIntent = useRemoveIntent()
         const order = row.original
 
-        const isIntent = isIntentOrder(order)
-        const isDcaSchedule = isDcaScheduleOrder(order)
-
-        const explorerHref = isDcaSchedule
-          ? neckwork.activityDca(order.scheduleId)
-          : isIntent
-            ? neckwork.intent(order.intentId)
-            : null
-
         return (
           <Flex align="center" gap="base" justify="flex-end">
-            {explorerHref && (
-              <Tooltip
-                text={t("openInExplorer")}
-                size="small"
-                asChild
-                side="top"
-              >
-                <Button
-                  sx={{ p: "base" }}
-                  variant="muted"
-                  outline
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
+            {isIntentOrder(order) && (
+              <>
+                <Tooltip
+                  text={t("openInExplorer")}
+                  size="small"
                   asChild
+                  side="top"
                 >
-                  <ExternalLink href={explorerHref}>
-                    <Icon component={SquareArrowOutUpRight} size="s" />
-                  </ExternalLink>
-                </Button>
-              </Tooltip>
+                  <Button
+                    sx={{ p: "base" }}
+                    variant="muted"
+                    outline
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                    asChild
+                  >
+                    <ExternalLink href={neckwork.intent(order.intentId)}>
+                      <Icon component={SquareArrowOutUpRight} size="s" />
+                    </ExternalLink>
+                  </Button>
+                </Tooltip>
+                <Tooltip
+                  text={t("trade:trade.cancelOrder.cta")}
+                  size="small"
+                  asChild
+                  side="top"
+                >
+                  <Button
+                    variant="danger"
+                    outline
+                    sx={{ p: "base" }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeIntent.mutate(order.intentId)
+                    }}
+                  >
+                    <Icon component={Trash} size="s" />
+                  </Button>
+                </Tooltip>
+              </>
             )}
-            <Tooltip
-              text={t("trade:trade.cancelOrder.cta")}
-              size="small"
-              asChild
-              side="top"
-            >
-              <Button
-                variant="danger"
-                outline
-                sx={{ p: "base" }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (isIntent) {
-                    removeIntent.mutate(order.intentId)
-                  } else {
-                    setModal("confirmation")
-                  }
-                }}
-              >
-                <Icon component={Trash} size="s" />
-              </Button>
-            </Tooltip>
             <TableRowDetailsExpand />
-            {isDcaSchedule && (
-              <Modal
-                open={modal === "confirmation"}
-                onOpenChange={() => setModal("none")}
-              >
-                <TerminateDcaScheduleModalContent
-                  scheduleId={order.scheduleId}
-                  sold={order.fromAmountExecuted}
-                  total={order.fromAmountBudget}
-                  symbol={order.from.symbol}
-                  openBudget={order.isOpenBudget}
-                  onClose={() => setModal("none")}
-                />
-              </Modal>
-            )}
           </Flex>
         )
       },

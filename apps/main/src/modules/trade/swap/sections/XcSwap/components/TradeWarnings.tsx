@@ -3,13 +3,11 @@ import { Pencil } from "@galacticcouncil/ui/assets/icons"
 import { Alert, Flex, TextButton } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { CallType } from "@galacticcouncil/xc-core"
-import { Link, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
-import { swapTabLink } from "@/config/navigation"
 import { HealthFactorRiskWarning } from "@/modules/money-market/health-factor/HealthFactorRiskWarning"
 import { getMaxSlippageThreshold } from "@/modules/trade/swap/sections/XcSwap/lib/slippageThreshold"
 import { useIsIceEnabled } from "@/states/intents"
@@ -37,7 +35,6 @@ export const TradeWarnings: FC<Props> = ({
   setHealthFactorRiskAccepted,
 }) => {
   const { t } = useTranslation(["common", "trade"])
-  const search = useSearch({ from: "/trade/_history/swap" })
 
   const isIceEnabled = useIsIceEnabled()
   const { update, ...tradeSettings } = useTradeSettings()
@@ -47,7 +44,6 @@ export const TradeWarnings: FC<Props> = ({
     swap: {
       single: { swapSlippage },
     },
-    dca: { slippage: twapSlippage },
   } = tradeSettings
 
   const priceImpact = Math.abs(
@@ -58,30 +54,18 @@ export const TradeWarnings: FC<Props> = ({
   const validSlippage = Big(priceImpact).plus(threshold).toNumber()
 
   const handleChangeSlippage = () => {
-    if (isSingleTrade) {
-      update({
-        ...tradeSettings,
-        swap: {
-          ...tradeSettings.swap,
-          single: { swapSlippage: validSlippage },
-        },
-      })
-    } else {
-      update({
-        ...tradeSettings,
-        dca: { ...tradeSettings.dca, slippage: validSlippage },
-      })
-    }
+    update({
+      ...tradeSettings,
+      swap: {
+        ...tradeSettings.swap,
+        single: { swapSlippage: validSlippage },
+      },
+    })
 
     info({
-      title: t(
-        isSingleTrade
-          ? "trade:swap.settings.single.toast"
-          : "trade:swap.settings.split.toast",
-        {
-          value: validSlippage,
-        },
-      ),
+      title: t("trade:swap.settings.single.toast", {
+        value: validSlippage,
+      }),
       meta: {
         txHash: "",
         ecosystem: CallType.Substrate,
@@ -91,10 +75,12 @@ export const TradeWarnings: FC<Props> = ({
     })
   }
 
+  // A split trade is always an intent, which this check does not apply to
   const shouldRenderSlippageWarning =
     !isIceEnabled &&
+    isSingleTrade &&
     isFormValid &&
-    Number(isSingleTrade ? swapSlippage : twapSlippage) < validSlippage
+    Number(swapSlippage) < validSlippage
 
   if (!shouldRenderSlippageWarning && !healthFactor) {
     return null
@@ -105,30 +91,11 @@ export const TradeWarnings: FC<Props> = ({
       {shouldRenderSlippageWarning && (
         <Alert
           variant="warning"
-          description={t(
-            isSingleTrade
-              ? "trade:market.warnings.slippage.swap.desc"
-              : "trade:market.warnings.slippage.twap.desc",
-            {
-              value: validSlippage,
-            },
-          )}
+          description={t("trade:market.warnings.slippage.swap.desc", {
+            value: validSlippage,
+          })}
           action={
-            <Flex justify="space-between" align="center" width="100%">
-              <TextButton
-                direction="internal"
-                variant="plain"
-                sx={{ color: getToken("accents.alertAlt.primary") }}
-              >
-                <Link
-                  {...swapTabLink("twap")}
-                  search={search}
-                  sx={{ textDecoration: "none" }}
-                >
-                  {t("trade:market.warnings.dca.cta")}
-                </Link>
-              </TextButton>
-
+            <Flex justify="flex-end" align="center" width="100%">
               <TextButton
                 onClick={handleChangeSlippage}
                 sx={{ color: getToken("accents.alertAlt.primary") }}

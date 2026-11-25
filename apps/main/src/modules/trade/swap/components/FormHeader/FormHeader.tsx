@@ -20,7 +20,7 @@ const swapRouteItems =
     (item) => item.key === "swap",
   )?.children ?? []
 
-const ON_CHAIN_SWAP_TABS = new Set<SwapTabParam>(["limit", "twap"])
+const ON_CHAIN_SWAP_TABS = new Set<SwapTabParam>(["limit"])
 
 const searchForSwapTab = (
   search: TradeHistorySearchParams,

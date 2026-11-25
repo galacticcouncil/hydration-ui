@@ -14,8 +14,6 @@ export const SettingsModal = ({ swapSection }: Props) => {
   const matchRoute = useMatchRoute()
 
   switch (true) {
-    case !!matchRoute(swapTabLink("twap")):
-      return <SwapSettingsModal section="split" />
     case !!matchRoute(swapTabLink("market")):
       return <SwapSettingsModal section={swapSection} />
     case !!matchRoute(swapTabLink("limit")):

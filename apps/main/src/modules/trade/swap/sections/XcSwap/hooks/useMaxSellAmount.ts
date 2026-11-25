@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { useAccountBalances } from "@/api/balances"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
+import { getTwapSellOrder } from "@/api/trade"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
@@ -28,7 +29,7 @@ export const useMaxSellAmount = ({
     swap: {
       single: { swapSlippage },
     },
-    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
@@ -47,7 +48,6 @@ export const useMaxSellAmount = ({
       assetOut,
       swapSlippage,
       twapSlippage,
-      twapMaxRetries,
       isIceEnabled,
       account?.address,
     ],
@@ -57,7 +57,9 @@ export const useMaxSellAmount = ({
         Number(assetOut),
         "1",
       )
-      const twap = await sdk.api.scheduler.getTwapSellOrder(
+      // The same order the TWAP quote builds, so the fee matches what is signed
+      const twap = await getTwapSellOrder(
+        sdk,
         Number(assetIn),
         Number(assetOut),
         "1",
@@ -75,14 +77,9 @@ export const useMaxSellAmount = ({
         .build()
         .then((tx) => tx.get())
 
-      const twapBuilder = isIceEnabled
-        ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
-        : sdk.tx
-            .order(twap)
-            .withSlippage(twapSlippage)
-            .withMaxRetries(twapMaxRetries)
-
-      const twapTx = await twapBuilder
+      const twapTx = await sdk.tx
+        .intentOrder(twap)
+        .withSlippage(twapSlippage)
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())

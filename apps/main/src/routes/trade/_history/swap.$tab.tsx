@@ -7,7 +7,7 @@ import {
   TradeHistorySearchParams,
 } from "@/routes/trade/_history/route"
 
-const ON_CHAIN_SWAP_TABS = new Set(["limit", "twap"])
+const ON_CHAIN_SWAP_TABS = new Set(["limit"])
 
 export const Route = createFileRoute("/trade/_history/swap/$tab")({
   beforeLoad: ({ params, search }) => {

@@ -1,10 +1,7 @@
-import { intentscan, neckwork } from "@galacticcouncil/utils"
+import { intentscan } from "@galacticcouncil/utils"
 import { isObjectType } from "remeda"
 
-import {
-  getDcaScheduleIdFromEvents,
-  getExplorerTxLink,
-} from "@/modules/transactions/utils/tx"
+import { getExplorerTxLink } from "@/modules/transactions/utils/tx"
 import { getXcSwapSequence } from "@/modules/transactions/utils/xcSwap"
 import {
   isSubstrateTxResult,
@@ -75,11 +72,6 @@ const getFinalizedTransactionLink = (
   result: TSuccessResult,
 ): string | null => {
   if (!isSubstrateTxResult(result)) return null
-
-  const scheduleId = getDcaScheduleIdFromEvents(result.events)
-  if (scheduleId !== null) {
-    return neckwork.activityDca(scheduleId)
-  }
 
   const { number, index } = result.block
   return getExplorerTxLink(meta, number, index) ?? null

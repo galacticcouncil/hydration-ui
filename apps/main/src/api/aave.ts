@@ -86,8 +86,6 @@ export const TRANSFERABLE_ATOKEN_BALANCE_QUERY_KEY = [
 
 export const AAVE_HEALTH_FACTOR_QUERY_KEY = ["healthFactor"] as const
 
-export const AAVE_SUMMARY_QUERY_KEY = ["aave", "summary"] as const
-
 export const healthFactorAfterWithdrawQuery = (
   { sdk, isReady }: TProviderContext,
   { address, fromAssetId, fromAmount }: HealthFactorWithdrawArgs,
@@ -221,23 +219,6 @@ export const healthFactorQuery = (
     toAmount,
   })
 }
-
-// `reserve` (an underlying id) picks the market, main when omitted
-export const aaveSummaryQuery = (
-  { isReady, sdk }: TProviderContext,
-  address: string,
-  reserve?: string,
-  enabled = true,
-) =>
-  queryOptions({
-    queryKey: [...AAVE_SUMMARY_QUERY_KEY, address, reserve ?? ""],
-    queryFn: () =>
-      sdk.api.aave.getSummary(
-        address,
-        reserve === undefined ? undefined : Number(reserve),
-      ),
-    enabled: isReady && enabled && !!address,
-  })
 
 // `reserve` is the underlying id; an aToken id would read the main market
 export const maxWithdrawQuery = (

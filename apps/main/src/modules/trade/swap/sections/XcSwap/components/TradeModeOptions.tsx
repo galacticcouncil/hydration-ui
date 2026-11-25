@@ -1,6 +1,5 @@
 import { Flex, OptionCard } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
@@ -20,7 +19,6 @@ import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/use
 import { isTwapEnabled } from "@/modules/trade/swap/sections/XcSwap/lib/isTwapEnabled"
 import { getTradeOrderErrorMessage } from "@/modules/trade/swap/sections/XcSwap/lib/tradeOrderErrorMessages"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -42,17 +40,11 @@ export const TradeModeOptions: FC<Props> = ({
 }) => {
   const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
-  const isIce = useIsIceEnabled()
 
   const { control } = useFormContext<XcSwapFormValues>()
 
   const { data: twapDurationMs, isPending: isDurationPending } = useQuery(
-    tradeOrderDurationQuery(
-      rpc,
-      isIce,
-      twap?.tradeCount ?? 0,
-      twap?.tradePeriod ?? 0,
-    ),
+    tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0, twap?.tradePeriod ?? 0),
   )
 
   const showFullSkeleton = isSwapLoading || !swap
@@ -80,15 +72,20 @@ export const TradeModeOptions: FC<Props> = ({
   const price = scaleHuman(amount, asset.decimals)
   const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
 
-  const feeSaving = twap
-    ? Math.max(
-        0,
-        Number(scaleHuman(swap.tradeFee, asset.decimals)) -
-          Number(scaleHuman(twap.tradeFee, asset.decimals)),
-      ).toString()
-    : "0"
-  const outputDiff = Big(twapPrice).minus(price).toString()
-  const diff = isIce ? feeSaving : outputDiff
+  // A split buy is placed as a sell, so its fee is in the buy asset: convert it
+  // into the sell asset at the order's own rate before comparing.
+  const twapFee = !twap
+    ? null
+    : !isBuy
+      ? twap.tradeFee
+      : twap.amountOut > 0n
+        ? (twap.tradeFee * twap.amountIn) / twap.amountOut
+        : null
+
+  const feeSaving =
+    twapFee === null || swap.tradeFee <= twapFee
+      ? "0"
+      : scaleHuman(swap.tradeFee - twapFee, asset.decimals)
 
   const twapError = twap?.errors[0]
   const twapSubtitle = twapError
@@ -130,8 +127,8 @@ export const TradeModeOptions: FC<Props> = ({
             <TradeOption
               asset={asset}
               value={twapPrice}
-              diff={diff}
-              approx={isIce}
+              diff={feeSaving}
+              approx
               active={!field.value}
               onClick={(): void => {
                 field.onChange(false)
