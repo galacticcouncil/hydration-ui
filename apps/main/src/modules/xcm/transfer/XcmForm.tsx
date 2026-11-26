@@ -82,7 +82,7 @@ export const XcmForm = () => {
       if (account) {
         insertOptimisticJourney(
           queryClient,
-          account.address,
+          account.rawAddress,
           txHash,
           values,
           transfer,
@@ -93,7 +93,7 @@ export const XcmForm = () => {
     },
     onTransferError: (txHash) => {
       if (account) {
-        removeOptimisticJourney(queryClient, account.address, txHash)
+        removeOptimisticJourney(queryClient, account.rawAddress, txHash)
       }
     },
   })

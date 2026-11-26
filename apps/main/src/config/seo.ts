@@ -5,7 +5,7 @@ import common from "../i18n/locales/en/common.json"
 
 const title = common["meta.title"]
 const description = common["meta.description"]
-const image = "https://hydration.net/twitter-image.png"
+const image = "https://hydration.net/social/hydration-sunset-0cba2abd.jpg"
 const url = "https://app.hydration.net"
 
 export const SEO_CONFIG: HtmlTagDescriptor[] = [

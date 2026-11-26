@@ -1,6 +1,8 @@
+import { Subject } from "rxjs"
 import { describe, expect, it } from "vitest"
 
 import {
+  catchUpToBest,
   createErc20BalanceSnapshot,
   syncErc20BalanceSnapshot,
 } from "@/api/balances/account.utils"
@@ -86,5 +88,39 @@ describe("syncErc20BalanceSnapshot", () => {
         isAToken,
       ),
     ).toBe(false)
+  })
+})
+
+describe("catchUpToBest", () => {
+  it("follows the watch's first value with a best-block read, then the watch", async () => {
+    const watch$ = new Subject<string>()
+    let resolveBest: (value: string) => void = () => {}
+    const seen: string[] = []
+    catchUpToBest(
+      watch$,
+      () => new Promise<string>((resolve) => (resolveBest = resolve)),
+    ).subscribe((value) => seen.push(value))
+
+    watch$.next("finalized")
+    // a newer watch value waits for the read, so it lands last
+    watch$.next("newer")
+    expect(seen).toEqual(["finalized"])
+    resolveBest("best")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(seen).toEqual(["finalized", "best", "newer"])
+  })
+
+  it("keeps watching when the best-block read fails", async () => {
+    const watch$ = new Subject<string>()
+    const seen: string[] = []
+    catchUpToBest(watch$, () => Promise.reject(new Error("rpc"))).subscribe(
+      (value) => seen.push(value),
+    )
+    watch$.next("finalized")
+    await Promise.resolve()
+    watch$.next("next")
+    await Promise.resolve()
+    expect(seen).toEqual(["finalized", "next"])
   })
 })

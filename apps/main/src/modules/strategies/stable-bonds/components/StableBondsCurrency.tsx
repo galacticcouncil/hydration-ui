@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   ProgressBar,
   Skeleton,
@@ -9,10 +10,6 @@ import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import {
-  SCurrencyItem,
-  SCurrencyProgress,
-} from "@/modules/strategies/stable-bonds/components/StableBondsCurrency.styled"
 import { useInitialOtcOfferAmount } from "@/modules/trade/otc/table/columns/OfferStatusColumn.utils"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { scaleHuman } from "@/utils/formatting"
@@ -46,16 +43,36 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
     initialAmount && !initialAmount.eq(0)
       ? Big(amount).div(initialAmount).mul(100).toNumber()
       : 0
-  const showProgress = isFillable && !isLoading && remainingPct > 0
+
+  const renderProgress = () => {
+    if (!isFillable) return null
+    if (isLoading) return <Skeleton sx={{ height: "2xs" }} />
+    if (remainingPct <= 0) return null
+
+    return (
+      <Box asChild minWidth="8rem">
+        <ProgressBar
+          value={remainingPct}
+          size="small"
+          customLabel={
+            <Text
+              fs="p4"
+              as="span"
+              fw={600}
+              color={getToken("text.tint.quart")}
+            >
+              {t("percent", { value: remainingPct })}
+            </Text>
+          }
+        />
+      </Box>
+    )
+  }
 
   return (
-    <SCurrencyItem>
-      <Flex
-        align="center"
-        gap="base"
-        sx={{ pb: isFillable && (isLoading || remainingPct > 0) && "base" }}
-      >
-        <AssetLogo id={asset.id} size="medium" />
+    <Flex direction="column">
+      <Flex align="center" gap="base">
+        <AssetLogo id={asset.id} size="medium" hideChain />
         <Text
           font="primary"
           fs="h6"
@@ -68,30 +85,7 @@ export const StableBondsCurrency: React.FC<StableBondsCurrencyProps> = ({
             : t("strategies:bonds.soldOut")}
         </Text>
       </Flex>
-      {isFillable &&
-        (isLoading ? (
-          <SCurrencyProgress>
-            <Skeleton sx={{ height: "2xs" }} />
-          </SCurrencyProgress>
-        ) : (
-          showProgress && (
-            <SCurrencyProgress>
-              <ProgressBar
-                value={remainingPct}
-                customLabel={
-                  <Text
-                    fs="p4"
-                    as="span"
-                    fw={600}
-                    color={getToken("text.tint.quart")}
-                  >
-                    {t("percent", { value: remainingPct })}
-                  </Text>
-                }
-              />
-            </SCurrencyProgress>
-          )
-        ))}
-    </SCurrencyItem>
+      {renderProgress()}
+    </Flex>
   )
 }

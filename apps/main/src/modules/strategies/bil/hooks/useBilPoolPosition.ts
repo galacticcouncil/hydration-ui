@@ -165,9 +165,8 @@ export function useBilMaxBorrowable(evmAddress: string | undefined) {
 
 /**
  * Static reserve configuration for BIL on the BIL Aave pool. Drives the
- * Strategy overview's Max LTV / Liquidation LTV display, replacing the
- * static placeholders in `STRATEGY` (which can drift if governance changes
- * the on-chain values).
+ * Strategy overview's Max LTV / Liquidation LTV display, read on-chain so it
+ * follows governance changes.
  *
  * Aave V3 packs the configuration into a single uint256 — bits 0-15 hold
  * the LTV in basis points and bits 16-31 hold the liquidation threshold,

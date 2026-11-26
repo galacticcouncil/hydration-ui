@@ -1,4 +1,5 @@
 import { AssetBalance } from "@galacticcouncil/sdk-next"
+import { isSS58Address } from "@galacticcouncil/utils"
 import {
   experimental_streamedQuery as streamedQuery,
   queryOptions,
@@ -44,7 +45,7 @@ export const useAccountBalanceFilter = (): AccountBalanceFilter | null => {
 }
 
 export const accountBalancesQuery = (
-  { isReady, sdk }: TProviderContext,
+  { isReady, sdk, papi }: TProviderContext,
   address: string,
   filter: AccountBalanceFilter | null,
 ) =>
@@ -58,7 +59,7 @@ export const accountBalancesQuery = (
     queryFn: streamedQuery<AssetBalance[], BalanceRecord>({
       streamFn: ({ signal }) =>
         toAsyncIterable(
-          watchFilteredAccountBalances(sdk, address, filter!),
+          watchFilteredAccountBalances({ sdk, papi }, address, filter!),
           signal,
         ),
       reducer: mergeBalances,
@@ -66,7 +67,7 @@ export const accountBalancesQuery = (
     }),
     enabled:
       isReady &&
-      !!address &&
+      isSS58Address(address) &&
       !!filter?.followedTokenIds.length &&
       !!filter?.erc20AssetIds.length,
     staleTime: Infinity,
@@ -84,7 +85,7 @@ export const maxWithdrawAllQuery = (
   queryOptions({
     queryKey: [...MAX_WITHDRAW_ALL_QUERY_KEY, address],
     queryFn: () => sdk.api.aave.getMaxWithdrawAll(address),
-    enabled: isReady && !!address,
+    enabled: isReady && isSS58Address(address),
     staleTime: Infinity,
     refetchOnWindowFocus: true,
   })

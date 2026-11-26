@@ -15,5 +15,6 @@ patchBigJs()
 registerNttLayouts()
 Big.PE = 666
 Big.NE = -666
+Big.DP = 32
 
 createRoot(document.getElementById("root")!).render(<App />)

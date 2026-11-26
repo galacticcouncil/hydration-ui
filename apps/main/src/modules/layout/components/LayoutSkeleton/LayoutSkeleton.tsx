@@ -11,6 +11,8 @@ export const LayoutSkeleton = () => {
   const router = useRouter()
   const matches = useMatches()
   const leafMatch = matches.at(-1)
+  const navBar = matches.findLast((m) => m.staticData.pendingNavBar)?.staticData
+    .pendingNavBar
 
   const PendingComponent = leafMatch
     ? router.routesById[leafMatch.routeId]?.options?.pendingComponent
@@ -19,8 +21,8 @@ export const LayoutSkeleton = () => {
   return (
     <>
       <Header />
-      <BreadcrumbBar />
-      <SubNavBar />
+      {navBar !== "subnav" && <BreadcrumbBar />}
+      {navBar !== "breadcrumb" && <SubNavBar />}
       {PendingComponent ? (
         <Container>
           <MainContent>

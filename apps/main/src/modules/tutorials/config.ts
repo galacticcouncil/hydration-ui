@@ -1,7 +1,5 @@
 import { ChipVariant } from "@galacticcouncil/ui/components"
 
-import { useIntentsStore } from "@/states/intents"
-
 export type TutorialStep = {
   i18nKey: string
   titleKey?: string
@@ -27,6 +25,7 @@ export const tutorials = {
         side: "bottom",
       },
     ],
+    when: () => false,
   },
   "trade-intents": {
     steps: [
@@ -35,7 +34,7 @@ export const tutorials = {
         side: "bottom",
       },
     ],
-    when: () => useIntentsStore.getState().hasSeenModal,
+    when: () => false,
   },
 } satisfies Record<string, Tutorial>
 

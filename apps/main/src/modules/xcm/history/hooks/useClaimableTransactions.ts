@@ -39,7 +39,7 @@ const useClaimableBackfill = (address: string) => {
 
 export const useClaimableTransactions = () => {
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const address = account?.rawAddress ?? ""
 
   const { data: xcscanJourneys = [] } = useXcScan(address)
   const { data: xcscanBackfill = [] } = useClaimableBackfill(address)

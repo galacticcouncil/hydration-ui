@@ -8,7 +8,7 @@ import {
   useAccount,
   useWallet,
 } from "@galacticcouncil/web3-connect"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { useAccountBalances } from "@/api/balances"
@@ -67,7 +67,6 @@ export const useEstimateFee = (
       : "0"
 
   return useQuery({
-    placeholderData: keepPreviousData,
     select: (data) => {
       return {
         ...data,

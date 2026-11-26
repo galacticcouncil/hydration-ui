@@ -20,7 +20,8 @@ import {
 import type { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
-  positiveOptional,
+  positive,
+  required,
   requiredObject,
   validateFormExistentialDeposit,
 } from "@/utils/validators"
@@ -48,7 +49,7 @@ const useSchema = (
   return z
     .object({
       depositAsset: requiredObject<TAsset>(),
-      depositAmount: positiveOptional,
+      depositAmount: required.pipe(positive),
     })
     .check(
       z.refine(

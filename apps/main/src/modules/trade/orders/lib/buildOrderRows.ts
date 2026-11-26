@@ -140,15 +140,23 @@ export const enrichIntentOrders = (
         ? scaleHuman(fills.amountOut, order.to.decimals)
         : order.toAmountExecuted
 
-    const takesIndexerSellSide =
-      order.kind === OrderKind.DcaRolling && order.fromAmountExecuted === null
+    if (fills.amountIn === 0n) return { ...order, toAmountExecuted }
 
-    const fromAmountExecuted =
-      takesIndexerSellSide && fills.amountIn > 0n
-        ? scaleHuman(fills.amountIn, order.from.decimals)
-        : order.fromAmountExecuted
+    const fromAmountExecuted = scaleHuman(fills.amountIn, order.from.decimals)
+    const fromAmountRemaining =
+      order.fromAmountBudget === null
+        ? order.fromAmountRemaining
+        : Big.max(
+            0,
+            Big(order.fromAmountBudget).minus(fromAmountExecuted),
+          ).toString()
 
-    return { ...order, fromAmountExecuted, toAmountExecuted }
+    return {
+      ...order,
+      fromAmountExecuted,
+      fromAmountRemaining,
+      toAmountExecuted,
+    }
   })
 
 /**

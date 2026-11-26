@@ -55,7 +55,7 @@ export const useMultichainPortfolio = (
   const wallet = useCrossChainWallet()
   const configService = useCrossChainConfigService()
   const queryClient = useQueryClient()
-  const { sdk, isReady } = useRpcProvider()
+  const { sdk, papi, isReady } = useRpcProvider()
   const { getAsset, isToken, isErc20 } = useAssets()
   const balanceFilter = useAccountBalanceFilter()
   const stableAddresses = useStableArray(addresses)
@@ -75,13 +75,14 @@ export const useMultichainPortfolio = (
       return fetchHydrationRegistryAssetAmounts({
         address: formatted,
         sdk,
+        papi,
         filter: balanceFilter,
         getAsset,
         isToken,
         isErc20,
       })
     },
-    [sdk, balanceFilter, getAsset, isToken, isErc20, configService],
+    [sdk, papi, balanceFilter, getAsset, isToken, isErc20, configService],
   )
 
   const pairs = useMemo(

@@ -1,4 +1,4 @@
-import { Children, cloneElement, isValidElement } from "react"
+import { Children, cloneElement, isValidElement, useState } from "react"
 
 import { TriangleAlert } from "@/assets/icons"
 import { LogoProps, LogoSize, Tooltip } from "@/components"
@@ -34,6 +34,8 @@ export const AssetLogo = ({
   decoration = "none",
   className,
 }: AssetLogoProps) => {
+  const [loadedSrc, setLoadedSrc] = useState<string>()
+
   if (isLoading) {
     return <LogoSkeleton size={size} />
   }
@@ -45,7 +47,13 @@ export const AssetLogo = ({
       size={size}
       className={className}
     >
-      <SAssetLogo src={src} alt={alt} size={size} />
+      <SAssetLogo
+        src={src}
+        alt={alt}
+        size={size}
+        data-loaded={(src && loadedSrc === src) || undefined}
+        onLoad={() => setLoadedSrc(src)}
+      />
       {chainSrc && <SAssetChainLogo size={size} src={chainSrc} />}
       {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
     </SDecorationContainer>

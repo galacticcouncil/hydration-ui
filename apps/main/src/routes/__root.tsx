@@ -1,5 +1,9 @@
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
-import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
+import {
+  createRootRouteWithContext,
+  ErrorRouteComponent,
+  HeadContent,
+} from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
 import { useAccountBalances } from "@/api/balances"
@@ -9,10 +13,12 @@ import { useNeckworkSync } from "@/api/neckworkSync"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { RouterContext } from "@/App"
 import { AppUpdateBanner } from "@/components/AppUpdateBanner/AppUpdateBanner"
+import { RouteError } from "@/components/RouteError"
 import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
+import { MoneyMarketRootProvider } from "@/modules/money-market/MoneyMarketRootProvider"
 import { TutorialProvider } from "@/modules/tutorials/TutorialProvider"
 import {
   useScanJourneysSubscription,
@@ -59,9 +65,16 @@ const RootPendingComponent = () => (
   </AssetsProvider>
 )
 
+const RootErrorComponent: ErrorRouteComponent = (props) => (
+  <AssetsProvider>
+    <RouteError {...props} />
+  </AssetsProvider>
+)
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   pendingComponent: RootPendingComponent,
+  errorComponent: RootErrorComponent,
   head: ({
     match: {
       context: { i18n },
@@ -87,21 +100,23 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <TutorialProvider>
-            <MultisigProvider>
-              <AssetRegistryGate>
-                <MainLayout />
-                <Services />
-                <Footer />
-                <AppUpdateBanner />
-                {!hasTopNavbar && (
-                  <Suspense>
-                    <MobileTabBar />
-                  </Suspense>
-                )}
-              </AssetRegistryGate>
-            </MultisigProvider>
-          </TutorialProvider>
+          <MoneyMarketRootProvider>
+            <TutorialProvider>
+              <MultisigProvider>
+                <AssetRegistryGate>
+                  <MainLayout />
+                  <Services />
+                  <Footer />
+                  <AppUpdateBanner />
+                  {!hasTopNavbar && (
+                    <Suspense>
+                      <MobileTabBar />
+                    </Suspense>
+                  )}
+                </AssetRegistryGate>
+              </MultisigProvider>
+            </TutorialProvider>
+          </MoneyMarketRootProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && (
@@ -124,8 +139,8 @@ function ApiSubscriptions() {
 }
 
 function AccountSubscriptions({ account }: { account: Account }) {
-  useXcScanSubscription(account.address)
-  useScanJourneysSubscription(account.address)
+  useXcScanSubscription(account.rawAddress)
+  useScanJourneysSubscription(account.rawAddress)
 
   return null
 }

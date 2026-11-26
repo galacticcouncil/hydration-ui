@@ -25,16 +25,17 @@ import { useTranslation } from "react-i18next"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
+  AddVaultLiquidityVault,
   TAddVaultLiquidityFormValues,
   useAddVaultLiquidity,
 } from "@/modules/liquidity/components/AddVaultLiquidity/AddVaultLiquidity.utils"
 import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
-import { feeTierPercent, VaultTable } from "@/modules/liquidity/Vaults.utils"
+import { feeTierPercent } from "@/modules/liquidity/Vaults.utils"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  vault: VaultTable
+  vault: AddVaultLiquidityVault
   onBack?: () => void
   onSubmitted: () => void
   closable?: boolean
@@ -63,6 +64,8 @@ export const AddVaultLiquidity = ({
     shares,
     shareOfVault,
     blocker,
+    amountChanged,
+    clearSubmitNotice,
     submit,
     isSubmitting,
   } = useAddVaultLiquidity({ vault, onSubmitted })
@@ -93,16 +96,25 @@ export const AddVaultLiquidity = ({
     ? (wrapHintFor(assetA, amountA) ?? wrapHintFor(assetB, amountB))
     : undefined
 
-  useEffect(() => {
-    if (pairedAmount === undefined) return
+  const typed = lastUpdated === "assetA" ? amountA : amountB
+  const isTypedEmpty = !(Number(typed) > 0)
 
+  useEffect(() => {
     const target = lastUpdated === "assetA" ? "amountB" : "amountA"
+
+    if (isTypedEmpty) {
+      form.setValue(target, "")
+      form.clearErrors(target)
+      return
+    }
+
+    if (pairedAmount === undefined) return
 
     form.setValue(target, pairedAmount, {
       shouldValidate: true,
       shouldTouch: true,
     })
-  }, [pairedAmount, lastUpdated, form])
+  }, [pairedAmount, isTypedEmpty, lastUpdated, form])
 
   if (supplyAssetId)
     return (
@@ -130,7 +142,10 @@ export const AddVaultLiquidity = ({
                 assets={[]}
                 balance={{ value: getMaxBalance(assetA) }}
                 disabledAssetSelector
-                onAmountChange={() => form.setValue("lastUpdated", "assetA")}
+                onAmountChange={() => {
+                  clearSubmitNotice()
+                  form.setValue("lastUpdated", "assetA")
+                }}
               />
             </Box>
 
@@ -149,7 +164,10 @@ export const AddVaultLiquidity = ({
                 assets={[]}
                 balance={{ value: getMaxBalance(assetB) }}
                 disabledAssetSelector
-                onAmountChange={() => form.setValue("lastUpdated", "assetB")}
+                onAmountChange={() => {
+                  clearSubmitNotice()
+                  form.setValue("lastUpdated", "assetB")
+                }}
               />
             </Box>
 
@@ -213,6 +231,16 @@ export const AddVaultLiquidity = ({
                       })}
                     </Button>
                   }
+                />
+              )}
+
+              {amountChanged && (
+                <Alert
+                  variant="warning"
+                  description={t(
+                    "liquidity:vaults.add.amountChanged",
+                    amountChanged,
+                  )}
                 />
               )}
 

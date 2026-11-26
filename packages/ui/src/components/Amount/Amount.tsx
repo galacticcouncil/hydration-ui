@@ -16,7 +16,8 @@ type AmountProps = {
   readonly description?: string | ReadonlyArray<string>
   readonly descriptionCustom?: ReactNode
   readonly value: ReactNode
-  readonly displayValue?: string
+  /** one line, or several stacked under the value */
+  readonly displayValue?: string | ReadonlyArray<string>
   readonly variant?: AmountVariant
   readonly className?: string
   readonly size?: AmountSize
@@ -93,10 +94,21 @@ export const Amount: FC<AmountProps> = ({
           value
         )}
 
-        {(isLoading || displayValue) && (
+        {isLoading ? (
           <AmountDisplayValue variant={variant}>
-            {isLoading ? <Skeleton width="4em" height="1em" /> : displayValue}
+            <Skeleton width="4em" height="1em" />
           </AmountDisplayValue>
+        ) : (
+          (Array.isArray(displayValue)
+            ? displayValue
+            : displayValue
+              ? [displayValue]
+              : []
+          ).map((line, i) => (
+            <AmountDisplayValue key={i} variant={variant}>
+              {line}
+            </AmountDisplayValue>
+          ))
         )}
       </Flex>
     </Flex>

@@ -41,9 +41,11 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
       <Flex
         height="l"
         width={["l", null, null, null, "auto"]}
+        mr={[null, null, null, null, "l"]}
         align="center"
         justify="start"
-        sx={{ flexShrink: 0, minWidth: "max-content" }}
+        flexShrink={0}
+        minWidth="max-content"
         asChild
       >
         <Link to={LINKS.swap}>

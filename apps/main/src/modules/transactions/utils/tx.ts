@@ -1,6 +1,7 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY, neckwork } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
+import { toZecPaymentUri } from "@galacticcouncil/xc-sdk"
 import { Binary, SizedHex } from "polkadot-api"
 import { first, isBigInt, isNumber, isObjectType } from "remeda"
 
@@ -80,21 +81,38 @@ export const transformAnyToPapiTx = (
   return null
 }
 
-export function containsEvmCall(tx: AnyTransaction): boolean {
-  if (!isPapiTransaction(tx)) return false
+/** The call inside Dispatcher.dispatch_evm_call, or null for any other call. */
+const readDispatchedEvmCall = (decoded: DecodedCallEnum) => {
+  if (
+    decoded.type !== "Dispatcher" ||
+    !isObjectType(decoded.value) ||
+    !("type" in decoded.value) ||
+    decoded.value.type !== "dispatch_evm_call" ||
+    !("value" in decoded.value) ||
+    !isObjectType(decoded.value.value) ||
+    !("call" in decoded.value.value)
+  ) {
+    return null
+  }
 
-  const decoded = tx.decodedCall
+  const { call } = decoded.value.value
+  return isDecodedCallEnum(call) ? call : null
+}
+
+const isEvmCallDecoded = (decoded: unknown): boolean => {
   if (!isDecodedCallEnum(decoded)) return false
 
   if (decoded.type === "EVM") return true
 
   if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
-    return decoded.value.value.calls.some(
-      (call) => isDecodedCallEnum(call) && call.type === "EVM",
-    )
+    return decoded.value.value.calls.some(isEvmCallDecoded)
   }
 
-  return false
+  return isEvmCallDecoded(readDispatchedEvmCall(decoded))
+}
+
+export function containsEvmCall(tx: AnyTransaction): boolean {
+  return isPapiTransaction(tx) && isEvmCallDecoded(tx.decodedCall)
 }
 
 const getEvmCallFeeFromDecoded = (decoded: DecodedCallEnum): bigint => {
@@ -134,7 +152,8 @@ const collectNestedEvmCallFees = (decoded: DecodedCallEnum): bigint => {
     )
   }
 
-  return 0n
+  const dispatched = readDispatchedEvmCall(decoded)
+  return dispatched ? collectNestedEvmCallFees(dispatched) : 0n
 }
 
 export const getNestedEvmCallsFeeWei = (tx: AnyTransaction): bigint => {
@@ -152,6 +171,16 @@ export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
     decoded.type === "Utility" &&
     isBatchDecodedCallValue(decoded.value)
   ) {
+    const leadingCall = decoded.value.value.calls[0]
+    if (
+      isDecodedCallEnum(leadingCall) &&
+      leadingCall.type === "EVMAccounts" &&
+      isObjectType(leadingCall.value) &&
+      leadingCall.value.type === "bind_evm_address"
+    ) {
+      // Juicer can already prepare binding with the approval transaction.
+      return tx
+    }
     return papi.tx.Utility.batch_all({
       calls: [bindTx.decodedCall, ...decoded.value.value.calls],
     })
@@ -196,13 +225,11 @@ export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
     return getPapiTransactionCallData(tx)
   }
 
-  if (
-    isEvmCall(tx) ||
-    isSolanaCall(tx) ||
-    isSuiCall(tx) ||
-    isNearCall(tx) ||
-    isZecCall(tx)
-  ) {
+  if (isZecCall(tx)) {
+    return toZecPaymentUri(tx)
+  }
+
+  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx) || isNearCall(tx)) {
     return tx.data
   }
 

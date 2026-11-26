@@ -1,7 +1,14 @@
 import {
-  UiIncentiveDataProvider,
-  UiPoolDataProvider,
-} from "@galacticcouncil/money-market/utils"
+  markets,
+  readReserves,
+  summarizeReserves,
+} from "@galacticcouncil/money-market/core"
+import {
+  MoneyMarketConnection,
+  moneyMarketKeys,
+  RESERVES_STALE_TIME,
+  useMoneyMarket,
+} from "@galacticcouncil/money-market/react"
 import {
   bigShift,
   getAddressFromAssetId,
@@ -20,12 +27,9 @@ import Big from "big.js"
 import { isNonNullish, isNullish, prop, unique, zipWith } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import {
-  borrowReserveQuery,
-  lendingPoolAddressProvider,
-  useBorrowIncentivesContract,
-  useBorrowPoolDataContract,
-} from "@/api/borrow"
+import { VAULT_ABI } from "@/modules/strategies/juicer/config/abi"
+import { vaultByShareAssetId } from "@/modules/strategies/juicer/config/vaults"
+import { sharePrice } from "@/modules/strategies/juicer/utils/accounting"
 import { AssetId, TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -38,7 +42,8 @@ import { TradeRouter } from "./trade"
 import { xykPoolWithLiquidityQuery } from "./xyk"
 
 export const usePriceSubscriber = () => {
-  const { isReady, sdk } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { isReady } = rpc
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(useShallow(prop("setAssets")))
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
@@ -65,7 +70,7 @@ export const usePriceSubscriber = () => {
 
       const prices = await Promise.all(
         activeAssetsIds.map((assetId) =>
-          getSpotPrice(sdk.api.router, assetId, stableCoinId ?? "")(),
+          getDisplayPrice(rpc, assetId, stableCoinId ?? ""),
         ),
       )
 
@@ -134,6 +139,37 @@ export const getSpotPrice =
     return { tokenIn: tokenInParam, tokenOut: tokenOutParam, spotPrice }
   }
 
+/**
+ * Spot price against the display asset. Juicer share tokens are in no pool, so
+ * they take the vault's exchange rate times the price of their collateral.
+ */
+const getDisplayPrice = async (
+  { sdk, evm, featureFlags }: TProviderContext,
+  assetId: string,
+  stableCoinId: string,
+) => {
+  const vault = featureFlags.juicerEnabled
+    ? vaultByShareAssetId(assetId)
+    : undefined
+  const price = await getSpotPrice(
+    sdk.api.router,
+    vault?.assetId ?? assetId,
+    stableCoinId,
+  )()
+  if (!vault) return price
+
+  const spotPrice = await evm
+    .readContract({
+      address: vault.vaultAddress,
+      abi: VAULT_ABI,
+      functionName: "exchangeRate",
+    })
+    .then((rate) => sharePrice(price.spotPrice, rate))
+    .catch(() => null)
+
+  return { ...price, tokenIn: assetId, spotPrice }
+}
+
 export const spotPriceQueryKey = (assetId: AssetId) => [
   "spotPriceKey",
   String(assetId),
@@ -145,13 +181,13 @@ export const spotPriceKeyQuery = (
 ) => {
   const stableCoinId = useDisplayAssetStore.getState().stableCoinId
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
-  const { sdk, isReady } = context
+  const { isReady } = context
   const id = String(assetId)
 
   return queryOptions({
     queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
-      const price = await getSpotPrice(sdk.api.router, id, stableCoinId ?? "")()
+      const price = await getDisplayPrice(context, id, stableCoinId ?? "")
 
       setAssets([{ id, price: price.spotPrice }])
 
@@ -165,29 +201,33 @@ export const spotPriceKeyQuery = (
 
 export const scSpotPriceKeyQuery = (
   rpc: TProviderContext,
-  poolDataContract: UiPoolDataProvider | null,
-  incentivesContract: UiIncentiveDataProvider | null,
+  config: MoneyMarketConnection["config"],
   assetId: AssetId,
   reserveId: string,
 ) => {
   const setAssets = useDisplaySpotPriceStore.getState().setAssets
   const { isReady } = rpc
   const id = String(assetId)
+  const market = markets.hydration_v3
 
   return queryOptions({
     queryKey: spotPriceQueryKey(id),
     queryFn: async () => {
-      const reserve = await rpc.queryClient.ensureQueryData(
-        borrowReserveQuery(
-          rpc,
-          lendingPoolAddressProvider,
-          poolDataContract,
-          incentivesContract,
-          reserveId,
-        ),
+      const reserves = await rpc.queryClient.ensureQueryData({
+        queryKey: moneyMarketKeys.reserves(market.market),
+        queryFn: () => readReserves(config, market),
+        staleTime: RESERVES_STALE_TIME,
+      })
+
+      const reserve = summarizeReserves({
+        ...reserves,
+        currentTimestamp: Math.floor(Date.now() / 1000),
+      }).find(
+        ({ underlyingAsset }) =>
+          underlyingAsset.toLowerCase() === reserveId.toLowerCase(),
       )
 
-      const price = reserve?.priceInUSD ?? null
+      const price = reserve?.priceInUsd ?? null
 
       setAssets([{ id, price }])
 
@@ -205,21 +245,14 @@ const SC_ASSETS = new Map<string, string>([
 export const useSubscribedPriceKeys = (assetIds: AssetId[]) => {
   const stableAssetIds = useStableArray(unique(assetIds.map(String)))
   const rpc = useRpcProvider()
-  const poolDataContract = useBorrowPoolDataContract()
-  const incentivesContract = useBorrowIncentivesContract()
+  const { config } = useMoneyMarket()
 
   return useQueries({
     queries: stableAssetIds.map((assetId) => {
       const reserveId = SC_ASSETS.get(assetId)
 
       if (reserveId) {
-        return scSpotPriceKeyQuery(
-          rpc,
-          poolDataContract,
-          incentivesContract,
-          assetId,
-          reserveId,
-        )
+        return scSpotPriceKeyQuery(rpc, config, assetId, reserveId)
       }
       return spotPriceKeyQuery(rpc, assetId)
     }),

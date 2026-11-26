@@ -41,17 +41,27 @@ const getATokenDecorationStyles = (
   padding: number,
 ) => {
   const backdropColor = theme.surfaces.themeBasePalette.background
+  // decorate only once every logo image has loaded, not around placeholders
   return css`
-    ${SAssetLogo} {
-      border: ${pxToRem(padding)} solid ${backdropColor};
-      background: ${backdropColor};
-    }
+    &:has(${SAssetLogo}[data-loaded]):not(
+        :has(${SAssetLogo}:not([data-loaded]))
+      ) {
+      ${SAssetLogo} {
+        border: ${pxToRem(padding)} solid ${backdropColor};
+        background: ${backdropColor};
+      }
 
-    &::before {
-      content: "";
-      position: absolute;
-      inset: -${pxToRem(thickness)};
-      background: linear-gradient(to right, #39a5ff, #0063b5 50%, transparent);
+      &::before {
+        content: "";
+        position: absolute;
+        inset: -${pxToRem(thickness)};
+        background: linear-gradient(
+          to right,
+          #39a5ff,
+          #0063b5 50%,
+          transparent
+        );
+      }
     }
   `
 }

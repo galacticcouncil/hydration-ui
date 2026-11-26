@@ -3,7 +3,6 @@ import { Navigate, useMatchRoute } from "@tanstack/react-router"
 import { lazy, Suspense } from "react"
 
 import { swapTabLink } from "@/config/navigation"
-import { IntentsOnboardingModal } from "@/modules/trade/swap/components/IntentsOnboardingModal"
 import { useResetSharedSellAmountOnUnmount } from "@/modules/trade/swap/lib/useSharedSellAmount"
 import { SwapPageSkeleton } from "@/modules/trade/swap/SwapPageSkeleton"
 import { useIsIceEnabled } from "@/states/intents"
@@ -37,10 +36,5 @@ export const SwapPage = () => {
       <SwapPageDesktop />
     )
 
-  return (
-    <>
-      <Suspense fallback={<SwapPageSkeleton />}>{content}</Suspense>
-      <IntentsOnboardingModal />
-    </>
-  )
+  return <Suspense fallback={<SwapPageSkeleton />}>{content}</Suspense>
 }

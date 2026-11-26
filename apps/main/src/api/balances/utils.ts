@@ -228,6 +228,7 @@ export const mapHydrationBalancesToAssetAmounts = (
 export const fetchHydrationRegistryAssetAmounts = async ({
   address,
   sdk,
+  papi,
   filter,
   getAsset,
   isToken,
@@ -235,13 +236,14 @@ export const fetchHydrationRegistryAssetAmounts = async ({
 }: {
   address: string
   sdk: TProviderContext["sdk"]
+  papi: TProviderContext["papi"]
   filter: AccountBalanceFilter
   getAsset: (id: string) => TAssetData | undefined
   isToken: (asset: TAssetData) => boolean
   isErc20: (asset: TAssetData) => boolean
 }): Promise<AssetAmount[]> => {
   const chunk = await firstValueFrom(
-    watchFilteredAccountBalances(sdk, address, filter),
+    watchFilteredAccountBalances({ sdk, papi }, address, filter),
   )
 
   return mapHydrationBalancesToAssetAmounts(

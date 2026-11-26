@@ -1,15 +1,9 @@
 import { Close, Flame } from "@galacticcouncil/ui/assets/icons"
-import {
-  Icon,
-  MorphLabel,
-  PromoteBanner,
-  PromoteBannerProps,
-} from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import { Icon, MorphLabel, PromoteBanner } from "@galacticcouncil/ui/components"
+import { useLocation, useNavigate } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useBondData } from "@/api/bonds"
 import {
   SGigaNewsContainer,
   SGigaNewsToggleButton,
@@ -18,42 +12,11 @@ import {
 } from "@/components/GigaNews/GigaNews.styled"
 import { gigaNewsToggleAction } from "@/components/GigaNews/GigaNews.utils"
 import { useIsOverlayOpen } from "@/hooks/useIsOverlayOpen"
-import { useStableBonds } from "@/modules/strategies/stable-bonds/hooks/useStableBonds"
-import { getBondApr } from "@/modules/strategies/stable-bonds/utils/apr"
-import { useBannersStore, useEnabledBanners } from "@/states/banners"
-
-const HollarBondBanner: React.FC<PromoteBannerProps> = ({ item }) => {
-  const { t } = useTranslation("common")
-  const { active } = useStableBonds()
-  const bondId = active?.id ?? ""
-  const { timeLeft } = useBondData(bondId)
-  const apr = getBondApr(bondId, timeLeft)
-  return (
-    <PromoteBanner
-      item={{
-        ...item,
-        title: apr
-          ? t("banners.hollarb.description", { apr })
-          : t("banners.hollarb.title"),
-        cta: t("banners.hollarb.cta"),
-      }}
-    />
-  )
-}
-
-const BilBanner: React.FC<PromoteBannerProps> = ({ item }) => {
-  const { t } = useTranslation("common")
-  return (
-    <PromoteBanner
-      item={{
-        ...item,
-        title: t("banners.bil.title"),
-        description: t("banners.bil.description"),
-        cta: t("banners.bil.cta"),
-      }}
-    />
-  )
-}
+import {
+  bannerConfig,
+  useBannersStore,
+  useEnabledBanners,
+} from "@/states/banners"
 
 export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
@@ -71,6 +34,14 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
   const close = useBannersStore((state) => state.closeGigaNews)
   const navigate = useNavigate()
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  // visiting a banner's target page counts as seeing the news
+  useEffect(() => {
+    bannerConfig
+      .filter((banner) => banner.to && pathname.startsWith(banner.to))
+      .forEach((banner) => close(banner.id))
+  }, [pathname, close])
 
   const visibleBanners = enabledBanners.filter(
     (banner) => !closedGigaNewsIds.includes(banner.id),
@@ -155,13 +126,7 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
             return (
               <SStackLayer key={banner.id} $depth={depth}>
-                {banner.id === "bil-vault" ? (
-                  <BilBanner item={item} />
-                ) : banner.id.startsWith("hollarb") ? (
-                  <HollarBondBanner item={item} />
-                ) : (
-                  <PromoteBanner item={item} />
-                )}
+                <PromoteBanner item={item} />
               </SStackLayer>
             )
           })}

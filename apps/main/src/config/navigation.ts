@@ -56,13 +56,12 @@ export const LINKS = {
   // stakingGovernance: "/staking/governance",
   // referrals: "/referrals",
   borrow: "/borrow",
-  borrowDashboard: "/borrow/dashboard",
+  borrowDashboard: "/borrow",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
   stats: "/stats",
   statsOverview: "/stats/overview",
   statsTreasury: "/stats/treasury",
-  statsMoneyMarket: "/stats/money-market",
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
@@ -71,6 +70,7 @@ export const LINKS = {
   // memepad: "/memepad",
   strategies: "/strategies",
   strategiesBil: "/strategies/bil-vault",
+  strategiesJuicer: "/strategies/juicer",
   strategiesHollarBonds: "/strategies/hollar-bonds",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -143,10 +143,14 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "borrow",
     to: LINKS.borrow,
-    defaultChild: LINKS.borrowDashboard,
     icon: BanknoteIcon,
     children: [
-      { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
+      {
+        key: "borrowDashboard",
+        to: LINKS.borrowDashboard,
+        exact: true,
+        icon: ChartPieIcon,
+      },
       { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
       { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
     ],
@@ -156,6 +160,11 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.strategies,
     icon: CoinsIcon,
     children: [
+      {
+        key: "strategiesJuicer",
+        to: LINKS.strategiesJuicer,
+        icon: GoalIcon,
+      },
       { key: "strategiesBil", to: LINKS.strategiesBil, icon: GoalIcon },
       {
         key: "strategiesHollarBonds",
@@ -222,7 +231,6 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       // { key: "statsOverview", to: LINKS.statsOverview },
       // { key: "statsTreasury", to: LINKS.statsTreasury },
-      // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
       // { key: "statsHollar", to: LINKS.statsHollar },
       // { key: "statsAmm", to: LINKS.statsAmm },
       { key: "statsFees", to: LINKS.statsFees },
@@ -362,10 +370,6 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsTreasury.title"),
       description: "",
     },
-    statsMoneyMarket: {
-      title: t("navigation.statsMoneyMarket.title"),
-      description: "",
-    },
     statsHollar: {
       title: t("navigation.statsHollar.title"),
       description: "",
@@ -385,6 +389,10 @@ export const getMenuTranslations = (t: TFunction) =>
     strategiesBil: {
       title: t("navigation.strategiesBil.title"),
       description: t("navigation.strategiesBil.description"),
+    },
+    strategiesJuicer: {
+      title: t("navigation.strategiesJuicer.title"),
+      description: t("navigation.strategiesJuicer.description"),
     },
     strategiesHollarBonds: {
       title: t("navigation.strategiesHollarBonds.title"),

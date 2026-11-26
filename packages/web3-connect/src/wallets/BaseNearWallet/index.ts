@@ -175,8 +175,12 @@ export class BaseNearWallet implements Wallet {
         `${this.title} didn't respond`,
       )
 
-      // A stored session comes back silently; only signing in opens the wallet
-      let accounts = await wallet.getAccounts({ network: NETWORK })
+      // A stored session comes back silently; only signing in opens the wallet.
+      // The HOT extension rejects with "Connect NEAR" instead of returning []
+      // when the site has no session, so a failed lookup means no session.
+      let accounts = await wallet
+        .getAccounts({ network: NETWORK })
+        .catch(() => [])
       if (!accounts.length && signIn) {
         await this.beforeSignIn()
         accounts = await wallet.signIn({ network: NETWORK })

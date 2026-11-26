@@ -47,9 +47,11 @@ export const SCollapsibleTrigger = styled(ButtonTransparent)(
 const slideDown = keyframes`
   from {
     height: 0;
+    overflow-y: clip;
   }
   to {
     height: var(--radix-collapsible-content-height);
+    overflow-y: clip;
   }
 `
 
@@ -75,7 +77,7 @@ export const SCollapsibleContent = styled(Content, {
     }
 
     &[data-state="closed"] {
-      overflow: hidden;
+      overflow-y: clip;
       animation: ${slideUp} ${animationDurationMs}ms ${theme.easings.outQuint}
         forwards;
     }

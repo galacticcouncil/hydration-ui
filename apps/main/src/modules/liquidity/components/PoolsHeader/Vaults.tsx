@@ -41,6 +41,7 @@ export const VaultsValueTile = ({
         value={t("common:currency.compact", { value: vaults })}
         isLoading={isLoading}
         size="medium"
+        fixedSize
         wrap
       />
       <PoolsHeaderSeparator />
@@ -50,6 +51,7 @@ export const VaultsValueTile = ({
           value={t("common:currency.compact", { value: pools })}
           isLoading={isLoading}
           size="medium"
+          fixedSize
           wrap
         />
       )}

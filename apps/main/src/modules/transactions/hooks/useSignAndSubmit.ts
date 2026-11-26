@@ -9,7 +9,6 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
 import { Binary } from "polkadot-api"
-import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Subscription } from "rxjs"
 
@@ -54,17 +53,6 @@ export const useSignAndSubmit = (
   const { t } = useTranslation("common")
   const { papi, papiClient } = useRpcProvider()
   const wallet = useWallet()
-
-  const subscription = useRef<Subscription | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (subscription.current) {
-        deleteTxSubscription(subscription.current)
-        subscription.current.unsubscribe()
-      }
-    }
-  }, [])
 
   return useMutation({
     ...options,
@@ -130,10 +118,13 @@ export const useSignAndSubmit = (
       txOptions.onError(err.message)
       throw err
     },
+    // Kept past unmount: a closed review (a multi-step flow closes after its
+    // last step) must still see a reorg re-execute the tx as a failure. The
+    // subscription ends itself at finality.
     onSettled: (result) => {
       if (result instanceof Subscription) {
-        subscription.current = result
         addTxSubscription(result)
+        result.add(() => deleteTxSubscription(result))
       }
     },
   })

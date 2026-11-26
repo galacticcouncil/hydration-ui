@@ -1,10 +1,10 @@
-import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   AssetLogo as AssetLogoPrimitive,
   AssetLogoDecoration,
   AssetLogoProps as AssetLogoPrimitiveProps,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
+import { HDX_ERC20_ASSET_ID } from "@galacticcouncil/utils"
 import {
   BIL_ERC20_ID,
   GDOT_ERC20_ID,
@@ -32,6 +32,7 @@ type LogoMetadata = {
 type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
   isLoading?: boolean
+  hideChain?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [
@@ -48,6 +49,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   size = "medium",
   className,
   isLoading,
+  hideChain = false,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -79,7 +81,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
             key={`${data.id}-${index}`}
             alt={data.alt}
             src={data.assetSrc}
-            chainSrc={data.chainSrc}
+            chainSrc={hideChain ? undefined : data.chainSrc}
             decoration={data.decoration}
           />
         ))}
@@ -94,7 +96,7 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}
-      chainSrc={singleIconMetadata?.chainSrc}
+      chainSrc={hideChain ? undefined : singleIconMetadata?.chainSrc}
       size={size}
       decoration={singleIconMetadata?.decoration}
     />

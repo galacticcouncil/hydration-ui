@@ -5,10 +5,15 @@ import {
 } from "@galacticcouncil/sdk-next"
 import { percentageDifference } from "@galacticcouncil/utils"
 import {
+  catchError,
   combineLatest,
+  concat,
+  concatMap,
   defer,
+  EMPTY,
   map,
   Observable,
+  of,
   pairwise,
   startWith,
 } from "rxjs"
@@ -61,23 +66,62 @@ const getBalanceDeltas = (
   )
 }
 
+/**
+ * papi's best-block watch starts at the finalized block and can stay there for
+ * a finality round (~30 s) after the page opens, showing balances from before
+ * the latest transactions. A read at the best block right after the watch's
+ * first value catches up; later values queue behind it, so the newest block
+ * always lands last.
+ */
+export const catchUpToBest = <T>(
+  watch$: Observable<T>,
+  readBest: () => Promise<T>,
+): Observable<T> =>
+  watch$.pipe(
+    concatMap((value, index) =>
+      index === 0
+        ? concat(
+            of(value),
+            // the watch alone still catches up, just later
+            defer(readBest).pipe(catchError(() => EMPTY)),
+          )
+        : of(value),
+    ),
+  )
+
 export const watchFilteredAccountBalances = (
-  sdk: TProviderContext["sdk"],
+  { sdk, papi }: Pick<TProviderContext, "sdk" | "papi">,
   address: string,
   { followedTokenIds, erc20AssetIds }: AccountBalanceFilter,
 ): Observable<AssetBalance[]> => {
   const { balance } = sdk.client
   const followedTokenIdSet = new Set(followedTokenIds)
 
+  const readTokensAtBest = async () => {
+    const entries = await papi.query.Tokens.Accounts.getEntries(address, {
+      at: "best",
+    })
+    return Promise.all(
+      entries.map(async ({ keyArgs: [, id] }) => ({
+        id,
+        balance: await balance.getTokenBalance(address, id),
+      })),
+    )
+  }
+
   return defer(() => {
-    const system$ = balance.watchSystemBalance(address)
-    const tokens$ = balance
-      .watchTokensBalance(address)
-      .pipe(
-        map((balances) =>
-          balances.filter(({ id }) => followedTokenIdSet.has(id)),
-        ),
-      )
+    const system$ = catchUpToBest(
+      balance.watchSystemBalance(address),
+      async () => ({ id: 0, balance: await balance.getSystemBalance(address) }),
+    )
+    const tokens$ = catchUpToBest(
+      balance.watchTokensBalance(address),
+      readTokensAtBest,
+    ).pipe(
+      map((balances) =>
+        balances.filter(({ id }) => followedTokenIdSet.has(id)),
+      ),
+    )
     const erc20$ = balance.watchErc20Balance(address, [...erc20AssetIds])
 
     return combineLatest([system$, tokens$, erc20$])

@@ -30,10 +30,9 @@ StyleDictionary.registerTransform({
 })
 
 const fetchTokens = async () => {
-  const res = await fetch(
-    'https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json',
-  )
-  const tokens = await res.text()
+  // Keep build inputs in git. Updating a remote branch must not change releases.
+  // Source: hydration-styles@732405c06e9b2d51f60ad7ef9732407cf04e0d6a/tokens.json
+  const tokens = await fs.readFile(path.join(__dirname, 'source.json'), 'utf8')
 
   return JSON.parse(tokens.replace(/lch/g, 'srgb'))
 }

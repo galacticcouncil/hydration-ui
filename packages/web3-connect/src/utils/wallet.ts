@@ -5,10 +5,12 @@ import {
   NearAddr,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
+  safeConvertNearAddressToSS58,
   safeConvertSolanaAddressToSS58,
   safeConvertSS58toH160,
   safeConvertSS58toPublicKey,
   safeConvertSuiAddressToSS58,
+  safeConvertZecAddressToSS58,
   SolanaAddr,
   Ss58Addr,
   stringEquals,
@@ -69,29 +71,27 @@ const toStoredSuiAccount = ({
   }
 }
 
-// A NEAR account id (named, implicit hex or NEP-518 0x…) has no SS58 form,
-// so it is kept as is; the account never signs on Hydration.
+// Named NEAR accounts have no SS58 form and keep their id.
+// `publicKey` stays native so address book lookups match.
 const toStoredNearAccount = ({
   address,
   name,
   provider,
 }: WalletAccount): StoredAccount => ({
   publicKey: address,
-  address,
+  address: safeConvertNearAddressToSS58(address) || address,
   rawAddress: address,
   name: name ?? "",
   provider,
 })
 
-// A Zcash transparent address (t1/t3) has no SS58 form either, so it is kept
-// as is; the account only receives swap payouts.
 const toStoredZcashAccount = ({
   address,
   name,
   provider,
 }: WalletAccount): StoredAccount => ({
   publicKey: address,
-  address,
+  address: safeConvertZecAddressToSS58(address) || address,
   rawAddress: address,
   name: name ?? "",
   provider,

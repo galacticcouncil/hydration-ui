@@ -1,11 +1,11 @@
-import { HealthFactorNumber } from "@galacticcouncil/money-market/components"
 import {
   Box,
   Button,
+  Card,
+  CardHeader,
+  CardTitle,
   Flex,
-  Paper,
   ResponsiveScope,
-  Separator,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -14,6 +14,7 @@ import { useEvmAddress } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorNumber } from "@/modules/money-market/health-factor/HealthFactorNumber"
 import { BorrowHollarModal } from "@/modules/strategies/bil/components/BorrowHollarModal"
 import {
   SBorrowPanel,
@@ -72,52 +73,52 @@ export const MyBorrowsCard = () => {
       : 0
 
   return (
-    <Paper>
-      <Flex align="center" justify="space-between" p="l" gap="s" wrap>
-        <Text as="h2" font="primary" fs="base" fw={500}>
-          {t("bil.borrows.title")}
-        </Text>
-        <Flex align="center" gap="l">
-          <Flex align="center" gap="s">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("common:healthFactor")}:
-            </Text>
-            <HealthFactorNumber value={healthFactorValue} fontSize="p4" />
-          </Flex>
-          <Flex align="center" gap="s">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("common:borrowApy")}:
-            </Text>
-            <Text fs="p4" fw={600} color={getToken("text.high")}>
-              {t("common:percent", {
-                value: borrowApyPercent,
-              })}
-            </Text>
-          </Flex>
-          {hasCollateral && (
+    <Card>
+      <CardHeader>
+        <Flex align="center" justify="space-between" gap="s" wrap>
+          <CardTitle>{t("bil.borrows.title")}</CardTitle>
+          <Flex align="center" gap="l">
             <Flex align="center" gap="s">
               <Text fs="p5" color={getToken("text.medium")}>
-                {t("borrow:netApy")}:
+                {t("common:healthFactor")}:
               </Text>
-              <Text
-                fs="p4"
-                fw={600}
-                color={
-                  netApyPercent >= 0
-                    ? getToken("accents.success.emphasis")
-                    : getToken("accents.danger.emphasis")
-                }
-              >
+              <Text fs="p4" fw={700}>
+                <HealthFactorNumber value={healthFactorValue} />
+              </Text>
+            </Flex>
+            <Flex align="center" gap="s">
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("common:borrowApy")}:
+              </Text>
+              <Text fs="p4" fw={600} color={getToken("text.high")}>
                 {t("common:percent", {
-                  value: netApyPercent,
+                  value: borrowApyPercent,
                 })}
               </Text>
             </Flex>
-          )}
+            {hasCollateral && (
+              <Flex align="center" gap="s">
+                <Text fs="p5" color={getToken("text.medium")}>
+                  {t("borrow:netApy")}:
+                </Text>
+                <Text
+                  fs="p4"
+                  fw={600}
+                  color={
+                    netApyPercent >= 0
+                      ? getToken("accents.success.emphasis")
+                      : getToken("accents.danger.emphasis")
+                  }
+                >
+                  {t("common:percent", {
+                    value: netApyPercent,
+                  })}
+                </Text>
+              </Flex>
+            )}
+          </Flex>
         </Flex>
-      </Flex>
-
-      <Separator />
+      </CardHeader>
 
       <ResponsiveScope>
         <SBorrowsContent>
@@ -152,7 +153,7 @@ export const MyBorrowsCard = () => {
               wrap
               size="medium"
               isLoading={isAvailableToBorrowLoading}
-              label={t("borrow:borrow.available")}
+              label={t("borrow:summary.availableToBorrow")}
               value={t("common:currency", {
                 value: availableUsd,
                 symbol: t("bil.borrows.unit"),
@@ -182,6 +183,6 @@ export const MyBorrowsCard = () => {
       {showRepay && (
         <RepayHollarModal open onClose={() => setShowRepay(false)} />
       )}
-    </Paper>
+    </Card>
   )
 }

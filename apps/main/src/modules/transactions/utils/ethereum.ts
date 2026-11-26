@@ -1,5 +1,5 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { ExtendedEvmCall } from "@galacticcouncil/web3-connect"
 import { EthereumSigner } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary } from "polkadot-api"
 

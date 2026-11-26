@@ -15,6 +15,7 @@ import {
   AnyChain,
   Asset,
   AssetAmount,
+  AssetRoute,
   ChainRoutes,
   Ntt,
 } from "@galacticcouncil/xc-core"
@@ -65,14 +66,16 @@ export const useCrossChainConfig = () => {
         zcash.registerBalanceReader(readNoirBalance)
       }
 
+      // Snowbridge V1 is not offered: the SDK still ships a V1 twin of every
+      // V2 route, tagged SnowbridgeV1 next to Snowbridge.
       // Wormhole carries basejump with it — basejump routes hop through the
       // wormhole stack — but basejump can also be pulled on its own.
-      // Snowbridge V1 routes carry the Snowbridge tag too, so one tag pulls
-      // both versions. The inbound switch pulls only Snowbridge routes into
-      // Hydration, so Hydration → Ethereum keeps working. PSM messages ride
-      // wormhole too, but the corridor opens on its own schedule, hence its
-      // own switch.
+      // The Snowbridge switch pulls both directions. The inbound switch pulls
+      // only Snowbridge routes into Hydration, so Hydration → Ethereum keeps
+      // working. PSM messages ride wormhole too, but the corridor opens on its
+      // own schedule, hence its own switch.
       const disabledBridgeTags = [
+        XcmTag.SnowbridgeV1,
         ...(ENV.VITE_WORMHOLE_DISABLED
           ? [XcmTag.Wormhole, XcmTag.Basejump]
           : []),
@@ -81,26 +84,29 @@ export const useCrossChainConfig = () => {
         ...(ENV.VITE_PSM_DISABLED ? [XcmTag.Psm] : []),
       ]
 
-      if (disabledBridgeTags.length || ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED) {
-        ctx.config.routes.forEach((chainRoutes) => {
-          ctx.config.updateRoutes(
-            new ChainRoutes({
-              chain: chainRoutes.chain,
-              routes: chainRoutes.getRoutes().filter((route) => {
-                const tags = route.tags ?? []
-                const isSnowbridgeInbound =
-                  tags.includes(XcmTag.Snowbridge) &&
-                  route.destination.chain.key === HYDRATION_CHAIN_KEY
+      const isRouteDisabled = (route: AssetRoute) => {
+        const tags = route.tags ?? []
+        const isSnowbridgeInbound =
+          tags.includes(XcmTag.Snowbridge) &&
+          route.destination.chain.key === HYDRATION_CHAIN_KEY
 
-                return !(
-                  disabledBridgeTags.some((tag) => tags.includes(tag)) ||
-                  (ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED && isSnowbridgeInbound)
-                )
-              }),
-            }),
-          )
-        })
+        return (
+          disabledBridgeTags.some((tag) => tags.includes(tag)) ||
+          (ENV.VITE_SNOWBRIDGE_INBOUND_DISABLED && isSnowbridgeInbound)
+        )
       }
+
+      // ChainRoutes rebuilds every route it is given, so only chains that
+      // lost a route are replaced
+      ctx.config.routes.forEach((chainRoutes) => {
+        const routes = chainRoutes.getRoutes()
+        const enabledRoutes = routes.filter((route) => !isRouteDisabled(route))
+        if (enabledRoutes.length === routes.length) return
+
+        ctx.config.updateRoutes(
+          new ChainRoutes({ chain: chainRoutes.chain, routes: enabledRoutes }),
+        )
+      })
 
       return ctx
     },

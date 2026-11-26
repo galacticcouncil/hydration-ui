@@ -25,7 +25,7 @@ export const Route = createFileRoute("/cross-chain/history")({
 
 function XcScanHistoryPage() {
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const address = account?.rawAddress ?? ""
 
   return <XcScanHistory address={address} />
 }

@@ -20,8 +20,10 @@ import {
   safeConvertAddressSS58,
   safeConvertH160toSS58,
   safeConvertSS58toH160,
+  safeConvertSS58ToNearAddress,
   safeConvertSS58ToSolanaAddress,
   safeConvertSS58ToSuiAddress,
+  safeConvertSS58ToZecAddress,
 } from "../helpers"
 import {
   EvmAddr,
@@ -158,12 +160,16 @@ export function formatSourceChainAddress(
   }
 
   if (isNearChain(chain)) {
-    const accountId = toNearAccountId(address)
+    const accountId = Ss58Addr.isValid(address)
+      ? safeConvertSS58ToNearAddress(address)
+      : toNearAccountId(address)
     return NearAddr.isValid(accountId) ? accountId : ""
   }
 
   if (isZecChain(chain)) {
-    return ZecAddr.isValid(address) ? address : ""
+    return ZecAddr.isValid(address)
+      ? address
+      : safeConvertSS58ToZecAddress(address)
   }
 
   return safeConvertAddressSS58(address)

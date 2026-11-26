@@ -37,6 +37,38 @@ export const getErrorMessage = (error: unknown): string => {
   return String(error)
 }
 
+// polkadot-js and Talisman reject with "Cancelled", SubWallet and WalletConnect
+// with "Rejected by user", EVM wallets with code 4001 / "User rejected the request."
+const WALLET_REJECTION =
+  /^(cancell?ed|rejected)\.?$|user (rejected|denied|cancell?ed)|rejected by (the )?user|request rejected/i
+
+/** The user declined to sign in their wallet: nothing was sent. */
+export const isWalletRejection = (error: unknown): boolean => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 4001
+  )
+    return true
+  if (error === null || error === undefined) return false
+  // a submit error arrives as "<name>.<message>", e.g. "Error.Cancelled"
+  const message = getErrorMessage(error)
+    .trim()
+    .replace(/^\w*Error\./, "")
+  return WALLET_REJECTION.test(message)
+}
+
+/**
+ * The pool refused the transaction because its nonce was already used: another
+ * transaction from the account (another tab, another device) went first.
+ * Nothing was sent; signing again takes the next nonce.
+ */
+export const isNonceClash = (error: unknown): boolean => {
+  if (error === null || error === undefined) return false
+  return /^(\w*Error\.)?Invalid\.Stale$/.test(getErrorMessage(error).trim())
+}
+
 type ErrorContext = {
   message: string
   address: string

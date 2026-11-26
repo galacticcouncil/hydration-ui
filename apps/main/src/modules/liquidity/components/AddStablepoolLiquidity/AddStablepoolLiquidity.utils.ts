@@ -1,4 +1,6 @@
 import { calculate_shares } from "@galacticcouncil/math-stableswap"
+import { markets } from "@galacticcouncil/money-market/core"
+import { useReserveSummaries } from "@galacticcouncil/money-market/react"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -12,7 +14,6 @@ import z from "zod/v4"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
 import { useAccountBalances } from "@/api/balances"
-import { useBorrowReserves } from "@/api/borrow"
 import { StableSwapBase, useOmnipoolIds } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import i18n from "@/i18n"
@@ -319,11 +320,12 @@ const useStablepoolAddLiquidityFormResolver = (
 ) => {
   const omnipoolZodSchema = useAddToOmnipoolZod(omnipoolId)
   const { getAssetWithFallback } = useAssets()
-  const { data: reserves } = useBorrowReserves()
+  const { data: reserves } = useReserveSummaries(markets.hydration_v3)
 
-  const assetReserve = reserves?.formattedReserves.find(
+  const assetReserve = reserves?.find(
     ({ underlyingAsset }) =>
-      underlyingAsset === getAddressFromAssetId(stablepoolId),
+      underlyingAsset.toLowerCase() ===
+      getAddressFromAssetId(stablepoolId).toLowerCase(),
   )
 
   const maxCapToAdd = assetReserve
