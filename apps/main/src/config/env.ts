@@ -19,7 +19,6 @@ const schema = z.object({
   VITE_BASEJUMP_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_DISABLED: coerceToBoolean,
   VITE_SNOWBRIDGE_INBOUND_DISABLED: coerceToBoolean,
-  VITE_PSM_DISABLED: coerceToBoolean,
   // The rewards distributor contract and the URL its claim files are served
   // from. Both empty: the feature is off.
   VITE_REWARDS_DISTRIBUTOR_ADDRESS: z
