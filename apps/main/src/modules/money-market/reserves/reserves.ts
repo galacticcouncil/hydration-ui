@@ -40,8 +40,12 @@ export const isGigaStakingReserve = (
  * ordinary reserve.
  */
 export const isPoolShareReserve = (address: string, market: MarketDescriptor) =>
+  isPoolShareAsset(reserveAssetId(address, market), market)
+
+/** {@link isPoolShareReserve} by registry asset id. */
+export const isPoolShareAsset = (assetId: string, market: MarketDescriptor) =>
   market.market === "hydration_v3" &&
-  MONEY_MARKET_STRATEGY_ASSETS.includes(reserveAssetId(address, market))
+  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId)
 
 /**
  * Supplied from any asset through a swap, so holding the reserve's own token

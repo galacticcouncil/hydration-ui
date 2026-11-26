@@ -1,10 +1,9 @@
 import { Separator, Summary } from "@galacticcouncil/ui/components"
-import Big from "big.js"
 import { type FC } from "react"
 import { useTranslation } from "react-i18next"
 import { formatUnits } from "viem"
 
-import { TradeFee } from "@/components/TradeFee/TradeFee"
+import { useSwapSummaryRows } from "@/components/SwapSummaryRows/useSwapSummaryRows"
 import { type useDepositQuote } from "@/modules/strategies/juicer/hooks/useDepositQuote"
 import { type TAsset } from "@/providers/assetsProvider"
 
@@ -19,14 +18,13 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
   collateral,
   quote: { swap, depositAmount, exact, isLoading },
 }) => {
-  const { t } = useTranslation(["juicer", "common", "trade"])
-
-  const rate =
-    swap && swap.amountIn > 0n
-      ? Big(formatUnits(swap.amountOut, collateral.decimals))
-          .div(formatUnits(swap.amountIn, assetIn.decimals))
-          .toString()
-      : null
+  const { t } = useTranslation(["juicer", "common"])
+  const marketRows = useSwapSummaryRows({
+    swap,
+    assetIn,
+    assetOut: collateral,
+    isLoading,
+  })
 
   return (
     <>
@@ -54,41 +52,7 @@ export const DepositSwapSummary: FC<DepositSwapSummaryProps> = ({
             loading: isLoading,
           },
           // the 1:1 unwrap has no price, impact, fee or trade limit to show
-          ...(exact
-            ? []
-            : [
-                {
-                  label: t("common:price"),
-                  content: rate
-                    ? t("deposit.swap.price", {
-                        symbolIn: assetIn.symbol,
-                        value: rate,
-                        symbol: collateral.symbol,
-                      })
-                    : "—",
-                  loading: isLoading,
-                },
-                {
-                  label: t("common:priceImpact"),
-                  content: swap
-                    ? t("common:percent", {
-                        value: swap.priceImpactPct || 0,
-                      })
-                    : "—",
-                  tooltip: t("trade:market.summary.priceImpact.tooltip"),
-                  loading: isLoading,
-                },
-                {
-                  label: t("trade:market.summary.estTradeFees"),
-                  content: (
-                    <TradeFee
-                      swap={swap}
-                      receiveAsset={collateral}
-                      isLoading={isLoading}
-                    />
-                  ),
-                },
-              ]),
+          ...(exact ? [] : marketRows),
         ]}
       />
     </>

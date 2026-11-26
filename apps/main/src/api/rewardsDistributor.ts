@@ -62,11 +62,7 @@ import { useAssets } from "@/providers/assetsProvider"
 import { type TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
-const { VITE_REWARDS_DISTRIBUTOR_ADDRESS: ADDRESS } = ENV
-// env.ts has checked the shape; any letter case is accepted
-const DISTRIBUTOR_ADDRESS = isAddress(ADDRESS, { strict: false })
-  ? ADDRESS
-  : undefined
+const DISTRIBUTOR_ADDRESS = ENV.VITE_REWARDS_DISTRIBUTOR_ADDRESS
 const DATA_URL = ENV.VITE_REWARDS_DISTRIBUTOR_URL.replace(/\/+$/, "")
 const IS_CONFIGURED = !!DISTRIBUTOR_ADDRESS && !!DATA_URL
 

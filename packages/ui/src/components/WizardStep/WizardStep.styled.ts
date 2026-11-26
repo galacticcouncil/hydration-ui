@@ -1,10 +1,11 @@
 import styled from "@emotion/styled"
-import { Flex } from "@galacticcouncil/ui/components"
-import { createVariants, css } from "@galacticcouncil/ui/utils"
 
-import { StepTriggerState } from "@/components/multisig/components/StepTrigger"
+import { Flex } from "@/components/Flex"
+import { LOGO_SIZES } from "@/components/Logo/Logo.styled"
+import { WizardStepState } from "@/components/WizardStep/WizardStep"
+import { createVariants, css, pxToRem } from "@/utils"
 
-const stepIndicatorVariants = createVariants<StepTriggerState>((theme) => ({
+const stepIndicatorVariants = createVariants<WizardStepState>((theme) => ({
   active: css`
     background-color: ${theme.buttons.primary.medium.rest};
     border-color: ${theme.buttons.primary.medium.rest};
@@ -21,12 +22,12 @@ const stepIndicatorVariants = createVariants<StepTriggerState>((theme) => ({
 
 export const SStepIndicator = styled(Flex, {
   shouldForwardProp: (prop) => prop !== "state",
-})<{ state: StepTriggerState }>(({ theme, state }) => [
+})<{ state: WizardStepState }>(({ state }) => [
   css`
     align-items: center;
     justify-content: center;
-    width: ${theme.space.xl};
-    height: ${theme.space.xl};
+    width: ${pxToRem(LOGO_SIZES.medium)};
+    height: ${pxToRem(LOGO_SIZES.medium)};
     border-radius: 50%;
     flex-shrink: 0;
     border: 1px solid transparent;
@@ -34,7 +35,7 @@ export const SStepIndicator = styled(Flex, {
   stepIndicatorVariants(state),
 ])
 
-export const SStepTrigger = styled.button<{ isInteractive?: boolean }>(
+export const SWizardStep = styled.button<{ isInteractive?: boolean }>(
   ({ theme, isInteractive = false }) => [
     css`
       position: relative;

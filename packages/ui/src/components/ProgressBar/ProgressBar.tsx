@@ -1,8 +1,8 @@
-import { ThemeUICSSObject } from "@theme-ui/css"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  ProgressBarVariant,
   SContainer,
   SProgressBar,
   SProgressBarFill,
@@ -12,7 +12,7 @@ import {
 export type ProgressBarSize = "small" | "medium" | "large"
 export type ProgressBarOrientation = "horizontal" | "vertical"
 
-type Props = {
+export type ProgressBarProps = {
   readonly value: number
   readonly customLabel?: string | ReactNode
   readonly size?: ProgressBarSize
@@ -20,10 +20,11 @@ type Props = {
   readonly orientation?: ProgressBarOrientation
   readonly hideLabel?: boolean
   readonly className?: string
-  readonly color?: ThemeUICSSObject["color"]
+  readonly variant?: ProgressBarVariant
+  readonly animated?: boolean
 }
 
-export const ProgressBar: FC<Props> = ({
+export const ProgressBar: FC<ProgressBarProps> = ({
   value,
   size = "medium",
   customLabel,
@@ -31,7 +32,8 @@ export const ProgressBar: FC<Props> = ({
   orientation = "horizontal",
   hideLabel,
   className,
-  color,
+  variant = "accent",
+  animated = false,
 }) => {
   const { t } = useTranslation("common")
   const clippedValue = Math.max(0, Math.min(100, value))
@@ -43,7 +45,8 @@ export const ProgressBar: FC<Props> = ({
       <SProgressBar>
         <SProgressBarFill
           value={clippedValue}
-          sx={{ backgroundColor: color }}
+          variant={variant}
+          animated={animated}
         />
       </SProgressBar>
       {!hideLabel && (

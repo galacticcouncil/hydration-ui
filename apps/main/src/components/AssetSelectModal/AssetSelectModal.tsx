@@ -36,6 +36,8 @@ export type AssetSelectProps = {
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
   searchInputVariant?: InputProps["variant"]
+  /** drops the standalone search's top padding, e.g. under a step trigger that has its own */
+  flushTop?: boolean
   height?: number
 }
 
@@ -53,6 +55,7 @@ export const AssetSelectModalContent = ({
   emptyState,
   selectedAssetId,
   searchInputVariant = "embedded",
+  flushTop = false,
   height = 0,
 }: AssetSelectProps) => {
   const { t } = useTranslation()
@@ -158,7 +161,11 @@ export const AssetSelectModalContent = ({
       )}
       <ModalBody scrollable={false} noPadding>
         {searchInputVariant === "standalone" && (
-          <Box p="var(--modal-content-padding)" pb={0}>
+          <Box
+            p="var(--modal-content-padding)"
+            pb={0}
+            pt={flushTop ? 0 : undefined}
+          >
             {searchInput}
           </Box>
         )}

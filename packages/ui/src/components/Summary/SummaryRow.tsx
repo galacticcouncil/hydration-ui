@@ -47,19 +47,35 @@ export const SummaryRow = ({
   const renderLabel = () => {
     const labelContent =
       typeof label === "string" ? (
-        <SummaryRowLabel>{label}:</SummaryRowLabel>
+        <SummaryRowLabel
+          decoration={
+            tooltip
+              ? (theme) =>
+                  `underline dotted color-mix(in srgb, ${getToken("text.low")(theme)} 75%, transparent) 1px`
+              : undefined
+          }
+          // Text overwrites its sx with a passed one, so the offset goes inline
+          style={
+            tooltip ? { textUnderlineOffset: 3, cursor: "help" } : undefined
+          }
+        >
+          {label}:
+        </SummaryRowLabel>
       ) : (
         label
       )
 
-    return isMobile
-      ? renderTooltip(
-          <Box onClick={(e) => e.stopPropagation()}>{labelContent}</Box>,
-        )
-      : labelContent
+    return renderTooltip(
+      <Box
+        sx={{ width: "fit-content" }}
+        onClick={isMobile ? (e) => e.stopPropagation() : undefined}
+      >
+        {labelContent}
+      </Box>,
+    )
   }
 
-  const row = (
+  return (
     <Flex
       sx={{ ...(onClick && { cursor: "pointer" }) }}
       align={align}
@@ -90,8 +106,6 @@ export const SummaryRow = ({
       )}
     </Flex>
   )
-
-  return isMobile ? row : renderTooltip(row)
 }
 
 export const SummaryRowContent = (props: TextProps) => (
