@@ -133,7 +133,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
 
     return arraySearch(
       assetsWithRoutes.map((item) => {
-        const registryId = getDisplayAssetId(item.asset)
+        const registryId = getDisplayAssetId(item.asset, pendingChain.key)
         const symbol = item.asset.originSymbol
         const name = (registryId && getAsset(registryId)?.name) || symbol
         return { ...item, symbol, name }

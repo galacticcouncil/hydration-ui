@@ -36,7 +36,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   const getDisplayAssetId = useHydrationDisplayAssetId()
   const getHydrationAssetId = useHydrationAssetId()
 
-  const registryId = getDisplayAssetId(asset)
+  const registryId = getDisplayAssetId(asset, chain.key)
 
   const isExternalEcosystem =
     chain.isEvmChain() || chain.isSolana() || chain.isSui()
