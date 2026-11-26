@@ -1,14 +1,15 @@
-import { AssetLogo } from "@galacticcouncil/ui/components"
+import { AssetLogo, AssetLogoProps } from "@galacticcouncil/ui/components"
 import { LogoProps } from "@galacticcouncil/ui/components/Logo"
 import { ChainAssetId, ChainEcosystem } from "@galacticcouncil/xc-core"
 
 import { useAssetMetadata } from "@/api/metadata"
 
-export type ExternalAssetLogoProps = LogoProps & {
-  id: ChainAssetId
-  ecosystem: ChainEcosystem
-  chainId: string | number
-}
+export type ExternalAssetLogoProps = LogoProps &
+  Pick<AssetLogoProps, "chainPosition"> & {
+    id: ChainAssetId
+    ecosystem: ChainEcosystem
+    chainId: string | number
+  }
 
 export const ExternalAssetLogo: React.FC<ExternalAssetLogoProps> = ({
   chainId,

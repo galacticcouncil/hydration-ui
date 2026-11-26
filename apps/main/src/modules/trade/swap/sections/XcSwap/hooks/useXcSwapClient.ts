@@ -1,18 +1,22 @@
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  HYDRATION_PARACHAIN_ID,
+} from "@galacticcouncil/utils"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { createXcSwap, XcSwapChain } from "@galacticcouncil/xc-swap"
+import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
+import { assetMetadataQuery } from "@/api/metadata"
 import { XC_SWAP_CONFIG } from "@/config/xcSwap"
 import { getXcSwapChainLogoUrl } from "@/modules/trade/swap/sections/XcSwap/config/meta"
 import { addressValidatorForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export const useXcSwapClient = () => {
   const { sdk } = useRpcProvider()
-  const { getAsset } = useAssets()
+  const { data: metadata } = useQuery(assetMetadataQuery())
 
   const xcSwap = useMemo(
     () =>
@@ -24,7 +28,11 @@ export const useXcSwapClient = () => {
   )
 
   const chains = useMemo<Record<string, XcChain>>(() => {
-    const hydrationLogo = getAsset(NATIVE_ASSET_ID)?.iconSrc ?? ""
+    const hydrationLogo =
+      metadata?.getChainLogoSrc(
+        HYDRATION_PARACHAIN_ID,
+        ChainEcosystem.Polkadot,
+      ) ?? ""
     return Object.fromEntries(
       xcSwap.getChains().map((chain: XcSwapChain) => [
         chain.key,
@@ -40,7 +48,7 @@ export const useXcSwapClient = () => {
         },
       ]),
     )
-  }, [xcSwap, getAsset])
+  }, [xcSwap, metadata])
 
   return { xcSwap, chains }
 }

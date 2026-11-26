@@ -1,24 +1,26 @@
 import { Children, cloneElement, isValidElement, useState } from "react"
 
-import { TriangleAlert } from "@/assets/icons"
-import { LogoProps, LogoSize, Tooltip } from "@/components"
+import { LogoProps, LogoSize } from "@/components"
 import { LogoSkeleton } from "@/components/Logo/LogoSkeleton"
+import { Skeleton } from "@/components/Skeleton"
 
 import {
-  SAssetBadge,
   SAssetChainLogo,
   SAssetLogo,
-  SBadgeSlot,
   SDecorationContainer,
+  SSideChainSkeleton,
+  SSideChainSkeletonChain,
 } from "./AssetLogo.styled"
 
-export type AssetLogoBadge = "red" | "yellow"
 export type AssetLogoDecoration = "none" | "atoken"
+export type AssetLogoChainPosition = "corner" | "side"
 
 export type AssetLogoProps = LogoProps & {
   chainSrc?: string
-  badge?: AssetLogoBadge
-  badgeTooltip?: string
+  /**
+   * "side" puts a smaller chain logo left of the asset, cut out by a gap.
+   */
+  chainPosition?: AssetLogoChainPosition
   decoration?: AssetLogoDecoration
   isLoading?: boolean
 }
@@ -28,23 +30,35 @@ export const AssetLogo = ({
   size = "medium",
   alt,
   chainSrc,
-  badge,
-  badgeTooltip,
+  chainPosition = "corner",
   isLoading,
   decoration = "none",
   className,
 }: AssetLogoProps) => {
   const [loadedSrc, setLoadedSrc] = useState<string>()
+  const [failedChainSrc, setFailedChainSrc] = useState<string>()
 
   if (isLoading) {
-    return <LogoSkeleton size={size} />
+    return chainPosition === "side" ? (
+      <SSideChainSkeleton>
+        <SSideChainSkeletonChain size={size}>
+          <Skeleton circle sx={{ size: "100%", display: "flex" }} />
+        </SSideChainSkeletonChain>
+        <LogoSkeleton size={size} />
+      </SSideChainSkeleton>
+    ) : (
+      <LogoSkeleton size={size} />
+    )
   }
+
+  const showChain = !!chainSrc && chainSrc !== failedChainSrc
 
   return (
     <SDecorationContainer
       count={1}
       decoration={decoration}
       size={size}
+      chainPosition={showChain ? chainPosition : "corner"}
       className={className}
     >
       <SAssetLogo
@@ -54,8 +68,13 @@ export const AssetLogo = ({
         data-loaded={(src && loadedSrc === src) || undefined}
         onLoad={() => setLoadedSrc(src)}
       />
-      {chainSrc && <SAssetChainLogo size={size} src={chainSrc} />}
-      {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
+      {showChain && (
+        <SAssetChainLogo
+          size={size}
+          src={chainSrc}
+          onError={() => setFailedChainSrc(chainSrc)}
+        />
+      )}
     </SDecorationContainer>
   )
 }
@@ -64,24 +83,38 @@ type MultipleAssetLogoWrapperProps = {
   size?: LogoSize
   children: React.ReactNode
   decoration?: AssetLogoDecoration
+  /** one chain logo beside the whole stack, always in "side" position */
+  chainSrc?: string
+  /** Merge up to 4 logos into one circle, split into halves/quarters. */
+  collapsed?: boolean
 }
 
 export const MultipleAssetLogoWrapper = ({
   size = "medium",
   children,
   decoration,
+  chainSrc,
+  collapsed,
 }: MultipleAssetLogoWrapperProps) => {
+  const items = Children.toArray(children)
+  const logos = collapsed ? items.slice(0, 4) : items
+  const [failedChainSrc, setFailedChainSrc] = useState<string>()
+  const showChain = !!chainSrc && chainSrc !== failedChainSrc
+
   return (
     <SDecorationContainer
       size={size}
-      count={Children.count(children)}
+      count={collapsed ? 1 : logos.length}
+      collapsed={collapsed ? logos.length : undefined}
       decoration={decoration}
+      chainPosition={showChain ? "side" : "corner"}
     >
-      {Children.map(children, (child) => {
+      {logos.map((child) => {
         if (isValidElement(child)) {
           return cloneElement(child, {
             ...(child.props ?? {}),
             ...{ size },
+            ...(collapsed && { chainSrc: undefined }),
             // override child decor to "none" if decoration from parent is the same
             ...(typeof child.props === "object" &&
               child.props !== null &&
@@ -92,23 +125,13 @@ export const MultipleAssetLogoWrapper = ({
           })
         }
       })}
+      {showChain && (
+        <SAssetChainLogo
+          size={size}
+          src={chainSrc}
+          onError={() => setFailedChainSrc(chainSrc)}
+        />
+      )}
     </SDecorationContainer>
-  )
-}
-
-type BadgeProps = {
-  badge: AssetLogoBadge
-  tooltip?: string
-}
-
-const Badge: React.FC<BadgeProps> = ({ badge, tooltip }) => {
-  const BadgeComp = (
-    <SAssetBadge component={TriangleAlert} size="100%" type={badge} />
-  )
-
-  return (
-    <SBadgeSlot>
-      {tooltip ? <Tooltip text={tooltip}>{BadgeComp}</Tooltip> : BadgeComp}
-    </SBadgeSlot>
   )
 }

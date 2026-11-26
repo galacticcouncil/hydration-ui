@@ -11,6 +11,8 @@ import { useAssets } from "@/providers/assetsProvider"
 type Props = {
   readonly label: string
   readonly labelAdornment?: React.ReactNode
+  readonly sideChainSrc?: string
+  readonly collapsed?: boolean
   readonly isLoading?: boolean
   readonly maxBalance?: string
   readonly isMaxBalanceLoading?: boolean
@@ -24,6 +26,8 @@ type Props = {
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
   labelAdornment,
+  sideChainSrc,
+  collapsed,
   isLoading,
   maxBalance,
   isMaxBalanceLoading,
@@ -49,6 +53,8 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
         iconId: sellAsset.id,
         symbol: sellAsset.symbol,
         decimals: sellAsset.decimals,
+        sideChainSrc,
+        collapsed,
       }
     : null
 

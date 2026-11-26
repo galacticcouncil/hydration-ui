@@ -1,16 +1,19 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useTranslation } from "react-i18next"
 
-import { Label } from "./StablepoolBadge.styled"
-import { Pill } from "./StablepoolBadge.styled"
+import { Initial, Pill, Rest } from "./StablepoolBadge.styled"
 
 export const StablepoolBadge = () => {
   const { t } = useTranslation("common")
   const { isMobile } = useBreakpoints()
+  const label = t("stablepool")
 
   return (
     <Pill disableAnimation={isMobile}>
-      <Label>{t("stablepool")}</Label>
+      <Initial>{label.slice(0, 1)}</Initial>
+      <Rest>
+        <span>{label.slice(1)}</span>
+      </Rest>
     </Pill>
   )
 }

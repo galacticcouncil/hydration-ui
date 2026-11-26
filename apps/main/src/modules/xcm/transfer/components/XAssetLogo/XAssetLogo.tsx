@@ -1,4 +1,7 @@
-import { AssetLogo as AssetLogoPrimitive } from "@galacticcouncil/ui/components"
+import {
+  AssetLogo as AssetLogoPrimitive,
+  AssetLogoChainPosition,
+} from "@galacticcouncil/ui/components"
 import {
   getChainAssetId,
   getChainId,
@@ -14,6 +17,7 @@ import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
 export type XAssetLogoProps = {
   asset: Asset
   chain: AnyChain
+  chainPosition?: AssetLogoChainPosition
   className?: string
 }
 
@@ -30,6 +34,7 @@ const isChainAssetIdAmbiguous = (chain: AnyChain, chainAssetId: string) =>
 export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   asset,
   chain,
+  chainPosition,
   className,
 }) => {
   const metadata = useAssetMetadata()
@@ -41,9 +46,10 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   const isExternalEcosystem =
     chain.isEvmChain() || chain.isSolana() || chain.isSui()
 
+  const ecosystem = chain.ecosystem || ChainEcosystem.Polkadot
+  const chainId = getChainId(chain) ?? ""
+
   if (isExternalEcosystem) {
-    const ecosystem = chain.ecosystem || ChainEcosystem.Polkadot
-    const chainId = getChainId(chain) ?? ""
     const chainAssetId = getChainAssetId(chain, asset).toString()
 
     // The CDN keys icons by on-chain id, so assets sharing one would render
@@ -54,6 +60,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
         <AssetLogoPrimitive
           src={metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, registryId)}
           chainSrc={metadata.getChainLogoSrc(chainId, ecosystem)}
+          chainPosition={chainPosition}
           className={className}
         />
       )
@@ -64,6 +71,7 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
         id={chainAssetId}
         ecosystem={ecosystem}
         chainId={chainId}
+        chainPosition={chainPosition}
         className={className}
       />
     )
@@ -73,6 +81,20 @@ export const XAssetLogo: React.FC<XAssetLogoProps> = ({
   // entry of what it lands as on Hydration.
   const fallbackRegistryId =
     registryId ?? getHydrationAssetId(asset, chain.key) ?? ""
+
+  if (chainPosition === "side") {
+    return (
+      <AssetLogoPrimitive
+        src={metadata.getAssetLogoSrc(
+          HYDRATION_PARACHAIN_ID,
+          fallbackRegistryId,
+        )}
+        chainSrc={metadata.getChainLogoSrc(chainId, ecosystem)}
+        chainPosition="side"
+        className={className}
+      />
+    )
+  }
 
   return <AssetLogo id={fallbackRegistryId} className={className} />
 }
