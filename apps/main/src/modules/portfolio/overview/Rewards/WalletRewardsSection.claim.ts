@@ -98,21 +98,13 @@ const useGetClaimStakingTx = () => {
   )
   const votes = accountVotes?.votes ?? []
 
-  const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
-    votes,
-    votesSuccess,
-  )
+  const { newProcessedVotesIds } = useProcessedVotes(votes, votesSuccess)
 
   return useCallback(() => {
     return positionId === undefined
       ? undefined
-      : getClaimStakingTx(
-          papi,
-          positionId,
-          newProcessedVotesIds,
-          oldProcessedVotesIds,
-        )
-  }, [papi, positionId, newProcessedVotesIds, oldProcessedVotesIds])
+      : getClaimStakingTx(papi, positionId, newProcessedVotesIds)
+  }, [papi, positionId, newProcessedVotesIds])
 }
 
 export const useClaimAllWalletRewards = () => {

@@ -15,9 +15,6 @@ type ProcessedVotesData = {
   readonly newProcessedVotes: ReadonlyArray<{
     readonly keyArgs: readonly [unknown, number]
   }>
-  readonly oldProcessedVotes: ReadonlyArray<{
-    readonly keyArgs: readonly [unknown, number]
-  }>
 }
 
 export const getProcessedVoteIds = (
@@ -27,7 +24,6 @@ export const getProcessedVoteIds = (
   if (!data) {
     return {
       newProcessedVotesIds: [],
-      oldProcessedVotesIds: [],
     }
   }
 
@@ -40,14 +36,7 @@ export const getProcessedVoteIds = (
     },
   )
 
-  const oldProcessedVotesIds = data.oldProcessedVotes.map<number>(
-    ({ keyArgs }) => keyArgs[1],
-  )
-
-  return {
-    newProcessedVotesIds,
-    oldProcessedVotesIds,
-  }
+  return { newProcessedVotesIds }
 }
 
 export const useProcessedVotes = (
@@ -85,7 +74,6 @@ export const usePendingVotes = (
     if (!data) {
       return {
         newPendingVotesIds: [],
-        oldPendingVotesIds: [],
       }
     }
 
@@ -95,11 +83,7 @@ export const usePendingVotes = (
       return { id, classId: accountVote?.classId }
     })
 
-    const oldPendingVotesIds = data.oldPendingVotes.map<number>(
-      ([position]) => position,
-    )
-
-    return { newPendingVotesIds, oldPendingVotesIds }
+    return { newPendingVotesIds }
   }, [data, votes])
 
   return {
