@@ -17,6 +17,7 @@ import type { WormholeVaa } from "@/api/wormhole"
 import {
   getChainXcScanUrn,
   NEAR_CHAIN_KEY,
+  PSM_PROTOCOL,
   SCAN_JOURNEY_PREFIX,
   TJourneyStatus,
   XcJourneyWhStop,
@@ -31,6 +32,12 @@ export const SCAN_ONLY_CHAINS = [NEAR_CHAIN_KEY, "zcash"]
 
 // The rails the scan indexes, as xc-scan names their journeys
 const SCAN_PROTOCOLS = ["wh_ntt", "basejump"]
+
+// The rails that are no ntt transfer, by the scan's kind
+const SCAN_KIND_PROTOCOLS: Record<string, string> = {
+  basejump: "basejump",
+  psm: PSM_PROTOCOL,
+}
 
 // The scan names Zcash's chain after the network, xc-cfg after its coin
 const SCAN_CHAIN_KEYS: Record<string, string> = { zcash: "zec" }
@@ -168,8 +175,9 @@ export const toScanJourney = (
       ]
     : []
 
-  // Labelled as xc-scan labels them
-  const protocol = transfer.kind === "basejump" ? "basejump" : "wh_ntt"
+  // Labelled as xc-scan labels them; it has no HOLLAR PSM journeys, so that
+  // one is the scan's own
+  const protocol = SCAN_KIND_PROTOCOLS[transfer.kind] ?? "wh_ntt"
 
   return {
     id: 0,

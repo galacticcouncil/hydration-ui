@@ -83,7 +83,7 @@ export const useScanJourneysSubscription = (address: string) => {
 
     const unsubscribe = subscribeScanEvents(
       transfersScanClient,
-      ["ntt", "utxo", "basejump"],
+      ["ntt", "utxo", "basejump", "psm"],
       {
         onChange: async (update) => {
           if (await isOwnChange(update)) refetch()

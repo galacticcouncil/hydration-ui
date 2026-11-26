@@ -5,7 +5,7 @@ import {
   safeConvertSS58toH160,
   stringEquals,
 } from "@galacticcouncil/utils"
-import { AnyChain } from "@galacticcouncil/xc-core"
+import { AnyChain, AssetRoute } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import type { Transfer } from "@galacticcouncil/xc-sdk"
 import type { QueryClient } from "@tanstack/react-query"
@@ -14,8 +14,10 @@ import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
 import {
   getChainXcScanUrn,
   journeyDate,
+  PSM_PROTOCOL,
 } from "@/modules/xcm/history/utils/journey"
 import type { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { isPsmRoute } from "@/modules/xcm/transfer/utils/bridge"
 import { XcmTag } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
@@ -268,8 +270,10 @@ function toOptimisticJourney(
   transfer: Transfer,
   txHash: string,
   fromAddress: string,
+  route: AssetRoute,
 ): XcJourney | undefined {
-  const { srcChain, destChain, srcAsset, destAmount, destAddress } = values
+  const { srcChain, destChain, srcAsset, srcAmount, destAmount, destAddress } =
+    values
   const decimals = transfer.source.balance.decimals
   const now = Date.now()
 
@@ -283,8 +287,12 @@ function toOptimisticJourney(
     ? safeConvertSS58toH160(fromAddress)
     : fromAddress
 
-  const protocol =
-    values.bridgeProvider === XcmTag.Basejump ? "basejump" : "xcm"
+  const isPsm = isPsmRoute(route)
+  const protocol = isPsm
+    ? PSM_PROTOCOL
+    : values.bridgeProvider === XcmTag.Basejump
+      ? "basejump"
+      : "xcm"
 
   return {
     id: 0,
@@ -310,7 +318,9 @@ function toOptimisticJourney(
       {
         asset: `${originUrn}|${assetId}`,
         symbol: srcAsset?.originSymbol ?? "",
-        amount: scale(destAmount, decimals),
+        // The PSM pays out another asset than it takes, so only what was
+        // sent can go under the source's symbol, as the scan lists it too
+        amount: scale(isPsm ? srcAmount : destAmount, decimals),
         decimals,
         role: "transfer",
       },
@@ -324,13 +334,14 @@ export function insertOptimisticJourney(
   txHash: string,
   values: XcmFormValues,
   transfer: Transfer,
+  route: AssetRoute,
 ) {
   const queryKey = createXcScanQueryKey(address)
   const list = queryClient.getQueryData<XcJourney[]>(queryKey) ?? []
 
   if (list.some((journey) => isOptimisticFor(journey, txHash))) return
 
-  const journey = toOptimisticJourney(values, transfer, txHash, address)
+  const journey = toOptimisticJourney(values, transfer, txHash, address, route)
   if (!journey) return
 
   if (isHopRoute(values.srcChain, values.destChain)) {

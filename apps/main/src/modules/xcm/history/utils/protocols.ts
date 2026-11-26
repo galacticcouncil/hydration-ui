@@ -6,6 +6,10 @@ const XC_SCAN_PROTOCOLS: Record<string, { label: string; color: ThemeToken }> =
       label: "Instant Transfer",
       color: "colors.skyBlue.600",
     },
+    psm: {
+      label: "HOLLAR PSM",
+      color: "colors.azureBlue.500",
+    },
     xcm: {
       label: "XCM",
       color: "colors.coral.400",

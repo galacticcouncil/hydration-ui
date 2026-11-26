@@ -78,7 +78,7 @@ export const XcmForm = () => {
   const queryClient = useQueryClient()
 
   const submit = useSubmitXcmTransfer({
-    onTransferSubmitted: (txHash, values, transfer) => {
+    onTransferSubmitted: (txHash, values, transfer, route) => {
       if (account) {
         insertOptimisticJourney(
           queryClient,
@@ -86,6 +86,7 @@ export const XcmForm = () => {
           txHash,
           values,
           transfer,
+          route,
         )
       }
 

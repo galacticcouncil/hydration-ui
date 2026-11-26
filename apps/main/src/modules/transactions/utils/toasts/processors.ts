@@ -4,9 +4,13 @@ import {
   extrinsicByHashQuery,
   NeckworkClient,
 } from "@galacticcouncil/indexer/neckwork"
-import { scanTransfersQuery } from "@galacticcouncil/indexer/scan"
+import {
+  type ScanTransfer,
+  scanTransfersQuery,
+} from "@galacticcouncil/indexer/scan"
 import {
   HexString,
+  HYDRATION_CHAIN_KEY,
   transferscan,
   xcscan as xcscanExplorer,
 } from "@galacticcouncil/utils"
@@ -214,29 +218,74 @@ const substrate =
     return resolveExtrinsicToToastStatus(toast, extrinsic)
   }
 
+/** The scan's transfer of a type that `q`, an origin tx or an address, finds. */
+const findScanTransfer = async (
+  queryClient: QueryClient,
+  type: string,
+  q: string,
+): Promise<ScanTransfer | undefined> => {
+  const { items } = await queryClient.fetchQuery(
+    scanTransfersQuery(transfersScanClient, { q, type, limit: 1 }),
+  )
+  return items[0]
+}
+
+const resolveScanTransferToToastStatus = (
+  transfer: ScanTransfer | undefined,
+): ToastStatus => {
+  const link = transfer && transferscan.transfer(transfer.id)
+  const dateUpdated = new Date().toISOString()
+
+  switch (transfer?.status) {
+    case "completed":
+      return { status: "success", link, processed: true, dateUpdated }
+    case "failed":
+      return { status: "error", link, processed: true, dateUpdated }
+    default:
+      return { status: "unknown", link, processed: false, dateUpdated }
+  }
+}
+
 const basejump =
   (queryClient: QueryClient): ToastProcessorFn =>
-  async (toast) => {
+  async (toast) =>
     // The scan finds a transfer by its origin tx too
-    const { items } = await queryClient.fetchQuery(
-      scanTransfersQuery(transfersScanClient, {
-        q: toast.meta.txHash,
-        type: "basejump",
-        limit: 1,
-      }),
+    resolveScanTransferToToastStatus(
+      await findScanTransfer(queryClient, "basejump", toast.meta.txHash),
     )
-    const transfer = items[0]
-    const link = transfer && transferscan.transfer(transfer.id)
-    const dateUpdated = new Date().toISOString()
 
-    switch (transfer?.status) {
-      case "completed":
-        return { status: "success", link, processed: true, dateUpdated }
-      case "failed":
-        return { status: "error", link, processed: true, dateUpdated }
-      default:
-        return { status: "unknown", link, processed: false, dateUpdated }
+/**
+ * A HOLLAR PSM transfer, which the scan follows across both chains by its
+ * origin tx. A redemption a substrate account signs is no evm transaction, so
+ * the scan knows that one by its extrinsic, as `<block>-<index>`.
+ */
+const psm =
+  (
+    queryClient: QueryClient,
+    neckworkClient: NeckworkClient,
+  ): ToastProcessorFn =>
+  async (toast) => {
+    const { txHash } = toast.meta
+    const find = (q: string) => findScanTransfer(queryClient, "psm", q)
+
+    const findByExtrinsic = async () => {
+      const extrinsic = await queryClient
+        .fetchQuery(extrinsicByHashQuery(neckworkClient, txHash))
+        .catch(() => null)
+
+      return extrinsic
+        ? find(`${extrinsic.blockHeight}-${extrinsic.extrinsicIndex}`)
+        : undefined
     }
+
+    const isFromHydration =
+      toast.meta.type === TransactionType.Xcm &&
+      toast.meta.srcChainKey === HYDRATION_CHAIN_KEY
+
+    return resolveScanTransferToToastStatus(
+      (await find(txHash)) ??
+        (isFromHydration ? await findByExtrinsic() : undefined),
+    )
   }
 
 const xcscan =
@@ -308,6 +357,7 @@ export const processors = {
   evm,
   substrate,
   basejump,
+  psm,
   xcscan,
   xcSwap,
   invalid,
