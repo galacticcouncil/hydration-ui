@@ -425,6 +425,26 @@ describe("the reward program as an account meets it", () => {
     )
   })
 
+  it("gives the rate of the Wormhole H-tokens on their own reserves", () => {
+    const latest = {
+      ...file(),
+      assets: {
+        "HUSDC.wh": { budgetPerDay: "100000000", eligibleUsd: "730000.00" },
+        "HUSDT.wh": { budgetPerDay: "50000000", eligibleUsd: "730000.00" },
+      },
+    }
+    const program = getRewardsProgram({
+      latest,
+      account: ACCOUNT,
+      readAt: READ_AT,
+    })
+
+    expect(rates(program)).toEqual({
+      "0x0000000000000000000000000000000100000072": "0.1",
+      "0x0000000000000000000000000000000100000073": "0.05",
+    })
+  })
+
   it.each([
     ["nobody is connected", undefined],
     ["the account supplies none of the assets", NEWCOMER],
