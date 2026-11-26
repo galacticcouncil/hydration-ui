@@ -1,6 +1,3 @@
-// Looper — galacticcouncil/money-market@feat/looper, looper/src. Only the
-// entries the UI reads or calls; struct field order follows ILooperPosition.
-
 const PARAMS_COMPONENTS = [
   { name: "collateral", type: "address" },
   { name: "aCollateral", type: "address" },

@@ -4,6 +4,7 @@ import { Ladder, Stall } from "@/modules/strategies/multiply/config/abi"
 import {
   getMultiplyPositionStatus,
   getMultiplyProgress,
+  holdPeakProgress,
 } from "@/modules/strategies/multiply/utils/status"
 
 const NOW = 1_000_000
@@ -90,5 +91,20 @@ describe("getMultiplyProgress", () => {
     expect(getMultiplyProgress("building", 3.01, 3)).toBe(1)
     expect(getMultiplyProgress("withdrawing", 2, 3)).toBeNull()
     expect(getMultiplyProgress("active", 3, 3)).toBeNull()
+  })
+})
+
+describe("holdPeakProgress", () => {
+  it("ignores a reorg rewinding the ramp, resets on a new ladder", () => {
+    const hold = (ladder: Ladder, p: number | null) =>
+      holdPeakProgress("0xpos", ladder, p)
+    expect(hold(Ladder.Ramp, 0.55)).toBe(0.55)
+    // the log: nonce 11 -> 9 after a lark reorg
+    expect(hold(Ladder.Ramp, 0)).toBe(0.55)
+    expect(hold(Ladder.Ramp, null)).toBeNull()
+    expect(hold(Ladder.Ramp, 0.7)).toBe(0.7)
+    expect(hold(Ladder.Unwind, 0.29)).toBe(0.29)
+    expect(hold(Ladder.None, null)).toBeNull()
+    expect(hold(Ladder.Ramp, 0.1)).toBe(0.1)
   })
 })

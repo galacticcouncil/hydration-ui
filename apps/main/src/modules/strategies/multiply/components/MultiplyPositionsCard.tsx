@@ -61,6 +61,7 @@ import { getNetApy } from "@/modules/strategies/multiply/utils/projection"
 import {
   getMultiplyPositionStatus,
   getMultiplyProgress,
+  holdPeakProgress,
   isRungExpired,
   type MultiplyPositionStatus,
 } from "@/modules/strategies/multiply/utils/status"
@@ -189,7 +190,12 @@ const MultiplyPairPositions: React.FC<MultiplyPairPositionsProps> = ({
         const status = getMultiplyPositionStatus(position, now)
         const current = leverage(position.leverage)
         const target = leverage(position.targetLeverage)
-        const progress = getMultiplyProgress(status, current, target)
+        const rawProgress = getMultiplyProgress(status, current, target)
+        const progress = holdPeakProgress(
+          position.address,
+          position.ladder,
+          rawProgress,
+        )
         const nav = Number(amount(position.nav))
         // the collateral held; leverage is collateral / net value
         const size = nav * current

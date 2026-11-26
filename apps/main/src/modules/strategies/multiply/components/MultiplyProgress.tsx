@@ -8,12 +8,10 @@ import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-// the numbers count over the same 900ms the bar's width takes to move
 const PROGRESS_MOVE_MS = 900
 
 type Props = {
   readonly label: string
-  // 0..1
   readonly progress: number
   readonly leverage: number
 }
@@ -37,10 +35,7 @@ export const MultiplyProgress: FC<Props> = ({ label, progress, leverage }) => {
             value={progress}
             duration={PROGRESS_MOVE_MS}
             format={(value) =>
-              t("common:percent", {
-                value: value * 100,
-                maximumFractionDigits: 0,
-              })
+              t("common:percent", { value: Math.floor(value * 100) })
             }
           />
         </Text>

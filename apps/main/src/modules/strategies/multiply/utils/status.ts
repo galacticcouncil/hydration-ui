@@ -55,3 +55,26 @@ export const getMultiplyProgress = (
   if (status === "closing") return 1 - climbed
   return null
 }
+
+const peaks = new Map<string, { ladder: Ladder; peak: number }>()
+
+/**
+ * The highest progress a position's current ladder has shown. A lark reorg
+ * rewinds a ramp by a rung or two, and the bar should not follow it back. A
+ * new ladder, or one that ended, starts from scratch.
+ */
+export const holdPeakProgress = (
+  address: string,
+  ladder: Ladder,
+  progress: number | null,
+) => {
+  if (progress === null) {
+    if (ladder === Ladder.None) peaks.delete(address)
+    return null
+  }
+  const prev = peaks.get(address)
+  const peak =
+    prev?.ladder === ladder ? Math.max(prev.peak, progress) : progress
+  peaks.set(address, { ladder, peak })
+  return peak
+}
