@@ -111,9 +111,9 @@ export const MultiplyPositionsCard: React.FC<{
       <Separator />
       <Flex direction="column" gap="m" p="m">
         {pairs.map(({ pair, data, collateralReserve, debtReserve }) => {
-          const pairPositions = positions.filter(
-            (p) => p.pair.slug === pair.slug,
-          )
+          const pairPositions = positions
+            .filter((p) => p.pair.slug === pair.slug)
+            .reverse()
           if (!pairPositions.length) return null
           return (
             <MultiplyPairPositions
