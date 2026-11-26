@@ -77,6 +77,22 @@ export const percentageOf = (
   decimals: number,
 ) => Big(value).times(percent).div(100).round(decimals, Big.roundDown).toFixed()
 
+/** Amount of `to` that matches `amount` of `from` at the pool's reserve ratio (human units). */
+export const getProportionalAmount = (
+  amount: string,
+  fromReserve: string,
+  toReserve: string,
+  toDecimals: number,
+) => {
+  if (!(Number(amount) > 0) || !(Number(fromReserve) > 0)) return ""
+
+  return Big(amount)
+    .times(toReserve)
+    .div(fromReserve)
+    .round(toDecimals, Big.roundDown)
+    .toFixed()
+}
+
 export const isNegative = (amount: string | number | bigint) => {
   return normalizeValue(amount) < 0n
 }
