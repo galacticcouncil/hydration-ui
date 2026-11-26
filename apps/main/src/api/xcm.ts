@@ -144,8 +144,8 @@ export const useHydrationDisplayAssetId = () => {
   const configService = useCrossChainConfigService()
 
   return useCallback(
-    (asset: Asset): string | null =>
-      resolveHydrationDisplayAssetId(asset, configService),
+    (asset: Asset, chainKey: string): string | null =>
+      resolveHydrationDisplayAssetId(asset, chainKey, configService),
     [configService],
   )
 }
