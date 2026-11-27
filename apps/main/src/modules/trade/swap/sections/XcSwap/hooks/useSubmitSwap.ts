@@ -13,7 +13,6 @@ import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceA
 import { SwapSubmitValues } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   TransactionActions,
@@ -29,7 +28,6 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const { sdk } = rpc
-  const isIceEnabled = useIsIceEnabled()
   const { getErc20AToken } = useAssets()
 
   const {
@@ -101,7 +99,7 @@ export const useSubmitSwap = (actions?: TransactionActions) => {
         getErc20AToken(sellAsset.id)?.underlyingAssetId === buyAsset.id ||
         getErc20AToken(buyAsset.id)?.underlyingAssetId === sellAsset.id
 
-      if (isIceEnabled && !isATokenPair) {
+      if (!isATokenPair) {
         const iceAmounts = getIceSwapAmounts(swap, swapSlippage)
 
         // Swap intents are exact-in: amount_in is always spent, amount_out is

@@ -5,7 +5,6 @@ import { FC, useMemo, useState } from "react"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useIntentOrdersData } from "@/modules/trade/orders/lib/useIntentOrdersData"
 import { useInvalidateOrdersOnExecution } from "@/modules/trade/orders/lib/useInvalidateOrdersOnExecution"
-import { useChainOrdersData } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { MarketTransactions } from "@/modules/trade/orders/TradeOrders/MarketTransactions"
 import { MyRecentActivity } from "@/modules/trade/orders/TradeOrders/MyRecentActivity"
 import { OpenOrders } from "@/modules/trade/orders/TradeOrders/OpenOrders"
@@ -14,7 +13,6 @@ import {
   OrderHistoryKind,
   TradeOrdersHeader,
 } from "@/modules/trade/orders/TradeOrders/TradeOrdersHeader"
-import { useIsIceEnabled } from "@/states/intents"
 
 type Props = PaperProps
 
@@ -33,34 +31,26 @@ export const TradeOrders: FC<Props> = (props) => {
     [allPairs, assetIn, assetOut],
   )
 
-  const isIceEnabled = useIsIceEnabled()
-  const [pickedKind, setPickedKind] = useState<OrderHistoryKind | null>(null)
+  // New orders are always intents; past DCA schedules stay one click away
+  const [kind, setKind] = useState<OrderHistoryKind>("intents")
 
-  const kind: OrderHistoryKind =
-    pickedKind ?? (isIceEnabled ? "intents" : "dca")
-
-  const { orders, isLoading, isError } = useChainOrdersData()
-  const {
-    orders: intentOrders,
-    isLoading: isIntentsLoading,
-    isError: isIntentsError,
-  } = useIntentOrdersData()
+  const { orders: intentOrders, isLoading, isError } = useIntentOrdersData()
 
   // Presence subscriptions miss executions, and a fill is a solver's unsigned
-  // extrinsic rather than the trader's own tx, so neither the chain queries nor
+  // extrinsic rather than the trader's own tx, so neither the intent queries nor
   // the neckwork subtree would refresh without this.
   useInvalidateOrdersOnExecution()
 
-  const openOrders = useMemo(() => {
-    const all = [...intentOrders, ...orders]
-
-    return assetIds.length
-      ? all.filter(
-          ({ from, to }) =>
-            assetIds.includes(from.id) || assetIds.includes(to.id),
-        )
-      : all
-  }, [orders, intentOrders, assetIds])
+  const openOrders = useMemo(
+    () =>
+      assetIds.length
+        ? intentOrders.filter(
+            ({ from, to }) =>
+              assetIds.includes(from.id) || assetIds.includes(to.id),
+          )
+        : intentOrders,
+    [intentOrders, assetIds],
+  )
 
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
@@ -68,7 +58,7 @@ export const TradeOrders: FC<Props> = (props) => {
         paginationProps={paginationProps}
         openOrdersCount={openOrders.length}
         kind={kind}
-        onKindChange={setPickedKind}
+        onKindChange={setKind}
       />
       <Separator />
       <div sx={{ overflowX: "auto" }}>
@@ -86,8 +76,8 @@ export const TradeOrders: FC<Props> = (props) => {
                 <OpenOrders
                   paginationProps={paginationProps}
                   orders={openOrders}
-                  isLoading={isLoading || isIntentsLoading}
-                  isError={isError || isIntentsError}
+                  isLoading={isLoading}
+                  isError={isError}
                 />
               )
             case "orderHistory":

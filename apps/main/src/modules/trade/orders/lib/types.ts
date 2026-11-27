@@ -9,8 +9,6 @@ export enum DcaScheduleStatus {
   Cancelled = "Cancelled",
 }
 
-export const DCA_OPEN_ORDER_STATUSES = [DcaScheduleStatus.Created] as const
-
 export const DCA_HISTORY_ORDER_STATUSES = [
   DcaScheduleStatus.Completed,
   DcaScheduleStatus.Terminated,

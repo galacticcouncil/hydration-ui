@@ -1,11 +1,8 @@
 import { Alert, Flex } from "@galacticcouncil/ui/components"
-import { useFormContext } from "react-hook-form"
 
 import { HealthFactorResult } from "@/api/aave"
 import { TradeWarnings } from "@/modules/trade/swap/sections/XcSwap/components/TradeWarnings"
 import { useXcSwapAlerts } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapAlerts"
-import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
-import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 
 type Props = {
   /** Set only when the risk warning should be shown. */
@@ -21,12 +18,7 @@ export const XcSwapAlerts = ({
   isRiskAccepted,
   onIsRiskAcceptedChange,
 }: Props) => {
-  const { quote } = useXcSwap()
   const { alerts } = useXcSwapAlerts()
-  const { watch } = useFormContext<XcSwapFormValues>()
-
-  const isSingleTrade = watch("isSingleTrade")
-  const onChainQuote = quote?.kind === "oc" ? quote : null
 
   return (
     <Flex
@@ -44,9 +36,6 @@ export const XcSwapAlerts = ({
       ))}
       <TradeWarnings
         isFormValid={canContinue}
-        isSingleTrade={isSingleTrade}
-        swap={onChainQuote?.swap}
-        twap={onChainQuote?.twap}
         healthFactor={healthFactor}
         healthFactorRiskAccepted={isRiskAccepted}
         setHealthFactorRiskAccepted={onIsRiskAcceptedChange}

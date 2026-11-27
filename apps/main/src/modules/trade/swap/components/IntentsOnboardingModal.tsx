@@ -74,16 +74,6 @@ export const IntentsOnboardingModal: FC = () => {
                 >
                   {t("intents.onboarding.description")}
                 </Text>
-                <Text
-                  as="p"
-                  align="center"
-                  fs="p4"
-                  fw={500}
-                  color={getToken("text.tint.secondary")}
-                  textWrap="balance"
-                >
-                  {t("intents.onboarding.hint")}
-                </Text>
               </Stack>
             </SIntentsOnboardingHeaderContent>
           </SIntentsOnboardingHeader>

@@ -5,15 +5,13 @@ import { TradeOrder } from "@/api/trade"
 import { ENV } from "@/config/env"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useTwapFee = (twap: TradeOrder | null, enabled = true) => {
   const { sdk } = useRpcProvider()
-  const isIceEnabled = useIsIceEnabled()
   const { account } = useAccount()
   const {
-    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   const { data: tx, isLoading: isTxLoading } = useQuery({
@@ -26,22 +24,15 @@ export const useTwapFee = (twap: TradeOrder | null, enabled = true) => {
       twap?.amountIn.toString(),
       twap?.amountOut.toString(),
       twap?.tradeCount,
-      isIceEnabled,
       twapSlippage,
-      twapMaxRetries,
       account?.address,
     ],
     queryFn: async () => {
       if (!twap) throw new Error("TWAP order is required")
 
-      const builder = isIceEnabled
-        ? sdk.tx.intentOrder(twap).withSlippage(twapSlippage)
-        : sdk.tx
-            .order(twap)
-            .withSlippage(twapSlippage)
-            .withMaxRetries(twapMaxRetries)
-
-      return builder
+      return sdk.tx
+        .intentOrder(twap)
+        .withSlippage(twapSlippage)
         .withBeneficiary(account?.address ?? ENV.VITE_TRSRY_ADDR)
         .build()
         .then((tx) => tx.get())

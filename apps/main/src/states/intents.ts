@@ -4,23 +4,21 @@ import { persist } from "zustand/middleware"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type IntentsState = {
-  enabled: boolean
   hasSeenModal: boolean
 }
 
 type IntentsActions = {
-  setEnabled: (value: boolean) => void
   dismissModal: () => void
 }
 
 export type IntentsStore = IntentsState & IntentsActions
 
+// Persisted state from before intents were mandatory may still hold `enabled`;
+// nothing reads it, and bumping `version` without a migrate would reset hasSeenModal
 export const useIntentsStore = create<IntentsStore>()(
   persist(
     (set) => ({
-      enabled: true,
       hasSeenModal: false,
-      setEnabled: (enabled) => set({ enabled }),
       dismissModal: () => set({ hasSeenModal: true }),
     }),
     { name: "intents", version: 1 },
@@ -29,10 +27,3 @@ export const useIntentsStore = create<IntentsStore>()(
 
 export const useHasIntentPallet = () =>
   useRpcProvider().featureFlags.isIceEnabled
-
-export const useIsIceEnabled = () => {
-  const { featureFlags } = useRpcProvider()
-  const enabled = useIntentsStore((state) => state.enabled)
-
-  return featureFlags.isIceEnabled && enabled
-}

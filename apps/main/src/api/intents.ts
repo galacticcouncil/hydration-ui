@@ -84,14 +84,11 @@ export const useAccountIntents = (address: string) => {
   }
 }
 
-export const maxIntentDurationQuery = (
-  context: TProviderContext,
-  isIceEnabled: boolean,
-) => {
+export const maxIntentDurationQuery = (context: TProviderContext) => {
   const { papi, isReady } = context
 
   return queryOptions({
-    enabled: isIceEnabled && isReady,
+    enabled: isReady,
     staleTime: Infinity,
     queryKey: ["intents", "maxAllowedIntentDuration"],
     queryFn: async () => {
@@ -111,7 +108,7 @@ export const getIntentDeadline = async (
   durationMs: number,
 ): Promise<bigint> => {
   const [maxDurationMs, { timestamp }] = await Promise.all([
-    rpc.queryClient.ensureQueryData(maxIntentDurationQuery(rpc, true)),
+    rpc.queryClient.ensureQueryData(maxIntentDurationQuery(rpc)),
     rpc.queryClient.ensureQueryData(bestNumberQuery(rpc)),
   ])
 

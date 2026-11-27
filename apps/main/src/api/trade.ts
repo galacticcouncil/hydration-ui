@@ -136,10 +136,27 @@ export const bestSellWithTxQuery = (
 
 type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
+/** The scheduler's TWAP schedule (impact-based count, fixed interval), built as a DCA order and placed as an intent */
+export const getTwapSellOrder = async (
+  { api: { scheduler, router } }: TProviderContext["sdk"],
+  assetIn: number,
+  assetOut: number,
+  amountIn: string,
+) => {
+  const quote = await router.getBestSell(assetIn, assetOut, amountIn)
+  const tradeCount = scheduler.getTwapTradeCount(Math.abs(quote.priceImpactPct))
+  return scheduler.getDcaOrder(
+    assetIn,
+    assetOut,
+    amountIn,
+    scheduler.getTwapExecutionTime(tradeCount),
+    tradeCount,
+  )
+}
+
 export const bestSellTwapQuery = (
   rpc: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellTwapArgs,
-  isIceEnabled: boolean,
   enabled = true,
 ) =>
   queryOptions({
@@ -150,29 +167,9 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
-      isIceEnabled,
     ],
-    queryFn: async () => {
-      const inId = Number(assetIn)
-      const outId = Number(assetOut)
-      if (!isIceEnabled) {
-        return rpc.sdk.api.scheduler.getTwapSellOrder(inId, outId, amountIn)
-      }
-      // ICE: the scheduler's TWAP schedule (impact-based count, fixed
-      // interval), built as a DCA order
-      const { scheduler, router } = rpc.sdk.api
-      const quote = await router.getBestSell(inId, outId, amountIn)
-      const tradeCount = scheduler.getTwapTradeCount(
-        Math.abs(quote.priceImpactPct),
-      )
-      return scheduler.getDcaOrder(
-        inId,
-        outId,
-        amountIn,
-        scheduler.getTwapExecutionTime(tradeCount),
-        tradeCount,
-      )
-    },
+    queryFn: () =>
+      getTwapSellOrder(rpc.sdk, Number(assetIn), Number(assetOut), amountIn),
     enabled:
       enabled &&
       rpc.isReady &&
@@ -380,7 +377,6 @@ export const minimumOrderBudgetQuery = (
 
 export const tradeOrderDurationQuery = (
   { sdk, isReady, queryClient }: TProviderContext,
-  isIceEnabled: boolean,
   tradeCount: number,
   tradePeriod = 0,
 ) =>
@@ -391,15 +387,10 @@ export const tradeOrderDurationQuery = (
       "twapExecutionTime",
       tradeCount,
       tradePeriod,
-      isIceEnabled,
     ],
     queryFn: async () => {
-      if (!isIceEnabled) {
-        return sdk.api.scheduler.getTwapExecutionTime(tradeCount)
-      }
-
       const blockTimeMs = await queryClient.ensureQueryData(blockTimeQuery(sdk))
       return tradeCount * tradePeriod * blockTimeMs
     },
-    enabled: isReady && tradeCount > 0 && (!isIceEnabled || tradePeriod > 0),
+    enabled: isReady && tradeCount > 0 && tradePeriod > 0,
   })

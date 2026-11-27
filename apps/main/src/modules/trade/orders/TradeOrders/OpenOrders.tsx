@@ -4,8 +4,6 @@ import { FC, useMemo, useState } from "react"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
-  DcaOrderData,
-  isDcaScheduleOrder,
   isIntentOrder,
   OrderData,
   orderKey,
@@ -16,10 +14,7 @@ import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { LimitOrderDetailsModal } from "@/modules/trade/orders/LimitOrderDetailsModal"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
-import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
-import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useDcaEnrichment"
 import { useIntentEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useIntentEnrichment"
-import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
 import { PastExecutionsIntent } from "@/modules/trade/orders/TradeOrders/PastExecutionsIntent"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
@@ -37,44 +32,20 @@ export const OpenOrders: FC<Props> = ({
   isError,
 }) => {
   const [detailKey, setDetailKey] = useState<string | null>(null)
-  const [terminating, setTerminating] = useState<DcaOrderData | null>(null)
   const removeIntent = useRemoveIntent()
 
   const neckworkEnabled = useNeckworkEnabled()
 
-  // Both halves come from the container, so the asset filter it applies reaches
-  // intents too. A merged row would answer yes to both guards, so schedules win
-  // the tie — they cannot occur on this path today (see wayfinder ticket 08),
-  // but the ordering is the module's documented rule.
-  const scheduleOrders = useMemo(
-    () => orders.filter(isDcaScheduleOrder),
-    [orders],
-  )
-  const intentOrders = useMemo(
-    () =>
-      orders.filter(
-        (order) => !isDcaScheduleOrder(order) && isIntentOrder(order),
-      ),
-    [orders],
-  )
-  const { orders: enrichedOrders, refetch } = useDcaEnrichment(scheduleOrders)
-  const { orders: enrichedIntents, refetch: refetchIntents } =
+  const intentOrders = useMemo(() => orders.filter(isIntentOrder), [orders])
+  const { orders: allOrders, refetch: refetchIntents } =
     useIntentEnrichment(intentOrders)
-
-  const allOrders = useMemo<Array<OrderData>>(
-    () => [...enrichedIntents, ...enrichedOrders],
-    [enrichedIntents, enrichedOrders],
-  )
 
   const columns = useOpenOrdersColumns()
 
   const detail = allOrders.find((order) => orderKey(order) === detailKey)
   const periodMs = useDcaPeriodMs(detail)
 
-  const close = () => {
-    setDetailKey(null)
-    setTerminating(null)
-  }
+  const close = () => setDetailKey(null)
 
   const isLoading = isOrdersLoading
 
@@ -88,25 +59,14 @@ export const OpenOrders: FC<Props> = ({
         {...paginationProps}
         onRowClick={(order) => {
           if (neckworkEnabled) {
-            void refetch()
             void refetchIntents()
           }
           setDetailKey(orderKey(order))
         }}
         emptyState={<OrdersEmptyState isError={isError} />}
       />
-      <Modal open={!!detail || !!terminating} onOpenChange={close}>
-        {terminating ? (
-          <TerminateDcaScheduleModalContent
-            scheduleId={terminating.scheduleId}
-            sold={terminating.fromAmountExecuted}
-            total={terminating.fromAmountBudget}
-            symbol={terminating.from.symbol}
-            openBudget={terminating.isOpenBudget}
-            onClose={() => setTerminating(null)}
-          />
-        ) : (
-          detail &&
+      <Modal open={!!detail} onOpenChange={close}>
+        {detail &&
           (detail.kind === OrderKind.Limit ? (
             <LimitOrderDetailsModal
               details={detail}
@@ -120,32 +80,21 @@ export const OpenOrders: FC<Props> = ({
               }
             />
           ) : (
-            <DcaOrderDetailsModal
-              details={detail}
-              pastExecutions={
-                isDcaScheduleOrder(detail) ? (
-                  <PastExecutions
-                    scheduleId={detail.scheduleId}
-                    periodMs={periodMs}
-                  />
-                ) : (
+            isIntentOrder(detail) && (
+              <DcaOrderDetailsModal
+                details={detail}
+                pastExecutions={
                   <PastExecutionsIntent
                     intentId={detail.intentId}
                     periodMs={periodMs}
                   />
-                )
-              }
-              onTerminate={() => {
-                if (isDcaScheduleOrder(detail)) {
-                  setTerminating(detail)
-                  return
                 }
-
-                removeIntent.mutate(detail.intentId, { onSuccess: close })
-              }}
-            />
-          ))
-        )}
+                onTerminate={() =>
+                  removeIntent.mutate(detail.intentId, { onSuccess: close })
+                }
+              />
+            )
+          ))}
       </Modal>
     </>
   )
