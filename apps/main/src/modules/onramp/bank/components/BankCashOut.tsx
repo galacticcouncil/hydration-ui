@@ -3,12 +3,8 @@ import {
   Button,
   ModalBody,
   ModalFooter,
-  Paper,
   Stack,
-  SummaryRow,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -17,6 +13,7 @@ import type { BankCashOutFormValues } from "@/modules/onramp/bank/components/Ban
 import { BankCashOutQuote } from "@/modules/onramp/bank/components/BankCashOutQuote"
 import { BankCashOutReview } from "@/modules/onramp/bank/components/BankCashOutReview"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
+import { BankWithdrawalSummary } from "@/modules/onramp/bank/components/BankWithdrawalReceipt"
 import { FIXTURE_DEMO_CONTINUE_HASH } from "@/modules/onramp/bank/config/fixtures"
 import type {
   BankAccountView,
@@ -239,6 +236,7 @@ export const BankCashOut: FC<BankCashOutProps> = ({
             currency={stage.currency}
             hasApprove={stage.hasApprove}
             chainId={stage.chainId}
+            accountLine={accountLine}
             demo={demo}
             onSign={demo ? () => continueDemo(stage.build.ramp.id) : handOver}
             onLeave={() => leaveTo(stage.build.ramp.id)}
@@ -311,17 +309,14 @@ export const BankCashOut: FC<BankCashOutProps> = ({
     >
       <ModalBody>
         <Stack gap="l">
-          <Paper p="l" bg="dim">
-            <Stack gap="xs" align="center">
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("bank.cashOut.summary.bridgeReceives")}
-              </Text>
-              <Text
-                font="primary"
-                fs="h6"
-                color={getToken("text.high")}
-                data-summary-credited={credited ?? ""}
-              >
+          <BankWithdrawalSummary
+            label={t(
+              quoteFits
+                ? "bank.cashOut.quote.bridgeCredited"
+                : "bank.cashOut.summary.bridgeReceives",
+            )}
+            amount={
+              <span data-summary-credited={credited ?? ""}>
                 {credited
                   ? t("bank.cashOut.quote.usdc", {
                       amount: formatUsdcBaseUnits(credited) ?? "-",
@@ -329,39 +324,16 @@ export const BankCashOut: FC<BankCashOutProps> = ({
                   : quoteSettled
                     ? "-"
                     : t("bank.cashOut.summary.quoting")}
-              </Text>
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("bank.cashOut.summary.from", { amount: usdcAmount })}
-              </Text>
-              <Text fs="p5" color={getToken("text.low")}>
-                {accountLine}
-              </Text>
-            </Stack>
-          </Paper>
-          <Stack gap="s">
-            <Text
-              font="primary"
-              fs="p2"
-              color={getToken("text.tint.secondary")}
-            >
-              {t("bank.cashOut.summary.overview")}
-            </Text>
-            <SummaryRow
-              label={t("bank.cashOut.summary.toAccount")}
-              content={accountLine}
-            />
-            <SummaryRow
-              label={t("bank.cashOut.summary.payoutCurrency")}
-              content={t(`bank.deposit.currency.${currency}`)}
-            />
-            {quoteFits && quote.data && (
-              <BankCashOutQuote
-                quote={quote.data.quote}
-                payoutLimit={quote.data.payoutLimit}
-                currency={currency}
-              />
-            )}
-          </Stack>
+              </span>
+            }
+            source={t("bank.cashOut.summary.from", { amount: usdcAmount })}
+            account={accountLine}
+          />
+          <BankCashOutQuote
+            pricing={quoteFits ? quote.data : undefined}
+            currency={currency}
+            account={accountLine}
+          />
           {quoteError && (
             <Alert variant="warning" description={errorText(quoteError)} />
           )}

@@ -305,7 +305,7 @@ describe("the bank modal: stepper, back and close", () => {
     )
   })
 
-  it("set-up screens follow the server's state, each on the Verify step (S02-S06)", async () => {
+  it("set-up screens show the Verify step until Bridge starts reviewing", async () => {
     signedIn()
     const seen: string[] = []
     for (const [answer, marker] of [
@@ -321,7 +321,12 @@ describe("the bank modal: stepper, back and close", () => {
       cleanup()
       client.clear()
     }
-    expect(seen).toEqual(Array(4).fill("bank.step.verify"))
+    expect(seen).toEqual([
+      "bank.step.verify",
+      "bank.step.verify",
+      "bank.step.verify",
+      "-",
+    ])
   })
 
   it("S04 -> S05 after a Bridge page is opened; back returns to S04", async () => {

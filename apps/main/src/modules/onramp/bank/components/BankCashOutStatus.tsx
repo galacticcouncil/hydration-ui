@@ -3,7 +3,6 @@ import {
   Button,
   ModalBody,
   ModalFooter,
-  Paper,
   Skeleton,
   Stack,
   Text,
@@ -18,6 +17,7 @@ import {
 } from "@/modules/onramp/bank/components/BankRampLabel"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import { BankTimeline } from "@/modules/onramp/bank/components/BankTimeline"
+import { BankWithdrawalReceipt } from "@/modules/onramp/bank/components/BankWithdrawalReceipt"
 import type { RampView } from "@/modules/onramp/bank/config/schemas"
 import { useCashOutLocalSend } from "@/modules/onramp/bank/hooks/useCashOutLocalSend"
 import { useHbrRamp, useHbrService } from "@/modules/onramp/bank/hooks/useHbr"
@@ -80,58 +80,53 @@ export const BankCashOutStatus: FC<BankCashOutStatusProps> = ({
   const view = ramp.data?.ramp
   const line = view ? accountLine?.(view.bankAccountId) : null
 
+  const notices = (demo || ramp.isError) && (
+    <>
+      {demo && (
+        <Alert variant="info" description={t("bank.cashOut.status.demoNote")} />
+      )}
+      {ramp.isError && (
+        <Alert
+          variant="warning"
+          description={t(`bank.error.${classifyBankError(ramp.error)}`)}
+        />
+      )}
+    </>
+  )
+
   return (
     <BankStepShell
       title={t("bank.cashOut.status.title")}
       step="transfer"
       onBack={onViewTransfers}
     >
-      <ModalBody>
-        <Stack gap="l" data-cash-out-status={rampId}>
-          {demo && (
-            <Alert
-              variant="info"
-              description={t("bank.cashOut.status.demoNote")}
-            />
+      {view ? (
+        <BankWithdrawalReceipt
+          statusId={rampId}
+          label={t("bank.cashOut.status.cashOut")}
+          amount={t("bank.cashOut.status.amount", {
+            amount: formatUsdcBaseUnits(view.usdcAmount) ?? "-",
+          })}
+          account={line}
+          notice={notices}
+        >
+          <Progress h160={h160} view={view} />
+          {view.status === "built" && local.view !== "none" && (
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t(`bank.cashOut.local.${local.view}`, {
+                value: new Date(view.validUntil),
+              })}
+            </Text>
           )}
-          {ramp.isError && (
-            <Alert
-              variant="warning"
-              description={t(`bank.error.${classifyBankError(ramp.error)}`)}
-            />
-          )}
-          {!view && !ramp.isError && <Skeleton height={160} />}
-          {view && (
-            <>
-              <Paper p="l" bg="dim">
-                <Stack gap="xs" align="center">
-                  <Text fs="p5" color={getToken("text.medium")}>
-                    {t("bank.cashOut.status.cashOut")}
-                  </Text>
-                  <Text font="primary" fs="h6" color={getToken("text.high")}>
-                    {t("bank.cashOut.status.amount", {
-                      amount: formatUsdcBaseUnits(view.usdcAmount) ?? "-",
-                    })}
-                  </Text>
-                  {line && (
-                    <Text fs="p5" color={getToken("text.low")}>
-                      {line}
-                    </Text>
-                  )}
-                </Stack>
-              </Paper>
-              <Progress h160={h160} view={view} />
-              {view.status === "built" && local.view !== "none" && (
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t(`bank.cashOut.local.${local.view}`, {
-                    value: new Date(view.validUntil),
-                  })}
-                </Text>
-              )}
-            </>
-          )}
-        </Stack>
-      </ModalBody>
+        </BankWithdrawalReceipt>
+      ) : (
+        <ModalBody>
+          <Stack gap="l" data-cash-out-status={rampId}>
+            {notices}
+            {!ramp.isError && <Skeleton height={160} />}
+          </Stack>
+        </ModalBody>
+      )}
       <ModalFooter>
         <Button size="large" width="100%" onClick={onViewTransfers}>
           {t("bank.cashOut.status.viewTransfers")}

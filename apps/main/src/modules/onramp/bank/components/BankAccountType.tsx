@@ -1,6 +1,10 @@
-import { Building2Icon, UserIcon } from "@galacticcouncil/ui/assets/icons"
+import { CheckIcon } from "@galacticcouncil/ui/assets/icons"
+import BankBusiness from "@galacticcouncil/ui/assets/images/BankBusiness.png"
+import BankIndividual from "@galacticcouncil/ui/assets/images/BankIndividual.png"
 import {
   Alert,
+  Icon,
+  Image,
   LoadingButton,
   ModalBody,
   ModalFooter,
@@ -55,14 +59,32 @@ export const BankAccountType: FC<BankAccountTypeProps> = ({ h160 }) => {
     >
       <ModalBody>
         <Stack gap="l">
-          <Stack gap="m">
+          <Stack
+            gap="m"
+            sx={{
+              "& > button": { minHeight: 80, height: "auto", padding: "l" },
+            }}
+          >
             {(["individual", "business"] as const).map((option) => (
               <OptionCard
                 key={option}
-                icon={option === "individual" ? UserIcon : Building2Icon}
+                icon={
+                  <Image
+                    src={
+                      option === "individual" ? BankIndividual : BankBusiness
+                    }
+                    alt=""
+                    lazy={false}
+                    sx={{ width: 48, height: 48, flexShrink: 0 }}
+                  />
+                }
                 label={t(`bank.accountType.${option}.title`)}
                 description={t(`bank.accountType.${option}.description`)}
-                value=""
+                value={
+                  selected === option ? (
+                    <Icon component={CheckIcon} size="m" aria-hidden />
+                  ) : null
+                }
                 isActive={selected === option}
                 disabled={
                   create.isPending ||

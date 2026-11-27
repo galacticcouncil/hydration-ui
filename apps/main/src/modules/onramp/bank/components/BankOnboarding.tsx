@@ -1,4 +1,4 @@
-import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatus.webp"
+import SuccessStatus from "@galacticcouncil/ui/assets/images/SuccessStatusPlain.webp"
 import {
   Button,
   ModalBody,

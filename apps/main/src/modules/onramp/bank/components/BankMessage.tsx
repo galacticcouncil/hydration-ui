@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { ComponentType, FC, ReactNode } from "react"
 
 type BankMessageProps = {
@@ -38,14 +38,22 @@ export const BankMessage: FC<BankMessageProps> = ({
   actions,
 }) => (
   <>
-    <ModalBody>
+    <ModalBody
+      scrollable={false}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflowY: "auto",
+      }}
+    >
       <Flex
         direction="column"
         align="center"
         justify="center"
         gap="l"
         py="xl"
-        sx={{ minHeight: pxToRem(360) }}
+        sx={{ flex: "1 0 auto" }}
       >
         {image ? (
           <Image src={image} alt="" sx={{ size: "3xl" }} />

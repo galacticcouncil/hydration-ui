@@ -1,15 +1,10 @@
 // @vitest-environment jsdom
-/*
- * Review 4a B1: with VITE_BANK_FLOW_ENABLED off no way in renders a bank screen. With
- * `@/config/env` flag off: the Deposits nav child is off, the
- * /portfolio/deposits route is a 404 before its page loads, DepositPage and
- * WithdrawPage render no bank flow even when their state says DepositBank /
- * WithdrawBank (a stored page or a Portfolio tile), and BankFlow and
- * BankPortfolio render nothing themselves.
- */
-import { isNotFound } from "@tanstack/react-router"
 import { render } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
+
+vi.mock("@/modules/portfolio/deposits/PortfolioDepositsPage", () => ({
+  PortfolioDepositsPage: () => null,
+}))
 
 vi.mock("@/config/env", () => ({
   ENV: { VITE_BANK_FLOW_ENABLED: false, VITE_HBR_API_URL: "https://hbr.test" },
@@ -110,24 +105,17 @@ describe("flag off: no bank screen by any way in (review 4a B1)", () => {
     expect(isBankFlowEnabled()).toBe(false)
   })
 
-  it("the Deposits nav child is off", () => {
+  it("the general Deposits tab is available", () => {
     const portfolio = NAVIGATION.find((item) => item.key === "portfolio")
     const deposits = portfolio?.children?.find(
       (child) => child.key === "portfolioDeposits",
     )
     expect(deposits).toBeDefined()
-    expect(deposits?.enabled).toBe(false)
+    expect(deposits?.enabled).not.toBe(false)
   })
 
-  it("/portfolio/deposits is a 404 before its page loads", () => {
-    const beforeLoad = DepositsRoute.options.beforeLoad as unknown as () => void
-    let thrown: unknown = null
-    try {
-      beforeLoad()
-    } catch (e) {
-      thrown = e
-    }
-    expect(isNotFound(thrown)).toBe(true)
+  it("the general deposits route is available with bank disabled", () => {
+    expect(DepositsRoute.options.beforeLoad).toBeUndefined()
   })
 
   it("DepositPage on DepositBank renders no bank flow", () => {

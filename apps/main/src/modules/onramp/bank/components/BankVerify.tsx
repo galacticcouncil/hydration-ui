@@ -1,8 +1,7 @@
-import {
-  CircleAlertIcon,
-  ClockIcon,
-  ShieldCheckIcon,
-} from "@galacticcouncil/ui/assets/icons"
+import Review3D from "@galacticcouncil/ui/assets/images/Review3D.webp"
+import ReviewClock3D from "@galacticcouncil/ui/assets/images/ReviewClock3D.webp"
+import Waiting3D from "@galacticcouncil/ui/assets/images/Waiting3D.webp"
+import WarningStatusPlain from "@galacticcouncil/ui/assets/images/WarningStatusPlain.webp"
 import { Alert, Button, LoadingButton } from "@galacticcouncil/ui/components"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,13 +23,13 @@ type BankVerifyProps = {
   onCheck: () => void
 }
 
-const STAGE_ICONS: Record<StageView, FC> = {
-  action: ShieldCheckIcon,
-  review: ClockIcon,
-  notAvailableYet: ClockIcon,
-  rejected: CircleAlertIcon,
-  paused: CircleAlertIcon,
-  unknown: CircleAlertIcon,
+const STAGE_IMAGES: Record<StageView, string> = {
+  action: Review3D,
+  review: ReviewClock3D,
+  notAvailableYet: Waiting3D,
+  rejected: WarningStatusPlain,
+  paused: WarningStatusPlain,
+  unknown: WarningStatusPlain,
 }
 
 // Bearer links (API doc 2 step 5): opened for the user only, never stored or
@@ -75,7 +74,7 @@ export const BankVerify: FC<BankVerifyProps> = ({
         onBack={() => setOpened(false)}
       >
         <BankMessage
-          icon={ShieldCheckIcon}
+          image={Review3D}
           title={t("bank.verify.opened.title")}
           description={t(`bank.verify.opened.description.${direction}`)}
           actions={
@@ -108,7 +107,7 @@ export const BankVerify: FC<BankVerifyProps> = ({
     return (
       <BankStepShell title={t("bank.flow.verifyTitle")} step="verify">
         <BankMessage
-          icon={ShieldCheckIcon}
+          image={Review3D}
           title={t("bank.verify.action.title")}
           description={t(`bank.verify.action.description.${direction}`)}
           actions={
@@ -145,9 +144,9 @@ export const BankVerify: FC<BankVerifyProps> = ({
   // S06 and the states Figma does not draw: a passive wait, a support case or
   // an unreadable stage. Each can be left; only a read is offered again.
   return (
-    <BankStepShell title={t("bank.flow.statusTitle")} step="verify">
+    <BankStepShell title={t("bank.flow.statusTitle")} step={null}>
       <BankMessage
-        icon={STAGE_ICONS[view]}
+        image={STAGE_IMAGES[view]}
         title={t(`bank.verify.${view}.title`)}
         description={t(`bank.verify.${view}.description`)}
         note={needsSupport ? undefined : t("bank.verify.leaveNote")}

@@ -3,7 +3,6 @@ import {
   Button,
   ModalBody,
   ModalFooter,
-  Paper,
   Skeleton,
   Stack,
   Text,
@@ -15,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { BankStatusPill } from "@/modules/onramp/bank/components/BankStatusPill"
 import { BankStepShell } from "@/modules/onramp/bank/components/BankStepShell"
 import { BankTimeline } from "@/modules/onramp/bank/components/BankTimeline"
+import { BankTransferSummary } from "@/modules/onramp/bank/components/BankTransferSummary"
 import { useHbrDeposits } from "@/modules/onramp/bank/hooks/useHbr"
 import { classifyBankError } from "@/modules/onramp/bank/utils/onboarding"
 import {
@@ -76,27 +76,28 @@ export const BankDepositDetails: FC<BankDepositDetailsProps> = ({
 
     return (
       <Stack gap="l">
-        <Paper p="l" bg="dim">
-          <Stack gap="xs" align="center">
-            <Text fs="p5" color={getToken("text.medium")}>
-              {t("bank.deposit.summary.bankTransfer")}
-            </Text>
-            <Text font="primary" fs="h6" color={getToken("text.high")}>
-              {amountLine
-                ? t("bank.history.amountUsd", { amount: amountLine.amount })
-                : t("bank.history.amountUsdc", {
-                    amount: usdc(progress.arrived),
-                  })}
-            </Text>
-            <Text fs="p5" color={getToken("text.low")}>
-              {entry.receivedAt
-                ? t("bank.history.receivedAt", {
-                    value: new Date(entry.receivedAt),
-                  })
-                : t("bank.history.datePending")}
-            </Text>
-          </Stack>
-        </Paper>
+        <BankTransferSummary
+          source={{
+            label: t("bank.deposit.summary.bankTransfer"),
+            value: amountLine
+              ? t("bank.history.amountUsd", { amount: amountLine.amount })
+              : t("bank.history.amountUsdc", {
+                  amount: usdc(progress.arrived),
+                }),
+            detail: entry.receivedAt
+              ? t("bank.history.receivedAt", {
+                  value: new Date(entry.receivedAt),
+                })
+              : t("bank.history.datePending"),
+          }}
+          destination={{
+            label: t("bank.deposit.summary.credited"),
+            value: t("bank.history.amountUsdc", {
+              amount: usdc(progress.credited),
+            }),
+            detail: `${h160.slice(0, 6)}…${h160.slice(-4)}`,
+          }}
+        />
         {stage.lit > 0 ? (
           <BankTimeline
             stages={STAGE_NAMES}

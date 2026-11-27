@@ -1,4 +1,4 @@
-import { ModalHeader, Stepper } from "@galacticcouncil/ui/components"
+import { Modal, ModalHeader, Stepper } from "@galacticcouncil/ui/components"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,6 +13,7 @@ type BankStepShellProps = {
   description?: string
   /** The wizard step; null for a view reopened from Portfolio (no stepper there). */
   step: BankStepKey | null
+  steps?: ReadonlyArray<BankStepKey>
   /** Back within the flow; without it, back leaves the flow (the method choice). */
   onBack?: () => void
   children: ReactNode
@@ -26,28 +27,34 @@ export const BankStepShell: FC<BankStepShellProps> = ({
   title,
   description,
   step,
+  steps: customSteps,
   onBack,
   children,
 }) => {
   const { t } = useTranslation(["onramp"])
   const { direction, onExit, onClose, reopened } = useBankFlow()
-  const steps: ReadonlyArray<BankStepKey> = BANK_STEPS[direction]
+  const steps = customSteps ?? BANK_STEPS[direction]
   // Figma P01/R01: a process reopened from Portfolio shows no wizard stepper.
   const active = step && !reopened ? steps.indexOf(step) : -1
 
   return (
-    <>
-      {active >= 0 && (
-        <Stepper
-          steps={steps.map((key) => t(`bank.step.${key}`))}
-          activeStepIndex={active}
-          // The kit's default ("auto"): compact on mobile, the expanded
-          // stepper with its labels under the circles on desktop. Forcing
-          // compact on desktop drops the labels outside the card (kit bug).
-          px="xl"
-          pt="l"
-        />
-      )}
+    <Modal
+      open
+      variant="popup"
+      disableInteractOutside
+      contentWidth="572px"
+      onOpenChange={(open) => {
+        if (!open) (onClose ?? onExit)?.()
+      }}
+      topContent={
+        active >= 0 && (
+          <Stepper
+            steps={steps.map((key) => t(`bank.step.${key}`))}
+            activeStepIndex={active}
+          />
+        )
+      }
+    >
       <ModalHeader
         title={title}
         description={description}
@@ -57,6 +64,6 @@ export const BankStepShell: FC<BankStepShellProps> = ({
         onClose={onClose}
       />
       {children}
-    </>
+    </Modal>
   )
 }

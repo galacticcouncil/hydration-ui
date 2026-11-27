@@ -1,4 +1,6 @@
-import { ClockIcon, LandmarkIcon } from "@galacticcouncil/ui/assets/icons"
+import Bank3D from "@galacticcouncil/ui/assets/images/Bank3D.webp"
+import Waiting3D from "@galacticcouncil/ui/assets/images/Waiting3D.webp"
+import WarningStatus from "@galacticcouncil/ui/assets/images/WarningStatusPlain.webp"
 import {
   Alert,
   Button,
@@ -192,9 +194,19 @@ export const BankDepositAccount: FC<BankDepositAccountProps> = ({
       ? t(`bank.deposit.status.${status}.description`)
       : undefined
 
+  const needsAttention =
+    header?.kind === "failed" ||
+    status === "refused" ||
+    status === "needs_attention"
+  const image = needsAttention
+    ? WarningStatus
+    : status === "not_requested" || status === "ready"
+      ? Bank3D
+      : Waiting3D
+
   return (
     <BankMessage
-      icon={status === "ready" ? LandmarkIcon : ClockIcon}
+      image={image}
       title={title}
       description={description}
       actions={

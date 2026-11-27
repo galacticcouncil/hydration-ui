@@ -7,7 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
 import type { OnrampCurrency } from "@/modules/onramp/bank/config/schemas"
@@ -62,6 +62,11 @@ export const BankDepositInstructions: FC<BankDepositInstructionsProps> = ({
   const minimum = minimumDeposit ? formatUsdcBaseUnits(minimumDeposit) : null
   const shortWallet = `${wallet.slice(0, 6)}…${wallet.slice(-4)}`
 
+  const fields = FIELDS.flatMap((field) => {
+    const value = instructions[field]
+    return typeof value === "string" ? [{ field, value }] : []
+  })
+
   return (
     <Stack gap="m">
       <Alert
@@ -95,27 +100,55 @@ export const BankDepositInstructions: FC<BankDepositInstructionsProps> = ({
           </Text>
         </Flex>
       )}
-      <Separator />
-      {FIELDS.map((field) => {
-        const value = instructions[field]
-        if (typeof value !== "string") return null
-        return (
-          <Stack key={field} gap="m">
-            <Flex align="center" justify="space-between" gap="m">
-              <Stack gap="xs">
-                <Text fs="p5" color={getToken("text.medium")}>
-                  {t(`bank.deposit.instructions.field.${field}`)}
-                </Text>
-                <Text fs="p3" fw={500} sx={{ wordBreak: "break-all" }}>
-                  {value}
-                </Text>
-              </Stack>
-              <CopyButton text={value} />
-            </Flex>
-            <Separator />
-          </Stack>
-        )
-      })}
+      {fields.length > 0 && (
+        <Stack
+          sx={{
+            mx: ["var(--modal-content-inset)", 0],
+            borderRadius: [0, "l"],
+            "& button": {
+              display: "grid",
+              placeItems: "center",
+              minWidth: [44, 24],
+              minHeight: [44, 24],
+              flexShrink: 0,
+            },
+            "--bank-details-surface": getToken(
+              "surfaces.containers.dim.dimOnHigh",
+            ),
+            bg: ["transparent", "var(--bank-details-surface)"],
+            borderBlock: ["1px solid", "none"],
+            borderColor: getToken("details.separators"),
+          }}
+        >
+          {fields.map(({ field, value }, index) => {
+            const label = t(`bank.deposit.instructions.field.${field}`)
+            return (
+              <Fragment key={field}>
+                {index > 0 && <Separator />}
+                <Flex
+                  align="center"
+                  gap="m"
+                  px={["var(--modal-content-padding)", "l"]}
+                  py={["l", "m"]}
+                >
+                  <Stack gap="s" flex={1} minWidth={0}>
+                    <Text fs="p5" color={getToken("text.medium")}>
+                      {label}
+                    </Text>
+                    <Text fs="p4" fw={500} wordBreak="break-word">
+                      {value}
+                    </Text>
+                  </Stack>
+                  <CopyButton
+                    text={value}
+                    aria-label={t("bank.deposit.instructions.copy", { label })}
+                  />
+                </Flex>
+              </Fragment>
+            )
+          })}
+        </Stack>
+      )}
     </Stack>
   )
 }

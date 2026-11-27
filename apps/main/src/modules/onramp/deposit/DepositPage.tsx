@@ -48,10 +48,12 @@ export const DepositPage = () => {
   const showPendingDeposits =
     page === OnrampScreen.MethodSelect && pendingDeposits.length > 0
 
+  const bankOpen = page === OnrampScreen.DepositBank && isBankFlowEnabled()
+
   return (
     <Flex direction="column" align="center">
       <ModalContainer open>
-        {page === OnrampScreen.MethodSelect && (
+        {(page === OnrampScreen.MethodSelect || bankOpen) && (
           <DepositMethodSelect onSelect={paginateTo} />
         )}
 
@@ -76,13 +78,13 @@ export const DepositPage = () => {
           />
         )}
 
-        {page === OnrampScreen.DepositBank && isBankFlowEnabled() && (
-          <DepositBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
-        )}
         {page === OnrampScreen.DepositSuccess && (
           <DepositSuccess onConfirm={reset} />
         )}
       </ModalContainer>
+      {bankOpen && (
+        <DepositBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
+      )}
 
       {showPendingDeposits && (
         <Stack as={Paper} mt="m" maxWidth="6xl" width="100%" py="l" gap="l">

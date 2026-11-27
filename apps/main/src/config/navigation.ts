@@ -1,4 +1,5 @@
 import {
+  ArrowDownToLineIcon,
   ArrowRightLeftIcon,
   BanknoteIcon,
   BlocksIcon,
@@ -12,7 +13,6 @@ import {
   Grid2X2Icon,
   HDXClassic,
   HistoryIcon,
-  LandmarkIcon,
   Repeat2Icon,
   WalletIcon,
   WavesIcon,
@@ -20,7 +20,6 @@ import {
 import { neckwork } from "@galacticcouncil/utils"
 import { TFunction } from "i18next"
 
-import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { FileRouteTypes } from "@/routeTree.gen"
 import { getDeployPreviewId } from "@/utils/deploy"
 
@@ -210,8 +209,7 @@ export const NAVIGATION: NavigationItem[] = [
       {
         key: "portfolioDeposits",
         to: LINKS.portfolioDeposits,
-        icon: LandmarkIcon,
-        enabled: isBankFlowEnabled(),
+        icon: ArrowDownToLineIcon,
       },
       {
         key: "portfolioTracked",

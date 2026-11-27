@@ -1,4 +1,4 @@
-import Warning3D from "@galacticcouncil/ui/assets/images/Warning3D.webp"
+import WarningStatusPlain from "@galacticcouncil/ui/assets/images/WarningStatusPlain.webp"
 import { Button } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,7 +20,7 @@ export const BankErrorMessage: FC<BankErrorMessageProps> = ({
 
   return (
     <BankMessage
-      image={Warning3D}
+      image={WarningStatusPlain}
       title={t("bank.error.title")}
       description={t(`bank.error.${error}`)}
       actions={

@@ -1,6 +1,7 @@
-import NoFunds from "@galacticcouncil/ui/assets/images/NoFunds.png"
+import Bank3D from "@galacticcouncil/ui/assets/images/Bank3D.webp"
 import { Button } from "@galacticcouncil/ui/components"
 import { useWeb3ConnectModal, WalletMode } from "@galacticcouncil/web3-connect"
+import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -21,7 +22,7 @@ export const BankConnectEvm: FC<BankConnectEvmProps> = ({ reason }) => {
   return (
     <BankStepShell title={t(`bank.flow.setupTitle.${direction}`)} step="verify">
       <BankMessage
-        image={NoFunds}
+        image={Bank3D}
         title={t("bank.connectEvm.title")}
         description={
           reason === "account_mismatch"
@@ -29,9 +30,18 @@ export const BankConnectEvm: FC<BankConnectEvmProps> = ({ reason }) => {
             : t("bank.connectEvm.description")
         }
         actions={
-          <Button size="large" onClick={() => toggle(WalletMode.EVM)}>
-            {t("bank.connectEvm.cta")}
-          </Button>
+          <>
+            <Button size="large" onClick={() => toggle(WalletMode.EVM)}>
+              {t("bank.connectEvm.cta")}
+            </Button>
+            {import.meta.env.VITE_PORTFOLIO_SAMPLES === "1" && (
+              <Button size="large" variant="tertiary" asChild>
+                <Link to="/portfolio/deposits" search={{ bankDemo: direction }}>
+                  Try without a wallet
+                </Link>
+              </Button>
+            )}
+          </>
         }
       />
     </BankStepShell>

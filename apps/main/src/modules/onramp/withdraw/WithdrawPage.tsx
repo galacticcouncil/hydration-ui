@@ -19,10 +19,12 @@ export const WithdrawPage = () => {
 
   const isOnchain = asset?.withdrawalChain === HYDRATION_CHAIN_KEY
 
+  const bankOpen = page === OnrampScreen.WithdrawBank && isBankFlowEnabled()
+
   return (
     <Flex direction="column" align="center">
       <ModalContainer open>
-        {page === OnrampScreen.MethodSelect && (
+        {(page === OnrampScreen.MethodSelect || bankOpen) && (
           <WithdrawMethodSelect onSelect={paginateTo} />
         )}
 
@@ -49,14 +51,13 @@ export const WithdrawPage = () => {
           </>
         )}
 
-        {page === OnrampScreen.WithdrawBank && isBankFlowEnabled() && (
-          <WithdrawBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
-        )}
-
         {page === OnrampScreen.WithdrawSuccess && (
           <WithdrawSuccess onConfirm={reset} />
         )}
       </ModalContainer>
+      {bankOpen && (
+        <WithdrawBank onBack={() => paginateTo(OnrampScreen.MethodSelect)} />
+      )}
     </Flex>
   )
 }

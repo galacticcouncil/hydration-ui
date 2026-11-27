@@ -1,6 +1,5 @@
 import {
   ArrowRightLeftIcon,
-  CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
@@ -44,7 +43,7 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           />
           {isBankFlowEnabled() && (
             <StepButton
-              icon={CreditCardIcon}
+              icon={LandmarkIcon}
               onClick={() => onSelect(OnrampScreen.DepositBank)}
               title={t("deposit.method.bank.title")}
               description={t("deposit.method.bank.description")}

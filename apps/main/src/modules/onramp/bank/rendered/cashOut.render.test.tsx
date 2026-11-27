@@ -423,8 +423,16 @@ const flush = async () => {
 const text = () => document.body.textContent ?? ""
 const buttons = () =>
   Array.from(document.querySelectorAll("button")) as HTMLButtonElement[]
+const signingModal = () =>
+  document
+    .querySelector('[data-step^="bank.cashOut.tx."]')
+    ?.closest("[data-modal]") ?? null
+
 const button = (label: string) => {
-  const b = buttons().find((x) => x.textContent === label)
+  const b =
+    label === "modal-close"
+      ? signingModal()?.querySelector<HTMLButtonElement>("[data-modal-close]")
+      : buttons().find((x) => x.textContent === label)
   if (!b)
     throw new Error(
       `no button ${label}: ${buttons()
@@ -482,9 +490,7 @@ const toReview = async () => {
 /** The review's Sign: the cash-out goes to createTransaction. */
 const handOver = async () => {
   await click("bank.cashOut.review.sign")
-  await waitFor(() =>
-    expect(document.querySelector("[data-modal]")).not.toBeNull(),
-  )
+  await waitFor(() => expect(signingModal()).not.toBeNull())
 }
 const signStep = async () => {
   await waitFor(() => expect(button("transaction.sign").disabled).toBe(false))
@@ -539,16 +545,12 @@ describe("cash-out happy path", () => {
     await toReview()
     await handOver()
     expect(
-      document
-        .querySelector("[data-modal] [data-step]")!
-        .getAttribute("data-step"),
+      signingModal()?.querySelector("[data-step]")!.getAttribute("data-step"),
     ).toBe("bank.cashOut.tx.approveStep")
     await signStep()
     await waitFor(() =>
       expect(
-        document
-          .querySelector("[data-modal] [data-step]")
-          ?.getAttribute("data-step"),
+        signingModal()?.querySelector("[data-step]")?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -616,9 +618,7 @@ describe("once (guarantee 5), counted at the signer", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document
-          .querySelector("[data-modal] [data-step]")
-          ?.getAttribute("data-step"),
+        signingModal()?.querySelector("[data-step]")?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -673,9 +673,7 @@ describe("once (guarantee 5), counted at the signer", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document
-          .querySelector("[data-modal] [data-step]")
-          ?.getAttribute("data-step"),
+        signingModal()?.querySelector("[data-step]")?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -834,7 +832,7 @@ describe("hash out (guarantee 7)", () => {
     await handOver()
     await signStep()
     await click("modal-close")
-    expect(document.querySelector("[data-modal]")).toBeNull()
+    expect(signingModal()).toBeNull()
     await act(async () => {
       signer.held!({ kind: "sent", hash: REDEEM_HASH, receipt: "success" })
     })
@@ -860,9 +858,7 @@ describe("memory only (guarantee 8)", () => {
     await signStep()
     await waitFor(() =>
       expect(
-        document
-          .querySelector("[data-modal] [data-step]")
-          ?.getAttribute("data-step"),
+        signingModal()?.querySelector("[data-step]")?.getAttribute("data-step"),
       ).toBe("bank.cashOut.tx.redeemStep"),
     )
     await signStep()
@@ -1084,7 +1080,7 @@ describe("non-strict transactions keep master's review", () => {
 // ---- fix round 1 (review 3) ---------------------------------------------------
 const sendCount = () => signer.sendPreparedTransaction.mock.calls.length
 const stepName = () =>
-  document.querySelector("[data-modal] [data-step]")?.getAttribute("data-step")
+  signingModal()?.querySelector("[data-step]")?.getAttribute("data-step")
 
 describe("fix round 1", () => {
   it("B-2 (B5): a second cash-out of the SAME amount (same approve bytes) can be signed", async () => {

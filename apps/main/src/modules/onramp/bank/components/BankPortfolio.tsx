@@ -1,4 +1,4 @@
-import { Grid, Stack, Text } from "@galacticcouncil/ui/components"
+import { Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
   useAccount,
@@ -148,9 +148,7 @@ const SignIn: FC<{ h160: string; signer: MessageSigner }> = ({
 }
 
 const Tiles: FC<{ children: ReactNode }> = ({ children }) => (
-  <Grid columns={[1, null, 2]} gap="l">
-    {children}
-  </Grid>
+  <Stack gap="m">{children}</Stack>
 )
 
 const Session: FC<

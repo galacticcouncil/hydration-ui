@@ -1,4 +1,4 @@
-import NoFunds from "@galacticcouncil/ui/assets/images/NoFunds.png"
+import Bank3D from "@galacticcouncil/ui/assets/images/Bank3D.webp"
 import { Alert, LoadingButton } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,7 +31,7 @@ export const BankLinkWallet: FC<BankLinkWalletProps> = ({
   return (
     <BankStepShell title={t(`bank.flow.setupTitle.${direction}`)} step="verify">
       <BankMessage
-        image={NoFunds}
+        image={Bank3D}
         title={t("bank.link.title")}
         description={
           direction === "withdraw"

@@ -122,7 +122,16 @@ export const BankAccountForm: FC<BankAccountFormProps> = ({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={submit} autoComplete="off">
+      <form
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
+        }}
+        onSubmit={submit}
+        autoComplete="off"
+      >
         <ModalBody>
           <Stack gap="m">
             <BankAccountRailFields />

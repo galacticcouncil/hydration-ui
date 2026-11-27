@@ -4,13 +4,16 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
+  Flex,
   FormField,
   Input,
   ModalBody,
   ModalFooter,
   OptionCard,
   Stack,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -51,7 +54,16 @@ export const BankCashOutAmount: FC<BankCashOutAmountProps> = ({
 
   return (
     <BankStepShell title={t("bank.cashOut.title")} step="amount">
-      <form onSubmit={(e) => void submit(e)} autoComplete="off">
+      <form
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
+        }}
+        onSubmit={(e) => void submit(e)}
+        autoComplete="off"
+      >
         <ModalBody>
           <Stack gap="l">
             <Controller
@@ -62,13 +74,35 @@ export const BankCashOutAmount: FC<BankCashOutAmountProps> = ({
                   label={t("bank.cashOut.form.amount")}
                   error={fieldState.error?.message}
                 >
-                  <Input
-                    {...field}
-                    value={String(field.value ?? "")}
-                    inputMode="decimal"
-                    autoComplete="off"
-                    isError={!!fieldState.error}
-                  />
+                  <Flex
+                    align="center"
+                    gap="m"
+                    sx={{
+                      py: "m",
+                      borderBottom: "1px solid",
+                      borderColor: getToken("details.separators"),
+                      "& input": {
+                        textAlign: "right",
+                        fontSize: "p2",
+                        fontWeight: 600,
+                      },
+                    }}
+                  >
+                    <Text fs="p4" fw={600} sx={{ flexShrink: 0 }}>
+                      USDC
+                    </Text>
+                    <Input
+                      {...field}
+                      variant="embedded"
+                      width="100%"
+                      placeholder="0"
+                      aria-label={t("bank.cashOut.form.amount")}
+                      value={String(field.value ?? "")}
+                      inputMode="decimal"
+                      autoComplete="off"
+                      isError={!!fieldState.error}
+                    />
+                  </Flex>
                 </FormField>
               )}
             />

@@ -10,11 +10,14 @@ import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BankCashOutQuote } from "@/modules/onramp/bank/components/BankCashOutQuote"
+import { BankWithdrawalSummary } from "@/modules/onramp/bank/components/BankWithdrawalReceipt"
 import type { RampBuildResponse } from "@/modules/onramp/bank/config/schemas"
+import { formatUsdcBaseUnits } from "@/modules/onramp/bank/utils/onramp"
 
 type BankCashOutReviewProps = {
   build: Omit<RampBuildResponse, "approveTx" | "redeemTx">
   currency: "usd" | "eur"
+  accountLine: string | null
   hasApprove: boolean
   /** The chain the server prepared both transactions for. */
   chainId: number
@@ -150,6 +153,7 @@ const DemoActions: FC<Omit<ActionsProps, "chainId">> = ({
 export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
   build,
   currency,
+  accountLine,
   hasApprove,
   chainId,
   demo,
@@ -172,10 +176,20 @@ export const BankCashOutReview: FC<BankCashOutReviewProps> = ({
       <Text fs="p2" fw={500} font="primary">
         {t("bank.cashOut.review.title")}
       </Text>
+      <BankWithdrawalSummary
+        label={t("bank.cashOut.quote.bridgeCredited")}
+        amount={t("bank.cashOut.quote.usdc", {
+          amount: formatUsdcBaseUnits(build.quote.bridgeCredited) ?? "-",
+        })}
+        source={t("bank.cashOut.summary.from", {
+          amount: formatUsdcBaseUnits(build.quote.usdcAmount) ?? "-",
+        })}
+        account={accountLine}
+      />
       <BankCashOutQuote
-        quote={build.quote}
-        payoutLimit={build.payoutLimit}
+        pricing={build}
         currency={currency}
+        account={accountLine}
       />
       <Text fs="p4" color={getToken("text.medium")}>
         {t(

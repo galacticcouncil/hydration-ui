@@ -1,4 +1,5 @@
-import { CircleAlertIcon, WalletIcon } from "@galacticcouncil/ui/assets/icons"
+import Wallet from "@galacticcouncil/ui/assets/images/NoFunds.png"
+import Warning from "@galacticcouncil/ui/assets/images/WarningStatusPlain.webp"
 import { Alert, Button } from "@galacticcouncil/ui/components"
 import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -59,7 +60,7 @@ export const BankSignIn: FC<BankSignInProps> = ({ h160, signer }) => {
     return (
       <BankStepShell title={title} step="verify">
         <BankMessage
-          icon={WalletIcon}
+          image={Wallet}
           title={t("bank.signIn.pending.title")}
           description={t("bank.signIn.pending.description")}
         />
@@ -69,7 +70,7 @@ export const BankSignIn: FC<BankSignInProps> = ({ h160, signer }) => {
   return (
     <BankStepShell title={title} step="verify">
       <BankMessage
-        icon={signIn.isError ? CircleAlertIcon : WalletIcon}
+        image={signIn.isError ? Warning : Wallet}
         title={
           signIn.isError
             ? t("bank.signIn.failed.title")

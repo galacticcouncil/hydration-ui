@@ -1,8 +1,8 @@
-import { LandmarkIcon } from "@galacticcouncil/ui/assets/icons"
+import Bank3D from "@galacticcouncil/ui/assets/images/Bank3D.webp"
 import {
   Alert,
   Flex,
-  Icon,
+  Image,
   LoadingButton,
   Paper,
   Skeleton,
@@ -18,7 +18,7 @@ import type { BankTile } from "@/modules/onramp/bank/utils/bankTile"
 
 type BankSetupTileProps = {
   tile: BankTile
-  onAction: () => void
+  onAction?: () => void
   busy?: boolean
   error?: string
 }
@@ -45,40 +45,55 @@ export const BankSetupTile: FC<BankSetupTileProps> = ({
     : `bank.tile.${tile.kind}`
 
   return (
-    <Paper p="xl" data-bank-tile={tile.kind}>
-      <Stack gap="m">
-        <Flex justify="space-between" align="center">
-          <Icon
-            component={LandmarkIcon}
-            size="xl"
-            color={getToken("text.tint.secondary")}
+    <Stack
+      as={Paper}
+      px={["l", "xl"]}
+      py={["l", "1.25rem"]}
+      gap="m"
+      data-bank-tile={tile.kind}
+    >
+      <Flex
+        align={["stretch", null, "center"]}
+        direction={["column", null, "row"]}
+        justify="space-between"
+        gap="m"
+      >
+        <Flex align="center" gap="m" minWidth={0}>
+          <Image
+            src={Bank3D}
+            alt=""
+            sx={{ size: ["2.5rem", "3.5rem"], flexShrink: 0 }}
           />
+          <Stack gap="xs" minWidth={0}>
+            <Text fs="p2" fw={500} color={getToken("text.high")}>
+              {t(`${key}.title` as "bank.tile.setUp.title", { currency })}
+            </Text>
+            <Text fs="p3" color={getToken("text.medium")}>
+              {t(`${key}.description` as "bank.tile.setUp.description", {
+                currency,
+              })}
+            </Text>
+          </Stack>
+        </Flex>
+        <Flex align="center" justify="space-between" gap="m">
           <BankStatusPill
             label={t(`${key}.pill` as "bank.tile.setUp.pill")}
             tone={tile.tone}
           />
+          {onAction && (
+            <LoadingButton
+              size="medium"
+              variant={tile.tone === "attention" ? "primary" : "secondary"}
+              isLoading={!!busy}
+              disabled={!!busy}
+              onClick={onAction}
+            >
+              {t(`${key}.cta` as "bank.tile.setUp.cta")}
+            </LoadingButton>
+          )}
         </Flex>
-        <Stack gap="xs">
-          <Text fs="p2" fw={500} color={getToken("text.high")}>
-            {t(`${key}.title` as "bank.tile.setUp.title", { currency })}
-          </Text>
-          <Text fs="p4" color={getToken("text.medium")}>
-            {t(`${key}.description` as "bank.tile.setUp.description", {
-              currency,
-            })}
-          </Text>
-        </Stack>
-        {error && <Alert variant="warning" description={error} />}
-        <LoadingButton
-          size="large"
-          variant={tile.tone === "attention" ? "primary" : "secondary"}
-          isLoading={!!busy}
-          disabled={!!busy}
-          onClick={onAction}
-        >
-          {t(`${key}.cta` as "bank.tile.setUp.cta")}
-        </LoadingButton>
-      </Stack>
-    </Paper>
+      </Flex>
+      {error && <Alert variant="warning" description={error} />}
+    </Stack>
   )
 }
