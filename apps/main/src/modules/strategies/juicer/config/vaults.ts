@@ -39,6 +39,13 @@ export const JUICER_VAULTS: JuicerVaultConfig[] = [
     payoutAssetIds: [ETH_ASSET_ID, GETH_ERC20_ID, WSTETH_ASSET_ID],
     collateralDisplayId: GETH_ERC20_ID,
   },
+  {
+    assetId: "1000765",
+    vaultAddress: "0x538d2755b5fb9a4f7c5769bdcf5103e569d6e241",
+    shareAssetId: "5552",
+    shareSymbol: "jBTC",
+    shareName: "Juicer BTC",
+  },
 ]
 
 /** Id of a vault's position row in the portfolio. */

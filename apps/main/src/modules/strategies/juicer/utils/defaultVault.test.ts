@@ -59,4 +59,27 @@ describe("Default deposit option", () => {
     expect(select()).toEqual({ vault: jeth, assetId: "34" })
     expect(selectDefaultDeposit([], { symbols, balancesUsd: {} })).toBeNull()
   })
+
+  it("passes over a full vault unless the link names it or every vault is full", () => {
+    const pick = (
+      assetParam?: string,
+      balancesUsd: Record<string, number> = {},
+      full = new Set([jeth.vaultAddress]),
+    ) =>
+      selectDefaultDeposit(options, { assetParam, symbols, balancesUsd, full })
+    expect(pick(undefined, { "34": 9000 })).toEqual({
+      vault: jbtc,
+      assetId: "1000765",
+    })
+    expect(pick()).toEqual({ vault: jbtc, assetId: "1000765" })
+    expect(pick("eth")).toEqual({ vault: jeth, assetId: "34" })
+    expect(pick("jETH", { "34": 50 })).toEqual({ vault: jeth, assetId: "34" })
+    expect(
+      pick(
+        undefined,
+        { "34": 10 },
+        new Set([jeth.vaultAddress, jbtc.vaultAddress]),
+      ),
+    ).toEqual({ vault: jeth, assetId: "34" })
+  })
 })
