@@ -23,7 +23,6 @@ import {
   DEFAULT_TRADE_ASSET_IN_ID,
   DEFAULT_TRADE_ASSET_OUT_ID,
 } from "@/routes/trade/_history/route"
-import { useIsIceEnabled } from "@/states/intents"
 
 type Props = {
   readonly maxBalance: string
@@ -31,7 +30,6 @@ type Props = {
 
 export const DcaFields: FC<Props> = ({ maxBalance }) => {
   const { t } = useTranslation(["common", "trade"])
-  const isIceEnabled = useIsIceEnabled()
   const { control, getValues, setValue, reset, trigger, watch } =
     useFormContext<DcaFormValues>()
 
@@ -46,12 +44,6 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
     () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
     [tradable],
   )
-
-  useEffect(() => {
-    if (!isIceEnabled) {
-      setValue("limitEnabled", false)
-    }
-  }, [isIceEnabled, setValue])
 
   useEffect(() => {
     const { sellAsset, buyAsset, ...values } = getValues()

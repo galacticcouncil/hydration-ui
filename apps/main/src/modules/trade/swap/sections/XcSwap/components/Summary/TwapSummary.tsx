@@ -1,4 +1,3 @@
-import { math } from "@galacticcouncil/sdk-next"
 import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   Box,
@@ -8,9 +7,7 @@ import {
   Summary,
   SummaryRowDisplayValue,
   SummaryRowValue,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { produce } from "immer"
 import { FC } from "react"
@@ -30,7 +27,6 @@ import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/XcSwap/compo
 import { useTwapFee } from "@/modules/trade/swap/sections/XcSwap/hooks/useTwapFee"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -53,15 +49,10 @@ export const TwapSummary: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
 
-  const isIce = useIsIceEnabled()
-
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
   const {
     general: { isSummaryExpanded },
-    swap: {
-      single: { swapSlippage },
-    },
     dca: { slippage: twapSlippage },
   } = tradeSettings
 
@@ -97,25 +88,18 @@ export const TwapSummary: FC<Props> = ({
     { maximumFractionDigits: null },
   )
 
-  const [twapPrice, swapPrice, twapPriceHuman, twapPriceAsset] = (() => {
-    if (!sellAsset || !buyAsset) {
-      return [0n, 0n, "0", null]
-    }
-
-    if (isIce) {
-      const twapPrice = twap.amountOut
-      return [twapPrice, 0n, scaleHuman(twapPrice, buyAsset.decimals), buyAsset]
-    }
-
-    const twapPrice =
-      twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
-    const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
-
-    const swapPrice =
-      swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage)
-
-    return [twapPrice, swapPrice, twapPriceHuman, buyAsset]
-  })()
+  // Like a single trade: the expected output less the slippage the intent is
+  // placed with
+  const [twapPriceHuman, twapPriceAsset] =
+    sellAsset && buyAsset
+      ? [
+          scaleHuman(
+            twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage),
+            buyAsset.decimals,
+          ),
+          buyAsset,
+        ]
+      : ["0", null]
 
   const [twapPriceDisplay, { isLoading: twapPriceDisplayLoading }] =
     useDisplayAssetPrice(twapPriceAsset?.id ?? "", twapPriceHuman)
@@ -126,21 +110,20 @@ export const TwapSummary: FC<Props> = ({
 
   const tradeAmount = twap.amountOut
 
-  const tradeFeePct = Big(twap.tradeFee.toString())
-    .div(tradeAmount.toString())
-    .mul(100)
-    .toNumber()
+  // A dust order can quote no output at all
+  const tradeFeePct =
+    tradeAmount > 0n
+      ? Big(twap.tradeFee.toString())
+          .div(tradeAmount.toString())
+          .mul(100)
+          .toNumber()
+      : 0
 
   const [
     ,
     mediumLow = Number.MAX_SAFE_INTEGER,
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(0, 0)
-
-  const twapDiff = isIce
-    ? 0
-    : math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
-  const twapDiffAbs = Math.abs(twapDiff)
 
   return (
     <Box>
@@ -171,27 +154,10 @@ export const TwapSummary: FC<Props> = ({
           <CalculatedAmountSummaryRow
             label={t("trade:market.summary.minReceived")}
             tooltip={t("trade:market.summary.minReceived.tooltip")}
-            amount={
-              isIce ? (
-                t("currency", {
-                  value: twapPriceHuman,
-                  symbol: twapPriceAsset.symbol,
-                  prefix: t("approx.short"),
-                })
-              ) : (
-                <SummaryRowValue>
-                  {t("currency", {
-                    value: twapPriceHuman,
-                    symbol: twapPriceAsset.symbol,
-                  })}
-                  <Text as="span" color={getToken("text.tint.quart")}>
-                    {t("trade:market.summary.twapPriceDiff", {
-                      value: twapDiffAbs,
-                    })}
-                  </Text>
-                </SummaryRowValue>
-              )
-            }
+            amount={t("currency", {
+              value: twapPriceHuman,
+              symbol: twapPriceAsset.symbol,
+            })}
             amountDisplay={
               twapPriceDisplay
                 ? t("parenthesized", {

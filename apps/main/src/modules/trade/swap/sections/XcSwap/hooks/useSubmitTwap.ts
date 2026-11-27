@@ -11,7 +11,6 @@ import {
 } from "@/api/trade"
 import { SwapSubmitValues } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { TransactionActions, useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
@@ -21,10 +20,8 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const { sdk } = rpc
-  const isIceEnabled = useIsIceEnabled()
-
   const {
-    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -55,27 +52,18 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
       })()
 
       const twap = await rpc.queryClient.ensureQueryData(
-        bestSellTwapQuery(
-          rpc,
-          {
-            assetIn: sellAsset.id,
-            assetOut: buyAsset.id,
-            amountIn: budget,
-          },
-          isIceEnabled,
-        ),
+        bestSellTwapQuery(rpc, {
+          assetIn: sellAsset.id,
+          assetOut: buyAsset.id,
+          amountIn: budget,
+        }),
       )
 
       if (!twap) throw new Error("Failed to build TWAP order")
 
       const duration = await rpc.queryClient
         .ensureQueryData(
-          tradeOrderDurationQuery(
-            rpc,
-            isIceEnabled,
-            twap.tradeCount,
-            twap.tradePeriod,
-          ),
+          tradeOrderDurationQuery(rpc, twap.tradeCount, twap.tradePeriod),
         )
         .catch(() => 0)
 
@@ -87,48 +75,26 @@ export const useSubmitTwap = (actions?: TransactionActions) => {
             })
           : t("unknown"),
         in: t("currency", {
-          value: scaleHuman(twap.tradeAmountIn, sellDecimals),
-          symbol: sellSymbol,
-        }),
-        inTotal: t("currency", {
           value: scaleHuman(twap.amountIn, sellDecimals),
           symbol: sellSymbol,
         }),
-      }
-
-      const iceParams = {
-        ...params,
-        in: params.inTotal,
         assetOut: buyAsset.symbol,
       }
 
-      const tx = isIceEnabled
-        ? await sdk.tx
-            .intentOrder(twap)
-            .withBeneficiary(account.address)
-            .withSlippage(twapSlippage)
-            .build()
-        : await sdk.tx
-            .order(twap)
-            .withSlippage(twapSlippage)
-            .withMaxRetries(twapMaxRetries)
-            .withBeneficiary(account.address)
-            .build()
+      const tx = await sdk.tx
+        .intentOrder(twap)
+        .withBeneficiary(account.address)
+        .withSlippage(twapSlippage)
+        .build()
 
       return createTransaction(
         {
           tx: tx.get(),
-          toasts: isIceEnabled
-            ? {
-                submitted: t("trade:intent.twap.loading", iceParams),
-                success: t("trade:intent.twap.placed", iceParams),
-                error: t("trade:intent.twap.error", iceParams),
-              }
-            : {
-                submitted: t("trade:market.twap.loading", params),
-                success: t("trade:market.twap.success", params),
-                error: t("trade:market.twap.error", params),
-              },
+          toasts: {
+            submitted: t("trade:intent.twap.loading", params),
+            success: t("trade:intent.twap.placed", params),
+            error: t("trade:intent.twap.error", params),
+          },
         },
         actions,
       )

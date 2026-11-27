@@ -11,14 +11,8 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { validateDcaOrder } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
-import { useNeckworkSyncStore } from "@/states/neckwork"
 import { useTradeSettings } from "@/states/tradeSettings"
-import {
-  getTxResultBlockHeight,
-  isSubstrateTxResult,
-  useTransactionsStore,
-} from "@/states/transactions"
+import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitDcaOrder = () => {
@@ -27,14 +21,12 @@ export const useSubmitDcaOrder = () => {
   const { account } = useAccount()
   const rpc = useRpcProvider()
   const { sdk } = rpc
-  const isIceEnabled = useIsIceEnabled()
 
   const {
-    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
-  const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
   return useMutation({
     mutationFn: async (values: DcaFormValues) => {
@@ -50,9 +42,6 @@ export const useSubmitDcaOrder = () => {
       if (!account) throw new Error("Account not connected")
       if (!sellAsset) throw new Error("Invalid sell asset")
       if (!buyAsset) throw new Error("Invalid buy asset")
-      if (limitEnabled && !isIceEnabled) {
-        throw new Error("Limit price requires intents")
-      }
 
       const order = await rpc.queryClient.ensureQueryData(
         dcaOrderQuery(rpc, values),
@@ -95,21 +84,11 @@ export const useSubmitDcaOrder = () => {
             }
           : order
 
-      let tx
-      if (isIceEnabled) {
-        tx = await sdk.tx
-          .intentOrder(iceOrder)
-          .withBeneficiary(account.address)
-          .withSlippage(twapSlippage)
-          .build()
-      } else {
-        tx = await sdk.tx
-          .order(order)
-          .withBeneficiary(account.address)
-          .withSlippage(twapSlippage)
-          .withMaxRetries(twapMaxRetries)
-          .build()
-      }
+      const tx = await sdk.tx
+        .intentOrder(iceOrder)
+        .withBeneficiary(account.address)
+        .withSlippage(twapSlippage)
+        .build()
 
       const params = {
         amountIn: t("currency", {
@@ -124,39 +103,14 @@ export const useSubmitDcaOrder = () => {
         frequency: isOpenBudget ? duration : frequency,
       }
 
-      return createTransaction(
-        {
-          tx: tx.get(),
-          toasts: isIceEnabled
-            ? {
-                submitted: t(`trade:intent.dca.${budget}.loading`, params),
-                success: t(`trade:intent.dca.${budget}.placed`, params),
-                error: t(`trade:intent.dca.${budget}.error`, params),
-              }
-            : {
-                submitted: t(`trade:dca.${budget}.tx.loading`, params),
-                success: t(`trade:dca.${budget}.tx.success`, params),
-                error: t(`trade:dca.${budget}.tx.error`, params),
-              },
+      return createTransaction({
+        tx: tx.get(),
+        toasts: {
+          submitted: t(`trade:intent.dca.${budget}.loading`, params),
+          success: t(`trade:intent.dca.${budget}.placed`, params),
+          error: t(`trade:intent.dca.${budget}.error`, params),
         },
-        {
-          onSuccess: (event) => {
-            if (isIceEnabled || rpc.isFork) return
-
-            const blockHeight = getTxResultBlockHeight(event)
-            if (blockHeight === null) return
-
-            const planned = isSubstrateTxResult(event)
-              ? (event.events.find(
-                  (e) =>
-                    e.type === "DCA" && e.value.type === "ExecutionPlanned",
-                )?.value.value as { block: number } | undefined)
-              : undefined
-
-            armNeckworkSync(planned?.block ?? blockHeight + 1)
-          },
-        },
-      )
+      })
     },
   })
 }

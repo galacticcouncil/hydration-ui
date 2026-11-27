@@ -6,7 +6,6 @@ import { filter, map, merge, Observable } from "rxjs"
 
 import { useAccountIntents } from "@/api/intents"
 import { useObservable } from "@/hooks/useObservable"
-import { useChainScheduleIds } from "@/modules/trade/orders/TradeOrders/lib/useChainOrdersData"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useHasIntentPallet } from "@/states/intents"
 import { useNeckworkSyncStore } from "@/states/neckwork"
@@ -41,7 +40,6 @@ export const useInvalidateOrdersOnExecution = () => {
   const hasIntentPallet = useHasIntentPallet()
   const armNeckworkSync = useNeckworkSyncStore((state) => state.arm)
 
-  const { scheduleIds, isLoading: isSchedulesLoading } = useChainScheduleIds()
   const { data: intents, isLoading: isIntentsLoading } = useAccountIntents(
     account?.address ?? "",
   )
@@ -53,7 +51,6 @@ export const useInvalidateOrdersOnExecution = () => {
 
     timeout.current = setTimeout(() => {
       timeout.current = null
-      void queryClient.invalidateQueries({ queryKey: ["trade", "orders"] })
       void queryClient.invalidateQueries({ queryKey: ["intents", "values"] })
       void queryClient.invalidateQueries({ queryKey: NECKWORK_ACCOUNT_KEY })
     }, INVALIDATE_DELAY)
@@ -66,51 +63,33 @@ export const useInvalidateOrdersOnExecution = () => {
     [],
   )
 
-  const scheduleKey = scheduleIds.join(",")
   const intentKey = intents.map(({ id }) => String(id)).join(",")
 
-  const idsRef = useRef<{
-    schedules: ReadonlySet<string>
-    intents: ReadonlySet<string>
-  }>({ schedules: new Set(), intents: new Set() })
+  const intentIdsRef = useRef<ReadonlySet<string>>(new Set())
 
   useEffect(() => {
-    idsRef.current = {
-      schedules: new Set(scheduleKey ? scheduleKey.split(",") : []),
-      intents: new Set(intentKey ? intentKey.split(",") : []),
-    }
-  }, [scheduleKey, intentKey])
+    intentIdsRef.current = new Set(intentKey ? intentKey.split(",") : [])
+  }, [intentKey])
 
-  const isLoading = isSchedulesLoading || isIntentsLoading
   const seenKey = useRef<string | null>(null)
 
   useEffect(() => {
-    if (isLoading) return
+    if (isIntentsLoading) return
 
-    const key = `${scheduleKey}|${intentKey}`
+    if (seenKey.current !== null && seenKey.current !== intentKey) invalidate()
 
-    if (seenKey.current !== null && seenKey.current !== key) invalidate()
-
-    seenKey.current = key
-  }, [isLoading, scheduleKey, intentKey, invalidate])
+    seenKey.current = intentKey
+  }, [isIntentsLoading, intentKey, invalidate])
 
   const events$ = useMemo(() => {
-    if (!isReady) return
+    if (!isReady || !hasIntentPallet) return
 
-    const { DCA, Intent } = papi.event
-
-    const scheduleSet = () => idsRef.current.schedules
-    const intentSet = () => idsRef.current.intents
+    const { Intent } = papi.event
+    const intentSet = () => intentIdsRef.current
 
     return merge(
-      ownedEvents(DCA.TradeExecuted, scheduleSet),
-      ownedEvents(DCA.TradeFailed, scheduleSet),
-      ...(hasIntentPallet
-        ? [
-            ownedEvents(Intent.DcaTradeExecuted, intentSet),
-            ownedEvents(Intent.IntentResovedPartially, intentSet),
-          ]
-        : []),
+      ownedEvents(Intent.DcaTradeExecuted, intentSet),
+      ownedEvents(Intent.IntentResovedPartially, intentSet),
     )
   }, [isReady, papi, hasIntentPallet])
 

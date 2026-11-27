@@ -24,7 +24,7 @@ export const useMaxOrderBalance = ({
   const rpc = useRpcProvider()
   const { data: accountFeePaymentAssetId } = useAccountFeePaymentAssetId()
   const {
-    dca: { slippage: twapSlippage, maxRetries: twapMaxRetries },
+    dca: { slippage: twapSlippage },
   } = useTradeSettings()
   const { getTransferableBalance } = useAccountBalances()
   const enabled =
@@ -33,13 +33,7 @@ export const useMaxOrderBalance = ({
 
   const { data: tx } = useQuery({
     enabled,
-    queryKey: [
-      "maxOrderAmount",
-      assetIn,
-      assetOut,
-      twapSlippage,
-      twapMaxRetries,
-    ],
+    queryKey: ["maxOrderAmount", assetIn, assetOut, twapSlippage],
     queryFn: async () => {
       const minAmount = await rpc.queryClient.ensureQueryData(
         minimumOrderBudgetQuery(rpc, meta.id, meta.decimals),
@@ -62,19 +56,18 @@ export const useMaxOrderBalance = ({
         undefined,
       )
 
+      // The same intent useSubmitDcaOrder signs, so the fee matches
       const dcaOrderTx = await rpc.sdk.tx
-        .order(dcaOrder)
+        .intentOrder(dcaOrder)
         .withBeneficiary(account?.address ?? "")
         .withSlippage(twapSlippage)
-        .withMaxRetries(twapMaxRetries)
         .build()
         .then((tx) => tx.get())
 
       const openBudgetDcaOrderTx = await rpc.sdk.tx
-        .order(openBudgetDcaOrder)
+        .intentOrder(openBudgetDcaOrder)
         .withBeneficiary(account?.address ?? "")
         .withSlippage(twapSlippage)
-        .withMaxRetries(twapMaxRetries)
         .build()
         .then((tx) => tx.get())
 

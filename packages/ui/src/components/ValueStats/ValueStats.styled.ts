@@ -164,7 +164,8 @@ export const SValueStatsGroup = styled.div<{
     justify-content: start;
     column-gap: ${theme.sizes[columnGap]};
     row-gap: ${theme.sizes[rowGap]};
-    overflow: hidden;
+    overflow-x: clip;
+    clip-path: inset(0 0 -100vh 0);
 
     & > * {
       position: relative;

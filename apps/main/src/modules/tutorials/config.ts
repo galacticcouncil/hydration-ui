@@ -27,15 +27,6 @@ export const tutorials = {
     ],
     when: () => false,
   },
-  "trade-intents": {
-    steps: [
-      {
-        i18nKey: "trade:hints.intents",
-        side: "bottom",
-      },
-    ],
-    when: () => false,
-  },
 } satisfies Record<string, Tutorial>
 
 export type TutorialId = keyof typeof tutorials

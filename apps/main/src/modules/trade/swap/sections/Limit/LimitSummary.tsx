@@ -22,7 +22,6 @@ import {
 } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 
 type Props = {
   readonly healthFactor: HealthFactorResult | undefined
@@ -31,7 +30,6 @@ type Props = {
 export const LimitSummary: FC<Props> = ({ healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
-  const isIceEnabled = useIsIceEnabled()
   const { watch } = useFormContext<LimitFormValues>()
 
   const [buyAsset, buyAmount, expiry] = watch([
@@ -40,9 +38,7 @@ export const LimitSummary: FC<Props> = ({ healthFactor }) => {
     "expiry",
   ])
 
-  const { data: maxDurationMs } = useQuery(
-    maxIntentDurationQuery(rpc, isIceEnabled),
-  )
+  const { data: maxDurationMs } = useQuery(maxIntentDurationQuery(rpc))
 
   const [minReceivedDisplay, { isLoading: isMinReceivedDisplayLoading }] =
     useDisplayAssetPrice(buyAsset?.id ?? "", buyAmount || "0")

@@ -12,8 +12,6 @@ export enum OrderStatus {
   MigrationCancelled = "MigrationCancelled",
 }
 
-export const DCA_OPEN_ORDER_STATUSES = [OrderStatus.Created] as const
-
 export const DCA_HISTORY_ORDER_STATUSES = [
   OrderStatus.Completed,
   OrderStatus.Terminated,
@@ -84,19 +82,7 @@ export type IntentDcaOrderData = DcaOrderDataBase &
     readonly intentId: bigint
   }
 
-export type MergedOrderData = DcaOrderDataBase & {
-  readonly scheduleId: number
-  readonly intentId: bigint
-}
-
-export type OrderData =
-  | IntentLimitOrderData
-  | DcaOrderData
-  | IntentDcaOrderData
-  | MergedOrderData
-
-export const isMergedOrder = (order: OrderData): order is MergedOrderData =>
-  "scheduleId" in order && "intentId" in order
+export type OrderData = IntentLimitOrderData | DcaOrderData | IntentDcaOrderData
 
 export const isIntentOrder = (
   order: OrderData,
@@ -106,8 +92,6 @@ export const isDcaScheduleOrder = (order: OrderData): order is DcaOrderData =>
   "scheduleId" in order
 
 export const orderKey = (order: OrderData): string =>
-  isMergedOrder(order)
-    ? `migrated:${order.scheduleId}`
-    : isDcaScheduleOrder(order)
-      ? `schedule:${order.scheduleId}`
-      : `intent:${order.intentId}`
+  isDcaScheduleOrder(order)
+    ? `schedule:${order.scheduleId}`
+    : `intent:${order.intentId}`

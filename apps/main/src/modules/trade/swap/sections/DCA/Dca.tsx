@@ -25,7 +25,6 @@ import {
 } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useMaxOrderBalance } from "@/modules/trade/swap/sections/DCA/useMaxOrderBalance"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
-import { useIsIceEnabled } from "@/states/intents"
 import { maxBalanceError } from "@/utils/validators"
 
 import {
@@ -37,7 +36,6 @@ import {
 
 export const Dca: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const isIceEnabled = useIsIceEnabled()
   const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const { limitOrderMaxBalance, openBudgetOrderMaxBalance } =
@@ -71,12 +69,6 @@ export const Dca: FC = () => {
   const { warnings, errors } = useDcaValidation(order, duration)
 
   const { setValue } = form
-
-  useEffect(() => {
-    if (!isIceEnabled) {
-      setValue("limitEnabled", false, { shouldValidate: true })
-    }
-  }, [isIceEnabled, setValue])
 
   const quotedPrice = useQuotedPrice({
     // What a single trade of the schedule would execute at right now.
@@ -211,7 +203,7 @@ export const Dca: FC = () => {
           }
         >
           {isOpenBudget ? <DcaOpenBudgetFields /> : <DcaLimitedBudgetFields />}
-          {isIceEnabled && <DcaLimitPrice quotedPrice={quotedPrice} />}
+          <DcaLimitPrice quotedPrice={quotedPrice} />
           <DcaSummary
             order={order}
             isLoading={isLoading}

@@ -16,7 +16,6 @@ type QuerySources = {
 }
 
 const QUERY_MAP = {
-  "DCA.ScheduleOwnership": ({ typed }) => typed.DCA.ScheduleOwnership,
   "Intent.AccountIntents": ({ typed }) => typed.Intent.AccountIntents,
   "OTC.Orders": ({ typed }) => typed.OTC.Orders,
   "Uniques.Account": ({ typed }) => typed.Uniques.Account,
