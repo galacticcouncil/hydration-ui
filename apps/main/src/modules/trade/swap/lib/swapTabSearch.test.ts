@@ -38,10 +38,9 @@ describe("normalizeSearchForSwapTab", () => {
     ).toEqual(search("near", "wrap.near", DEFAULT_TRADE_ASSET_IN_ID))
   })
 
-  it("normalises BTC on the Market tab, which only TWAP supports", () => {
-    expect(normalizeSearchForSwapTab("market", search("btc", BTC_OUT))).toEqual(
-      hydrationDefaults(),
-    )
+  it("keeps BTC on the Market tab", () => {
+    const input = search("btc", BTC_OUT, "eth")
+    expect(normalizeSearchForSwapTab("market", input)).toBe(input)
   })
 
   it("keeps ZEC on the Market tab", () => {
