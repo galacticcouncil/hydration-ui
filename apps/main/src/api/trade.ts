@@ -5,8 +5,15 @@ import Big from "big.js"
 
 import { blockTimeQuery } from "@/api/chain"
 import { papiDryRunErrorQuery } from "@/api/dryRun"
+import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
 import { ENV } from "@/config/env"
+import {
+  DcaFormValues,
+  DcaOrdersMode,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { TProviderContext } from "@/providers/rpcProvider"
+import { GC_TIME, STALE_TIME } from "@/utils/consts"
+import { toBigInt } from "@/utils/formatting"
 
 export const TradeType = sor.TradeType
 
@@ -276,6 +283,95 @@ export const bestBuyWithTxQuery = (
       }
     },
     enabled: bestBuy.enabled as boolean,
+  })
+}
+
+export const dcaOrderQuery = (rpc: TProviderContext, form: DcaFormValues) => {
+  const { sdk, isReady, queryClient } = rpc
+  const duration = getTimeFrameMillis(form.duration)
+
+  const orders =
+    form.orders.type === DcaOrdersMode.Custom
+      ? (form.orders.value ?? undefined)
+      : undefined
+
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "dcaOrder",
+      form.sellAsset?.id,
+      form.buyAsset?.id,
+      form.sellAmount,
+      form.duration,
+      form.orders,
+    ],
+    queryFn: async () => {
+      if (!form.sellAsset || !form.buyAsset) {
+        return null
+      }
+
+      if (form.orders.type === DcaOrdersMode.OpenBudget) {
+        return sdk.api.scheduler.getOpenBudgetDcaOrder(
+          Number(form.sellAsset.id),
+          Number(form.buyAsset.id),
+          form.sellAmount,
+          duration,
+        )
+      }
+
+      const minBudget = await queryClient.ensureQueryData(
+        minimumOrderBudgetQuery(
+          rpc,
+          form.sellAsset.id,
+          form.sellAsset.decimals,
+        ),
+      )
+
+      // getDcaOrder divides by tradeCount, which is 0 below 20% of min budget.
+      const minTradeAmount = (minBudget * 2n) / 10n
+      const amountIn = toBigInt(form.sellAmount, form.sellAsset.decimals)
+
+      if (minTradeAmount === 0n || amountIn < minTradeAmount) {
+        return null
+      }
+
+      return sdk.api.scheduler.getDcaOrder(
+        Number(form.sellAsset.id),
+        Number(form.buyAsset.id),
+        form.sellAmount,
+        duration,
+        orders ?? undefined,
+      )
+    },
+    enabled:
+      isReady &&
+      !!form.sellAsset &&
+      !!form.buyAsset &&
+      Big(form.sellAmount || "0").gt(0) &&
+      duration > 0 &&
+      (orders === undefined || orders > 0),
+  })
+}
+
+export const minimumOrderBudgetQuery = (
+  { isReady, sdk }: TProviderContext,
+  assetId: string,
+  assetDecimals: number,
+) => {
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "minOrderBudget",
+      assetId,
+      assetDecimals,
+    ],
+    queryFn: async () =>
+      sdk.api.scheduler.getMinimumOrderBudget(Number(assetId), assetDecimals),
+    enabled: isReady,
+    gcTime: GC_TIME,
+    staleTime: STALE_TIME,
   })
 }
 

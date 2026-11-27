@@ -3,17 +3,13 @@ import { Box } from "@galacticcouncil/ui/components"
 import { TradeModeOptions } from "@/modules/trade/swap/sections/XcSwap/components/TradeModeOptions"
 import { useOnChainTradeAssets } from "@/modules/trade/swap/sections/XcSwap/hooks/useOnChainTradeAssets"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
-import { useIsIceEnabled } from "@/states/intents"
 
 export const XcSwapOptions = () => {
   const { quote, isQuoteLoading, isTwapLoading, isCrossChain } = useXcSwap()
   const { sellAsset, buyAsset } = useOnChainTradeAssets()
-  const isIceEnabled = useIsIceEnabled()
 
-  // Like the Limit tab, the split (TWAP) option needs intents turned on
   const onChainQuote = quote?.kind === "oc" ? quote : null
-  const isShown =
-    isIceEnabled && !isCrossChain && (isQuoteLoading || !!onChainQuote)
+  const isShown = !isCrossChain && (isQuoteLoading || !!onChainQuote)
 
   if (!isShown) {
     return null

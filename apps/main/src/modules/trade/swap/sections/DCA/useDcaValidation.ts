@@ -1,0 +1,119 @@
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
+
+import { HealthFactorResult } from "@/api/aave"
+import { aaveSummaryQuery } from "@/api/aave"
+import { TimeFrame } from "@/components/TimeFrame/TimeFrame.utils"
+import {
+  getAbsoluteMaxDcaOrders,
+  MIN_DCA_ORDERS,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
+
+const PRICE_IMPACT_WARNING_THRESHOLD = -1
+
+export enum DcaValidationError {
+  PriceImpact = "PriceImpact",
+  MinOrderBudget = "MinOrderBudget",
+}
+
+export enum DcaValidationWarning {
+  PriceImpact = "PriceImpact",
+}
+
+type DcaValidationResult = {
+  readonly warnings: ReadonlyArray<DcaValidationWarning>
+  readonly errors: ReadonlyArray<DcaValidationError>
+}
+
+export const useDcaValidation = (
+  order: TradeDcaOrder | undefined | null,
+  duration: TimeFrame,
+): DcaValidationResult => {
+  const {
+    dca: { slippage: twapSlippage },
+  } = useTradeSettings()
+
+  return validateDcaOrder(order, duration, twapSlippage)
+}
+
+export const validateDcaOrder = (
+  order: TradeDcaOrder | undefined | null,
+  duration: TimeFrame,
+  twapSlippage: number,
+): DcaValidationResult => {
+  if (!order) {
+    return { warnings: [], errors: [] }
+  }
+
+  const priceImpact = order.tradeImpactPct
+
+  const warnings: Array<DcaValidationWarning> = []
+  const errors: Array<DcaValidationError> = []
+
+  if (priceImpact < -twapSlippage) {
+    errors.push(DcaValidationError.PriceImpact)
+  } else if (priceImpact < PRICE_IMPACT_WARNING_THRESHOLD) {
+    warnings.push(DcaValidationWarning.PriceImpact)
+  }
+
+  const maxOrders = getAbsoluteMaxDcaOrders(duration)
+
+  if (
+    order.tradeCount <= maxOrders &&
+    order.tradeCount > Math.max(order.maxTradeCount, MIN_DCA_ORDERS)
+  ) {
+    errors.push(DcaValidationError.MinOrderBudget)
+  }
+
+  return { warnings, errors }
+}
+
+export const useOpenBudgetDcaHfValidation = (
+  order: TradeDcaOrder | null | undefined,
+  healthFactor: HealthFactorResult | undefined,
+  isOpenBudget: boolean,
+): {
+  readonly healthFactor: HealthFactorResult | undefined
+  readonly isLoading: boolean
+} => {
+  const rpc = useRpcProvider()
+  const { getAsset, isErc20AToken } = useAssets()
+
+  const { account } = useAccount()
+  const address = account?.address ?? ""
+
+  const assetIn = order ? getAsset(order.assetIn) : undefined
+  const aTokenIn = assetIn && isErc20AToken(assetIn) ? assetIn : undefined
+
+  const { data: aaveSummary, isLoading } = useQuery(
+    aaveSummaryQuery(
+      rpc,
+      address,
+      aTokenIn?.underlyingAssetId,
+      isOpenBudget && !!aTokenIn,
+    ),
+  )
+
+  if (!order || !healthFactor || !isOpenBudget || !aTokenIn) {
+    return { healthFactor: undefined, isLoading: false }
+  }
+
+  const reserve = aaveSummary?.reserves.find(
+    (reserve) =>
+      getAssetIdFromAddress(reserve.reserveAsset) ===
+      aTokenIn.underlyingAssetId,
+  )
+
+  return {
+    healthFactor: {
+      ...healthFactor,
+      isUserConsentRequired: !!reserve?.isCollateral,
+    },
+    isLoading,
+  }
+}

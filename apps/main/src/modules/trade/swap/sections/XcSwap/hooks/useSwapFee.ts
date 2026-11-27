@@ -6,13 +6,11 @@ import { ENV } from "@/config/env"
 import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useSwapFee = (swap: Trade | null, enabled = true) => {
   const { sdk } = useRpcProvider()
   const { account } = useAccount()
-  const isIceEnabled = useIsIceEnabled()
   const {
     swap: {
       single: { swapSlippage },
@@ -26,7 +24,6 @@ export const useSwapFee = (swap: Trade | null, enabled = true) => {
     queryKey: [
       "trade",
       "swapFee",
-      isIceEnabled,
       swapSlippage,
       swap?.type,
       swap?.amountIn.toString(),
@@ -40,21 +37,13 @@ export const useSwapFee = (swap: Trade | null, enabled = true) => {
       const beneficiary = account?.address || ENV.VITE_TRSRY_ADDR
 
       // Estimate the same extrinsic useSubmitSwap submits
-      if (isIceEnabled) {
-        const { amountIn, amountOut } = getIceSwapAmounts(swap, swapSlippage)
-
-        return sdk.tx
-          .intentLimit({ ...swap, amountIn })
-          .withBeneficiary(beneficiary)
-          .withMinAmountOut(amountOut)
-          .withPartial(false)
-          .build()
-          .then((tx) => tx.get())
-      }
+      const { amountIn, amountOut } = getIceSwapAmounts(swap, swapSlippage)
 
       return sdk.tx
-        .trade(swap)
+        .intentLimit({ ...swap, amountIn })
         .withBeneficiary(beneficiary)
+        .withMinAmountOut(amountOut)
+        .withPartial(false)
         .build()
         .then((tx) => tx.get())
     },

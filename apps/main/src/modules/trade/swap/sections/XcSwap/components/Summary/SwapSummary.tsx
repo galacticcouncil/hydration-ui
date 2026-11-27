@@ -28,7 +28,6 @@ import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/XcSwap/compo
 import { useSwapFee } from "@/modules/trade/swap/sections/XcSwap/hooks/useSwapFee"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 import { getTradeFeeIntervals } from "@/utils/trade"
@@ -49,7 +48,6 @@ export const SwapSummary: FC<Props> = ({
   const { t } = useTranslation(["common", "trade"])
   const { isConnected } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const isIceEnabled = useIsIceEnabled()
 
   const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
@@ -155,9 +153,7 @@ export const SwapSummary: FC<Props> = ({
             }
             tooltip={
               isBuy
-                ? isIceEnabled
-                  ? t("trade:market.summary.maxSent.intent.tooltip")
-                  : t("trade:market.summary.maxSent.tooltip")
+                ? t("trade:market.summary.maxSent.intent.tooltip")
                 : t("trade:market.summary.minReceived.tooltip")
             }
             amount={t("currency", {

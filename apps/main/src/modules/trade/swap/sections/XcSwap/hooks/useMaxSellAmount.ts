@@ -8,7 +8,6 @@ import { getIceSwapAmounts } from "@/modules/trade/swap/sections/XcSwap/lib/iceA
 import { useMaxBalanceWithFee } from "@/modules/transactions/hooks/useMaxBalanceWithFee"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -24,7 +23,6 @@ export const useMaxSellAmount = ({
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const { sdk, isReady } = useRpcProvider()
-  const isIceEnabled = useIsIceEnabled()
   const {
     swap: {
       single: { swapSlippage },
@@ -48,7 +46,6 @@ export const useMaxSellAmount = ({
       assetOut,
       swapSlippage,
       twapSlippage,
-      isIceEnabled,
       account?.address,
     ],
     queryFn: async () => {
@@ -65,14 +62,10 @@ export const useMaxSellAmount = ({
         "1",
       )
 
-      const swapBuilder = isIceEnabled
-        ? sdk.tx
-            .intentLimit(swap)
-            .withMinAmountOut(getIceSwapAmounts(swap, swapSlippage).amountOut)
-            .withPartial(false)
-        : sdk.tx.trade(swap).withSlippage(swapSlippage)
-
-      const swapTx = await swapBuilder
+      const swapTx = await sdk.tx
+        .intentLimit(swap)
+        .withMinAmountOut(getIceSwapAmounts(swap, swapSlippage).amountOut)
+        .withPartial(false)
         .withBeneficiary(account?.address ?? "")
         .build()
         .then((tx) => tx.get())

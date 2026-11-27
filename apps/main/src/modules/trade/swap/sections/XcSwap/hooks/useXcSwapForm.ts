@@ -10,7 +10,6 @@ import i18n from "@/i18n"
 import { useTradeForm } from "@/modules/trade/swap/lib/useTradeForm"
 import { getIceBuySellAmount } from "@/modules/trade/swap/sections/XcSwap/lib/iceAmounts"
 import { XcAsset, XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
-import { useIsIceEnabled } from "@/states/intents"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   maxBalanceError,
@@ -58,7 +57,6 @@ const schema = z
 const useSchema = (
   maxSwapSellBalance: string,
   maxTwapSellBalance: string,
-  isIceEnabled: boolean,
   swapSlippage: number,
 ) => {
   const { account } = useAccount()
@@ -73,10 +71,7 @@ const useSchema = (
         form.destChain === null || form.destChain.platform === "hydration"
       // An ICE buy spends the slippage-padded amount in full (useSubmitSwap)
       const isIceBuy =
-        isIceEnabled &&
-        isOnChain &&
-        form.isSingleTrade &&
-        form.type === TradeType.Buy
+        isOnChain && form.isSingleTrade && form.type === TradeType.Buy
 
       return validateMaxBalance(
         form.isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance,
@@ -109,7 +104,6 @@ export const useXcSwapForm = ({
 }: Args) => {
   const { account } = useAccount()
   const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
-  const isIceEnabled = useIsIceEnabled()
   const {
     swap: {
       single: { swapSlippage },
@@ -132,12 +126,7 @@ export const useXcSwapForm = ({
     defaultValues,
     mode: "onChange",
     resolver: standardSchemaResolver(
-      useSchema(
-        maxSwapSellBalance,
-        maxTwapSellBalance,
-        isIceEnabled,
-        swapSlippage,
-      ),
+      useSchema(maxSwapSellBalance, maxTwapSellBalance, swapSlippage),
     ),
   })
 
@@ -160,7 +149,6 @@ export const useXcSwapForm = ({
     maxTwapSellBalance,
     isMaxSwapSellBalanceLoading,
     isMaxTwapSellBalanceLoading,
-    isIceEnabled,
     swapSlippage,
     trigger,
   ])

@@ -23,7 +23,6 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapQuoteQuery"
 import { XcAsset } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useIsIceEnabled } from "@/states/intents"
 import { scaleHuman } from "@/utils/formatting"
 
 const XC_QUOTE_REFETCH_MS = 15_000
@@ -53,7 +52,6 @@ export const useXcSwapQuote = ({
   swapSlippage,
 }: UseXcSwapQuoteParams) => {
   const { isReady } = rpc
-  const isIceEnabled = useIsIceEnabled()
 
   const [
     sellAsset,
@@ -148,9 +146,7 @@ export const useXcSwapQuote = ({
       : ""
     : debouncedAmountIn
 
-  // A split trade is always an intent, so it needs intents turned on
-  const twapEnabled =
-    isIceEnabled && !isCrossChain && isTwapEnabled(omnipoolTrade)
+  const twapEnabled = !isCrossChain && isTwapEnabled(omnipoolTrade)
 
   const {
     data: twap,

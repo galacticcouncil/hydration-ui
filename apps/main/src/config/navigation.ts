@@ -24,7 +24,7 @@ import { getDeployPreviewId } from "@/utils/deploy"
 
 type Route = FileRouteTypes["to"]
 
-export type SwapTabParam = "market" | "limit"
+export type SwapTabParam = "market" | "limit" | "twap"
 
 export const swapTabLink = (tab: SwapTabParam) =>
   ({
@@ -40,6 +40,7 @@ export const LINKS = {
   swap: "/trade/swap",
   swapMarket: "/trade/swap/$tab",
   swapLimit: "/trade/swap/$tab",
+  swapTwap: "/trade/swap/$tab",
   portfolio: "/portfolio",
   portfolioOverview: "/portfolio",
   portfolioTracked: "/portfolio/tracked",
@@ -128,6 +129,11 @@ export const NAVIGATION: NavigationItem[] = [
             key: "swapLimit",
             to: LINKS.swapLimit,
             params: { tab: "limit" },
+          },
+          {
+            key: "swapTwap",
+            to: LINKS.swapTwap,
+            params: { tab: "twap" },
           },
         ],
       },
@@ -298,6 +304,10 @@ export const getMenuTranslations = (t: TFunction) =>
     },
     swapMarket: {
       title: t("navigation.swapMarket.title"),
+      description: "",
+    },
+    swapTwap: {
+      title: t("navigation.swapTwap.title"),
       description: "",
     },
     swapLimit: {
