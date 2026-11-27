@@ -21,6 +21,8 @@ export type TSelectedAsset = {
   decimals: number
   symbol: string
   iconId?: string | string[]
+  sideChainSrc?: string
+  collapsed?: boolean
 }
 
 export type AssetSelectBalance = Omit<
@@ -119,7 +121,14 @@ export const AssetSelect = ({
             ? {
                 symbol: selectedAsset.symbol,
                 icon: (
-                  <AssetLogo id={selectedAsset.iconId ?? selectedAsset.id} />
+                  <AssetLogo
+                    id={selectedAsset.iconId ?? selectedAsset.id}
+                    collapsed={selectedAsset.collapsed}
+                    {...(selectedAsset.sideChainSrc && {
+                      chainSrc: selectedAsset.sideChainSrc,
+                      chainPosition: "side",
+                    })}
+                  />
                 ),
               }
             : null

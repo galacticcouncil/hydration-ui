@@ -33,6 +33,7 @@ type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
   isLoading?: boolean
   hideChain?: boolean
+  collapsed?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [
@@ -50,6 +51,9 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   className,
   isLoading,
   hideChain = false,
+  chainSrc,
+  chainPosition,
+  collapsed,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -64,24 +68,29 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
   }, [getAssetWithFallback, id])
 
   if (isLoading) {
-    return <AssetLogoPrimitive size={size} isLoading />
+    return (
+      <AssetLogoPrimitive size={size} chainPosition={chainPosition} isLoading />
+    )
   }
 
   if (logoMetadata.length > 1) {
     const isATokenPool = logoMetadata.every(
       (data) => data.decoration === "atoken",
     )
+    const isSide = chainPosition === "side" && !hideChain
     return (
       <MultipleAssetLogoWrapper
         size={size}
         decoration={isATokenPool ? "atoken" : "none"}
+        chainSrc={isSide ? chainSrc : undefined}
+        collapsed={collapsed}
       >
         {logoMetadata.map((data, index) => (
           <AssetLogoPrimitive
             key={`${data.id}-${index}`}
             alt={data.alt}
             src={data.assetSrc}
-            chainSrc={hideChain ? undefined : data.chainSrc}
+            chainSrc={hideChain || isSide ? undefined : data.chainSrc}
             decoration={data.decoration}
           />
         ))}
@@ -96,7 +105,10 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}
-      chainSrc={hideChain ? undefined : singleIconMetadata?.chainSrc}
+      chainSrc={
+        hideChain ? undefined : (chainSrc ?? singleIconMetadata?.chainSrc)
+      }
+      chainPosition={chainPosition}
       size={size}
       decoration={singleIconMetadata?.decoration}
     />

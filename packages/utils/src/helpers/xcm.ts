@@ -221,13 +221,31 @@ export function hasRouteToHydration(
 
 export function resolveHydrationDisplayAssetId(
   asset: Asset,
+  chainKey: string,
   configService: ConfigService,
 ): string | null {
   const hydrationChain = configService.chains.get(HYDRATION_CHAIN_KEY)
   if (!hydrationChain) return null
 
   const canonical = configService.assets.get(asset.key) ?? asset
-  return toHydrationRegistryId(hydrationChain, canonical)
+  const id = toHydrationRegistryId(hydrationChain, canonical)
+  if (!id || chainKey === HYDRATION_CHAIN_KEY) return id
+
+  const sourceChain = configService.chains.get(chainKey)
+  if (!sourceChain) return id
+  const routes = configService.getAssetRoutesOrEmpty(
+    canonical,
+    sourceChain,
+    hydrationChain,
+  )
+  if (!routes.length) return id
+
+  return routes.some(
+    (route) =>
+      toHydrationRegistryId(hydrationChain, route.destination.asset) === id,
+  )
+    ? id
+    : null
 }
 
 export function resolveHydrationAssetId(
