@@ -17,7 +17,7 @@ const SWAP_TAB_DEST_PLATFORMS: Record<
   SwapTabParam,
   ReadonlyArray<XcPlatform>
 > = {
-  market: ["hydration", "near", "zec"],
+  market: ["hydration", "near", "zec", "btc"],
   limit: ["hydration"],
   twap: ["hydration", "near", "zec", "btc"],
 }
