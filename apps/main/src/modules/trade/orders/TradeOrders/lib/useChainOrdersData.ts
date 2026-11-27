@@ -13,6 +13,9 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
+/** Prefix of every trade order query; invalidating it refreshes them all */
+export const TRADE_ORDERS_QUERY_KEY = ["trade", "orders"]
+
 const CHAIN_ORDERS_STALE_TIME = secondsToMilliseconds(30)
 
 export const useChainScheduleIds = () => {
@@ -56,7 +59,7 @@ export const useChainOrdersData = () => {
     isLoading: isSchedulesLoading,
     isError: isSchedulesError,
   } = useQuery({
-    queryKey: ["trade", "orders", "chain", scheduleIds],
+    queryKey: [...TRADE_ORDERS_QUERY_KEY, "chain", scheduleIds],
     queryFn: async () => {
       const { DCA } = papi.query
       const keys = scheduleIds.map((id): [number] => [id])

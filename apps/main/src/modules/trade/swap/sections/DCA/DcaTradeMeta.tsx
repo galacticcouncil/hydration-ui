@@ -1,4 +1,3 @@
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   ExclamationMark,
   TriangleAlert,
@@ -17,17 +16,18 @@ import { useTranslation } from "react-i18next"
 import { HealthFactorResult } from "@/api/aave"
 import { HealthFactorChange } from "@/modules/money-market/actions/HealthFactorChange"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
+import { TradeLimitSummaryRow } from "@/modules/trade/swap/sections/XcSwap/components/Summary/TradeLimitSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
-  readonly order: TradeDcaOrder | undefined | null
+  readonly priceImpactPct: number | undefined
   readonly healthFactor: HealthFactorResult | undefined
   readonly priceImpactLevel: "error" | "warning" | undefined
 }
 
 export const DcaTradeMeta: FC<Props> = ({
-  order,
+  priceImpactPct,
   healthFactor,
   priceImpactLevel,
 }) => {
@@ -53,13 +53,10 @@ export const DcaTradeMeta: FC<Props> = ({
           }
         />
       )}
-      <SwapSummaryRow
-        label={t("trade:dca.summary.slippage")}
-        content={
-          <SummaryRowValue color={getToken("text.tint.quart")}>
-            {t("percent", { value: twapSlippage })}
-          </SummaryRowValue>
-        }
+      <TradeLimitSummaryRow
+        tradeLimit={twapSlippage}
+        priceImpact={priceImpactPct ?? 0}
+        settingsSection="split"
       />
       <SwapSummaryRow
         label={t("trade:dca.summary.priceImpact")}
@@ -78,8 +75,8 @@ export const DcaTradeMeta: FC<Props> = ({
             })()}
           >
             <Flex align="center" gap="s">
-              {order ? (
-                t("percent", { value: order.tradeImpactPct })
+              {priceImpactPct !== undefined ? (
+                t("percent", { value: priceImpactPct })
               ) : (
                 <Skeleton sx={{ width: "3xl" }} height="1em" />
               )}

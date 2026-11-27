@@ -3,14 +3,17 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
-import { FC, useEffect, useMemo } from "react"
+import { FC, useEffect } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import {
+  DEFAULT_TRADE_ASSET_IN_ID,
+  DEFAULT_TRADE_ASSET_OUT_ID,
+} from "@/modules/trade/swap/lib/swapTabSearch"
 import { DcaAssetSwitcher } from "@/modules/trade/swap/sections/DCA/DcaAssetSwitcher"
 import {
   DcaFormValues,
@@ -18,11 +21,14 @@ import {
   DEFAULT_DCA_DURATION,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { XcChainAssetSelect } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
+import { getXcAssetId } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
+import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/types"
 import {
-  DEFAULT_TRADE_ASSET_IN_ID,
-  DEFAULT_TRADE_ASSET_OUT_ID,
-} from "@/routes/trade/_history/route"
+  toHydrationXcAsset,
+  useXcTwapAssetPairs,
+} from "@/modules/trade/swap/sections/XcTwap/hooks/useXcTwapAssetPairs"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useIsIceEnabled } from "@/states/intents"
 
 type Props = {
@@ -39,13 +45,9 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
 
   const { tradable, getAsset } = useAssets()
   const switchAssets = useSwitchAssets()
+  const { chainAssetPairs, hydrationChain } = useXcTwapAssetPairs()
 
   const navigate = useNavigate()
-
-  const buyableAssets = useMemo(
-    () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
-    [tradable],
-  )
 
   useEffect(() => {
     if (!isIceEnabled) {
@@ -125,6 +127,24 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
     switchAssets.mutate()
   }
 
+  // A cross-chain destination switches TwapTab to XcTwap, which starts empty.
+  const handleCrossChainSelect = ({ chain, asset }: XcChainAssetPair): void => {
+    const { sellAsset } = getValues()
+
+    setValue("sellAmount", "")
+
+    navigate({
+      to: ".",
+      search: (search) => ({
+        ...search,
+        assetIn: sellAsset?.id ?? search.assetIn,
+        assetOut: getXcAssetId(asset) ?? search.assetOut,
+        destPlatform: chain.platform,
+      }),
+      resetScroll: false,
+    })
+  }
+
   return (
     <Box>
       <Controller
@@ -186,17 +206,28 @@ export const DcaFields: FC<Props> = ({ maxBalance }) => {
         name="buyAsset"
         render={({ field, fieldState }) => (
           <Box py="l" width="100%">
-            <AssetSelect
-              selectedAsset={field.value}
-              setSelectedAsset={(buyAsset) => {
+            <XcChainAssetSelect
+              label={t("buy")}
+              chainAssetPairs={chainAssetPairs}
+              selectedChain={hydrationChain}
+              selectedAsset={
+                field.value ? toHydrationXcAsset(field.value) : null
+              }
+              modalTitle={t("trade:xc.swap.field.destTitle")}
+              isAmountHidden
+              assetError={fieldState.error?.message}
+              onSelectionChange={(selection) => {
+                if (selection.chain.key !== HYDRATION_CHAIN_KEY) {
+                  handleCrossChainSelect(selection)
+                  return
+                }
+
+                const buyAsset = getAsset(getXcAssetId(selection.asset) ?? "")
+                if (!buyAsset) return
+
                 field.onChange(buyAsset)
                 handleBuyAssetChange(buyAsset, field.value)
               }}
-              assets={buyableAssets}
-              label={t("buy")}
-              isAmountHidden
-              balance={false}
-              assetError={fieldState.error?.message}
             />
           </Box>
         )}

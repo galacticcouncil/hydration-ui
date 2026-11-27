@@ -9,7 +9,7 @@ import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly from: TAsset
-  readonly to: TAsset
+  readonly to: Pick<TAsset, "symbol">
   readonly price: string | null
   readonly defaultInverted?: boolean
 }

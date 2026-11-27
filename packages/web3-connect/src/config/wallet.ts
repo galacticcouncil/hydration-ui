@@ -1,3 +1,4 @@
+import btcIcon from "@galacticcouncil/ui/assets/images/Bitcoin.svg"
 import { METADATA_CDN_URL } from "@galacticcouncil/utils"
 
 import {
@@ -32,6 +33,7 @@ export enum WalletMode {
   Sui = "sui",
   Near = "near",
   Zcash = "zcash",
+  Bitcoin = "bitcoin",
 }
 
 export const WALLET_ACCOUNT_FILTER_OPTIONS = [
@@ -42,6 +44,7 @@ export const WALLET_ACCOUNT_FILTER_OPTIONS = [
   WalletMode.Sui,
   WalletMode.Near,
   WalletMode.Zcash,
+  WalletMode.Bitcoin,
 ] as const satisfies Array<WalletMode>
 
 export type WalletAccountFilterOptionOverride =
@@ -130,6 +133,14 @@ export const WALLET_MODES: Record<
     name: "Zcash",
     icon: `${METADATA_CDN_URL}/v2/zcash/zec/icon.svg`,
     providers: ZCASH_PROVIDERS,
+  },
+  // Address book only: no Bitcoin wallet connects
+  [WalletMode.Bitcoin]: {
+    chain: true,
+    name: "Bitcoin",
+    // Bundled: the metadata CDN has no Bitcoin icon
+    icon: btcIcon,
+    providers: [],
   },
 }
 

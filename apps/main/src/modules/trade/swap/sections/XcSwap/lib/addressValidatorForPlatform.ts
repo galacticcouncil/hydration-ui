@@ -1,20 +1,28 @@
-import { NearAddr, toNearAccountId, ZecAddr } from "@galacticcouncil/utils"
-import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
+import {
+  BtcAddr,
+  NearAddr,
+  toNearAccountId,
+  ZecAddr,
+} from "@galacticcouncil/utils"
+
+import { XcPlatform } from "@/utils/trade"
 
 export const addressValidatorForPlatform = (
-  platform: XcSwapPlatform,
+  platform: XcPlatform,
 ): ((addr: string) => boolean) => {
   switch (platform) {
     case "near":
       return NearAddr.isValid
     case "zec":
       return ZecAddr.isValid
+    case "btc":
+      return BtcAddr.isValid
     case "hydration":
       return () => true
   }
 }
 
 export const normalizeAddressForPlatform = (
-  platform: XcSwapPlatform,
+  platform: XcPlatform,
   addr: string,
 ): string => (platform === "near" ? toNearAccountId(addr) : addr)

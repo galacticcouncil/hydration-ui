@@ -4,13 +4,10 @@ import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { NAVIGATION, SwapTabParam } from "@/config/navigation"
+import { NAVIGATION } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
+import { normalizeSearchForSwapTab } from "@/modules/trade/swap/lib/swapTabSearch"
 import { TutorialAnchor } from "@/modules/tutorials/TutorialAnchor"
-import {
-  normalizeSearchForOnChainSwapTab,
-  TradeHistorySearchParams,
-} from "@/routes/trade/_history/route"
 import { useIsIceEnabled } from "@/states/intents"
 
 import { SFormHeader, SHeaderTab } from "./FormHeader.styled"
@@ -19,16 +16,6 @@ const swapRouteItems =
   NAVIGATION.find((item) => item.key === "trade")?.children?.find(
     (item) => item.key === "swap",
   )?.children ?? []
-
-const ON_CHAIN_SWAP_TABS = new Set<SwapTabParam>(["limit", "twap"])
-
-const searchForSwapTab = (
-  search: TradeHistorySearchParams,
-  tab: SwapTabParam | undefined,
-) =>
-  tab && ON_CHAIN_SWAP_TABS.has(tab)
-    ? normalizeSearchForOnChainSwapTab(search)
-    : search
 
 export const FormHeader = () => {
   const { t } = useTranslation(["trade", "common"])
@@ -47,9 +34,9 @@ export const FormHeader = () => {
               <Link
                 to={routeItem.to}
                 params={routeItem.params}
-                search={searchForSwapTab(
+                search={normalizeSearchForSwapTab(
+                  routeItem.params?.tab,
                   search,
-                  routeItem.params?.tab as SwapTabParam | undefined,
                 )}
                 resetScroll={false}
               >

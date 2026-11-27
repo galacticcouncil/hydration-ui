@@ -5,6 +5,8 @@ import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
   DcaOrderData,
+  getXcTwapInfo,
+  IntentDcaOrderData,
   isDcaScheduleOrder,
   isIntentOrder,
   OrderData,
@@ -21,6 +23,7 @@ import { useDcaEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useDcaE
 import { useIntentEnrichment } from "@/modules/trade/orders/TradeOrders/lib/useIntentEnrichment"
 import { PastExecutions } from "@/modules/trade/orders/TradeOrders/PastExecutions"
 import { PastExecutionsIntent } from "@/modules/trade/orders/TradeOrders/PastExecutionsIntent"
+import { XcTwapCancelModalContent } from "@/modules/trade/orders/XcTwapCancelModalContent"
 import { useNeckworkEnabled } from "@/states/neckwork"
 
 type Props = {
@@ -38,6 +41,9 @@ export const OpenOrders: FC<Props> = ({
 }) => {
   const [detailKey, setDetailKey] = useState<string | null>(null)
   const [terminating, setTerminating] = useState<DcaOrderData | null>(null)
+  const [cancellingXc, setCancellingXc] = useState<IntentDcaOrderData | null>(
+    null,
+  )
   const removeIntent = useRemoveIntent()
 
   const neckworkEnabled = useNeckworkEnabled()
@@ -74,9 +80,11 @@ export const OpenOrders: FC<Props> = ({
   const close = () => {
     setDetailKey(null)
     setTerminating(null)
+    setCancellingXc(null)
   }
 
   const isLoading = isOrdersLoading
+  const cancellingXcInfo = cancellingXc && getXcTwapInfo(cancellingXc)
 
   return (
     <>
@@ -95,8 +103,17 @@ export const OpenOrders: FC<Props> = ({
         }}
         emptyState={<OrdersEmptyState isError={isError} />}
       />
-      <Modal open={!!detail || !!terminating} onOpenChange={close}>
-        {terminating ? (
+      <Modal
+        open={!!detail || !!terminating || !!cancellingXc}
+        onOpenChange={close}
+      >
+        {cancellingXc && cancellingXcInfo ? (
+          <XcTwapCancelModalContent
+            order={cancellingXc}
+            xc={cancellingXcInfo}
+            onClose={() => setCancellingXc(null)}
+          />
+        ) : terminating ? (
           <TerminateDcaScheduleModalContent
             scheduleId={terminating.scheduleId}
             sold={terminating.fromAmountExecuted}
@@ -141,7 +158,12 @@ export const OpenOrders: FC<Props> = ({
                   return
                 }
 
-                removeIntent.mutate(detail.intentId, { onSuccess: close })
+                if (getXcTwapInfo(detail)) {
+                  setCancellingXc(detail)
+                  return
+                }
+
+                removeIntent.mutate(detail, { onSuccess: close })
               }}
             />
           ))

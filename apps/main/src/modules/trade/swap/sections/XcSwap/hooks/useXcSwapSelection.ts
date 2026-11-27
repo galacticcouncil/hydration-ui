@@ -1,5 +1,4 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
-import { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
 
@@ -12,6 +11,7 @@ import {
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
 import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useAssets } from "@/providers/assetsProvider"
+import { XcPlatform } from "@/utils/trade"
 
 type UseXcSwapSelectionParams = {
   form: UseFormReturn<XcSwapFormValues>
@@ -19,7 +19,7 @@ type UseXcSwapSelectionParams = {
   destChainAssetPairs: XcChainAssetPair[]
   assetIn: string
   assetOut: string
-  destPlatform: XcSwapPlatform
+  destPlatform: XcPlatform
   isOriginLoading: boolean
   isDestLoading: boolean
 }

@@ -14,7 +14,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo, useState } from "react"
@@ -27,7 +26,12 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { XcTwapAmount } from "@/modules/trade/orders/columns/XcTwapAmount"
+import { XcTwapPrice } from "@/modules/trade/orders/columns/XcTwapPrice"
+import { XcTwapStatus } from "@/modules/trade/orders/columns/XcTwapStatus"
 import {
+  getOrderDestination,
+  getXcTwapInfo,
   isDcaScheduleOrder,
   isIntentOrder,
   OrderData,
@@ -35,7 +39,9 @@ import {
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
+import { getOrderExplorerLink } from "@/modules/trade/orders/lib/xcTwap"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
+import { XcTwapCancelModalContent } from "@/modules/trade/orders/XcTwapCancelModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -48,6 +54,17 @@ export const useOpenOrdersColumns = () => {
       header: t("trade:trade.orders.openOrders.inOut"),
       cell: ({ row }) => {
         const order = row.original
+        const xc = getXcTwapInfo(order)
+
+        if (xc) {
+          return (
+            <XcTwapAmount
+              order={order}
+              xc={xc}
+              fromAmount={order.fromAmountBudget}
+            />
+          )
+        }
 
         const fromAmount =
           order.kind === OrderKind.Limit
@@ -90,6 +107,10 @@ export const useOpenOrdersColumns = () => {
       ),
       cell: ({ row }) => {
         const order = row.original
+        const xc = getXcTwapInfo(order)
+
+        if (xc) return <XcTwapPrice order={order} xc={xc} />
+
         const { from, to, fromAmountExecuted, toAmountExecuted } = order
 
         const averagePrice =
@@ -137,6 +158,7 @@ export const useOpenOrdersColumns = () => {
                 "limitPrice" in row.original && !!row.original.limitPrice
               }
               isLegacyDca={isDcaScheduleOrder(row.original)}
+              isCrossChain={!!getXcTwapInfo(row.original)}
             />
           </Flex>
         )
@@ -157,7 +179,7 @@ export const useOpenOrdersColumns = () => {
           return <LimitOrderStatus order={order} />
         }
 
-        return (
+        const dcaStatus = (
           <DcaOrderStatus
             status={order.status}
             sold={order.fromAmountExecuted}
@@ -165,6 +187,13 @@ export const useOpenOrdersColumns = () => {
             isOpenBudget={"isOpenBudget" in order && order.isOpenBudget}
             from={order.from}
           />
+        )
+        const xc = getXcTwapInfo(order)
+
+        return xc ? (
+          <XcTwapStatus order={order} xc={xc} fallback={dcaStatus} />
+        ) : (
+          dcaStatus
         )
       },
     })
@@ -178,12 +207,9 @@ export const useOpenOrdersColumns = () => {
 
         const isIntent = isIntentOrder(order)
         const isDcaSchedule = isDcaScheduleOrder(order)
+        const xc = getXcTwapInfo(order)
 
-        const explorerHref = isDcaSchedule
-          ? neckwork.activityDca(order.scheduleId)
-          : isIntent
-            ? neckwork.intent(order.intentId)
-            : null
+        const explorerHref = getOrderExplorerLink(order)
 
         return (
           <Flex align="center" gap="base" justify="flex-end">
@@ -221,8 +247,8 @@ export const useOpenOrdersColumns = () => {
                 sx={{ p: "base" }}
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (isIntent) {
-                    removeIntent.mutate(order.intentId)
+                  if (isIntent && !xc) {
+                    removeIntent.mutate(order)
                   } else {
                     setModal("confirmation")
                   }
@@ -232,6 +258,18 @@ export const useOpenOrdersColumns = () => {
               </Button>
             </Tooltip>
             <TableRowDetailsExpand />
+            {isIntent && xc && (
+              <Modal
+                open={modal === "confirmation"}
+                onOpenChange={() => setModal("none")}
+              >
+                <XcTwapCancelModalContent
+                  order={order}
+                  xc={xc}
+                  onClose={() => setModal("none")}
+                />
+              </Modal>
+            )}
             {isDcaSchedule && (
               <Modal
                 open={modal === "confirmation"}
@@ -255,7 +293,9 @@ export const useOpenOrdersColumns = () => {
     const fromToColumnMobile = columnHelper.display({
       header: t("trade:trade.orders.fromTo.mobile"),
       cell: ({ row }) => {
-        return <SwapMobile from={row.original.from} to={row.original.to} />
+        const order = row.original
+
+        return <SwapMobile from={order.from} to={getOrderDestination(order)} />
       },
     })
 

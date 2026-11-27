@@ -28,7 +28,6 @@ import {
   WalletMode,
   Web3ConnectModal,
 } from "@galacticcouncil/web3-connect"
-import type { XcSwapPlatform } from "@galacticcouncil/xc-swap"
 import { useEffect, useId, useRef, useState } from "react"
 import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -36,22 +35,28 @@ import { useTranslation } from "react-i18next"
 import { neckworkClient } from "@/api/neckwork"
 import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { useNearRecipientValidation } from "@/modules/trade/swap/sections/XcSwap/hooks/useNearRecipientValidation"
-import { XcSwapFormValues } from "@/modules/trade/swap/sections/XcSwap/hooks/useXcSwapForm"
 import { normalizeAddressForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { XcPlatform } from "@/utils/trade"
 
 // Wallets that can receive on each destination; a destination not listed
 // takes only a pasted or saved address
 const DEST_WALLET_MODES: Partial<
-  Record<XcSwapPlatform, WalletMode.Near | WalletMode.Zcash>
+  Record<XcPlatform, WalletMode.Near | WalletMode.Zcash>
 > = {
   near: WalletMode.Near,
   zec: WalletMode.Zcash,
 }
 
 const MAX_SUGGESTIONS = 3
+
+// Structural, so both the Market (XcSwap) and TWAP (XcTwap) forms can use it
+type RecipientFormValues = {
+  destChain: XcChain | null
+  destAddress: string
+}
 
 type XcSwapRecipientButtonProps = {
   destChain: XcChain
@@ -63,7 +68,7 @@ export const XcSwapRecipientButton: React.FC<XcSwapRecipientButtonProps> = ({
   const { t } = useTranslation(["common", "trade"])
   const id = useId()
   const { papi } = useRpcProvider()
-  const { control, setValue } = useFormContext<XcSwapFormValues>()
+  const { control, setValue } = useFormContext<RecipientFormValues>()
   const { field, fieldState } = useController({ control, name: "destAddress" })
   const [isContactsOpen, setIsContactsOpen] = useState(false)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)

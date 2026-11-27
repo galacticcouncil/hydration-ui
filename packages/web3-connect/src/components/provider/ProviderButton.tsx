@@ -43,6 +43,7 @@ const modesWithIconsConfig = {
   [WalletMode.Sui]: true,
   [WalletMode.Near]: true,
   [WalletMode.Zcash]: true,
+  [WalletMode.Bitcoin]: true,
 } as const
 
 function hasModeIcon(

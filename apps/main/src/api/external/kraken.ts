@@ -39,9 +39,17 @@ export type KrakenPricePoint = ForeignPricePoint &
 export const KRAKEN_PAIRS = {
   near: "NEARUSD",
   zec: "ZECUSD",
+  btc: "XBTUSD",
 } as const
 
 export type KrakenPlatform = keyof typeof KRAKEN_PAIRS
+
+// The coin each pair prices, for a destination the chart can't look up
+export const KRAKEN_SYMBOLS: Record<KrakenPlatform, string> = {
+  near: "NEAR",
+  zec: "ZEC",
+  btc: "BTC",
+}
 
 export const krakenPairForPlatform = (
   platform: string | undefined,

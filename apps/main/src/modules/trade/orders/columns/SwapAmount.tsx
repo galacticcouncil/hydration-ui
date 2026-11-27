@@ -5,13 +5,18 @@ import { isValidBigSource } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { XcDestinationLogo } from "@/modules/trade/orders/columns/XcDestinationLogo"
+import {
+  isXcDestination,
+  XcDestinationDisplay,
+} from "@/modules/trade/orders/lib/orderData"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly fromAmount: string | null
   readonly from: TAsset
   readonly toAmount?: string | null
-  readonly to: TAsset
+  readonly to: TAsset | XcDestinationDisplay
   readonly showLogo?: boolean
 }
 
@@ -49,7 +54,12 @@ export const SwapAmount = ({
         color={getToken("icons.onContainer")}
       />
       <Flex gap="s" align="center">
-        {showLogo && <AssetLogo id={to.id} size="small" />}
+        {showLogo &&
+          (isXcDestination(to) ? (
+            <XcDestinationLogo destination={to} size="small" />
+          ) : (
+            <AssetLogo id={to.id} size="small" />
+          ))}
         {toAmount && (
           <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
             {t("number", { value: toAmount })}

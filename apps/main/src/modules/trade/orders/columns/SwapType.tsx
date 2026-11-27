@@ -12,12 +12,15 @@ type Props = {
   // Placed through the old DCA pallet rather than as an intent. Both kinds are
   // TWAPs, but the old ones were labelled "DCA" in the UI that created them.
   readonly isLegacyDca?: boolean
+  // A Intent TWAP, placed through xc-intents
+  readonly isCrossChain?: boolean
 }
 
 export const SwapType: FC<Props> = ({
   type,
   isLimit = false,
   isLegacyDca = false,
+  isCrossChain = false,
 }) => {
   const { t } = useTranslation("trade")
 
@@ -27,11 +30,13 @@ export const SwapType: FC<Props> = ({
       ? t("trade.orders.type.limit")
       : type === "market"
         ? t("trade.orders.type.market")
-        : t(
-            isLegacyDca
-              ? "trade.orders.type.dcaLegacy"
-              : "trade.orders.type.dca",
-          )
+        : isCrossChain
+          ? t("trade.orders.type.intentsTwap")
+          : t(
+              isLegacyDca
+                ? "trade.orders.type.dcaLegacy"
+                : "trade.orders.type.dca",
+            )
 
   return (
     <Flex align="center" gap="xs">

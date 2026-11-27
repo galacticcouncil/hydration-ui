@@ -1,8 +1,11 @@
 import type { Intent } from "@galacticcouncil/indexer/neckwork"
+import { decodeTerms } from "@galacticcouncil/xc-intents"
 import Big from "big.js"
 import { isNonNullish } from "remeda"
+import { isHex } from "viem"
 
 import type { AccountIntentEntry } from "@/api/intents"
+import type { XcScanTrade } from "@/api/xcIntents"
 import {
   type IntentDcaOrderData,
   type IntentLimitOrderData,
@@ -10,15 +13,23 @@ import {
   type OrderData,
   OrderKind,
   OrderStatus,
+  type XcDestinationDisplay,
 } from "@/modules/trade/orders/lib/orderData"
+import { xcTwapOf } from "@/modules/trade/orders/lib/xcTwap"
 import type { AssetId, TAsset } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 export type GetAsset = (id: AssetId) => TAsset
 
+/** xc-intents ledger id → destination display, or null when unknown. */
+export type GetXcDestination = (ledgerId: string) => XcDestinationDisplay | null
+
+const NO_XC_DESTINATION: GetXcDestination = () => null
+
 export const intentEntryToOrder = (
   entry: AccountIntentEntry,
   getAsset: GetAsset,
+  getXcDestination: GetXcDestination = NO_XC_DESTINATION,
 ): OrderData | null => {
   const { data } = entry.intent
 
@@ -82,7 +93,11 @@ export const intentEntryToOrder = (
     // per buy asset (HDX's is 1000000000000, i.e. exactly 1 HDX = its ED) except
     // on the rows that really are limit orders. Do not "fix" this to a
     // price-based test without changing the placement path first.
+    // An xc TWAP sets `amount_out` to its minimum WETH out, which is above
+    // WETH's ED, so the test below would class it as a limit order.
+    const xcForward = xcTwapOf(entry.intent)
     const isLimit =
+      !xcForward &&
       !!to.existentialDeposit &&
       Big(dca.amount_out.toString()).gt(to.existentialDeposit)
     const limitPrice =
@@ -106,6 +121,13 @@ export const intentEntryToOrder = (
       isOpenBudget,
       limitPrice,
       resolvedBlock: null,
+      ...(xcForward && {
+        xc: {
+          authPath: xcForward.authPath,
+          terms: xcForward.terms,
+          destination: getXcDestination(xcForward.terms.destinationAsset),
+        },
+      }),
     } satisfies IntentDcaOrderData
   }
 
@@ -115,9 +137,10 @@ export const intentEntryToOrder = (
 export const buildIntentOrderRows = (
   intents: ReadonlyArray<AccountIntentEntry>,
   getAsset: GetAsset,
+  getXcDestination?: GetXcDestination,
 ): Array<OrderData> =>
   intents
-    .map((entry) => intentEntryToOrder(entry, getAsset))
+    .map((entry) => intentEntryToOrder(entry, getAsset, getXcDestination))
     .filter(isNonNullish)
 
 export type IntentFillTotals = {
@@ -244,4 +267,35 @@ export const neckworkIntentToOrder = (
     limitPrice,
     resolvedBlock: null,
   } satisfies IntentDcaOrderData
+}
+
+/**
+ * Relabels a finished neckwork intent row as an xc TWAP from its scan trade.
+ * Anything that doesn't decode leaves the row as it was.
+ */
+export const withXcTwapTrade = (
+  order: OrderData,
+  trade: Pick<XcScanTrade, "auth_path" | "terms"> | null | undefined,
+  getXcDestination: GetXcDestination,
+): OrderData => {
+  if (!trade || order.kind !== OrderKind.Dca || !isIntentOrder(order)) {
+    return order
+  }
+  if (!isHex(trade.auth_path) || !isHex(trade.terms)) return order
+
+  try {
+    const terms = decodeTerms(trade.terms)
+
+    return {
+      ...order,
+      limitPrice: null,
+      xc: {
+        authPath: trade.auth_path,
+        terms,
+        destination: getXcDestination(terms.destinationAsset),
+      },
+    }
+  } catch {
+    return order
+  }
 }

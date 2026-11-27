@@ -205,7 +205,7 @@ export const LimitOrderDetailsModal = ({
               variant="danger"
               outline
               onClick={() => {
-                removeIntent.mutate(details.intentId, {
+                removeIntent.mutate(details, {
                   onSuccess: () => onCancel(),
                 })
               }}
