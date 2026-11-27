@@ -39,7 +39,7 @@ export type XcSwapSubmitVariables = {
   readonly abandon: () => void
 }
 
-const BUILD_CALL_TIMEOUT_MS = 30_000
+export const BUILD_CALL_TIMEOUT_MS = 30_000
 
 export const useSubmitXcSwap = (
   { xcSwap, originAssetMap, refundTo, swapSlippage }: UseSubmitXcSwapParams,

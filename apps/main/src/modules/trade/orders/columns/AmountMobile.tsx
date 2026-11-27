@@ -7,7 +7,9 @@ import { useTranslation } from "react-i18next"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { LimitOrderStatus } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import { XcTwapStatus } from "@/modules/trade/orders/columns/XcTwapStatus"
 import {
+  getXcTwapInfo,
   isOrderStatus,
   OrderData,
   OrderKind,
@@ -33,6 +35,17 @@ export const AmountMobile: FC<Props> = ({
   order,
 }) => {
   const { t } = useTranslation()
+  const xc = order ? getXcTwapInfo(order) : null
+
+  const dcaStatus = isOrderStatus(status) && (
+    <DcaOrderStatus
+      status={status}
+      sold={fromAmount}
+      total={total}
+      isOpenBudget={isOpenBudget}
+      from={from}
+    />
+  )
 
   return (
     <Flex direction="column" gap="xs" align="end">
@@ -45,14 +58,15 @@ export const AmountMobile: FC<Props> = ({
       {isOrderStatus(status) &&
         (order?.kind === OrderKind.Limit && status === OrderStatus.Created ? (
           <LimitOrderStatus order={order} />
-        ) : (
-          <DcaOrderStatus
-            status={status}
-            sold={fromAmount}
-            total={total}
-            isOpenBudget={isOpenBudget}
-            from={from}
+        ) : order && xc ? (
+          <XcTwapStatus
+            order={order}
+            xc={xc}
+            fallback={dcaStatus}
+            align="end"
           />
+        ) : (
+          dcaStatus
         ))}
     </Flex>
   )

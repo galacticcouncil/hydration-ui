@@ -1,14 +1,14 @@
 import { Navigate, useParams } from "@tanstack/react-router"
 
 import { swapTabLink } from "@/config/navigation"
-import { Dca } from "@/modules/trade/swap/sections/DCA/Dca"
 import { Limit } from "@/modules/trade/swap/sections/Limit/Limit"
 import { XcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwap"
+import { TwapTab } from "@/modules/trade/swap/TwapTab"
 
 const SWAP_TABS = {
   market: XcSwap,
   limit: Limit,
-  twap: Dca,
+  twap: TwapTab,
 } as const
 
 type SwapTab = keyof typeof SWAP_TABS

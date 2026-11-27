@@ -48,7 +48,7 @@ type XcSwapChartProps = {
   // Hydration source asset (priced against USDT on the indexer).
   readonly sellAssetId: string
   readonly sellSymbol: string
-  // Cross-chain destination on Kraken: "near" | "zec".
+  // Cross-chain destination on Kraken: "near" | "zec" | "btc".
   readonly destPlatform: string
   readonly destSymbol: string
 }

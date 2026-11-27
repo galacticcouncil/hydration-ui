@@ -8,6 +8,7 @@ import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { IntentsTwapSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/IntentsTwapSection"
 import { SingleTradeSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/SingleTradeSection"
 import { TwapSection } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/TwapSection"
 import { useSwapSettingsForm } from "@/modules/trade/swap/components/SettingsModal/SwapSettings/useSwapSettingsForm"
@@ -19,9 +20,11 @@ export type SwapSettingsSection = "single" | "split" | "none"
 
 type Props = {
   readonly section?: SwapSettingsSection
+  /** Cross-chain TWAP settings, under the split section */
+  readonly showPayout?: boolean
 }
 
-export const SwapSettingsModal: FC<Props> = ({ section }) => {
+export const SwapSettingsModal: FC<Props> = ({ section, showPayout }) => {
   const { t } = useTranslation(["common", "trade"])
   const { featureFlags } = useRpcProvider()
 
@@ -55,6 +58,12 @@ export const SwapSettingsModal: FC<Props> = ({ section }) => {
             {showSingle && <SingleTradeSection />}
             {showSingle && showSplit && <ModalContentDivider />}
             {showSplit && <TwapSection />}
+            {showSplit && showPayout && (
+              <>
+                <ModalContentDivider />
+                <IntentsTwapSection />
+              </>
+            )}
           </form>
         )}
       </ModalBody>

@@ -63,9 +63,15 @@ export const swapSettingsSchema = z.object({
 
 export type SwapSettings = z.infer<typeof swapSettingsSchema>
 
+export const XC_PAYOUT_EVERY = [1, 2, 3, "end"] as const
+
+export type XcPayoutEvery = (typeof XC_PAYOUT_EVERY)[number]
+
 export const dcaOrderSchema = z.object({
   slippage: tradeSlippageSchema,
   maxRetries: maxRetriesSchema,
+  // Cross-chain TWAP payout frequency in orders; absent in older stores
+  payoutEvery: z.literal(XC_PAYOUT_EVERY).catch("end"),
 })
 
 export const chartSettingsSchema = z.object({
@@ -115,6 +121,7 @@ const defaultState: TradeSettings = {
   dca: {
     slippage: 1,
     maxRetries: 5,
+    payoutEvery: "end",
   },
   chart: defaultChartSettings,
 }
@@ -197,6 +204,7 @@ function migrateLegacySettings() {
       ? {
           slippage: Number(legacyDca.data.slippage),
           maxRetries: Number(legacyDca.data.maxRetries),
+          payoutEvery: defaultState.dca.payoutEvery,
         }
       : defaultState.dca,
   }

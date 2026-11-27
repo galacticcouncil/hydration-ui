@@ -3,7 +3,11 @@ import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
 import React from "react"
 
-import { krakenPairForPlatform } from "@/api/external/kraken"
+import {
+  KRAKEN_SYMBOLS,
+  krakenPairForPlatform,
+  KrakenPlatform,
+} from "@/api/external/kraken"
 import { ChartState } from "@/components/ChartState"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { XcSwapChart } from "@/modules/trade/swap/components/XcSwapChart/XcSwapChart"
@@ -43,13 +47,16 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
 
   const isCrossChain = destPlatform !== HYDRATION_CHAIN_KEY
   const hasKrakenChart = !!krakenPairForPlatform(destPlatform)
+  // TWAP's BTC (nbtc.bridge.near) isn't a Market destination, so fall back to the platform's coin
+  const destSymbol =
+    destAsset?.symbol ?? KRAKEN_SYMBOLS[destPlatform as KrakenPlatform]
 
   if (isCrossChain && hasKrakenChart) {
     if (!sellAsset || isDestAssetsLoading) {
       return <CrossChainChartShell height={height} isLoading />
     }
 
-    if (!destAsset) {
+    if (!destSymbol) {
       return <CrossChainChartShell height={height} isEmpty />
     }
 
@@ -59,7 +66,7 @@ export const SwapChart: React.FC<SwapChartProps> = ({ height }) => {
         sellAssetId={assetIn}
         sellSymbol={sellAsset.symbol}
         destPlatform={destPlatform}
-        destSymbol={destAsset.symbol}
+        destSymbol={destSymbol}
       />
     )
   }

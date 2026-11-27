@@ -13,7 +13,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { neckwork } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,6 +21,7 @@ import { useBlockTime } from "@/api/chain"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { FillStatusChip } from "@/modules/trade/orders/columns/LimitOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import { XcTwapStatus } from "@/modules/trade/orders/columns/XcTwapStatus"
 import {
   getDcaCompletionPercent,
   getDcaTradeProgress,
@@ -29,13 +29,16 @@ import {
 } from "@/modules/trade/orders/lib/dcaProgress"
 import {
   DcaOrderData,
+  getXcTwapInfo,
   IntentDcaOrderData,
-  isDcaScheduleOrder,
-  isIntentOrder,
   OrderStatus,
 } from "@/modules/trade/orders/lib/orderData"
 import { useLimitFillStatus } from "@/modules/trade/orders/lib/useLimitFillStatus"
+import { getOrderExplorerLink } from "@/modules/trade/orders/lib/xcTwap"
 import { DcaOrderProgress } from "@/modules/trade/orders/PastExecutions/DcaOrderProgress"
+import { XcTwapReceivedAmount } from "@/modules/trade/orders/XcTwapReceivedAmount"
+import { XcTwapScanLists } from "@/modules/trade/orders/XcTwapScanLists"
+import { XcTwapTermsRows } from "@/modules/trade/orders/XcTwapTermsRows"
 
 type Props = {
   readonly details: DcaOrderData | IntentDcaOrderData
@@ -59,6 +62,8 @@ export const DcaOrderDetailsModal = ({
     details.isOpenBudget,
   )
 
+  const xc = getXcTwapInfo(details)
+  const explorerHref = getOrderExplorerLink(details)
   const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
   const limitAmountOut =
@@ -151,10 +156,20 @@ export const DcaOrderDetailsModal = ({
               details.isOpenBudget ? details.toAmountExecuted : undefined
             }
             from={details.from}
-            to={details.to}
+            to={xc?.destination ?? details.to}
             showLogo
           />
-          {details.status && <DcaOrderStatus status={details.status} />}
+          {details.status &&
+            (xc ? (
+              <XcTwapStatus
+                order={details}
+                xc={xc}
+                fallback={<DcaOrderStatus status={details.status} />}
+                align="end"
+              />
+            ) : (
+              <DcaOrderStatus status={details.status} />
+            ))}
         </Flex>
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
@@ -164,12 +179,17 @@ export const DcaOrderDetailsModal = ({
             isLoading={isSpentLoading}
           />
           <Separator orientation="vertical" />
-          <Amount
-            label={t("received")}
-            value={receivedValue}
-            isLoading={isReceivedLoading}
-          />
+          {xc ? (
+            <XcTwapReceivedAmount xc={xc} />
+          ) : (
+            <Amount
+              label={t("received")}
+              value={receivedValue}
+              isLoading={isReceivedLoading}
+            />
+          )}
         </Grid>
+        {xc && <XcTwapTermsRows xc={xc} />}
         <ModalContentDivider />
         <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
           {blocksPeriod && (
@@ -196,7 +216,7 @@ export const DcaOrderDetailsModal = ({
             })}
           />
         </Grid>
-        {details.limitPrice && (
+        {details.limitPrice && !xc && (
           <>
             <ModalContentDivider />
             <Grid columnTemplate="1fr 1px 1fr" gap="xxl" py="xl">
@@ -273,15 +293,9 @@ export const DcaOrderDetailsModal = ({
         )}
         <ModalContentDivider />
         <Flex justify="space-between" gap="base" pt="l" pb="xl">
-          {(isDcaScheduleOrder(details) || isIntentOrder(details)) && (
+          {explorerHref && (
             <Button variant="tertiary" outline asChild>
-              <ExternalLink
-                href={
-                  isDcaScheduleOrder(details)
-                    ? neckwork.activityDca(details.scheduleId)
-                    : neckwork.intent(details.intentId)
-                }
-              >
+              <ExternalLink href={explorerHref}>
                 <Icon component={SquareArrowOutUpRight} size="xs" />
                 <Text fw={500} fs="p6" lh={1.4}>
                   {t("openInExplorer")}
@@ -296,7 +310,7 @@ export const DcaOrderDetailsModal = ({
             </Button>
           )}
         </Flex>
-        {pastExecutions}
+        {xc ? <XcTwapScanLists xc={xc} /> : pastExecutions}
       </ModalBody>
     </>
   )

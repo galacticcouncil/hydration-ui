@@ -12,7 +12,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { neckwork } from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -25,12 +24,17 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { XcTwapAmount } from "@/modules/trade/orders/columns/XcTwapAmount"
+import { XcTwapPrice } from "@/modules/trade/orders/columns/XcTwapPrice"
+import { XcTwapStatus } from "@/modules/trade/orders/columns/XcTwapStatus"
 import {
+  getOrderDestination,
+  getXcTwapInfo,
   isDcaScheduleOrder,
-  isIntentOrder,
   OrderData,
 } from "@/modules/trade/orders/lib/orderData"
 import { OrderKind } from "@/modules/trade/orders/lib/types"
+import { getOrderExplorerLink } from "@/modules/trade/orders/lib/xcTwap"
 
 const columnHelper = createColumnHelper<OrderData>()
 
@@ -42,7 +46,19 @@ export const useOrderHistoryColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.orderHistory.inOut"),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const order = row.original
+        const { from, to, fromAmountExecuted, toAmountExecuted } = order
+        const xc = getXcTwapInfo(order)
+
+        if (xc) {
+          return (
+            <XcTwapAmount
+              order={order}
+              xc={xc}
+              fromAmount={fromAmountExecuted}
+            />
+          )
+        }
 
         return (
           <SwapAmount
@@ -69,6 +85,10 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
+        const xc = getXcTwapInfo(row.original)
+
+        if (xc) return <XcTwapPrice order={row.original} xc={xc} />
+
         const { kind, from, to, fromAmountExecuted, toAmountExecuted } =
           row.original
 
@@ -105,6 +125,7 @@ export const useOrderHistoryColumns = () => {
                 "limitPrice" in row.original && !!row.original.limitPrice
               }
               isLegacyDca={isDcaScheduleOrder(row.original)}
+              isCrossChain={!!getXcTwapInfo(row.original)}
             />
           </Flex>
         )
@@ -116,20 +137,31 @@ export const useOrderHistoryColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: ({ row }) =>
-        row.original.status && (
+      cell: ({ row }) => {
+        const order = row.original
+        if (!order.status) return null
+
+        const dcaStatus = <DcaOrderStatus status={order.status} />
+        const xc = getXcTwapInfo(order)
+
+        return (
           <Flex direction="column" gap="xs">
-            <DcaOrderStatus status={row.original.status} />
-            {row.original.timestamp && (
+            {xc ? (
+              <XcTwapStatus order={order} xc={xc} fallback={dcaStatus} />
+            ) : (
+              dcaStatus
+            )}
+            {order.timestamp && (
               <DateText
-                date={new Date(row.original.timestamp)}
+                date={new Date(order.timestamp)}
                 fw={500}
                 fs="p6"
                 color={getToken("text.medium")}
               />
             )}
           </Flex>
-        ),
+        )
+      },
     })
 
     const actionColumn = columnHelper.display({
@@ -138,12 +170,7 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         const order = row.original
 
-        // isDcaScheduleOrder first: a merged row answers yes to both guards.
-        const href = isDcaScheduleOrder(order)
-          ? neckwork.activityDca(order.scheduleId)
-          : isIntentOrder(order)
-            ? neckwork.intent(order.intentId)
-            : null
+        const href = getOrderExplorerLink(order)
 
         return (
           href && (
@@ -177,7 +204,9 @@ export const useOrderHistoryColumns = () => {
     const fromToColumnMobile = columnHelper.display({
       header: t("trade:trade.orders.fromTo.mobile"),
       cell: ({ row }) => {
-        return <SwapMobile from={row.original.from} to={row.original.to} />
+        const order = row.original
+
+        return <SwapMobile from={order.from} to={getOrderDestination(order)} />
       },
     })
 
@@ -192,6 +221,7 @@ export const useOrderHistoryColumns = () => {
             fromAmount={row.original.fromAmountExecuted}
             from={row.original.from}
             status={row.original.status}
+            order={row.original}
           />
         </TableRowDetailsExpand>
       ),

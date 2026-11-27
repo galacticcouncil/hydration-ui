@@ -1,6 +1,7 @@
 export * from "./address"
 export * from "./array"
 export * from "./big"
+export * from "./bitcoin"
 export * from "./device"
 export * from "./evm"
 export * from "./formatting"

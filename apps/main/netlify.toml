@@ -1,4 +1,9 @@
 [[redirects]]
+    from = "/scan-v2/*"
+    to = "https://scan.play.hydration.cloud/api/v2/:splat"
+    status = 200
+
+[[redirects]]
     from = "/*"
     to = "/index.html"
     status = 200

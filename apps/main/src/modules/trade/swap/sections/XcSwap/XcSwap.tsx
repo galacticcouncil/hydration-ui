@@ -137,7 +137,7 @@ const XcSwapForm: React.FC = () => {
     if (nearAccountStatus === "missing")
       return t("trade:xc.swap.error.nearAccountNotFound")
     if (nearAccountStatus === "unavailable")
-      return t("trade:xc.swap.error.nearAccountCheckFailed")
+      return t("trade:xc.swap.cta.nearAccountCheckFailed")
     if (!isFormValid) return undefined
     if (!isHealthFactorCheckSatisfied)
       return t("trade:xc.swap.cta.acceptHealthFactor")

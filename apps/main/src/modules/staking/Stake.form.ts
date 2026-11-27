@@ -62,16 +62,10 @@ export const useStake = (
   )
   const hasGigaStakes = !!gigaStakes
 
-  const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
-    votes,
-    votesSuccess,
-  )
+  const { newProcessedVotesIds } = useProcessedVotes(votes, votesSuccess)
 
   const stakeTx = papi.tx.Utility.batch_all({
     calls: [
-      ...oldProcessedVotesIds.map(
-        (id) => papi.tx.Democracy.remove_vote({ index: id }).decodedCall,
-      ),
       ...newProcessedVotesIds.map(
         ({ classId, id }) =>
           papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id })
@@ -149,14 +143,11 @@ export const useStake = (
           amount: rawAmount,
         })
 
-        if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {
+        if (!newProcessedVotesIds.length) {
           return [increaseStakeTx]
         }
 
         return [
-          ...oldProcessedVotesIds.map((id) =>
-            papi.tx.Democracy.remove_vote({ index: id }),
-          ),
           ...newProcessedVotesIds.map(({ classId, id }) =>
             papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
           ),

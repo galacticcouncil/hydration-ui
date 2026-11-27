@@ -28,7 +28,7 @@ export const DcaFooterNote: FC<Props> = ({
     <Grid justifyItems="center">
       {(order || isLoading) && (
         <DcaTradeMeta
-          order={order}
+          priceImpactPct={order?.tradeImpactPct}
           healthFactor={healthFactor}
           priceImpactLevel={priceImpactLevel}
         />

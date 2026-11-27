@@ -23,16 +23,13 @@ export const useUnstake = (
   const { native } = useAssets()
   const createBatch = useCreateBatchTx()
 
-  const { newPendingVotesIds, oldPendingVotesIds } = usePendingVotes(
+  const { newPendingVotesIds } = usePendingVotes(
     positionId,
     votes,
     votesSuccess,
   )
 
-  const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
-    votes,
-    votesSuccess,
-  )
+  const { newProcessedVotesIds } = useProcessedVotes(votes, votesSuccess)
 
   const invalidateStakeData = useInvalidateStakeData()
 
@@ -44,18 +41,16 @@ export const useUnstake = (
         return
       }
 
-      const oldVotes = [...oldPendingVotesIds, ...oldProcessedVotesIds]
       const newVotes = [...newPendingVotesIds, ...newProcessedVotesIds]
 
       const txs = (() => {
         const unstakeTx = papi.tx.Staking.unstake({ position_id: positionId })
 
-        if (!oldVotes.length && !newVotes.length) {
+        if (!newVotes.length) {
           return [unstakeTx]
         }
 
         return [
-          ...oldVotes.map((id) => papi.tx.Democracy.remove_vote({ index: id })),
           ...newVotes.map(({ classId, id }) =>
             papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
           ),

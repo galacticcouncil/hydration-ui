@@ -36,6 +36,7 @@ export const modeSchema = z.enum([
   WalletMode.Sui,
   WalletMode.Near,
   WalletMode.Zcash,
+  WalletMode.Bitcoin,
 ])
 
 const addressSchemaV2 = z.object({

@@ -1,4 +1,5 @@
 import {
+  BtcAddr,
   EvmAddr,
   NearAddr,
   safeConvertSS58toPublicKey,
@@ -24,6 +25,8 @@ export const addressToPublicKey = (address: string): string => {
     case SolanaAddr.isValid(address):
       return address
     case SuiAddr.isValid(address):
+      return address
+    case BtcAddr.isValid(address):
       return address
     case NearAddr.isValid(address):
       return address

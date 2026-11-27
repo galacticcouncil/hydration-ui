@@ -1,4 +1,5 @@
-import { useMatchRoute } from "@tanstack/react-router"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { useMatchRoute, useSearch } from "@tanstack/react-router"
 
 import { swapTabLink } from "@/config/navigation"
 import {
@@ -12,10 +13,17 @@ type Props = {
 
 export const SettingsModal = ({ swapSection }: Props) => {
   const matchRoute = useMatchRoute()
+  const { destPlatform } = useSearch({ strict: false })
 
   switch (true) {
     case !!matchRoute(swapTabLink("twap")):
-      return <SwapSettingsModal section="split" />
+      return (
+        <SwapSettingsModal
+          section="split"
+          // Shown for every Intent TWAP; NEAR has no payout fee, but the setting still applies
+          showPayout={!!destPlatform && destPlatform !== HYDRATION_CHAIN_KEY}
+        />
+      )
     case !!matchRoute(swapTabLink("market")):
       return <SwapSettingsModal section={swapSection} />
     case !!matchRoute(swapTabLink("limit")):

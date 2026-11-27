@@ -1,4 +1,5 @@
 import {
+  BtcAddr,
   EvmAddr,
   isEvmParachainAccount,
   isH160Address,
@@ -32,6 +33,7 @@ export {
   getWalletModeIcon,
   getWalletModeName,
   getWalletModesByProviderType,
+  isWalletModeConnectable,
 } from "@/config/wallet"
 import {
   Account,
@@ -169,6 +171,9 @@ export const getWalletModeByAddress = (address: string) => {
       return WalletMode.Solana
     case SuiAddr.isValid(address):
       return WalletMode.Sui
+    // Before NEAR: bech32 addresses are also valid NEAR account names
+    case BtcAddr.isValid(address):
+      return WalletMode.Bitcoin
     case NearAddr.isValid(address):
       return WalletMode.Near
     case ZecAddr.isValid(address):

@@ -3,7 +3,11 @@ import {
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
-import { createXcSwap, XcSwapChain } from "@galacticcouncil/xc-swap"
+import {
+  createXcSwap,
+  DEFAULT_DESTINATION_ASSET_IDS,
+  XcSwapChain,
+} from "@galacticcouncil/xc-swap"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -13,6 +17,15 @@ import { getXcSwapChainLogoUrl } from "@/modules/trade/swap/sections/XcSwap/conf
 import { addressValidatorForPlatform } from "@/modules/trade/swap/sections/XcSwap/lib/addressValidatorForPlatform"
 import { XcChain } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { XcPlatform } from "@/utils/trade"
+
+/** Native BTC; 1Click's own `btc` chain, which xc-swap's `getChains()` omits. */
+const BTC_ASSET = "nep141:btc.omft.near"
+const BTC_CHAIN: Omit<XcSwapChain, "platform"> & { platform: XcPlatform } = {
+  key: "btc",
+  name: "Bitcoin",
+  platform: "btc",
+}
 
 export const useXcSwapClient = () => {
   const { sdk } = useRpcProvider()
@@ -23,6 +36,7 @@ export const useXcSwapClient = () => {
       createXcSwap({
         sdk,
         emitter: XC_SWAP_CONFIG.emitter,
+        destinationAssets: [...DEFAULT_DESTINATION_ASSET_IDS, BTC_ASSET],
       }),
     [sdk],
   )
@@ -34,7 +48,7 @@ export const useXcSwapClient = () => {
         ChainEcosystem.Polkadot,
       ) ?? ""
     return Object.fromEntries(
-      xcSwap.getChains().map((chain: XcSwapChain) => [
+      [...xcSwap.getChains(), BTC_CHAIN].map((chain) => [
         chain.key,
         {
           key: chain.key,

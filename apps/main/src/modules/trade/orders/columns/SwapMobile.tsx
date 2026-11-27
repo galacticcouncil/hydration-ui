@@ -1,13 +1,21 @@
 import { ArrowRightLong } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon } from "@galacticcouncil/ui/components"
+import { AssetLabel, Flex, Icon } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import {
+  AssetLabelFull,
+  AssetLabelFullContainer,
+} from "@/components/AssetLabelFull"
+import { XcDestinationLogo } from "@/modules/trade/orders/columns/XcDestinationLogo"
+import {
+  isXcDestination,
+  XcDestinationDisplay,
+} from "@/modules/trade/orders/lib/orderData"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly from: TAsset
-  readonly to: TAsset
+  readonly to: TAsset | XcDestinationDisplay
 }
 
 export const SwapMobile = ({ from, to }: Props) => {
@@ -19,7 +27,14 @@ export const SwapMobile = ({ from, to }: Props) => {
         component={ArrowRightLong}
         color={getToken("icons.onContainer")}
       />
-      <AssetLabelFull asset={to} withName={false} />
+      {isXcDestination(to) ? (
+        <AssetLabelFullContainer>
+          <XcDestinationLogo destination={to} />
+          <AssetLabel symbol={to.symbol} />
+        </AssetLabelFullContainer>
+      ) : (
+        <AssetLabelFull asset={to} withName={false} />
+      )}
     </Flex>
   )
 }

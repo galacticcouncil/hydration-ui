@@ -594,10 +594,10 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@defuse-protocol/one-click-sdk-typescript@^0.1.17":
-  version "0.1.25"
-  resolved "https://registry.yarnpkg.com/@defuse-protocol/one-click-sdk-typescript/-/one-click-sdk-typescript-0.1.25.tgz#3a43e604dff6eca639167d878a120a0af2ec885f"
-  integrity sha512-y8fm8V7bPKYfJrhJOUWMG5/IFb1aMcIFHiM5PRDQngd33enhcDGGYJCNwM6y5o4pZZtlU1FroHB8OlA3NkxhzQ==
+"@defuse-protocol/one-click-sdk-typescript@^0.1.26":
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/@defuse-protocol/one-click-sdk-typescript/-/one-click-sdk-typescript-0.1.26.tgz#b8a21d0dc232142a1e129bb423d0f712b5945867"
+  integrity sha512-vYoBgEbppergtYd/H1IaJW9Jm5mPrX+jAwuuhMvDFstirJB53KFe2HnGLTg0KNyg6qztbOeDK0sA/oEAee+EAw==
   dependencies:
     "@noble/hashes" "^1.3.3"
     "@scure/base" "^1.0.0 || ^2.0.0"
@@ -1100,10 +1100,10 @@
     big.js "^6.2.1"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/descriptors@^2.9.0":
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.9.0.tgz#dc615ca4667205b0b484a85b21810357f076932c"
-  integrity sha512-RH7NZWfMksyWcBwyzMg84H1qPGyG32W6A/feAcGQvt69AmpTHieWyXtmfp/uRdsBgufkUfu/xtgSwnUxNBFUJQ==
+"@galacticcouncil/descriptors@^2.11.0":
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-2.11.0.tgz#d10ae757c5e81f05d9b574d8100409eac0d8b5e8"
+  integrity sha512-6Rx8fOyXrebIDCCSr8HF4NSKEM2IAOKgcRCAOGp2W8sBfSUUsQGlX8oor9gDxN8rpxb+rmW1DbKq5HlO8PQdZw==
 
 "@galacticcouncil/math-hsm@^1.2.0":
   version "1.2.0"
@@ -1140,10 +1140,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.3.0.tgz#96d3b3e63a93544c7e60d3fa9e1be9a576a20efe"
   integrity sha512-ZYVSyI5W2pQKCqpkaRM7t1AJqtPyxQ0P04T2+KpBEEABMRjSpQz2x44s1tk6r3DdFR8dICeZJEh5BI7eQYlT6w==
 
-"@galacticcouncil/sdk-next@^2.6.1":
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-2.6.1.tgz#8a2486d5374b360aba3787da77bdf006454bac81"
-  integrity sha512-2lG4HxjlgmCuvnI5iwT8HKK55fAw6vR3/omaeztLNj/IvEFIEPCRTMrcDPUgaGYqCL1OfLWKNVqReNDPE0bDHg==
+"@galacticcouncil/sdk-next@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-2.7.0.tgz#d64b32a16b866a99948ce132520c15b0d44a3ff3"
+  integrity sha512-zylaeVRl7GAMYe+HKSUG+yhoSRC1VQi7pWN+lXv6EtvQtfPbT0lO4/hUlcupHaoo8WcYVbtGYoHGetunka17BA==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.2.0"
     "@galacticcouncil/math-lbp" "^1.3.0"
@@ -1185,6 +1185,13 @@
     bs58 "^6.0.0"
     buffer "^6.0.3"
 
+"@galacticcouncil/xc-intents@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-intents/-/xc-intents-0.1.0.tgz#963abe110451f7a44eed5dc91a1bb1159455793d"
+  integrity sha512-GnbjEemRgTr/Tm7MTr7294bTL6pGa7vnJpmZqCF2S2w/KzBAlXFEkPJDY1/7Ljr1UjxuX083PbxccCvuTjWmzA==
+  dependencies:
+    "@defuse-protocol/one-click-sdk-typescript" "^0.1.26"
+
 "@galacticcouncil/xc-scan@^0.5.0":
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
@@ -1197,12 +1204,12 @@
   dependencies:
     "@galacticcouncil/xc-core" "^2.8.0"
 
-"@galacticcouncil/xc-swap@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-swap/-/xc-swap-0.9.0.tgz#82e81be97b4947f5d76f396861d0589382a37124"
-  integrity sha512-NzNArLFUuH9r9SlRSn1GhD5bkzZsDvLSS1YR/kphPuS3TLfYXVRdyG5bBdsdk8J6pSVMiNlKYrOVP0KGhV91nQ==
+"@galacticcouncil/xc-swap@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-swap/-/xc-swap-0.10.0.tgz#60017c7be20f37a46832207a1b78be8896410f05"
+  integrity sha512-J3TDhp21fj7JjW7lD6FYhX7DbJaGYm7QdXch2CeNKqLD+9tLc08nxxZ6mKCZtoHDytiJ7uJ37trNQtSbfn8I/w==
   dependencies:
-    "@defuse-protocol/one-click-sdk-typescript" "^0.1.17"
+    "@defuse-protocol/one-click-sdk-typescript" "^0.1.26"
 
 "@galacticcouncil/xc@^2.1.0":
   version "2.1.0"

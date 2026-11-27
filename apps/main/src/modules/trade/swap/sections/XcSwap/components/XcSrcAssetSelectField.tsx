@@ -10,6 +10,7 @@ import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly label: string
+  readonly assets?: TAssetData[]
   readonly labelAdornment?: React.ReactNode
   readonly sideChainSrc?: string
   readonly collapsed?: boolean
@@ -25,6 +26,7 @@ type Props = {
 
 export const XcSrcAssetSelectField: React.FC<Props> = ({
   label,
+  assets,
   labelAdornment,
   sideChainSrc,
   collapsed,
@@ -62,7 +64,7 @@ export const XcSrcAssetSelectField: React.FC<Props> = ({
     <AssetSelect
       label={label}
       labelAdornment={labelAdornment}
-      assets={tradable}
+      assets={assets ?? tradable}
       selectedAsset={selectedAsset}
       setSelectedAsset={(asset) => {
         const previousAsset = sellAsset

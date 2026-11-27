@@ -23,21 +23,13 @@ export const useClaimStaking = (
   const { data: staking } = useStakingRewards()
   const createBatch = useCreateBatchTx()
 
-  const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
-    votes,
-    votesSuccess,
-  )
+  const { newProcessedVotesIds } = useProcessedVotes(votes, votesSuccess)
 
   const invalidateStakeData = useInvalidateStakeData()
 
   return useMutation({
     mutationFn: async () => {
-      const txs = getClaimStakingTx(
-        papi,
-        positionId,
-        newProcessedVotesIds,
-        oldProcessedVotesIds,
-      )
+      const txs = getClaimStakingTx(papi, positionId, newProcessedVotesIds)
 
       const toasts = {
         submitted: t("staking:claim.toasts.onLoading", {
@@ -64,18 +56,14 @@ export const getClaimStakingTx = (
   papi: Papi,
   positionId: bigint,
   newProcessedVotesIds: ReadonlyArray<NewVoteId>,
-  oldProcessedVotesIds: ReadonlyArray<number>,
 ) => {
   const claimTx = papi.tx.Staking.claim({ position_id: positionId })
 
-  if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {
+  if (!newProcessedVotesIds.length) {
     return [claimTx]
   }
 
   return [
-    ...oldProcessedVotesIds.map((id) =>
-      papi.tx.Democracy.remove_vote({ index: id }),
-    ),
     ...newProcessedVotesIds.map(({ classId, id }) =>
       papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
     ),

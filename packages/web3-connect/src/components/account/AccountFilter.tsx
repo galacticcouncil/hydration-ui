@@ -43,6 +43,10 @@ const MODE_DATA: ModeData = {
     getWalletModeName(WalletMode.Zcash),
     getWalletModeIcon(WalletMode.Zcash),
   ],
+  [WalletMode.Bitcoin]: [
+    getWalletModeName(WalletMode.Bitcoin),
+    getWalletModeIcon(WalletMode.Bitcoin),
+  ],
 }
 
 export type AccountFilterProps = {

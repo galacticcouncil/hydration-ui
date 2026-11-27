@@ -69,6 +69,13 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "0.0.0.0",
+      proxy: {
+        "/scan-v2": {
+          target: "https://scan.play.hydration.cloud",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/scan-v2/, "/api/v2"),
+        },
+      },
     },
     resolve: {
       tsconfigPaths: true,

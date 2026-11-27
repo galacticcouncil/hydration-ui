@@ -21,7 +21,7 @@ type UseXcSwapRequiredWalletModeParams = {
   isCrossChain: boolean
 }
 
-const isAccountCompatibleWithWalletMode = (
+export const isAccountCompatibleWithWalletMode = (
   account: Account,
   mode: WalletMode,
 ): boolean => {

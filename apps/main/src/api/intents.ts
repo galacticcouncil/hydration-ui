@@ -7,6 +7,9 @@ import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useHasIntentPallet } from "@/states/intents"
 
+/** Prefix of every intent query; invalidating it refreshes them all */
+export const INTENTS_QUERY_KEY = ["intents"]
+
 type IntentValue = NonNullable<
   Awaited<ReturnType<Papi["query"]["Intent"]["Intents"]["getValue"]>>
 >
@@ -49,7 +52,7 @@ export const useAccountIntents = (address: string) => {
     isLoading: isValuesLoading,
     isError: isValuesError,
   } = useQuery({
-    queryKey: ["intents", "values", ids.map(String)],
+    queryKey: [...INTENTS_QUERY_KEY, "values", ids.map(String)],
     enabled: hasIntentPallet && ids.length > 0,
     staleTime: Infinity,
     placeholderData: keepPreviousData,
@@ -93,7 +96,7 @@ export const maxIntentDurationQuery = (
   return queryOptions({
     enabled: isIceEnabled && isReady,
     staleTime: Infinity,
-    queryKey: ["intents", "maxAllowedIntentDuration"],
+    queryKey: [...INTENTS_QUERY_KEY, "maxAllowedIntentDuration"],
     queryFn: async () => {
       const maxIntentDuration =
         await papi.constants.Intent.MaxAllowedIntentDuration()

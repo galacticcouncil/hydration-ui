@@ -1,3 +1,6 @@
+import type { Terms } from "@galacticcouncil/xc-intents"
+import type { Hex } from "viem"
+
 import { DcaScheduleStatus, OrderKind } from "@/modules/trade/orders/lib/types"
 import type { TAsset } from "@/providers/assetsProvider"
 
@@ -79,9 +82,26 @@ export type DcaOrderData = DcaOrderDataBase & {
   readonly scheduleId: number
 }
 
+/** Display data for an xc TWAP's destination, which is not a Hydration asset. */
+export type XcDestinationDisplay = {
+  readonly symbol: string
+  readonly decimals: number
+  readonly logo: string
+  readonly chainLogo: string
+}
+
+export type XcTwapOrderInfo = {
+  readonly authPath: Hex
+  readonly terms: Terms
+  /** Null when xc-intents doesn't list the destination right now */
+  readonly destination: XcDestinationDisplay | null
+}
+
 export type IntentDcaOrderData = DcaOrderDataBase &
   IntentOrderDataBase & {
     readonly intentId: bigint
+    /** Set when the intent is a Intent TWAP */
+    readonly xc?: XcTwapOrderInfo
   }
 
 export type MergedOrderData = DcaOrderDataBase & {
@@ -111,3 +131,16 @@ export const orderKey = (order: OrderData): string =>
     : isDcaScheduleOrder(order)
       ? `schedule:${order.scheduleId}`
       : `intent:${order.intentId}`
+
+export const getXcTwapInfo = (order: OrderData): XcTwapOrderInfo | null =>
+  "xc" in order && order.xc ? order.xc : null
+
+/** What the order buys: the xc TWAP's destination asset, else its Hydration asset. */
+export const getOrderDestination = (
+  order: OrderData,
+): TAsset | XcDestinationDisplay =>
+  getXcTwapInfo(order)?.destination ?? order.to
+
+export const isXcDestination = (
+  asset: TAsset | XcDestinationDisplay,
+): asset is XcDestinationDisplay => "chainLogo" in asset

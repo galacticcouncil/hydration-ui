@@ -2,6 +2,7 @@ import type { XcSwapAsset, XcSwapChain } from "@galacticcouncil/xc-swap"
 
 import { TAssetData } from "@/api/assets"
 import { TradeType } from "@/api/trade"
+import { XcPlatform } from "@/utils/trade"
 
 export type XcAsset = XcSwapAsset & {
   name: string
@@ -10,7 +11,8 @@ export type XcAsset = XcSwapAsset & {
   balanceUsd?: string
 }
 
-export type XcChain = XcSwapChain & {
+export type XcChain = Omit<XcSwapChain, "platform"> & {
+  platform: XcPlatform
   logo: string
   addressValidator: (addr: string) => boolean
 }

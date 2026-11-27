@@ -138,15 +138,10 @@ export const processedVotesQuery = (
   queryOptions({
     queryKey: ["staking", "processedVotes", address],
     queryFn: async () => {
-      const [newProcessedVotes, oldProcessedVotes] = await Promise.all([
-        papi.query.Staking.VotesRewarded.getEntries(address),
-        papi.query.Staking.ProcessedVotes.getEntries(address),
-      ])
+      const newProcessedVotes =
+        await papi.query.Staking.VotesRewarded.getEntries(address)
 
-      return {
-        newProcessedVotes,
-        oldProcessedVotes,
-      }
+      return { newProcessedVotes }
     },
     enabled: enabled && isReady && !!address,
   })
@@ -159,15 +154,10 @@ export const pendingVotesQuery = (
   queryOptions({
     queryKey: ["staking", "pendingVotes", positionId.toString()],
     queryFn: async () => {
-      const [newPendingVotes, oldPendingVotes] = await Promise.all([
-        papi.query.Staking.Votes.getValue(positionId),
-        papi.query.Staking.PositionVotes.getValue(positionId),
-      ])
+      const newPendingVotes =
+        await papi.query.Staking.Votes.getValue(positionId)
 
-      return {
-        newPendingVotes,
-        oldPendingVotes,
-      }
+      return { newPendingVotes }
     },
     enabled: enabled && isReady,
   })
