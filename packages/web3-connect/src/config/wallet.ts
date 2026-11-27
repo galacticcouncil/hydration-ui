@@ -191,6 +191,10 @@ export const getWalletModeName = (
   return entry.chain ? entry.name : ""
 }
 
+/** Whether any wallet can connect in this mode (Bitcoin, for one, has none). */
+export const isWalletModeConnectable = (mode: WalletMode): boolean =>
+  WALLET_MODES[mode].providers.length > 0
+
 export function getWalletModeIcon(mode: WalletMode): string {
   const entry = WALLET_MODES[mode]
   return entry.chain ? entry.icon : ""

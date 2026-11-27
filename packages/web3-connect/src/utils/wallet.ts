@@ -33,6 +33,7 @@ export {
   getWalletModeIcon,
   getWalletModeName,
   getWalletModesByProviderType,
+  isWalletModeConnectable,
 } from "@/config/wallet"
 import {
   Account,
