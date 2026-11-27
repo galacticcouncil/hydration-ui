@@ -1,4 +1,5 @@
 import {
+  ArrowDownToLineIcon,
   ArrowRightLeftIcon,
   BanknoteIcon,
   BlocksIcon,
@@ -44,6 +45,7 @@ export const LINKS = {
   portfolio: "/portfolio",
   portfolioOverview: "/portfolio",
   portfolioTracked: "/portfolio/tracked",
+  portfolioDeposits: "/portfolio/deposits",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
@@ -205,6 +207,11 @@ export const NAVIGATION: NavigationItem[] = [
         icon: WalletIcon,
       },
       {
+        key: "portfolioDeposits",
+        to: LINKS.portfolioDeposits,
+        icon: ArrowDownToLineIcon,
+      },
+      {
         key: "portfolioTracked",
         to: LINKS.portfolioTracked,
         icon: GlassesIcon,
@@ -281,6 +288,10 @@ export const getMenuTranslations = (t: TFunction) =>
     portfolioOverview: {
       title: t("navigation.portfolioOverview.title"),
       description: t("navigation.portfolioOverview.description"),
+    },
+    portfolioDeposits: {
+      title: t("navigation.portfolioDeposits.title"),
+      description: t("navigation.portfolioDeposits.description"),
     },
     portfolioTracked: {
       title: t("navigation.portfolioTracked.title"),

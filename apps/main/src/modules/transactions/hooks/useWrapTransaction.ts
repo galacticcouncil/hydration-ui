@@ -18,6 +18,7 @@ import { isBigInt } from "remeda"
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { getStrictWrapRefusal } from "@/modules/transactions/utils/strictEvm"
 import {
   containsEvmCall,
   prependEvmBindingTx,
@@ -39,7 +40,25 @@ export const useWrapEvmTransaction = (
     evmAccountBindingQuery(rpc, address),
   )
 
+  const isMultisig = !!account?.isMultisig
+
   return useMemo(() => {
+    // Strict: never wrapped. What the account would need is stamped instead,
+    // and the strict send refuses it before the wallet is asked.
+    if (transaction.strictEvm) {
+      return {
+        ...transaction,
+        strictEvm: {
+          ...transaction.strictEvm,
+          wrapRefusal: getStrictWrapRefusal({
+            isMultisig,
+            isLoadingBinding: isLoadingEvmBinding,
+            isBound: isEvmAccountBound,
+          }),
+        },
+      }
+    }
+
     // Wrap with dispatch_with_extra_gas when withExtraGas is set
     if (isPapiTransaction(transaction.tx) && transaction.withExtraGas) {
       return {
@@ -86,7 +105,7 @@ export const useWrapEvmTransaction = (
     }
 
     return transaction
-  }, [transaction, isEvmAccountBound, isLoadingEvmBinding, papi])
+  }, [transaction, isEvmAccountBound, isLoadingEvmBinding, papi, isMultisig])
 }
 
 const useWrapMultisigTransaction = () => {
@@ -154,6 +173,10 @@ export const useWrapTransaction = (
 
   if (transaction.initialError) {
     return transaction
+  }
+
+  if (transaction.strictEvm) {
+    return tx
   }
 
   return account?.isMultisig && account.multisigSignerAddress

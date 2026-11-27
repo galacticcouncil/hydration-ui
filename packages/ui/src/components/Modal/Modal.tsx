@@ -136,6 +136,8 @@ type ModalHeaderProps = Omit<FlexProps, "title"> & {
   customTitle?: ReactNode
   onBack?: () => void
   closable?: boolean
+  /** Close with your own handler instead of the dialog's own close (for a modal whose close navigates). */
+  onClose?: () => void
 }
 
 type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
@@ -163,6 +165,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   customTitle,
   onBack,
   closable = true,
+  onClose,
   ...props
 }: FlexProps & ModalHeaderProps) => {
   const { variant } = useContext(ModalContext)
@@ -210,7 +213,18 @@ const ModalHeader: FC<ModalHeaderProps> = ({
           </ModalTitle>
         )}
 
-        {closable && <ModalClose />}
+        {closable &&
+          (onClose ? (
+            <SModalHeaderButton
+              icon={X}
+              variant="ghost"
+              size="medium"
+              align="right"
+              onClick={onClose}
+            />
+          ) : (
+            <ModalClose />
+          ))}
       </SModalTitleContainer>
 
       {customDescription ? (

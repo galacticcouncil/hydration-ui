@@ -1,13 +1,12 @@
 import {
   ArrowRightLeftIcon,
-  CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { OnrampScreen } from "@/modules/onramp/types"
 
@@ -42,9 +41,9 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
             title={t("withdraw.method.onchain.title")}
             description={t("withdraw.method.onchain.description")}
           />
-          {ENV.VITE_ENV !== "production" && (
+          {isBankFlowEnabled() && (
             <StepButton
-              icon={CreditCardIcon}
+              icon={LandmarkIcon}
               onClick={() => onSelect(OnrampScreen.WithdrawBank)}
               title={t("withdraw.method.bank.title")}
               description={t("withdraw.method.bank.description")}

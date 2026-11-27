@@ -1,0 +1,160 @@
+// @vitest-environment jsdom
+import { render } from "@testing-library/react"
+import { describe, expect, it, vi } from "vitest"
+
+vi.mock("@/modules/portfolio/deposits/PortfolioDepositsPage", () => ({
+  PortfolioDepositsPage: () => null,
+}))
+
+vi.mock("@/config/env", () => ({
+  ENV: { VITE_BANK_FLOW_ENABLED: false, VITE_HBR_API_URL: "https://hbr.test" },
+}))
+vi.mock("@galacticcouncil/ui/components", () => import("./uiKitStub"))
+vi.mock("@galacticcouncil/web3-connect", () => ({
+  useAccount: () => ({ account: null }),
+  useWallet: () => ({ signer: null }),
+  isEthereumSigner: () => false,
+  useWeb3ConnectModal: () => ({ toggle: () => {} }),
+  WalletMode: { EVM: "evm" },
+}))
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({ t: (k: string) => k }),
+  initReactI18next: { type: "3rdParty", init: () => {} },
+}))
+vi.mock("@/i18n", () => ({ default: { t: (k: string) => k } }))
+
+// The pages' other steps are replaced; the bank steps are markers.
+vi.mock("@/modules/onramp/deposit/steps/DepositBank", () => ({
+  DepositBank: () => <i data-marker="deposit-bank" />,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawBank", () => ({
+  WithdrawBank: () => <i data-marker="withdraw-bank" />,
+}))
+vi.mock("@/modules/onramp/deposit/steps/DepositAsset", () => ({
+  DepositAsset: () => null,
+}))
+vi.mock("@/modules/onramp/deposit/steps/DepositCexSelect", () => ({
+  DepositCexSelect: () => null,
+}))
+vi.mock("@/modules/onramp/deposit/steps/DepositMethodSelect", () => ({
+  DepositMethodSelect: () => null,
+}))
+vi.mock("@/modules/onramp/deposit/steps/DepositSuccess", () => ({
+  DepositSuccess: () => null,
+}))
+vi.mock("@/modules/onramp/deposit/steps/DepositTransfer", () => ({
+  DepositTransfer: () => null,
+}))
+vi.mock("@/modules/onramp/components/PendingDeposit", () => ({
+  PendingDeposit: () => null,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawCexSelect", () => ({
+  WithdrawCexSelect: () => null,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawMethodSelect", () => ({
+  WithdrawMethodSelect: () => null,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawSuccess", () => ({
+  WithdrawSuccess: () => null,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawTransfer", () => ({
+  WithdrawTransfer: () => null,
+}))
+vi.mock("@/modules/onramp/withdraw/steps/WithdrawTransferOnchain", () => ({
+  WithdrawTransferOnchain: () => null,
+}))
+vi.mock("@galacticcouncil/ui/utils", () => ({
+  getToken: () => "",
+  pxToRem: (px: number) => `${px / 16}rem`,
+}))
+vi.mock(
+  "@galacticcouncil/ui/assets/icons",
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_t, key) => (key === "then" ? undefined : () => null),
+        has: (_t, key) => key !== "then",
+      },
+    ),
+)
+const page = vi.hoisted(() => ({ current: "" }))
+vi.mock("@/modules/onramp/deposit/hooks/useDeposit", () => ({
+  useDeposit: () => ({ page: page.current, asset: null, reset: () => {} }),
+}))
+vi.mock("@/modules/onramp/withdraw/hooks/useWithdraw", () => ({
+  useWithdraw: () => ({ page: page.current, asset: null, reset: () => {} }),
+}))
+vi.mock("@/modules/onramp/store/useOnrampStore", () => ({
+  useOnrampStore: () => [],
+  selectPendingDepositsByAccount: () => () => [],
+}))
+
+import { ENV } from "@/config/env"
+import { NAVIGATION } from "@/config/navigation"
+import { BankFlow } from "@/modules/onramp/bank/components/BankFlow"
+import { BankPortfolio } from "@/modules/onramp/bank/components/BankPortfolio"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
+import { DepositPage } from "@/modules/onramp/deposit/DepositPage"
+import { OnrampScreen } from "@/modules/onramp/types"
+import { WithdrawPage } from "@/modules/onramp/withdraw/WithdrawPage"
+import { Route as DepositsRoute } from "@/routes/portfolio/deposits"
+
+describe("flag off: no bank screen by any way in (review 4a B1)", () => {
+  it("the gate reads the flag as off", () => {
+    expect(isBankFlowEnabled()).toBe(false)
+  })
+
+  it("the general Deposits tab is available", () => {
+    const portfolio = NAVIGATION.find((item) => item.key === "portfolio")
+    const deposits = portfolio?.children?.find(
+      (child) => child.key === "portfolioDeposits",
+    )
+    expect(deposits).toBeDefined()
+    expect(deposits?.enabled).not.toBe(false)
+  })
+
+  it("the general deposits route is available with bank disabled", () => {
+    expect(DepositsRoute.options.beforeLoad).toBeUndefined()
+  })
+
+  it("DepositPage on DepositBank renders no bank flow", () => {
+    page.current = OnrampScreen.DepositBank
+    const { container } = render(<DepositPage />)
+    expect(container.querySelector("[data-marker]")).toBeNull()
+  })
+
+  it("WithdrawPage on WithdrawBank renders no bank flow", () => {
+    page.current = OnrampScreen.WithdrawBank
+    const { container } = render(<WithdrawPage />)
+    expect(container.querySelector("[data-marker]")).toBeNull()
+  })
+
+  it("BankFlow and BankPortfolio render nothing", () => {
+    const flow = render(<BankFlow direction="deposit" />)
+    expect(flow.container.innerHTML).toBe("")
+    const tiles = render(<BankPortfolio onOpen={() => {}} />)
+    expect(tiles.container.innerHTML).toBe("")
+  })
+
+  // Positive control: the same render with the flag on shows the marker,
+  // so the two page tests above can see a bank flow when one renders.
+  it("control: with the flag on the pages do render their bank step", () => {
+    const env = ENV as { VITE_BANK_FLOW_ENABLED: boolean }
+    env.VITE_BANK_FLOW_ENABLED = true
+    try {
+      page.current = OnrampScreen.DepositBank
+      const d = render(<DepositPage />)
+      expect(
+        d.container.querySelector('[data-marker="deposit-bank"]'),
+      ).not.toBeNull()
+      page.current = OnrampScreen.WithdrawBank
+      const w = render(<WithdrawPage />)
+      expect(
+        w.container.querySelector('[data-marker="withdraw-bank"]'),
+      ).not.toBeNull()
+    } finally {
+      env.VITE_BANK_FLOW_ENABLED = false
+    }
+  })
+})

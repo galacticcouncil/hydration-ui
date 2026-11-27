@@ -1,13 +1,12 @@
 import {
   ArrowRightLeftIcon,
-  CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { ENV } from "@/config/env"
+import { isBankFlowEnabled } from "@/modules/onramp/bank/utils/bankAvailability"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { OnrampScreen } from "@/modules/onramp/types"
 
@@ -42,9 +41,9 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
             title={t("deposit.method.onchain.title")}
             description={t("deposit.method.onchain.description")}
           />
-          {ENV.VITE_ENV !== "production" && (
+          {isBankFlowEnabled() && (
             <StepButton
-              icon={CreditCardIcon}
+              icon={LandmarkIcon}
               onClick={() => onSelect(OnrampScreen.DepositBank)}
               title={t("deposit.method.bank.title")}
               description={t("deposit.method.bank.description")}
