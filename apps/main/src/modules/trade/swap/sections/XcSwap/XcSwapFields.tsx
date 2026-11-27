@@ -1,12 +1,4 @@
-import {
-  Box,
-  Flex,
-  FormLabel,
-  Separator,
-  Stack,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Box, Separator, Stack } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
 import { useCallback } from "react"
@@ -17,7 +9,6 @@ import { isNumber } from "remeda"
 import { useAccountBalances } from "@/api/balances"
 import { TradeType } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { XcLogo } from "@/modules/trade/swap/sections/XcSwap/components/ChainAssetSelect/XcLogo"
 import { XcChainAssetSelectFormField } from "@/modules/trade/swap/sections/XcSwap/components/XcChainAssetSelect"
 import { XcSrcAssetSelectField } from "@/modules/trade/swap/sections/XcSwap/components/XcSrcAssetSelectField"
 import { XcSwapRecipientButton } from "@/modules/trade/swap/sections/XcSwap/components/XcSwapRecipientButton"
@@ -28,10 +19,7 @@ import {
   getXcAssetId,
   isSameXcAsset,
 } from "@/modules/trade/swap/sections/XcSwap/lib/xcSwapAssets"
-import {
-  XcChain,
-  XcChainAssetPair,
-} from "@/modules/trade/swap/sections/XcSwap/types"
+import { XcChainAssetPair } from "@/modules/trade/swap/sections/XcSwap/types"
 import { useXcSwap } from "@/modules/trade/swap/sections/XcSwap/XcSwapProvider"
 import { XcSwapSwitcher } from "@/modules/trade/swap/sections/XcSwap/XcSwapSwitcher"
 import { scaleHuman } from "@/utils/formatting"
@@ -39,21 +27,6 @@ import { scaleHuman } from "@/utils/formatting"
 type Props = {
   readonly destChainAssetPairs: XcChainAssetPair[]
 }
-
-const ChainBadge: React.FC<{ chain: XcChain | null; tooltip: string }> = ({
-  chain,
-  tooltip,
-}) =>
-  chain ? (
-    <Tooltip text={tooltip} asChild>
-      <Flex as="span" inline align="center" gap="s" tabIndex={0}>
-        <XcLogo src={chain.logo} size="extra-small" />
-        <FormLabel fw={600} color={getToken("text.high")}>
-          {chain.name}
-        </FormLabel>
-      </Flex>
-    </Tooltip>
-  ) : null
 
 export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
   const { t } = useTranslation(["common", "trade"])
@@ -207,12 +180,8 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
       <Box py="l" width="100%">
         <XcSrcAssetSelectField
           label={isCrossChain ? t("from") : t("sell")}
-          labelAdornment={
-            <ChainBadge
-              chain={isCrossChain ? srcChain : null}
-              tooltip={t("trade:xc.swap.field.sourceChainTooltip")}
-            />
-          }
+          sideChainSrc={isCrossChain ? srcChain?.logo : undefined}
+          collapsed={isCrossChain}
           isLoading={isSelectionLoading}
           maxBalance={isSingleTrade ? maxSwapSellBalance : maxTwapSellBalance}
           isMaxBalanceLoading={
@@ -238,12 +207,7 @@ export const XcSwapFields: React.FC<Props> = ({ destChainAssetPairs }) => {
           assetFieldName="buyAsset"
           amountFieldName="buyAmount"
           label={isCrossChain ? t("to") : t("buy")}
-          labelAdornment={
-            <ChainBadge
-              chain={isCrossChain ? destChain : null}
-              tooltip={t("trade:xc.swap.field.destChainTooltip")}
-            />
-          }
+          showSideChain={isCrossChain}
           chainAssetPairs={destChainAssetPairs}
           modalTitle={t("trade:xc.swap.field.destTitle")}
           balance={

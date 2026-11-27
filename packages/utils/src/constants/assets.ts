@@ -25,6 +25,8 @@ export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"
 export const HUSDS_ASSET_ID = "112"
 export const HUSDE_ASSET_ID = "113"
+export const HUSDC_WH_ASSET_ID = "114"
+export const HUSDT_WH_ASSET_ID = "115"
 export const PRIME_ASSET_ID = "43"
 export const PRIME_ERC20_ID = "1043"
 export const PRIME_STABLESWAP_ASSET_ID = "143"
@@ -42,6 +44,8 @@ export const HOLLAR_ASSETS = [
   HUSDT_ASSET_ID,
   HUSDS_ASSET_ID,
   HUSDE_ASSET_ID,
+  HUSDC_WH_ASSET_ID,
+  HUSDT_WH_ASSET_ID,
   HEURC_ASSET_ID,
 ]
 

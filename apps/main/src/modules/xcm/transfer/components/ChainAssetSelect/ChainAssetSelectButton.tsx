@@ -1,11 +1,9 @@
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@/components/ChainLogo"
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 
 import { SButton } from "./ChainAssetSelectButton.styled"
@@ -31,14 +29,10 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
     >
       {currentSelection ? (
         <Flex align="center" gap="base">
-          <ChainLogo
-            ecosystem={currentSelection.chain.ecosystem}
-            chainId={getChainId(currentSelection.chain)}
-          />
           <XAssetLogo
             asset={currentSelection.asset}
             chain={currentSelection.chain}
-            sx={{ ml: "-l" }}
+            chainPosition="side"
           />
           <Text fs="p3" fw={600} color={getToken("text.high")}>
             {currentSelection.asset.originSymbol}

@@ -64,6 +64,14 @@ export const useXcSwapSelection = ({
         form.setValue("srcChain", source.chain)
         form.setValue("sellAsset", asset)
       }
+      return
+    }
+
+    const freshChain = sourceChainAssetPairs.find(
+      ({ chain }) => chain.key === srcChain?.key,
+    )?.chain
+    if (freshChain && freshChain.logo !== srcChain?.logo) {
+      form.setValue("srcChain", freshChain)
     }
   }, [isSelectionDataReady, sourceChainAssetPairs, form, getAsset, assetIn])
 

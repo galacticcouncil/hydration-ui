@@ -25,8 +25,8 @@ import { FC, ReactNode, useEffect, useMemo } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { EModeAssets } from "@/modules/money-market/actions/EModeAssets"
 import { useEModeForm } from "@/modules/money-market/actions/EModeForm.form"
 import { FindingsList } from "@/modules/money-market/actions/FindingsList"
 import { HeaderSelect } from "@/modules/money-market/actions/HeaderSelect"
@@ -166,11 +166,9 @@ export const EModeForm: FC<Props> = ({ initialCategoryId, onSubmitted }) => {
           label={t("summary.availableAssets")}
           content={
             selected ? (
-              <AssetLogo
-                size="small"
-                id={selected.assets.map(
-                  // a category lists its reserves without their name
-                  (a) => resolveDisplay({ ...a, name: a.symbol }).logoId,
+              <EModeAssets
+                assets={selected.assets.map((a) =>
+                  resolveDisplay({ ...a, name: a.symbol }),
                 )}
               />
             ) : (
