@@ -67,6 +67,7 @@ import { useUserAddress } from "@/modules/money-market/hooks"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
+import { getProportionalAmount } from "@/utils/formatting"
 
 import {
   addStablepoolOptions,
@@ -205,6 +206,50 @@ export const AddStablepoolLiquidityForm = ({
     name: "activeFields",
   })
 
+  const { data: stablepoolReserves } = useStablepoolReserves(stableswapId)
+  const getReserve = (assetId: string) =>
+    stablepoolReserves?.reserves.find(
+      (reserve) => reserve.asset_id.toString() === assetId,
+    )?.amountHuman
+
+  const setFieldAmount = (index: number, assetId: string, amount: string) => {
+    const updatedValue = { assetId, amount }
+    const allFields = form.getValues("fields")
+    const fieldIndex = allFields.findIndex((f) => f.assetId === assetId)
+
+    setValue(`activeFields.${index}`, updatedValue)
+    setValue(
+      `fields.${fieldIndex === -1 ? allFields.length : fieldIndex}`,
+      updatedValue,
+    )
+  }
+
+  const onAmountChange = (index: number, assetId: string, amount: string) => {
+    setFieldAmount(index, assetId, amount)
+
+    const fromReserve = getReserve(assetId)
+
+    if (split && fromReserve) {
+      form.getValues("activeFields").forEach((other, otherIndex) => {
+        const toReserve = getReserve(other.assetId)
+        if (otherIndex === index || !toReserve) return
+
+        setFieldAmount(
+          otherIndex,
+          other.assetId,
+          getProportionalAmount(
+            amount,
+            fromReserve,
+            toReserve,
+            getAssetWithFallback(other.assetId).decimals,
+          ),
+        )
+      })
+    }
+
+    form.trigger("activeFields")
+  }
+
   const onSubmit = () => mutation.mutate()
 
   const customErrors = getCustomErrors(formState.errors.sharesAmount)
@@ -333,10 +378,7 @@ export const AddStablepoolLiquidityForm = ({
               <Controller
                 name={`activeFields.${index}`}
                 control={control}
-                render={({
-                  field: { value, onChange },
-                  fieldState: { error },
-                }) => (
+                render={({ field: { value }, fieldState: { error } }) => (
                   <Box py="l" width="100%">
                     <AssetSelect
                       label={t("liquidity.add.modal.selectAsset")}
@@ -346,20 +388,9 @@ export const AddStablepoolLiquidityForm = ({
                       selectedAsset={getAssetWithFallback(value.assetId)}
                       amountError={error?.message}
                       value={value.amount}
-                      onChange={(amount) => {
-                        const updatedValue = { ...value, amount }
-                        const allFields = form.getValues("fields")
-                        const fieldIndex = allFields.findIndex(
-                          (f) => f.assetId === field.assetId,
-                        )
-
-                        onChange(updatedValue)
-
-                        const indexToUpdate =
-                          fieldIndex === -1 ? allFields.length : fieldIndex
-
-                        form.setValue(`fields.${indexToUpdate}`, updatedValue)
-                      }}
+                      onChange={(amount) =>
+                        onAmountChange(index, value.assetId, amount)
+                      }
                       setSelectedAsset={!split ? onSelectAsset : undefined}
                     />
                   </Box>
