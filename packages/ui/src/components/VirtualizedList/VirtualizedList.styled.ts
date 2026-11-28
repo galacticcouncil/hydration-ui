@@ -30,3 +30,31 @@ export const SListItem = styled("div", {
     `}
   `,
 )
+
+const isLayoutProp = (prop: string) => prop !== "size" && prop !== "start"
+
+/** Spans a sticky item's whole section; clicks pass through to the rows under it. */
+export const SStickySection = styled("div", {
+  shouldForwardProp: isLayoutProp,
+})<{ size: number; start: number }>(
+  ({ size, start }) => css`
+    position: absolute;
+    top: ${start}px;
+    left: 0;
+    width: 100%;
+    height: ${size}px;
+    z-index: 1;
+    pointer-events: none;
+  `,
+)
+
+export const SStickyItem = styled("div", {
+  shouldForwardProp: isLayoutProp,
+})<{ size: number }>(
+  ({ size }) => css`
+    position: sticky;
+    top: 0;
+    height: ${size}px;
+    pointer-events: auto;
+  `,
+)

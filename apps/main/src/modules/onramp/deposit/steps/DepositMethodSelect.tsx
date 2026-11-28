@@ -3,12 +3,25 @@ import {
   CreditCardIcon,
   LandmarkIcon,
 } from "@galacticcouncil/ui/assets/icons"
-import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
+import {
+  ModalBody,
+  ModalContentDivider,
+  ModalHeader,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
+import { useShallow } from "zustand/shallow"
 
 import { ENV } from "@/config/env"
+import { PendingDeposit } from "@/modules/onramp/components/PendingDeposit"
 import { StepButton } from "@/modules/onramp/components/StepButton"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
+import {
+  selectPendingDepositsByAccount,
+  useOnrampStore,
+} from "@/modules/onramp/store/useOnrampStore"
 import { OnrampScreen } from "@/modules/onramp/types"
 
 export type DepositMethodSelectProps = {
@@ -19,13 +32,17 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp"])
-  const navigate = useNavigate()
+  const closable = useOnrampClosable()
+  const { account } = useAccount()
+  const pendingDeposits = useOnrampStore(
+    useShallow(selectPendingDepositsByAccount(account?.address)),
+  )
 
   return (
     <>
       <ModalHeader
         title={t("deposit.method.title")}
-        closable={false}
+        closable={closable}
         align="center"
       />
       <ModalBody>
@@ -38,7 +55,7 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
           />
           <StepButton
             icon={ArrowRightLeftIcon}
-            onClick={() => navigate({ to: "/cross-chain" })}
+            onClick={() => onSelect(OnrampScreen.DepositOnchainHoldings)}
             title={t("deposit.method.onchain.title")}
             description={t("deposit.method.onchain.description")}
           />
@@ -51,6 +68,19 @@ export const DepositMethodSelect: React.FC<DepositMethodSelectProps> = ({
             />
           )}
         </Stack>
+        {pendingDeposits.length > 0 && (
+          <>
+            <ModalContentDivider />
+            <Stack gap="m">
+              <Text fs="p2" fw={500} font="primary" align="center">
+                {t("deposit.cex.transfer.ongoing.title")}
+              </Text>
+              {pendingDeposits.map((deposit) => (
+                <PendingDeposit key={deposit.id} {...deposit} />
+              ))}
+            </Stack>
+          </>
+        )}
       </ModalBody>
     </>
   )

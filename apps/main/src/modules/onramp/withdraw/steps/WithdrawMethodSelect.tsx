@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next"
 
 import { ENV } from "@/config/env"
 import { StepButton } from "@/modules/onramp/components/StepButton"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { OnrampScreen } from "@/modules/onramp/types"
 
 type WithdrawMethodSelectProps = {
@@ -19,13 +20,14 @@ export const WithdrawMethodSelect: React.FC<WithdrawMethodSelectProps> = ({
   onSelect,
 }) => {
   const { t } = useTranslation(["onramp"])
+  const closable = useOnrampClosable()
   const navigate = useNavigate()
 
   return (
     <>
       <ModalHeader
         title={t("withdraw.method.title")}
-        closable={false}
+        closable={closable}
         align="center"
       />
       <ModalBody>

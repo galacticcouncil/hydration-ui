@@ -40,12 +40,12 @@ import { BasejumpPoolLiquidity } from "@/modules/xcm/transfer/utils/limits"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+import { createRequestLimiter } from "@/utils/requestLimiter"
 
 const BASEJUMP_LANDING_CONTRACT = "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
-export const useCrossChainConfig = () => {
-  const { sdk } = useRpcProvider()
-  return useSuspenseQuery({
+export const crossChainConfigQuery = (sdk: TProviderContext["sdk"]) =>
+  queryOptions({
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xcm", "context"],
@@ -109,21 +109,25 @@ export const useCrossChainConfig = () => {
       return ctx
     },
   })
+
+export const useCrossChainConfig = () => {
+  const { sdk } = useRpcProvider()
+  return useSuspenseQuery(crossChainConfigQuery(sdk))
 }
 
-const useHydrationClient = () => {
-  return useSuspenseQuery({
-    queryKey: ["xcm", "hydrationClient"],
-    queryFn: () => {
-      const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
-      if (!hydration || !isEvmParachain(hydration))
-        throw new Error("Invalid chain for HydrationClient")
-      return new clients.HydrationClient(hydration)
-    },
-    staleTime: Infinity,
-    gcTime: Infinity,
-  })
-}
+export const hydrationClientQuery = queryOptions({
+  queryKey: ["xcm", "hydrationClient"],
+  queryFn: () => {
+    const hydration = chainsMap.get(HYDRATION_CHAIN_KEY)
+    if (!hydration || !isEvmParachain(hydration))
+      throw new Error("Invalid chain for HydrationClient")
+    return new clients.HydrationClient(hydration)
+  },
+  staleTime: Infinity,
+  gcTime: Infinity,
+})
+
+const useHydrationClient = () => useSuspenseQuery(hydrationClientQuery)
 
 export const useCrossChainConfigService = () => {
   const { data } = useCrossChainConfig()
@@ -265,8 +269,34 @@ export const useCrossChainBalance = (address: string, chainKey: string) => {
   })
 }
 
+// Shared by every snapshot (asset picker and deposit discovery), including
+// refetches, so opening many chains at once doesn't flood their RPCs.
+const balanceSnapshotLimiter = createRequestLimiter(4)
+
+/** One-shot balance snapshot for a whole chain — no live subscription held. */
+export const xcmBalanceSnapshotQuery = (
+  wallet: Wallet,
+  chainKey: string,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: ["xcm", "balanceSnapshot", chainKey, address],
+    enabled: !!wallet && !!address && !!chainKey,
+    // Reopening the picker inside this window reuses the snapshot; past it we
+    // re-fetch, which is the "re-fetch when you reopen the chain list" case.
+    staleTime: secondsToMilliseconds(30),
+    queryFn: () =>
+      balanceSnapshotLimiter(async () => {
+        const chain = chainsMap.get(chainKey)
+        if (!chain) return []
+        return wallet.getBalances(
+          formatSourceChainAddress(address, chain),
+          chain,
+        )
+      }),
+  })
+
 /**
- * One-shot balance snapshot for a whole chain — no live subscription held.
  * Used by the asset picker, which only needs balances while it is open and
  * would otherwise subscribe every asset on every chain you highlight.
  */
@@ -277,18 +307,9 @@ export const useCrossChainBalancesFetch = (
   const queryClient = useQueryClient()
   const wallet = useCrossChainWallet()
 
-  const { data, dataUpdatedAt, isLoading, isError } = useQuery({
-    queryKey: ["xcm", "balanceSnapshot", chainKey, address],
-    enabled: !!wallet && !!address && !!chainKey,
-    // Reopening the picker inside this window reuses the snapshot; past it we
-    // re-fetch, which is the "re-fetch when you reopen the chain list" case.
-    staleTime: secondsToMilliseconds(30),
-    queryFn: async () => {
-      const chain = chainsMap.get(chainKey)
-      if (!chain) return []
-      return wallet.getBalances(formatSourceChainAddress(address, chain), chain)
-    },
-  })
+  const { data, dataUpdatedAt, isLoading, isError } = useQuery(
+    xcmBalanceSnapshotQuery(wallet, chainKey, address),
+  )
 
   // Apply each fetch once. The picker remounts on every open and react-query
   // serves cached data synchronously, so keying this on `data` alone replays an

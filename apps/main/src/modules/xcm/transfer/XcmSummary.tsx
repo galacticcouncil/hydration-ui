@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { ReactNode } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -22,7 +23,11 @@ import {
 } from "@/modules/xcm/transfer/utils/bridge"
 import { toDecimal } from "@/utils/formatting"
 
-export const XcmSummary = () => {
+type XcmSummaryProps = {
+  children?: ReactNode
+}
+
+export const XcmSummary: React.FC<XcmSummaryProps> = ({ children }) => {
   const { t } = useTranslation(["common", "xcm"])
   const { transfer, call, alerts, isLoading, transferArgs } = useXcmProvider()
 
@@ -137,6 +142,7 @@ export const XcmSummary = () => {
             loading={isLoading}
             content={destFeeValue}
           />
+          {children}
         </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>

@@ -9,12 +9,13 @@ import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"
 import { Input } from "@/components/Input"
 import { Text } from "@/components/Text"
-import { getToken } from "@/utils"
+import { getToken, pxToRem } from "@/utils"
 
 import {
   Modal,
   ModalBody,
   ModalCloseTrigger,
+  ModalContainer,
   ModalFooter,
   ModalHeader,
 } from "./Modal"
@@ -122,6 +123,20 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
   )
 }
 
+const ContainerWidthTemplate = () => {
+  const [wide, setWide] = useState(false)
+  return (
+    <ModalContainer open contentWidth={wide ? pxToRem(650) : undefined}>
+      <ModalHeader title="Inline container" closable={false} />
+      <ModalBody>
+        <Button onClick={() => setWide((wide) => !wide)}>
+          {wide ? "Narrow" : "Widen"}
+        </Button>
+      </ModalBody>
+    </ModalContainer>
+  )
+}
+
 export const Default: Story = {
   render: DefaultTemplate,
 }
@@ -161,4 +176,8 @@ export const ForcedPopupVariant: Story = {
   args: {
     variant: "popup",
   },
+}
+
+export const ContainerSwitchingWidth: Story = {
+  render: ContainerWidthTemplate,
 }

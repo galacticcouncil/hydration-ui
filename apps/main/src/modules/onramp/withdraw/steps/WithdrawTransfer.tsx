@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next"
 
 import { useCrossChainWallet, xcmTransferQuery } from "@/api/xcm"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 import { useSubmitCexWithdraw } from "@/modules/onramp/withdraw/hooks/useSubmitCexWithdraw"
 import { useWithdraw } from "@/modules/onramp/withdraw/hooks/useWithdraw"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
@@ -42,6 +43,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
   onBack,
 }) => {
   const { t } = useTranslation(["onramp", "common", "xcm", "wallet"])
+  const closable = useOnrampClosable()
   const { account } = useAccount()
   const { asset, cexId, setAmount: setWithdrawnAmount } = useWithdraw()
   const { getAsset } = useAssets()
@@ -119,7 +121,7 @@ export const WithdrawTransfer: React.FC<WithdrawTransferProps> = ({
         })}
         onBack={onBack}
         align="center"
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <FormProvider {...form}>

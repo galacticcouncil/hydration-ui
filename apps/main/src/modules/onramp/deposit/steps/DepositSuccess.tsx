@@ -13,6 +13,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { Trans, useTranslation } from "react-i18next"
 
 import { LINKS } from "@/config/navigation"
+import { OnrampModalClose } from "@/modules/onramp/components/OnrampModalClose"
 import { StepButton } from "@/modules/onramp/components/StepButton"
 import { useDeposit } from "@/modules/onramp/deposit/hooks/useDeposit"
 import { useAssets } from "@/providers/assetsProvider"
@@ -34,6 +35,7 @@ export const DepositSuccess: React.FC<DepositSuccessProps> = ({
 
   return (
     <ModalBody>
+      <OnrampModalClose />
       <Stack gap="s">
         <Icon
           size="2xl"

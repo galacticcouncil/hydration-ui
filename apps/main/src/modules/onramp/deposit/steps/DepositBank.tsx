@@ -2,6 +2,7 @@ import { ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { StepButton } from "@/modules/onramp/components/StepButton"
+import { useOnrampClosable } from "@/modules/onramp/hooks/useOnrampClosable"
 
 export type DepositBankProps = {
   onBack: () => void
@@ -9,6 +10,7 @@ export type DepositBankProps = {
 
 export const DepositBank: React.FC<DepositBankProps> = ({ onBack }) => {
   const { t } = useTranslation(["onramp"])
+  const closable = useOnrampClosable()
 
   return (
     <>
@@ -16,7 +18,7 @@ export const DepositBank: React.FC<DepositBankProps> = ({ onBack }) => {
         title={t("deposit.bank.title")}
         align="center"
         onBack={onBack}
-        closable={false}
+        closable={closable}
       />
       <ModalBody>
         <StepButton

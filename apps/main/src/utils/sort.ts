@@ -107,9 +107,9 @@ const SORT_ASSETS_TICKER_ORDER = [
   "WBTC",
 ]
 
-const MATCH_SCORE_MAX = 100
+export const MATCH_SCORE_MAX = 100
 
-const getMatchScore = (text: string, searchTerm: string): number => {
+export const getMatchScore = (text: string, searchTerm: string): number => {
   if (!searchTerm) return 0
   const lowerText = text.toLowerCase()
   const lowerSearch = searchTerm.toLowerCase()

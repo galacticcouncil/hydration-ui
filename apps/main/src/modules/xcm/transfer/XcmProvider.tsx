@@ -23,7 +23,10 @@ import {
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
-import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
+import {
+  useXcmForm,
+  UseXcmFormOptions,
+} from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
@@ -49,15 +52,21 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 type XcmProviderProps = {
   children: React.ReactNode
+  formOptions?: UseXcmFormOptions
+  destinationChainKey?: string
 }
 
-export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
+export const XcmProvider: React.FC<XcmProviderProps> = ({
+  children,
+  formOptions,
+  destinationChainKey,
+}) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
   const { rpcUrl, rpcUrlList } = useProviderRpcUrlStore()
 
-  const form = useXcmForm(transfer)
+  const form = useXcmForm(transfer, formOptions)
 
   const configService = useCrossChainConfigService()
 
@@ -88,11 +97,14 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         .filter((asset) => {
           if (!isRouted) return false
           const assetSource = config.asset(asset).source(chain)
-          return assetSource.destinationChains.length > 0
+          return assetSource.destinationChains.some(
+            (destination) =>
+              !destinationChainKey || destination.key === destinationChainKey,
+          )
         })
       return { chain, routes: [], assets, isTagSelect: false }
-    })
-  }, [config, configService])
+    }).filter(({ assets }) => !destinationChainKey || assets.length > 0)
+  }, [config, configService, destinationChainKey])
 
   const destChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     const { routes } = configService
@@ -109,7 +121,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       .filter(
         (a) =>
           a.source.asset.key === srcAsset.key &&
-          destWhitelist.has(a.destination.chain.key),
+          destWhitelist.has(a.destination.chain.key) &&
+          (!destinationChainKey ||
+            a.destination.chain.key === destinationChainKey),
       )
       .map((a) => a.destination.chain)
 
@@ -121,7 +135,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
       return { chain, routes, assets: destinationAssets, isTagSelect }
     })
-  }, [config, srcAsset, srcChain, configService])
+  }, [config, srcAsset, srcChain, configService, destinationChainKey])
 
   const destPair = destChainAssetPairs.find(
     (p) => p.chain.key === destChain?.key,

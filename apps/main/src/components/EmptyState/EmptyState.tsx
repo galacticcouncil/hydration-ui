@@ -43,6 +43,7 @@ export const EmptyState: FC<Props> = ({
         fs="h7"
         lh={1}
         fw={500}
+        align="center"
         textWrap="balance"
       >
         {header}
