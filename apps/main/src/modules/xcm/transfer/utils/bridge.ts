@@ -57,6 +57,12 @@ export const isOmniRoute = (route: AssetRoute | null): boolean => {
   return tags.includes(XcmTag.Omni)
 }
 
+// HOLLAR PSM: usdc locked on an evm chain backs HOLLAR on Hydration 1:1
+export const isPsmRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as string[]
+  return tags.includes(XcmTag.Psm)
+}
+
 // Drop bridgeTag / destAsset values that don't match any route in the
 // current pair — the SDK's ConfigBuilder.build asserts route non-null but
 // can return undefined when the (tag, destAsset) combo has no match, which

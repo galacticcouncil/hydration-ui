@@ -1,6 +1,6 @@
 import { HexString, invariant, isAnyEvmChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { ConfigBuilder } from "@galacticcouncil/xc-core"
+import { AssetRoute, ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
@@ -34,6 +34,7 @@ export type XcmTransferOptions = TransactionActions & {
     txHash: string,
     values: XcmFormValues,
     transfer: Transfer,
+    route: AssetRoute,
   ) => void
   onTransferSuccess?: (
     txHash: string,
@@ -220,7 +221,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
                 tx: buildTransferTransaction,
                 onSubmitted: (txHash: string) => {
                   transferTxHash = txHash
-                  options.onTransferSubmitted?.(txHash, values, transfer)
+                  options.onTransferSubmitted?.(txHash, values, transfer, route)
                 },
               },
             ],
@@ -248,7 +249,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         ...options,
         onSubmitted: (txHash) => {
           submittedTxHash = txHash
-          options.onTransferSubmitted?.(txHash, values, transfer)
+          options.onTransferSubmitted?.(txHash, values, transfer, route)
           options.onSubmitted?.(txHash)
         },
         onSuccess: (event) => {

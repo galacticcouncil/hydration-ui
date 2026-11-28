@@ -17,6 +17,7 @@ enum ToastProcessorType {
   Substrate = "Substrate",
   XcScan = "XcScan",
   Basejump = "Basejump",
+  Psm = "Psm",
   XcSwap = "XcSwap",
   Unknown = "Unknown",
 }
@@ -26,6 +27,7 @@ const MAX_TOAST_MINUTE_AGE = {
   [ToastProcessorType.Substrate]: 60,
   [ToastProcessorType.XcScan]: 60,
   [ToastProcessorType.Basejump]: 60,
+  [ToastProcessorType.Psm]: 60,
   [ToastProcessorType.XcSwap]: 360,
   [ToastProcessorType.Unknown]: 0,
 } as const
@@ -69,6 +71,9 @@ const getToastProcessorType = (
     case type === TransactionType.Xcm && tags.includes(XcmTag.Basejump):
       return ToastProcessorType.Basejump
 
+    case type === TransactionType.Xcm && tags.includes(XcmTag.Psm):
+      return ToastProcessorType.Psm
+
     case type === TransactionType.Xcm:
       return ToastProcessorType.XcScan
 
@@ -90,6 +95,7 @@ export const createToastProcessorFn = (
   const evmProcessor = processors.evm(queryClient, neckworkClient, evm)
   const xcscanProcessor = processors.xcscan(address, xcScanHttpClient)
   const basejumpProcessor = processors.basejump(queryClient)
+  const psmProcessor = processors.psm(queryClient, neckworkClient)
   const xcSwapProcessor = processors.xcSwap()
   const invalidProcessor = processors.invalid()
 
@@ -110,6 +116,8 @@ export const createToastProcessorFn = (
         return xcscanProcessor(toast)
       case ToastProcessorType.Basejump:
         return basejumpProcessor(toast)
+      case ToastProcessorType.Psm:
+        return psmProcessor(toast)
       case ToastProcessorType.XcSwap:
         return xcSwapProcessor(toast)
       case ToastProcessorType.Unknown:

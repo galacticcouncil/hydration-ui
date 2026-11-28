@@ -24,6 +24,9 @@ export const NEAR_CHAIN_KEY = "near"
 // key. near_testnet shares that wormhole id, but only mainnet is indexed.
 export const XCSCAN_NEAR_ID = "397"
 
+/** How a HOLLAR PSM journey names its protocol; only the transfers scan has them. */
+export const PSM_PROTOCOL = "psm"
+
 /** Journeys read from the transfers scan, keyed by its transfer id after it. */
 export const SCAN_JOURNEY_PREFIX = "scan:"
 

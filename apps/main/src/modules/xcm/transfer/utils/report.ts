@@ -15,6 +15,17 @@ const REPORT_ERROR_KEYS = [
   "omni.belowMinDeposit",
   "omni.belowMinWithdraw",
   "omni.connectorUnreachable",
+  "psm.unreachable",
+  "psm.depositsPaused",
+  "psm.depositLimitExceeded",
+  // A mint over the headroom or a payout over the allowance queues instead of
+  // reverting, but the app can't follow or cancel a queued entry
+  "psm.mintHeadroomExceeded",
+  "psm.redeemPaused",
+  "psm.invalidRecipient",
+  "psm.belowMinRedeem",
+  "psm.redeemLimitExceeded",
+  "psm.payoutLimitExceeded",
 ] as const
 
 type ReportErrorKey = (typeof REPORT_ERROR_KEYS)[number]
@@ -22,6 +33,25 @@ type ReportErrorKey = (typeof REPORT_ERROR_KEYS)[number]
 const isReportErrorKey = (error: string): error is ReportErrorKey => {
   return REPORT_ERROR_KEYS.includes(error as ReportErrorKey)
 }
+
+// A PSM limit reads 0 while its side is paused or not open yet (the redeem
+// limit stays 0 until the first mint), so there is nothing to send under
+const PSM_UNAVAILABLE_KEYS = {
+  "psm.depositLimitExceeded": "psm.depositsUnavailable",
+  "psm.mintHeadroomExceeded": "psm.mintUnavailable",
+  "psm.redeemLimitExceeded": "psm.redeemUnavailable",
+  "psm.payoutLimitExceeded": "psm.payoutUnavailable",
+} as const satisfies Partial<Record<ReportErrorKey, string>>
+
+const isPsmLimitKey = (
+  error: ReportErrorKey,
+): error is keyof typeof PSM_UNAVAILABLE_KEYS => error in PSM_UNAVAILABLE_KEYS
+
+const getReportMessageKey = (
+  error: ReportErrorKey,
+  { headroom }: TransferValidationReport,
+) =>
+  headroom === 0n && isPsmLimitKey(error) ? PSM_UNAVAILABLE_KEYS[error] : error
 
 // The report keeps headroom as a raw bigint, which t() must never get.
 const getHeadroom = ({
@@ -101,10 +131,11 @@ export const getXcmReportAlerts = (
     if (isReportErrorKey(e.error)) {
       alerts.push({
         key: e.error,
-        message: t(`report.${e.error}`, {
+        message: t(`report.${getReportMessageKey(e.error, e)}`, {
           amount: e.amount,
           symbol: e.asset,
           chain: e.chain,
+          capacity: getHeadroom(e),
         }),
         severity: "error",
       })

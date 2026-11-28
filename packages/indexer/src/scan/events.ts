@@ -3,7 +3,13 @@ import z from "zod/v4"
 import { ScanClient } from "."
 
 /** The streams a scan app publishes row changes on. */
-export type ScanFlow = "ntt" | "utxo" | "utxo-signs" | "basejump" | "orders"
+export type ScanFlow =
+  | "ntt"
+  | "utxo"
+  | "utxo-signs"
+  | "basejump"
+  | "psm"
+  | "orders"
 
 const SCAN_EVENT_KINDS = ["created", "updated"] as const
 

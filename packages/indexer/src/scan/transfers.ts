@@ -6,9 +6,9 @@ import { isScanNotFound, ScanClient } from "."
 const scanTransferSchema = z.object({
   /** `<kind>:<rail id>`, e.g. `ntt:<digest>` or `utxo:hydration:<extrinsic>`. */
   id: z.string(),
-  /** The rail it moves over: ntt, utxo or basejump. */
+  /** The rail it moves over: ntt, utxo, basejump or psm. */
   kind: z.string(),
-  /** transfer, deposit, withdraw, intent or basejump. */
+  /** transfer, deposit, withdraw, intent, basejump or psm. */
   type: z.string(),
   /** ms epoch */
   time: z.number(),
